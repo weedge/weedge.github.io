@@ -1,0 +1,697 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>时间飘过</title>
+    <link>https://weege126.github.io/</link>
+    <description>Recent content on 时间飘过</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sun, 20 Jan 2013 21:38:52 +0800</lastBuildDate>
+    
+        <atom:link href="https://weege126.github.io/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>About</title>
+      <link>https://weege126.github.io/about/</link>
+      <pubDate>Sun, 20 Jan 2013 21:38:52 +0800</pubDate>
+      
+      <guid>https://weege126.github.io/about/</guid>
+      
+        <description>&lt;p&gt;简单的木头人,简单，呆木，喜欢自言自语，愚人自扰型。时间飞逝，仅仅记录，留住某人某事，某些好玩的技术，KISS and just do IT.&lt;/p&gt;
+</description>
+      
+    </item>
+    
+    <item>
+      <title>工具盒子-GNU global</title>
+      <link>https://weege126.github.io/post/2014-11-15-gnu-global/</link>
+      <pubDate>Sat, 15 Nov 2014 21:04:23 +0800</pubDate>
+      
+      <guid>https://weege126.github.io/post/2014-11-15-gnu-global/</guid>
+      
+        <description>&lt;h3 id=&#34;gnu-gloab&#34;&gt;gnu gloab&lt;/h3&gt;
+
+&lt;p&gt;源码标记，浏览源码挺好用的工具,轻量级的，简单易用。 gtags类似ctags,但是效率比ctags高，具体比较查看&lt;a href=&#34;https://github.com/OpenGrok/OpenGrok/wiki/Comparison-with-Similar-Tools&#34;&gt;这里&lt;/a&gt;(OpenGrok使用相对比较复杂)，而且未来支持的语言也比较多。对Linux-2.6.32源码390M的文件进行标签产出289MB的标签文件。&lt;/p&gt;
+
+&lt;p&gt;可以通过源码安装就OK &lt;code&gt;wget &lt;a href=&#34;http://tamacom.com/global/global-6.3.2.tar.gz&#34;&gt;http://tamacom.com/global/global-6.3.2.tar.gz&lt;/a&gt;; tar zxvf global-6.3.2.tar.gz; cd global-6.3.2; ./configure; make &amp;amp;&amp;amp; make install&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;在需要查找的目录下运行&lt;code&gt;gtags&lt;/code&gt;,会生成三个文件： GTAGS&amp;ndash;定义的函数变量； GRTAGS&amp;ndash;引用的函数变量； GPATH&amp;ndash;函数变量所在文件的路径。&lt;/p&gt;
+
+&lt;p&gt;有用的命令：&lt;br /&gt;
+1. &lt;code&gt;global -f DIR/fileC.c &amp;ndash;color&lt;/code&gt;这个命令看这个文件下有哪些函数，比较有用,加-l在当前目录下查找&lt;br /&gt;
+2. &lt;code&gt;global -r func&lt;/code&gt;函数在哪些文件中引用&lt;br /&gt;
+3. &lt;code&gt;global -ax func&lt;/code&gt;函数所在的目录文件具体哪些行&lt;br /&gt;
+4. &lt;code&gt;global -P file&lt;/code&gt;匹配文件目录文件，类似&lt;code&gt;find ./ -type d | grep file&lt;/code&gt;&lt;br /&gt;
+5. &lt;code&gt;global -g func&lt;/code&gt;匹配有func字符的文件，和grep功能一样&lt;br /&gt;
+6. 如果代码跟新了，需要更新标签文件，&lt;code&gt;global -vu&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;通过globash进入global命令模式，其中&lt;code&gt;show -e/v/l/g Nth&lt;/code&gt;分别用emacs,vi,less,mozilla 来浏览第N个文件标记所搜得关键词的内容，或者不指定用编辑器，采用环境变量EDITOR定义号的编辑器来查看(在.bashrc中添加&lt;code&gt;export EDITOR=vim&lt;/code&gt;)，个人比较喜欢用vim；使用tags查看已经查看过的tags；使用mark来标记查询过的标签tag,&lt;code&gt;mark -l&lt;/code&gt;列出mark列表，&lt;code&gt;mark Nth&lt;/code&gt;通过默认编辑器浏览mark的第N个文件；&lt;code&gt;pop&lt;/code&gt;对记录过的查找标签命令的结果栈退出栈顶结果，并显示处理后的栈顶结果；&lt;code&gt;cookie&lt;/code&gt;用来记录当前的文件夹，&lt;code&gt;cookie -l&lt;/code&gt;查看cookie记录的文件夹，&lt;code&gt;warp Nth&lt;/code&gt;返回列出的第N个文件夹。&lt;br /&gt;
+其他简单的命令可以通过ghelp查看。&lt;/p&gt;
+
+&lt;p&gt;还有个htags是用来生成超文本文件的，方便在浏览器下查看，如果在命令行的开发坏境下，这个有个毛用哦~&lt;/p&gt;
+
+&lt;p&gt;使用gtags-cscope进入client模式具体操作按？帮助文档操作，(哈哈，貌似像个搜索引擎，tag的缓存文件采用的b-tree)。具体见&lt;a href=&#34;https://www.gnu.org/software/global/globaldoc_toc.html#Requesting-the-initial-search&#34;&gt;https://www.gnu.org/software/global/globaldoc_toc.html#Requesting-the-initial-search&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;gtags,global其他具体命令，参考帮助文档或者查看&lt;a href=&#34;https://www.gnu.org/software/global/globaldoc_toc.html&#34;&gt;Tutorial&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;gtags可以作为ctags的扩展进行使用，具体参考&lt;a href=&#34;https://www.gnu.org/software/global/globaldoc_toc.html#Plug_002din&#34;&gt;https://www.gnu.org/software/global/globaldoc_toc.html#Plug_002din&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;vim中使用global&#34;&gt;VIM中使用global&lt;/h3&gt;
+
+&lt;p&gt;可以之间从安装好的global文件间share中将gtags.vim复制到~/.vim/plugin文件夹中：&lt;code&gt;cp /usr/local/share/gtags/gtags.vim $HOME/.vim/plugin&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;或者如果使用vundle来管理的话，BundleSearch gtags 安装；或者直接&lt;code&gt;cd $HOME/.vim/bundle &amp;amp;&amp;amp; git clone &lt;a href=&#34;https://github.com/vim-scripts/gtags.vim&#34;&gt;https://github.com/vim-scripts/gtags.vim&lt;/a&gt; gtags&lt;/code&gt;，或者用git submodule来管理，原理都差不多，自己vim以前用vundle管理过，就直接将自己用的插件全部整合在一起了，去掉vundle插件，采用git submodule管理插件模块，但是vundle整体管理框架还在，&lt;a href=&#34;https://github.com/weedge/Vim-PHP-IDE&#34;&gt;vim配置&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;在vim的命令模式下采用Gtags命令，参数和shell命令行一样，查找出来的list列表在quickfix window 中展现，操作的话与grep命令差不多，但是筛选比较细些，用-g参数就和grep一样，后面可以加上grep一样的参数。&lt;/p&gt;
+
+&lt;p&gt;具体参考&lt;a href=&#34;https://www.gnu.org/software/global/globaldoc_toc.html#Vim-editor&#34;&gt;https://www.gnu.org/software/global/globaldoc_toc.html#Vim-editor&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;总结&#34;&gt;总结&lt;/h3&gt;
+
+&lt;p&gt;global作为一个轻量级的源码标记，浏览源码挺好用的工具，总体体验了吧，gtags生成的文件进行了细分，tag的检索效率相对提高了，如果源码比较大型的话，采用global -vu 来更新tag文件，要快很多；用vim进行开发，可以使用gtags.vim这个插件，与grep配合使用吧(当所检索的函数/变量tag比较模糊的时候，可以先用grep查询，在使用Gtags定位).好用程度，只有继续体验一段时间吧。。。&lt;/p&gt;</description>
+      
+    </item>
+    
+    <item>
+      <title>登泰山</title>
+      <link>https://weege126.github.io/post/2014-09-21-taishan/</link>
+      <pubDate>Sun, 21 Sep 2014 22:04:23 +0800</pubDate>
+      
+      <guid>https://weege126.github.io/post/2014-09-21-taishan/</guid>
+      
+        <description>&lt;h2 id=&#34;登泰山看日出&#34;&gt;登泰山看日出&lt;/h2&gt;
+
+&lt;p&gt;会当凌绝顶，一览众山小  &amp;ndash; 杜甫《望岳》&lt;br /&gt;
+平明登日观，举手开云关  &amp;ndash; 李白《游泰山》&lt;/p&gt;
+
+&lt;h3 id=&#34;出发&#34;&gt;出发&lt;/h3&gt;
+
+&lt;p&gt;登泰山，一次突然做出的决定，木有看攻略，木有做啥子准备，备点衣服和一些吃的就走了。为了赶火车，提前下班打卡就从公司出发啦~（ps:哈哈，恰好周五公司发下午茶，多拿了一盒水果，感谢公司福利，~！~)。在南站与老宋汇合后，在车站吃了点晚餐就走了。&lt;br /&gt;
+而且定火车那天木有直达的列车，买了到济南西，然后转泰安的车票。就这么愉快的出发鸟~~~&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/1.jpeg&#34; alt=&#34;出发&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;济南西&#34;&gt;济南西&lt;/h3&gt;
+
+&lt;p&gt;来到济南西，下车之后在广场上逛了会，一朵莲花在中间·开着·莲花应该是市花吧~~~&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/2.jpeg&#34; alt=&#34;莲花-济南西站&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;补充能量&#34;&gt;补充能量&lt;/h3&gt;
+
+&lt;p&gt;在泰安火车站坐上公交来到泰山火车站，在附近超市买了点水和吃的，一个手电筒，中途有两个妹妹搭讪一起坐车过去，嘿嘿，可惜肚子饿了~，在色和食之间还是选择了填饱肚子。。。。╮(╯▽╰)╭，活该DS单身啊~! 汗。。。。&lt;br /&gt;
+这边夜宵摊子还是挺多的，找了一家貌似人还多那么一点的摊子搞起~；烧烤一般般，泰酒还似不错滴~； 喝酒就脸红的人都搞了一瓶，哎呦，不错哦~&lt;br /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/3.jpeg&#34; alt=&#34;泰酒&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;买票出发&#34;&gt;买票出发&lt;/h3&gt;
+
+&lt;p&gt;吃完夜宵，打了一辆的士来到出发的地点&amp;ndash;红门，夜比较深，当时已近过了凌晨了，排队买票上山的人还是挺多的。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/4.jpeg&#34; alt=&#34;排队买票&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;登山途中&#34;&gt;登山途中&lt;/h3&gt;
+
+&lt;p&gt;在途中买了登山杖(就是guaizhang)，才2元，感觉泰山人好淳朴的，爬到山顶，煎饼也只要6块左右吧，食材什么的运上去也挺累的，（以前爬的崀山，海拔还没有泰山高，一瓶水都要10元，好坑爹~）泰人好耿直呀~。
+&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/5.jpeg&#34; alt=&#34;泰山上的小卖部&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;中途遇到一家人登山，带着3小孩，小孩子一点睡意都没有！好赞~&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/6.jpeg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;‘锁福’ 一颗被锁围住的树，祈福~，如老树的岁月一样长长久久吧~。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/7.jpeg&#34; alt=&#34;登山遇到一颗上来各种锁的树&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;到达中天门，大约是半夜三更了把，哈哈，才爬玩路程的一半，后面还有的爬，一段比较陡的在后头等着~&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/8.jpeg&#34; alt=&#34;中天门&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/9.jpeg&#34; alt=&#34;中天门&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;后面的路程比较艰难，几乎是边走边休息，断断续续爬完，不过爬的挺踏实的，一步一个脚印，好不容易来到南天门(貌似这个是登上天堂的入口啊~)，租了一件军大衣，哈哈，一不小心穿着个军大衣成仙囖~。&lt;/p&gt;
+
+&lt;h3 id=&#34;登峰看日出&#34;&gt;登峰看日出&lt;/h3&gt;
+
+&lt;p&gt;过了南天门，还要爬个几百米，上面很多的庙，还有一条·天街·，上面有旅馆，救治点，这貌似都是天亮的时候看到的，在上山的路上其实有很多风景挺好看的，就是太黑了，相机才玩不久，不会调，只会设个自动挡，一顿乱拍，虽然能对上焦，但是拍出来的都是些星星点点的，效果很搓，也许是相机比较挫吧~，哈哈。&lt;br /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/10.jpeg&#34; alt=&#34;月亮照路&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;登山观看日出的人貌似还是比较多的，节假日应该人更多吧。有个地方是好的拍摄地点，一个是玉皇顶上寺庙上；还有个最佳位置是在日观峰的拱北石处，人比较多，貌似那边要收费！自己在各种石头中找了一个还不错的位置。等待着日出。(秋天日出的时间在5点45分左右)&lt;br /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/11.jpeg&#34; alt=&#34;等待日出&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;弯弯的月亮还在熟睡，火红的太阳正在苏醒~ 神圣的时刻就要来鸟！&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/12.jpeg&#34; alt=&#34;等待观日出&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;日出前的云海，天边渐渐被染红~！红光出现的一线天，好激动~。哈哈，本来想把这些留在心头的，但是既然是转眼即逝的，美好的东西，最珍贵的一刻，就应该记录下来，待日后再看回忆，珍惜好当下。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/0.jpeg&#34; alt=&#34;日出前的全景&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/13.jpeg&#34; alt=&#34;日出前的云海&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/14.jpeg&#34; alt=&#34;看云海等日出&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/15.jpeg&#34; alt=&#34;云海&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/16.jpeg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/17.jpeg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/18.jpeg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/19.jpeg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/20.jpeg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/21.jpeg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/22.jpeg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&amp;hellip;.当时看到这个可爱的太阳正在冉冉升起，有种想触碰下的赶脚~ 情不自禁的想摸。 哈哈，手贱了~&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/23.jpeg&#34; alt=&#34;手贱&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/24.jpeg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/25.jpeg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/26.jpeg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/27.jpeg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/28.jpeg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/29.jpeg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/30.jpeg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/31.jpeg&#34; alt=&#34;日出东方&#34; /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/32.jpeg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/33.jpeg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;如果下次有机会想再看一次。
+&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/00.jpeg&#34; alt=&#34;日出全景&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;逛庙&#34;&gt;逛庙&lt;/h3&gt;
+
+&lt;p&gt;来到玉皇顶上的寺庙里，应该是到顶了。&lt;br /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/34.jpeg&#34; alt=&#34;&#34; /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/35.jpeg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;海拔1545米~&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/36.jpeg&#34; alt=&#34;顶峰-庙-锁&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;然后在顶上一边看云海，一边吃带的早餐。哈哈，近距离看棉花糖，胃口大开。&lt;br /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/37.jpeg&#34; alt=&#34;近距离棉花糖&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/38.jpeg&#34; alt=&#34;日出后的云海1&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/39.jpeg&#34; alt=&#34;日出后的云海2&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;大约太阳升起半个多小时左右，天空出现了一条水平线，搭载着云，感觉整座山在云海中漂浮前进着。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/40.jpeg&#34; alt=&#34;地平线&#34; /&gt;&lt;br /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/41.jpeg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;各种棉花糖在飘动，真有种腾云驾雾，成仙的赶脚。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/42.jpeg&#34; alt=&#34;棉花糖&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;蓝色的海平线~
+&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/000.jpeg&#34; alt=&#34;棉花糖&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;到此一游&#34;&gt;到此一游&lt;/h3&gt;
+
+&lt;p&gt;最后在石头上的合影。哈哈~ 有点冷~&lt;br /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/43.jpeg&#34; alt=&#34;me&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;下山&#34;&gt;下山&lt;/h3&gt;
+
+&lt;p&gt;下山的时候看到远处的观景台，简直美极了，但是木有去。&lt;br /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/44.jpeg&#34; alt=&#34;me&#34; /&gt;&lt;br /&gt;
+下山路上有当地人挑着扁担上山的，还有老人登上。
+&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/51.jpeg&#34; alt=&#34;me&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;按原路返回，到了中天门后坐上大巴车下山了，打了一辆的士来到岱庙附近吃饭，吃了特色的煎饼，把菜一顿乱裹着就啃掉了，貌似啃几个就饱了，再次喝点泰酒(升级版~)，补充能量。&lt;/p&gt;
+
+&lt;h3 id=&#34;岱庙&#34;&gt;岱庙&lt;/h3&gt;
+
+&lt;p&gt;岱庙在泰山脚下，很清闲的地方， 泰山地址博物馆，存放了泰山上动植物，石头标本；&lt;br /&gt;
+&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/46.jpeg&#34; alt=&#34;me&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/45.jpeg&#34; alt=&#34;me&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/47.jpeg&#34; alt=&#34;me&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;各种花岗岩，下山途中捡的石头，分不清是属于那种。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/48.jpeg&#34; alt=&#34;me&#34; /&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;上善若水&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/49.jpeg&#34; alt=&#34;me&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;偶尔见到几只松鼠。。。。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/50.jpeg&#34; alt=&#34;me&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;最后跟着一个导游团听了一会孔子的故事~，然后休息了一会儿赶火车了。&lt;/p&gt;
+
+&lt;h3 id=&#34;结束&#34;&gt;结束&lt;/h3&gt;
+
+&lt;p&gt;登泰山(貌似24多个小时都没睡过~)，很幸运的看到了美丽的日出，还有云海。下次如果还有机会来爬的话，希望能看到日落，哈哈，其实不同天气登山都无所谓吧，好好感受大自然的魅力~。泰山，再会~！&lt;/p&gt;</description>
+      
+    </item>
+    
+    <item>
+      <title>成都行</title>
+      <link>https://weege126.github.io/post/2013-12-10-chengdu/</link>
+      <pubDate>Tue, 10 Dec 2013 01:16:30 +0800</pubDate>
+      
+      <guid>https://weege126.github.io/post/2013-12-10-chengdu/</guid>
+      
+        <description>&lt;p&gt;由于入职时间的改变，有几天的时间空闲下来了，本来就没有准备的行程，以前没有想过的户外运动，本来是想体验一把的，趁这段时间，和老宋说好过去玩后，当天晚上啥都没有准备，直接就A过去了。这一趟还是挺有意思的，写这篇的时候，此刻正在老宋住的地方，准备着回北京的路上，写完后，收拾心情，准备好好工作。人生也许有很多的第一次，才能使生活变得更加的有意义吧。&lt;/p&gt;
+
+&lt;h2 id=&#34;出发&#34;&gt;出发&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://f.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=dc8f5c765b82b2b7a39f39c10196bad2/ac345982b2b7d0a2713fc0efc9ef76094a369aca.jpg?referer=e925015d38292df5ced49825e6c8&amp;amp;x=.jpg&#34; alt=&#34;看灰机&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;长这么大，还是头一次坐灰机，由于不是节假日出行，灰机票比平常的价格少了很多，来到机场登机处，看到外头灰机，用手机一顿乱拍，&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://d.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=b2663aad74094b36df921be893f70de4/caef76094b36acafad16528e7ed98d1000e99cca.jpg?referer=3ffaad2236a85edfa39bca13dcc8&amp;amp;x=.jpg&#34; alt=&#34;离开北京&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;离开的时候，正好是晚上，在灰机上看整个北京城，看着一些灯光如同血液一般在流动；一座精力充沛的城市，夹杂着多少人的梦想到此北漂。只怪自己的手机不给力呀，照的效果比较暗~~~&lt;/p&gt;
+
+&lt;p&gt;下了灰机，一路上和的哥闲聊成都最近PM2.5都爆表了，来到老宋住的地方。老宋一个大好人啊，星期五请病假，陪我一起成都玩，来这边啥都没准备，就A过来了，后面去阿坝羌族自治州阿尔沟玩，装备啥的，多亏他一路的照顾&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&#34;成都软件园&#34;&gt;成都软件园&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://f.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=3f1d939bf0d3572c62e29cd9ba28121a/63d9f2d3572c11df9c207b51612762d0f603c2cb.jpg?referer=2f80a04ddbf9d72a4e73242d2ec9&amp;amp;x=.jpg&#34; alt=&#34;成都软件园&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;星期五中午在成都软件园闲逛，整个园区好大，都是统一管理的，一条条大道连通在一起;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://h.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=7d07a8eda60f4bfb88d09e51337409cd/5bafa40f4bfbfbed5461f10d7af0f736afc31f8c.jpg?referer=612af54a2a381f30c70eb8995983&amp;amp;x=.jpg&#34; alt=&#34;成都软件园&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://d.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=90d17643a38b87d65442ab1a37335905/8601a18b87d6277fbde2f64a2a381f30e824fcd4.jpg?referer=0369b7610bf79052b608730e3cca&amp;amp;x=.jpg&#34; alt=&#34;银杏&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;一路上的银杏树很多，恰好是吃中饭的时间，看到好多的IT猿/媛倍感情切，吃完饭走走，真的好休闲的样子。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://g.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=2aa9dc9fa1cc7cd9fe2d34dc093a5002/2fdda3cc7cd98d1087efcb43233fb80e7bec908d.jpg?referer=0bb739514b540923f37e564ed083&amp;amp;x=.jpg&#34; alt=&#34;idea coffee&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;点子萌发碰撞的地方~&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://b.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=7c11165392ef76c6d4d2fb2ead2d8cc7/e61190ef76c6a7ef57d76c54fffaaf51f2de66cb.jpg?referer=1b47575caad3fd1f6f1e960ac2c9&amp;amp;x=.jpg&#34; alt=&#34;i love this city&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;软件园旁边的小区公园，正在建设中&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&#34;西部智谷&#34;&gt;西部智谷&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://c.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=a919425e8501a18bf4eb124aae147635/b21c8701a18b87d605b26f6d050828381e30fdd4.jpg?referer=6d87d1e6442309f7be7899223bca&amp;amp;x=.jpg&#34; alt=&#34;去西部智谷&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;乘坐公交去西部智谷见大学室友007，有些公交是木头车，挺好玩的，haha~ 坐了20多站路，第一次做这么多的站，一路看到好奇的建筑，就问老宋。哈哈~~&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://c.hiphotos.bdimg.com/album/s=550;r=90;q=90;c=xiangce,100,100/sign=9327e48c34d3d539c53d0fc60abc9b6d/8644ebf81a4c510f833426686259252dd52aa5d4.jpg?referer=5639c0efc9ef7609651cadaf03ca&amp;amp;x=.jpg&#34; alt=&#34;西部智谷&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://c.hiphotos.bdimg.com/album/s=550;r=90;q=90;c=xiangce,100,100/sign=d6efc4932d2eb938e86d7af7e559f708/caef76094b36acafacd5518e7ed98d1001e99c8f.jpg?referer=3e39ae2236a85edfa39bcb13dc85&amp;amp;x=.jpg&#34; alt=&#34;停车场&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;到了西部智谷已经是下午4点左右了，一座新的工业园区吧。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://a.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=50aafeb633adcbef05347e039c945fe0/0df431adcbef7609cb3e5eed2cdda3cc7cd99e8f.jpg?referer=60f66b67be315c601a825edfda85&amp;amp;x=.jpg&#34; alt=&#34;吃晚饭&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;哈哈，其实我是来蹭吃的~，一不小心宰了007一顿，第一次和煮啤酒，和小时候喝的甜酒差不多，好喝。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://a.hiphotos.bdimg.com/album/s=550;r=90;q=90;c=xiangce,100,100/sign=26b42bf648ed2e73f8e98629b73ad3b6/cefc1e178a82b9015a5e0741718da9773812efd5.jpg?referer=47e2e09dabec8a134d0d63d049cb&amp;amp;x=.jpg&#34; alt=&#34;看公交牌&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;离开的时候晚上9点，貌似只有最后一班末班车了，最后由于第二天需要去阿坝羌族自治州阿尔沟玩，急于回去准备，所以中途打了一辆的士回到老宋住的地方。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&#34;第一次徒步-阿尔沟&#34;&gt;第一次徒步&amp;ndash;阿尔沟&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://a.hiphotos.bdimg.com/album/s=550;r=90;q=90;c=xiangce,100,100/sign=d84638c267380cd7e21ea2e8917fdf09/37d3d539b6003af352bf1b12372ac65c1038b6bf.jpg?referer=3cdfc4932d2eb938b57a4fc2f255&amp;amp;x=.jpg&#34; alt=&#34;集合&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;来这边玩，啥都没准备就A过来了，第一次徒步，装备都是借的老宋室友的，晚上7点到达集合地方准备出发，看到同行的女生背的包比我的大多了，倍感羞愧。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://a.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=b664e27a5143fbf2c12ca6268045bbbd/11385343fbf2b211e32b423cc88065380cd78ebf.jpg?referer=95e5155392ef76c689c5ce1bea55&amp;amp;x=.jpg&#34; alt=&#34;向导家&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://c.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=bf01444238f33a879a6d001ff6676105/b7003af33a87e9505f12341e12385343fbf2b4bf.jpg?referer=45164b7a99504fc2fb488535f455&amp;amp;x=.jpg&#34; alt=&#34;向导家正在杀猪&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://c.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=29f1f804f01fbe09185ec3115b5b7d0e/0b46f21fbe096b63a41e99220e338744ebf8acb9.jpg?referer=c319659fa344ad3477a8b2b70c57&amp;amp;x=.jpg&#34; alt=&#34;图腾&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;到达当地向导家里，正在杀一头猪；这里的空气真心好~！羊角是羌族人崇拜的图腾。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://c.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=353e1b66ba99a9013f355b332dae7b46/e824b899a9014c084408efd7087b02087bf4f495.jpg?referer=51c5f804f01fbe094549f624348b&amp;amp;x=.jpg&#34; alt=&#34;准备出发&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;哈哈，吃玩饭，准备出发。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://c.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=19c131bffe039245a5b5e10ab7afd5ff/c2fdfc039245d6880e3075d6a6c27d1ed21b2496.jpg?referer=91f409afa964034f56daf736848c&amp;amp;x=.jpg&#34; alt=&#34;车&#34; /&gt;
+&lt;img src=&#34;http://d.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=18f20e419045d688a702b2a194f90c23/fd039245d688d43f5c9b56807f1ed21b0ef43b96.jpg?referer=20e25926014f78f0d91cafc3858c&amp;amp;x=.jpg&#34; alt=&#34;到达徒步开始的地方&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;用载猪的车到达徒步开始的地方。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://d.hiphotos.bdimg.com/album/s=550;r=180;q=90;c=xiangce,100,100/sign=2040bd80d762853596e0d224a0d404fb/18d8bc3eb13533fa399b545caad3fd1f41345b97.jpg?referer=690bfcb619d5ad6ef3ee51daa58d&amp;amp;x=.jpg&#34; alt=&#34;过河&#34; /&gt;
+&lt;img src=&#34;http://b.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=8de1c3efc9ef7609380b999a1ee6d2f1/30adcbef76094b362dbadc9fa1cc7cd98d109d9c.jpg?referer=18304e735e6034a870f58db1db72&amp;amp;x=.jpg&#34; alt=&#34;冰&#34; /&gt;
+&lt;img src=&#34;http://f.hiphotos.bdimg.com/album/s=550;r=180;q=90;c=xiangce,100,100/sign=dfeeb1546f224f4a5399731639cce26f/e850352ac65c10383e5609b0b0119313b07e899c.jpg?referer=22d727208735e5ddc93b90eff772&amp;amp;x=.jpg&#34; alt=&#34;过河&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;过河的时候一不小心踩到水里面~&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://e.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=c6046151b27eca80160539e2a118e6e0/9213b07eca80653878c2636195dda144ad34829c.jpg?referer=d3fa3c599f16fdfa817bf3deee72&amp;amp;x=.jpg&#34; alt=&#34;阳光&#34; /&gt;
+&lt;img src=&#34;http://h.hiphotos.bdimg.com/album/s=550;r=180;q=90;c=xiangce,100,100/sign=803d264537fae6cd08b4ab643f887d19/3812b31bb051f819910ec438d8b44aed2e73e79d.jpg?referer=b7fafab8533d269777c43d6d4173&amp;amp;x=.jpg&#34; alt=&#34;枝头&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;午后的阳光照在山头上。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://g.hiphotos.bdimg.com/album/s=550;r=180;q=90;c=xiangce,100,100/sign=54bd977a0ed79123e4e094719d0f2bbf/fcfaaf51f3deb48f126966acf21f3a292df57844.jpg?referer=ae73d75d97cad1c889acc917b85a&amp;amp;x=.jpg&#34; alt=&#34;继续前行&#34; /&gt;
+&lt;img src=&#34;http://b.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=75c1636195dda144de096cb7828ca19f/902397dda144ad34209440f5d2a20cf431ad859d.jpg?referer=8ac846cd8e5494eede353a29e373&amp;amp;x=.jpg&#34; alt=&#34;继续走&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;向导走的很快，继续前行，这次的路线相对比较短，对于我这只菜鸟级驴友很适合，哈哈~~&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://c.hiphotos.bdimg.com/album/s=550;r=180;q=90;c=xiangce,100,100/sign=fcda89cb9c510fb37c197792e908baa8/f9198618367adab450fadc3189d4b31c8701e49e.jpg?referer=3c80abac3f6d55fb9cd143164474&amp;amp;x=.jpg&#34; alt=&#34;过河&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;听老宋说以前没有这么多木头的，只能一只手可以扶着横着走过来。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://c.hiphotos.bdimg.com/album/s=550;r=180;q=90;c=xiangce,100,100/sign=8316b8d2f403738dda4a0c278320c26c/622762d0f703918f9afbfab8533d269759eec49e.jpg?referer=ee3dda76369b033b759fc9ea2474&amp;amp;x=.jpg&#34; alt=&#34;灌木林&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://d.hiphotos.bdimg.com/album/s=550;r=180;q=90;c=xiangce,100,100/sign=fae64e7cb33533faf1b6932b98e88f22/0ff41bd5ad6eddc4b2e473893bdbb6fd52663345.jpg?referer=50271986b54543a9ac0ccffc7d5c&amp;amp;x=.jpg&#34; alt=&#34;灌木林&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://g.hiphotos.bdimg.com/album/s=550;r=180;q=90;c=xiangce,100,100/sign=d5ed70c9a41ea8d38e227401a7314273/dcc451da81cb39db50eaa024d2160924ab18309e.jpg?referer=a5be7064cdfc1e17a4a8b9017075&amp;amp;x=.jpg&#34; alt=&#34;阳光照在灌木林上&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;来到灌木林，冬天了，树木上长满了苔藓。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://a.hiphotos.bdimg.com/album/s=550;r=180;q=90;c=xiangce,100,100/sign=4e215a91ff1f4134e437057b1524e7f7/80cb39dbb6fd52663829fb66a918972bd4073646.jpg?referer=27c3ec558882b90164baf603725d&amp;amp;x=.jpg&#34; alt=&#34;来到扎营的地点&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://e.hiphotos.bdimg.com/album/s=550;r=90;q=90;c=xiangce,100,100/sign=f66a415be9c4b7453094b713ffc76c2a/d01373f082025aaf5830b9b9f9edab64034f1a46.jpg?referer=5db47594257f9e2f29222838665d&amp;amp;x=.jpg&#34; alt=&#34;搭帐篷&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://d.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=3b4aeb9abe3eb13540c7b7be9625d9ee/18d8bc3eb13533fa39cb545caad3fd1f41345b47.jpg?referer=695bfcb619d5ad6ef3ee51daa55d&amp;amp;x=.jpg&#34; alt=&#34;三人帐篷&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://h.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=f4ada6a534d12f2eca05ae657ff9a45f/55e736d12f2eb9381411bd80d7628535e5dd6f40.jpg?referer=13c3231acebf6c81ae2019d8c95e&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;来到扎营的地点，这个地方貌似在一个峡谷里头，空气很清新。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://e.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=94d85b434e086e066ea83f4e32330ac9/a8014c086e061d95263af04a79f40ad162d9ca40.jpg?referer=de5e4c4b6963f624454a0c33365e&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;搭好帐篷晒阳光&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://b.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=554f7506e9f81a4c2232eccce7111164/8644ebf81a4c510f808525686259252dd42aa57b.jpg?referer=5588c3efc9ef7609651cacaf0319&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;脚湿了，烤火中~~~&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://d.hiphotos.bdimg.com/album/s=550;r=90;q=90;c=xiangce,100,100/sign=b8594213fa1986184547ef817ad65c4e/eac4b74543a98226c4beec558882b9014a90eb41.jpg?referer=70b6f89360d9f2d3790611df555f&amp;amp;x=.jpg&#34; alt=&#34;抗木头&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;扛木头，给力！&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://g.hiphotos.bdimg.com/album/s=550;r=90;q=90;c=xiangce,100,100/sign=cf065f765b82b2b7a39f39c10196b9d2/342ac65c1038534395b040539113b07eca808841.jpg?referer=bb207777e7dde711bec576c6e85f&amp;amp;x=.jpg&#34; alt=&#34;杀鸡&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;杀本地的土鸡，准备晚上的烧烤材料，&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://c.hiphotos.bdimg.com/album/s=550;r=270;q=90;c=xiangce,100,100/sign=121d4685a5efce1bee2bc8cf9f6a81e3/a71ea8d3fd1f413415f8000d271f95cad0c85ef1.jpg?referer=d328b1883bdbb6fd7c4cd1169aaf&amp;amp;x=.jpg&#34; alt=&#34;星星帐篷&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;晚上的时候特别漂亮，天空中好多星星~，可惜当时晚上烧烤的时候喝晕了(本来酒量就不行)，直接进帐篷裹着睡袋就睡了，晚上睡的时候，由于没有把垫子弄好，导致半夜屁股有点冷，第一次在荒郊野岭和基友同睡，一起在火堆旁吃烧烤，唱歌~ 那个晚上非常难忘~！哈哈~~&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://h.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=aea8e78c34d3d539c53d0fc60abc986d/14ce36d3d539b6005db1c8c5eb50352ac65cb741.jpg?referer=1caea6a534d12f2e97129b50f15f&amp;amp;x=.jpg&#34; alt=&#34;霜&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://f.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=ce755eed2cdda3cc0fe4b82531d2483c/adaf2edda3cc7cd90853f3ab3b01213fb80e9142.jpg?referer=db9c7ff3c91349542709dd54df40&amp;amp;x=.jpg&#34; alt=&#34;冰&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;早上起来，路上都结了一层霜，河水都结冰了。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://c.hiphotos.bdimg.com/album/s=550;r=90;q=90;c=xiangce,100,100/sign=a8e52b71ca95d143de76e42643cbf03f/b7fd5266d0160924415a6569d60735fae6cd3441.jpg?referer=60c04b434890f6035da7a9777440&amp;amp;x=.jpg&#34; alt=&#34;烤火&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;烤火取暖&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://g.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=d661804c0ef3d7ca08f63f73c224cf34/730e0cf3d7ca7bcb4405005dbc096b63f624a842.jpg?referer=fe3d38c267380cd7bf0997dd0840&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://b.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=b85d2f16544e9258a23486ebacb9a065/dc54564e9258d10902a06ec0d358ccbf6c814d05.jpg?referer=7982318cc1fdfc03bc6fd688ab1b&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;早晨的阳光，11点左右照到峡谷里头。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://b.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=67615a91ff1f4134e437057b1524e4f7/a9d3fd1f4134970af131d75d97cad1c8a7865d06.jpg?referer=40b4cb99b4fd5266fe3c09249b1c&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;
+&lt;img src=&#34;http://c.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=32ea2301af4bd11300cdb7376a94d532/d043ad4bd11373f0787da8eda60f4bfbfbed0406.jpg?referer=49637543a38b87d609559e2f641d&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;早上11点左右，阳光开始照射到峡谷中，我们安营扎寨的地方，看着阳光，心头暖暖的。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://h.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=5a6f341e1238534388cf8724a328c143/c75c10385343fbf2dd546151b27eca8065388f4c.jpg?referer=ea70179fe51190ef58eca7efe942&amp;amp;x=.jpg&#34;&gt;enter image description here&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://e.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=6ee43f53708b4710ca2ffdc9f3f5b2c0/cc11728b4710b9121cb9318cc1fdfc039245224c.jpg?referer=790e235171f082027485a40f8e42&amp;amp;x=.jpg&#34;&gt;enter image description here&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://c.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=0013415be9c4b7453094b713ffc76f2a/b219ebc4b74543a988603dbe1c178a82b901144c.jpg?referer=084e89b608d162d9dcf9572c5443&amp;amp;x=.jpg&#34;&gt;enter image description here&lt;/a&gt;
+晒帐篷，嘿嘿，偷拍。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://b.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=30634e735e6034a82de2b884fb283869/bd315c6034a85edf24f739514b540923dd54754d.jpg?referer=367b0a9ed300baa1e33b728bb343&amp;amp;x=.jpg&#34; alt=&#34;山头&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在一个小山头上看扎营地，雪山，下次有机会一定要去。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://a.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=7d5f155392ef76c6d4d2fb2ead2d8cc7/e61190ef76c6a7ef56996f54fffaaf51f3de6601.jpg?referer=1a09545caad3fd1f6f1e970ac21f&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://a.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=c465c4932d2eb938e86d7af7e559f408/37d12f2eb9389b50df4027208735e5dde7116e01.jpg?referer=41da3efd6e81800a37f2bc3eca1f&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://a.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=b95873893bdbb6fd215be523391fda25/80cb39dbb6fd52663894fb66a918972bd4073601.jpg?referer=277eec558882b90164baf6037200&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://f.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=2bf828f648ed2e73f8e98629b73ad0b6/dbb44aed2e738bd4ae9e7543a38b87d6277ff901.jpg?referer=487940b941166d22616020a4471f&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://c.hiphotos.bdimg.com/album/s=550;r=180;q=90;c=xiangce,100,100/sign=a4b4a024d2160924d825a21ee43c47c7/b8014a90f603738dbb3ecb50b11bb051f819ec48.jpg?referer=985a916560d0f703bfa5a0ec4c46&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://e.hiphotos.bdimg.com/album/s=550;r=180;q=90;c=xiangce,100,100/sign=0f5a423cc88065387feaa416a7e6d379/cf1b9d16fdfaaf516f9746cd8e5494eef01f7a48.jpg?referer=dd7d6548324e251fbbe0d1c8c646&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://g.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=f6cad75d97cad1c8d4bbfc224f051634/241f95cad1c8a7860f938d7c6509c93d70cf5003.jpg?referer=cfa0595a952bd4071bd0e6cd9001&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;收拾完，在附近的小溪丛林里头玩耍。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://g.hiphotos.bdimg.com/album/s=550;r=90;q=90;c=xiangce,100,100/sign=f7726548324e251fe6f7e4fd97bdbb2a/9d82d158ccbf6c81364ceb9abe3eb13533fa404d.jpg?referer=60ce267d8594a4c25334d21ba043&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://f.hiphotos.bdimg.com/album/s=550;r=90;q=90;c=xiangce,100,100/sign=eb48c8b13887e9504617f3692003217e/d8f9d72a6059252d8962da76369b033b5bb5b94f.jpg?referer=167e5eed2cdda3cc52f38d100745&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;小溪边上找的石子&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://c.hiphotos.bdimg.com/album/s=550;r=90;q=90;c=xiangce,100,100/sign=a221feb633adcbef05347e039c945ce0/faf2b2119313b07eb803977a0ed7912397dd8c02.jpg?referer=e26c8484a5efce1bb33cfdfaec00&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;看到暖暖的阳光丛林小溪，情不自禁自拍一张，哈哈，有点屌丝~&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://c.hiphotos.bdimg.com/album/s=550;r=90;q=90;c=xiangce,100,100/sign=73973abec1cec3fd8f3ea770e6b3a602/c8177f3e6709c93dba4ac9859d3df8dcd100540c.jpg?referer=ff7f148f79899e5121990f249402&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://e.hiphotos.bdimg.com/album/s=550;r=180;q=90;c=xiangce,100,100/sign=c28f9921f4246b607f0eb271dbc36871/ac345982b2b7d0a27072c3efc9ef76094b369a0d.jpg?referer=e868025d38292df5ced49925e603&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://h.hiphotos.bdimg.com/album/s=550;r=180;q=90;c=xiangce,100,100/sign=80458b730855b31998f982707392f01b/1c950a7b02087bf42557909bf0d3572c11dfcf0d.jpg?referer=d9a299220e338744c5d21a4c2903&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;背上装备准备回程,路上老宋爬树。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://d.hiphotos.bdimg.com/album/s=550;r=180;q=90;c=xiangce,100,100/sign=d842450741a98226bcc12b22bab9cb3c/0bd162d9f2d3572c22595bae8813632762d0c30d.jpg?referer=d87ee80e530fd9f9f90060592d03&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;天天向上。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://d.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=3e95b376950a304e5622a0ffe1f3d6bb/4034970a304e251f5640238aa586c9177f3e5309.jpg?referer=7577a024d21609248532972b9d07&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;途中，向导打到的獾猪，沦为战利品，轮番拍照~~&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://b.hiphotos.bdimg.com/album/s=550;r=180;q=90;c=xiangce,100,100/sign=01562342b8a1cd1101b672258929bac1/c995d143ad4bd1138a7a704058afa40f4bfb0509.jpg?referer=725e415e8501a18ba9fc277f6308&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;途中，俩老外骑着山地自行车在山谷里头骑行，佩服啊~，经过让路的时候，“hello,谢谢”，“hi,不客气~”。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://c.hiphotos.bdimg.com/album/s=550;r=180;q=90;c=xiangce,100,100/sign=a27fc6d9013b5bb5bad720fb06e8a704/00e93901213fb80ef1a7a6a534d12f2eb938944a.jpg?referer=571fa40c9058d1099df49c82d448&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;太阳渐渐下上。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://b.hiphotos.bdimg.com/album/s=550;r=180;q=90;c=xiangce,100,100/sign=3bde415be9c4b7453094b713ffc76c2a/03087bf40ad162d9c358a56e13dfa9ec8a13cd0a.jpg?referer=3db87506e9f81a4c7f25d9f92b08&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;天上白云一朵朵，地上牛粪一坨坨。哈哈~~&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://h.hiphotos.bdimg.com/album/s=550;q=90;c=xiangce,100,100/sign=6060e39dabec8a13101a57e5c738e0b2/10dfa9ec8a136327559c0541938fa0ec08fac74b.jpg?referer=e066921b272dd42a061e349b2149&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;到达向导家里，开吃~！&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://b.hiphotos.bdimg.com/album/s=550;r=90;q=90;c=xiangce,100,100/sign=6a5fbb160b23dd542573a76de132c1e3/b58f8c5494eef01f9b65dfb7e2fe9925bc317d4b.jpg?referer=708455c4cb177f3e4923c93dbb49&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;当地一位老奶奶卖的好小的柿子，走的时候，貌似都买了，还不错~！&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://d.hiphotos.bdimg.com/album/s=550;r=90;q=90;c=xiangce,100,100/sign=0377318cc1fdfc03e178e3bde404f5a9/7e3e6709c93d70cff04c6d7ffadcd100baa12b0a.jpg?referer=2d4689cb9c510fb3210e42a79508&amp;amp;x=.jpg&#34; alt=&#34;enter image description here&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;离开时，拍的。再见~！&lt;/p&gt;
+
+&lt;h2 id=&#34;感悟&#34;&gt;感悟&lt;/h2&gt;
+
+&lt;p&gt;以后还是好好准备去做，做事别太仓促了，不过该做的，说做就做吧(因为有些时候，时间是不等人的)，即使是错的，在途中慢慢意识到，也有可能在正确的时间回到正常的轨道上。&lt;/p&gt;</description>
+      
+    </item>
+    
+    <item>
+      <title>像黑客一样写博客</title>
+      <link>https://weege126.github.io/post/2013-01-12-hello/</link>
+      <pubDate>Tue, 01 Jan 2013 20:26:23 +0800</pubDate>
+      
+      <guid>https://weege126.github.io/post/2013-01-12-hello/</guid>
+      
+        <description>&lt;p&gt;最近一段时间想整个博客，来记录一些事情，感觉记忆力不如从前了，想起以前有位老程序员，身边总是挂一个小挎包，装了一些小便条(todo list)；我想人的精力是有限的，当做完一件事， 过段时间，可能忘了曾今做过的事，说的话；本来想用worldpress，但是貌似需要申请空间，不同以往了，现在都是收费的了，无意间发现了&lt;a href=&#34;http://octopress.org/docs/&#34;&gt;octopress&lt;/a&gt;,这是个好东东啊，轻量级的，不像worldpress臃肿，不需要使用mysql,通过git直接可以部署到github pages上搭建一个副本。也可以部署到&lt;a href=&#34;http://www.heroku.com/&#34;&gt;heroku&lt;/a&gt;；国内好像也有对octopress的部署支持。&lt;/p&gt;
+
+&lt;p&gt;在开始写过程之前先说下为毛这样做，其实也是觉得对新鲜的东东比较感兴趣吧！&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;用octopress写博客，就像网上说的-像黑客一样写博客，貌似需要那么一点伪技术，看上去就像geek那样啦~~ 呵呵。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;整个服务的搭建是完全免费的，也许对于我这个比较穷困专业挨踢男来说是一个开源节流的渠道吧。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;使用octopress来写博客，支持&lt;a href=&#34;http://wowubuntu.com/markdown/basic.html&#34;&gt;markdown&lt;/a&gt;,和&lt;a href=&#34;http://en.wikipedia.org/wiki/Haml&#34;&gt;haml&lt;/a&gt;,
+个人喜欢使用前者，github上可以直接对其编辑；而且主要的是用命令来发布，这动作很cool,like it~!,感觉比较碉，哎呦，不错哦~！
+可以使用&lt;code&gt;rake -T&lt;/code&gt;来查看信息,发布常用的命令:
+&lt;code&gt;rake install[theme]  rake preview  rake new_post[title]  rake generate  rake deploy&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;最后是可以离线写博客还是挺爽的，用git对文章进行备份，以及静态页面生成，style也不错。&lt;/p&gt;
+
+&lt;p&gt;这里不具体的介绍octpress搭建在gitHub的过程，可以查看octpress的在线文档，说的很清楚的。
+不过在deploy的时候可能需要ssh key,在终端执行：
+&lt;code&gt;[[ -f ~/.ssh/id_rsa.pub ]] || ssh-keygen -t rsa&lt;/code&gt;
+将其显示:
+&lt;code&gt;[[ -f ~/.ssh/id_rsa.pub ]] &amp;amp;&amp;amp; cat ~/.ssh/id_rsa.pub&lt;/code&gt;
+然后进入&lt;a href=&#34;https://github.com/account/ssh&#34;&gt;https://github.com/account/ssh&lt;/a&gt;中点击Add another public key，粘贴前面步骤复制的信息，请格外注意，不要在Title中填写内容，直接将复制的内容粘贴到Key中，然后点击：Add Key即可。
+还可以参考：&lt;a href=&#34;https://help.github.com/articles/generating-ssh-keys&#34;&gt;github上的帮助文档&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;由于自己对ruby不熟悉，但是想使用tag插件，不想使用octpress自带的分类插件，所以在网上找了下，感觉&lt;a href=&#34;http://mrzhang.me/&#34; title=&#34;wǒ_is神仙&#34;&gt;wǒ_is神仙&lt;/a&gt;童themes风格挺好的，于是采用了&lt;a href=&#34;https://github.com/jsw0528/octopress/tree/mrzhang_me/&#34;&gt;他Fork的Octopress&lt;/a&gt;，谢谢他的开源，与原始版本的的区别如下：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://github.com/jsw0528/octopress/blob/mrzhang_me/.rvmrc&#34;&gt;.Rvmrc&lt;/a&gt;&lt;br /&gt;
+神仙同学用的是Ruby1.9.3，Octopress最低要求1.9.2(采用rvm安装ruby,比较方便)&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://github.com/jsw0528/octopress/blob/mrzhang_me/Gemfile&#34;&gt;Gemfile&lt;/a&gt;&lt;br /&gt;
+源改成了ruby.taobao.org的，去掉了部分gem的版本号限制&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://github.com/jsw0528/octopress/blob/mrzhang_me/Rakefile&#34;&gt;Rakefile&lt;/a&gt;&lt;br /&gt;
+这个文件可以修改自己喜欢的编辑方式(haml,markdown)，octopress默认使用markdown,作者采用haml,
+修改了时区，降低主题对custom目录的依赖&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://github.com/jsw0528/octopress/blob/mrzhang_me/_config.yml&#34;&gt;_config.yml&lt;/a&gt;&lt;br /&gt;
+定制化配置信息，日期格式、永久链接、微博，评论(默认支持disqus,可以使用国内的多说)等等&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://github.com/jsw0528/octopress/blob/mrzhang_me/plugins/sh_js.rb&#34;&gt;Plugins/sh_js.rb&lt;/a&gt;&lt;br /&gt;
+代码高亮插件(plugins是用ruby写的插件库，自己可以扩展)&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://github.com/jsw0528/octopress/blob/mrzhang_me/plugins/tag_generator.rb&#34;&gt;Plugins/tag_generator.rb&lt;/a&gt;&lt;br /&gt;
+支持中文的Tag插件&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://github.com/jsw0528/octopress/blob/mrzhang_me/.themes/blog/&#34;&gt;.Themes/blog/&lt;/a&gt;&lt;br /&gt;
+神仙同学的博客主题(./themes主题风格文件夹，可以自己定制)&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Tips: 在看source(来自第7条所说文件同rake install[theme]复制生成的)源码时，发现采用缓存(&lt;a href=&#34;http://www.cnblogs.com/brainmao/archive/2011/09/27/2193495.html&#34;&gt;Cache Manifest&lt;/a&gt;)，
+主要在页面中通过 iframe 来引用offline-cache.html这个静态文件，其中assets.manifest缓存了样式，图片，js信息，
+以达到我们不缓存当面页面，只缓存我们希望缓存文件的目的，所以有时候你对其他页面修改了，
+比如修改该了post的文件名的话，会以为没有更新成功的情况，其实已经在github服务器上了，要做的就是清除浏览器中的页面缓存或者按Ctrl+F5刷新下。&lt;/p&gt;
+
+&lt;p&gt;ok~ 开始像黑客一样写博客吧~！&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;p&gt;参考：
+&amp;gt; 1. &lt;a href=&#34;http://www.yangzhiping.com/tech/octopress.html&#34;&gt;octopress-黑客一样写博客&lt;/a&gt;
+&amp;gt; 2. &lt;a href=&#34;http://www.yangzhiping.com/tech/r-markdown-knitr.html&#34;&gt;Markdown写作浅谈&lt;/a&gt;
+&amp;gt; 3. &lt;a href=&#34;http://lucifr.com/2011/12/21/octopress-on-server-and-portable-scheme/&#34;&gt;服务器端Octopress搭建及移动方案&lt;/a&gt;&lt;/p&gt;</description>
+      
+    </item>
+    
+    <item>
+      <title>happy new year</title>
+      <link>https://weege126.github.io/post/2013-01-01-happy-new-year/</link>
+      <pubDate>Tue, 01 Jan 2013 00:26:23 +0800</pubDate>
+      
+      <guid>https://weege126.github.io/post/2013-01-01-happy-new-year/</guid>
+      
+        <description>&lt;p&gt;新年开始了，工作了半年，经历一些，懂得一些，认识一些，对自己的未来总是在不断的寻觅中，却迷茫着~，每次家里人问起是否在这个城市待得习惯，不断的问我是否过得好，总是回复家人过得好，放心好了，出门在外，家人总是希望自己能够过得好，而对家人总是报喜不报忧；新年了，有些变化，给自己一些时间，计划似乎永远赶不上变化，改正自己，尽快恢复过来，加油吧~！&lt;/p&gt;
+
+&lt;p&gt;简单踏实就好，奶奶经常给说的话，一直记着。【step by step, 懂得珍惜】&lt;/p&gt;
+
+&lt;p&gt;最近在看柴进写的《看见》, 用心在生活着。去年新年的时候，她的&lt;a href=&#34;http://blog.sina.com.cn/chjguancha&#34;&gt;博客&lt;/a&gt;中有句话摘抄下来：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;“有人问，你的新年计划是什么？
+  谁能计划啥，碰到什么是什么，山高月小，就滴个石，乱石穿空，就拍个岸，遇上高山峡谷，自成江河湖海。但人总得流淌，没这个动作就算完了。
+  问为了什么？
+  啥也不为，这么着高兴，痛快。”&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;happy new year~! 2013 传递笑脸 ^!^  :)&lt;/p&gt;</description>
+      
+    </item>
+    
+  </channel>
+</rss>

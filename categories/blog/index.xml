@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Blog on 时间飘过</title>
+    <link>https://weege126.github.io/categories/blog/</link>
+    <description>Recent content in Blog on 时间飘过</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Tue, 01 Jan 2013 20:26:23 +0800</lastBuildDate>
+    
+	<atom:link href="https://weege126.github.io/categories/blog/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>像黑客一样写博客</title>
+      <link>https://weege126.github.io/post/2013-01-12-hello/</link>
+      <pubDate>Tue, 01 Jan 2013 20:26:23 +0800</pubDate>
+      
+      <guid>https://weege126.github.io/post/2013-01-12-hello/</guid>
+      <description>&lt;p&gt;最近一段时间想整个博客，来记录一些事情，感觉记忆力不如从前了，想起以前有位老程序员，身边总是挂一个小挎包，装了一些小便条(todo list)；我想人的精力是有限的，当做完一件事， 过段时间，可能忘了曾今做过的事，说的话；本来想用worldpress，但是貌似需要申请空间，不同以往了，现在都是收费的了，无意间发现了&lt;a href=&#34;http://octopress.org/docs/&#34;&gt;octopress&lt;/a&gt;,这是个好东东啊，轻量级的，不像worldpress臃肿，不需要使用mysql,通过git直接可以部署到github pages上搭建一个副本。也可以部署到&lt;a href=&#34;http://www.heroku.com/&#34;&gt;heroku&lt;/a&gt;；国内好像也有对octopress的部署支持。&lt;/p&gt;
+
+&lt;p&gt;在开始写过程之前先说下为毛这样做，其实也是觉得对新鲜的东东比较感兴趣吧！&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;用octopress写博客，就像网上说的-像黑客一样写博客，貌似需要那么一点伪技术，看上去就像geek那样啦~~ 呵呵。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;整个服务的搭建是完全免费的，也许对于我这个比较穷困专业挨踢男来说是一个开源节流的渠道吧。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;使用octopress来写博客，支持&lt;a href=&#34;http://wowubuntu.com/markdown/basic.html&#34;&gt;markdown&lt;/a&gt;,和&lt;a href=&#34;http://en.wikipedia.org/wiki/Haml&#34;&gt;haml&lt;/a&gt;,
+个人喜欢使用前者，github上可以直接对其编辑；而且主要的是用命令来发布，这动作很cool,like it~!,感觉比较碉，哎呦，不错哦~！
+可以使用&lt;code&gt;rake -T&lt;/code&gt;来查看信息,发布常用的命令:
+&lt;code&gt;rake install[theme]  rake preview  rake new_post[title]  rake generate  rake deploy&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;最后是可以离线写博客还是挺爽的，用git对文章进行备份，以及静态页面生成，style也不错。&lt;/p&gt;
+
+&lt;p&gt;这里不具体的介绍octpress搭建在gitHub的过程，可以查看octpress的在线文档，说的很清楚的。
+不过在deploy的时候可能需要ssh key,在终端执行：
+&lt;code&gt;[[ -f ~/.ssh/id_rsa.pub ]] || ssh-keygen -t rsa&lt;/code&gt;
+将其显示:
+&lt;code&gt;[[ -f ~/.ssh/id_rsa.pub ]] &amp;amp;&amp;amp; cat ~/.ssh/id_rsa.pub&lt;/code&gt;
+然后进入&lt;a href=&#34;https://github.com/account/ssh&#34;&gt;https://github.com/account/ssh&lt;/a&gt;中点击Add another public key，粘贴前面步骤复制的信息，请格外注意，不要在Title中填写内容，直接将复制的内容粘贴到Key中，然后点击：Add Key即可。
+还可以参考：&lt;a href=&#34;https://help.github.com/articles/generating-ssh-keys&#34;&gt;github上的帮助文档&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;</description>
+    </item>
+    
+  </channel>
+</rss>
