@@ -24,6 +24,269 @@
     </item>
     
     <item>
+      <title>附近POI: geohash原理</title>
+      <link>https://weege126.github.io/post/2015-06-03-geohash/</link>
+      <pubDate>Wed, 03 Jun 2015 00:26:23 +0800</pubDate>
+      
+      <guid>https://weege126.github.io/post/2015-06-03-geohash/</guid>
+      
+        <description>&lt;h3 id=&#34;问题&#34;&gt;问题&lt;/h3&gt;
+
+&lt;p&gt;&amp;emsp;&amp;emsp;现在吃穿住行的app大都有定位的功能；如何让手机app所在的定位寻找出附近的POI(Point of Interest)呢？至于用户手机是如何获取定位的可以自行Google/Baidu，有时间整理一下。&lt;/p&gt;
+
+&lt;p&gt;地图上定位一个地方，通过经度(longitude)和纬度(latitude)来标记，由WGS84规定(为GPS全球定位系统使用而建立的坐标系统)；比如地球🌍作为一个球体，纬度是指&lt;code&gt;所在位置的纬线到地心的直线&lt;/code&gt;和&lt;code&gt;赤道的纬线到地心的直线&lt;/code&gt;的夹角，通常北纬为正，南纬为负；经度是指&lt;code&gt;所在位置的经线平面&lt;/code&gt;和&lt;code&gt;规定的本初子午线平面&lt;/code&gt;的夹角，以东为东经，以西为西经，通常东经为正，西经为负；&lt;/p&gt;
+
+&lt;p&gt;一个地点的经度一般与它于协调世界时之间的时差相应：每天有24小时，而一个圆圈有360度，因此地球每小时自转15度。因此假如一个人的地方时比协调世界UTC(Coordinated Universal Time)时早3小时的话，那么他在东经45度左右，比如北京是在东经116左右，那时区+8作为中国标准时间CST(China Standard Time)&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&#34;解决方案&#34;&gt;解决方案&lt;/h3&gt;
+
+&lt;p&gt;通过app可以获取到定位信息经维度，以及后台POI(实时/离线)录入的经纬度信息，如何获取附近POI呢？&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;直接按距离计算：定位的经纬度确定对应的地区；然后和所在地区中的所有商户POI经纬度信息进行距离计算，然后排序，找出最近几公里内的商户POI；这种方法比较暴力，遇到数据量大的时候，比较耗时；&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;既然数据量大，采用分而治之的办法筛选查找：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;利用Mysql的B+tree索引进行范围筛选：直接按距离计算(经纬度建立索引)/GeoHash；&lt;/li&gt;
+&lt;li&gt;利用Mysql的Rtree空间索引(5.7.4+,InnoDB支持)：mysql空间数据类型(Point,LineString, Polygon)来进行检索；&lt;/li&gt;
+&lt;li&gt;利用PostgreSQL的PostGIS模块：通过R树 或 GIST树索引来实现空间索引，PostGIS 实现了Open Geospatial Consortium所提出的基本要素类（点、线、面、多点、多线、多面等）的SQL查询；&lt;/li&gt;
+&lt;li&gt;利用MongoDB: 依赖MongoDB的空间搜索算法(geoNear,near),底层也是对GeoHash进行B+tree索引;命令如下：  &lt;code&gt;db.runCommand({ geoNear: &amp;quot;places&amp;quot;, near: [30.545162, 104.062018], num:1000 })&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;将经纬度转换成GeoHash字符串，利用字典树查找term,找到对应倒排索引中的商户信息；&lt;/li&gt;
+&lt;li&gt;利用Redis(3.2+) GEO命令 &lt;code&gt;GEOADD GEOHASH GEOPOS GEODIST GEORADIUS GEORADIUSBYMEMBER&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://s2geometry.io/&#34;&gt;谷歌的 S² 算法&lt;/a&gt;: 将基于希尔伯特曲线实现，算法性能要优于geohash；具体看官网介绍，具体细节还没有弄清楚，待续~&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;从这些解决方案中可以总结出，根据对位置经纬度信息进行转换，然后结合具体的数据结构和算法来实现，适用不同场景:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;将经纬度信息转成一维的GeoHash字符串(表示对应位置的区块)，通过ziplist,B+树,字典树trie(倒排索引中的term存储结构)来索引，提供索搜查询；&lt;/li&gt;
+&lt;li&gt;将经纬度信息转换成多维的点线面空间信息，通过四叉树,R树,GIST树来索引，提供索搜查询;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;方案概要&#34;&gt;方案概要&lt;/h3&gt;
+
+&lt;p&gt;以上给出的具体实施方案，篇幅有限，这里主要是讨论GeoHash编码方式来表示空间信息。具体空间信息采集可以采集高地地图的接口，或者&lt;a href=&#34;https://github.com/lzxue/WeiboDataShare&#34;&gt;微博的一份数据&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;geohash&#34;&gt;GeoHash&lt;/h3&gt;
+
+&lt;p&gt;geohash 是 Gustavo Niemeyer 发明的一种对地理位置进行编码的算法；它是一种分级的数据结构，把空间划分为网格。Geohash 属于空间填充曲线中的 Z 阶曲线(&lt;a href=&#34;https://en.wikipedia.org/wiki/Z-order_curve&#34;&gt;Z-order curve&lt;/a&gt;)的实际应用。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;通过二维的经纬度所在的区块表示成一维的字符串信息，字符串的长度越长，表示的区域范围更加精确。长度为9的geohash编码的精度能达到4米左右，10位的geohash经度能达到0.6米，一般情况下能满足我们大部分的需求；&lt;/li&gt;
+&lt;li&gt;geohash 生成的字符串代表的不是地图上的一个点，而是地图上一个矩形区域，在一定程度上能保证隐私(知道大概的位置)；&lt;/li&gt;
+&lt;li&gt;geohash编号后方便索引和缓存，具有公共前缀的geohash编码作为key/term 索引、查找附近区域的的POI信息；&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&#34;原理&#34;&gt;原理&lt;/h4&gt;
+
+&lt;h4 id=&#34;编码步骤&#34;&gt;编码步骤&lt;/h4&gt;
+
+&lt;ol&gt;
+&lt;li&gt;首先将纬度范围(-90, 90)平分成两个区间(-90, 0)、(0, 90)， 如果目标纬度位于前一个区间，则编码为0，否则编码为1; 以此类推，直到精度符合要求为止;&lt;/li&gt;
+&lt;li&gt;经度也用同样的算法，对(-180, 180)依次细分;&lt;/li&gt;
+&lt;li&gt;接下来组码，将经度和纬度的编码合并，奇数位是纬度，偶数位是经度，得到二进制编码；&lt;/li&gt;
+&lt;li&gt;最后使用base32（0-9、b-z，去掉a,i,l,o，比较常用）或者base36编码(base36的版本对大小写敏感，用了36个字符，“23456789bBCdDFgGhHjJKlLMnNPqQrRtTVWX”)；这里采用base32方式进行操作，首先将组合好的二进制码转成对应的十进制（二进制每5位表示一个base32字符）；十进制对应base32编码表如下：&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/base32.png&#34; alt=&#34;base32&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;例如：将坐标 (39.97696,116.3764874)（latitude, longitude）编码成长度为12的字符串(base32编码) wx4g2jwf8tqx&lt;/p&gt;
+
+&lt;p&gt;geohash编码长度对应区域大小：&lt;/p&gt;
+
+&lt;p&gt;|length  | width | height |
+|:&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-:|:&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;:|:&amp;mdash;&amp;mdash;&amp;mdash;&amp;mdash;-:|
+|1  |5000km |5000km|
+|2  |1250km |625km|
+|3  |156km |156km|
+|4  |39.1km |19.5km|
+|5  |4.89km |4.89km|
+|6  |1.22km |0.61km|
+|7  |153m   |153m|
+|8  |38.2m  |19.1m |
+|9  |4.77m  |4.77m |
+|10 |1.19m  |0.596m |
+|11 |149mm  |149mm |
+|12 |37.2mm|18.6mm|&lt;/p&gt;
+
+&lt;p&gt;精度表：&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th align=&#34;center&#34;&gt;length&lt;/th&gt;
+&lt;th align=&#34;center&#34;&gt;latitude bits&lt;/th&gt;
+&lt;th align=&#34;center&#34;&gt;longitude bits&lt;/th&gt;
+&lt;th align=&#34;center&#34;&gt;latitude error&lt;/th&gt;
+&lt;th align=&#34;center&#34;&gt;longitude error&lt;/th&gt;
+&lt;th align=&#34;center&#34;&gt;km error&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±23&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±23&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±2500&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;5&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;5&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±2.8&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±5.6&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±630&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;7&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;8&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.70&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.70&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±78&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;4&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;10&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;10&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.087&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.18&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±20&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;5&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;12&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;13&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.022&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.022&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±2.4&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;6&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;15&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;15&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.0027&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.0055&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.61&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;7&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;17&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;18&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.00068&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.00068&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.076&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;8&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;20&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;20&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.00008&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.00017&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.019&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;9&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;22&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;23&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.00002&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.000021&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.00478&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;10&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;25&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;25&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.00000268&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.00000536&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.0005971&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;11&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;27&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;28&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.00000067&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.00000067&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.0001492&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;center&#34;&gt;12&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;30&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;30&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.00000008&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.00000017&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;±0.0000186&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h4 id=&#34;解码步骤&#34;&gt;解码步骤&lt;/h4&gt;
+
+&lt;p&gt;解码操作为编码操作的逆向过程，这里就省略(后续补上)&lt;/p&gt;
+
+&lt;h4 id=&#34;获取相邻区域&#34;&gt;获取相邻区域&lt;/h4&gt;
+
+&lt;p&gt;为啥要获取相邻区域呢？？？&lt;/p&gt;
+
+&lt;p&gt;根据编码算法定义不难看出，如果需要寻找附近多少米的POI，根据精度只要前缀匹配规定长度的字符串(可以把经常访问的前缀匹配的字符串表示的区域POI信息缓存起来)，比如坐标 (39.97696,116.3764874)对应成长度为12的字符串wx4g2jwf8tqx，想找附近500m的POI，长度为6的geohash编码能表示矩形区域在0.744平方千米左右（区块大小和geohash编码长度对应关系见上表），那么查询的时候就可缩小范围，找出那些前缀为wx4g2j的POI，与wx4g2jwf8tqx公共前缀匹配的长度越大，离得距离也就越近；&lt;/p&gt;
+
+&lt;p&gt;但是这种前缀匹配的方式存在一个临近边界问题，就是在区块的边界地方，在这个区块的相邻区块的公共前缀不同，按照公共前缀匹配的方法会少筛选出一部分附近的POI;&lt;/p&gt;
+
+&lt;p&gt;解决的办法是将相邻的8块区域也算进来，扩大寻找范围，计算这些区块中的POI和所在位置的距离， 然后按距离排序筛选；&lt;/p&gt;
+
+&lt;h4 id=&#34;待续-geohash-vs-s²&#34;&gt;待续 (Geohash vs S²)&lt;/h4&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Geohash 有12级，从5000km 到 3.7cm。中间每一级的变化比较大。有时候可能选择上一级会大很多，选择下一级又会小一些。比如选择字符串长度为4，它对应的 cell区域 宽度是39.1km，需求可能是50km，那么选择字符串长度为5，对应的 cell 宽度就变成了156km，瞬间又大了3倍了。这种情况选择多长的 Geohash 字符串就比较难选。选择不好，每次判断可能就还需要取出周围的8个格子再次进行判断。Geohash 需要 12 bytes 存储。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;S² 有30级，从 0.7cm² 到 85,000,000km² 。中间每一级的变化都比较平缓，接近于4次方的曲线。所以选择精度不会出现 Geohash 选择困难的问题。S2 的存储只需要一个 uint64 即可存下。S²算法待续&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;抛出问题&#34;&gt;抛出问题&lt;/h3&gt;
+
+&lt;ul class=&#34;task-list&#34;&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; 运动的个体(个体也可以当做POI)，如何获取附近实时运动的POI呢？ 实时计算方案呢？(像多人约会涉猎app)&lt;/label&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;参考&#34;&gt;参考&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E7%BB%8F%E5%BA%A6&#34;&gt;经度&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E7%BA%AC%E5%BA%A6&#34;&gt;维度&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Geohash&#34;&gt;GeoHash&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.movable-type.co.uk/scripts/gis-faq-5.1.html&#34;&gt;空间距离计算&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://tech.meituan.com/lucene_distance.html&#34;&gt;地理空间距离计算优化&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/spatial-types.html&#34;&gt;Mysql8.0 - Spatial Data Types&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://postgis.net/workshops/postgis-intro/&#34;&gt;PostGIS&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.mongoing.com/mongodb-geo-index-1/&#34;&gt;MongoDB地理索引初探&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://blog.huangz.me/diary/2015/redis-geo.html&#34;&gt;Redis GEO&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://blog.huangz.me/diary/2015/annotated-redis-geo-source.html&#34;&gt;Redis GEO源码&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://halfrost.com/go_spatial_search/&#34;&gt;高效的多维空间点索引算法 — Geohash 和 Google S2&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.cnblogs.com/LBSer/p/3310455.html&#34;&gt;GeoHash核心原理解析&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://geohash.gofreerange.com/&#34;&gt;GeoHash在线演示&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</description>
+      
+    </item>
+    
+    <item>
       <title>工具盒子-GNU global</title>
       <link>https://weege126.github.io/post/2014-11-15-gnu-global/</link>
       <pubDate>Sat, 15 Nov 2014 21:04:23 +0800</pubDate>
