@@ -11,7 +11,7 @@
   
   <url>
     <loc>https://weege126.github.io/post/2015-06-03-geohash/</loc>
-    <lastmod>2015-06-03T00:26:23+08:00</lastmod>
+    <lastmod>2018-05-03T00:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -74,7 +74,21 @@
   
   <url>
     <loc>https://weege126.github.io/tags/geo/</loc>
-    <lastmod>2015-06-03T00:26:23+08:00</lastmod>
+    <lastmod>2018-05-03T00:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://weege126.github.io/categories/geo/</loc>
+    <lastmod>2018-05-03T00:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://weege126.github.io/tags/geohash/</loc>
+    <lastmod>2018-05-03T00:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
@@ -102,14 +116,14 @@
   
   <url>
     <loc>https://weege126.github.io/post/</loc>
-    <lastmod>2015-06-03T00:26:23+08:00</lastmod>
+    <lastmod>2018-05-03T00:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://weege126.github.io/tags/</loc>
-    <lastmod>2015-06-03T00:26:23+08:00</lastmod>
+    <lastmod>2018-05-03T00:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
@@ -123,7 +137,7 @@
   
   <url>
     <loc>https://weege126.github.io/categories/%E6%8A%80%E6%9C%AF/</loc>
-    <lastmod>2015-06-03T00:26:23+08:00</lastmod>
+    <lastmod>2018-05-03T00:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
