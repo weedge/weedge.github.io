@@ -1,170 +1,170 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<?xml-stylesheet type="text/xsl" href="https://weege126.github.io/sitemap.xsl"?>
+<?xml-stylesheet type="text/xsl" href="https://weedge.github.io/sitemap.xsl"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://weege126.github.io/about/</loc>
+    <loc>https://weedge.github.io/about/</loc>
     <lastmod>2013-01-28T21:41:52+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/post/2015-06-03-geohash/</loc>
+    <loc>https://weedge.github.io/post/2015-06-03-geohash/</loc>
     <lastmod>2018-05-03T00:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/post/2014-11-15-gnu-global/</loc>
+    <loc>https://weedge.github.io/post/2014-11-15-gnu-global/</loc>
     <lastmod>2014-11-15T21:04:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/post/2014-09-21-taishan/</loc>
+    <loc>https://weedge.github.io/post/2014-09-21-taishan/</loc>
     <lastmod>2014-09-21T22:04:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/post/2013-12-10-chengdu/</loc>
+    <loc>https://weedge.github.io/post/2013-12-10-chengdu/</loc>
     <lastmod>2013-12-10T01:16:30+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/post/2013-01-12-hello/</loc>
+    <loc>https://weedge.github.io/post/2013-01-12-hello/</loc>
     <lastmod>2013-01-01T20:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/post/2013-01-01-happy-new-year/</loc>
+    <loc>https://weedge.github.io/post/2013-01-01-happy-new-year/</loc>
     <lastmod>2013-01-01T00:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/categories/blog/</loc>
+    <loc>https://weedge.github.io/categories/blog/</loc>
     <lastmod>2013-01-01T20:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/categories/</loc>
+    <loc>https://weedge.github.io/categories/</loc>
     <lastmod>2013-01-01T20:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/categories/cheatsheet/</loc>
+    <loc>https://weedge.github.io/categories/cheatsheet/</loc>
     <lastmod>2014-11-15T21:04:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/tags/geo/</loc>
+    <loc>https://weedge.github.io/categories/geo/</loc>
     <lastmod>2018-05-03T00:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/categories/geo/</loc>
+    <loc>https://weedge.github.io/tags/geo/</loc>
     <lastmod>2018-05-03T00:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/tags/geohash/</loc>
+    <loc>https://weedge.github.io/tags/geohash/</loc>
     <lastmod>2018-05-03T00:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/tags/git/</loc>
+    <loc>https://weedge.github.io/tags/git/</loc>
     <lastmod>2013-01-01T20:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/tags/linux/</loc>
+    <loc>https://weedge.github.io/tags/linux/</loc>
     <lastmod>2014-11-15T21:04:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/tags/octopress/</loc>
+    <loc>https://weedge.github.io/tags/octopress/</loc>
     <lastmod>2013-01-01T20:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/post/</loc>
+    <loc>https://weedge.github.io/post/</loc>
     <lastmod>2018-05-03T00:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/tags/</loc>
+    <loc>https://weedge.github.io/tags/</loc>
     <lastmod>2018-05-03T00:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/tags/tools/</loc>
+    <loc>https://weedge.github.io/tags/tools/</loc>
     <lastmod>2014-11-15T21:04:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/categories/%E6%8A%80%E6%9C%AF/</loc>
+    <loc>https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/</loc>
     <lastmod>2018-05-03T00:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/tags/%E6%97%85%E6%B8%B8/</loc>
+    <loc>https://weedge.github.io/tags/%E6%97%85%E6%B8%B8/</loc>
     <lastmod>2014-09-21T22:04:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/</loc>
+    <loc>https://weedge.github.io/</loc>
     <lastmod>2013-01-28T21:41:52+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/categories/%E7%94%9F%E6%B4%BB/</loc>
+    <loc>https://weedge.github.io/categories/%E7%94%9F%E6%B4%BB/</loc>
     <lastmod>2014-09-21T22:04:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://weege126.github.io/tags/%E9%9A%8F%E7%AC%94%E8%AE%B0%E5%BD%95/</loc>
+    <loc>https://weedge.github.io/tags/%E9%9A%8F%E7%AC%94%E8%AE%B0%E5%BD%95/</loc>
     <lastmod>2014-09-21T22:04:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>

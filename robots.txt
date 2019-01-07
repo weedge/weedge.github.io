@@ -1,2 +1,2 @@
 User-agent: *
-Sitemap: https://weege126.github.io/sitemap.xml
+Sitemap: https://weedge.github.io/sitemap.xml

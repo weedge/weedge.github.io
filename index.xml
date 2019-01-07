@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>时间飘过</title>
-    <link>https://weege126.github.io/</link>
+    <link>https://weedge.github.io/</link>
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <lastBuildDate>Sun, 20 Jan 2013 21:38:52 +0800</lastBuildDate>
     
-        <atom:link href="https://weege126.github.io/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>About</title>
-      <link>https://weege126.github.io/about/</link>
+      <link>https://weedge.github.io/about/</link>
       <pubDate>Sun, 20 Jan 2013 21:38:52 +0800</pubDate>
       
-      <guid>https://weege126.github.io/about/</guid>
+      <guid>https://weedge.github.io/about/</guid>
       
         <description>&lt;p&gt;简单的木头人,简单，呆木，喜欢自言自语，愚人自扰型。时间飞逝，仅仅记录，留住某人某事，某些好玩的技术，KISS and just do IT.&lt;/p&gt;
 </description>
@@ -25,10 +25,10 @@
     
     <item>
       <title>附近POI: geohash原理</title>
-      <link>https://weege126.github.io/post/2015-06-03-geohash/</link>
+      <link>https://weedge.github.io/post/2015-06-03-geohash/</link>
       <pubDate>Wed, 03 Jun 2015 00:26:23 +0800</pubDate>
       
-      <guid>https://weege126.github.io/post/2015-06-03-geohash/</guid>
+      <guid>https://weedge.github.io/post/2015-06-03-geohash/</guid>
       
         <description>&lt;h3 id=&#34;问题&#34;&gt;问题&lt;/h3&gt;
 
@@ -359,10 +359,10 @@
     
     <item>
       <title>工具盒子-GNU global</title>
-      <link>https://weege126.github.io/post/2014-11-15-gnu-global/</link>
+      <link>https://weedge.github.io/post/2014-11-15-gnu-global/</link>
       <pubDate>Sat, 15 Nov 2014 21:04:23 +0800</pubDate>
       
-      <guid>https://weege126.github.io/post/2014-11-15-gnu-global/</guid>
+      <guid>https://weedge.github.io/post/2014-11-15-gnu-global/</guid>
       
         <description>&lt;h3 id=&#34;gnu-gloab&#34;&gt;gnu gloab&lt;/h3&gt;
 
@@ -409,10 +409,10 @@
     
     <item>
       <title>登泰山</title>
-      <link>https://weege126.github.io/post/2014-09-21-taishan/</link>
+      <link>https://weedge.github.io/post/2014-09-21-taishan/</link>
       <pubDate>Sun, 21 Sep 2014 22:04:23 +0800</pubDate>
       
-      <guid>https://weege126.github.io/post/2014-09-21-taishan/</guid>
+      <guid>https://weedge.github.io/post/2014-09-21-taishan/</guid>
       
         <description>&lt;h2 id=&#34;登泰山看日出&#34;&gt;登泰山看日出&lt;/h2&gt;
 
@@ -603,10 +603,10 @@
     
     <item>
       <title>成都行</title>
-      <link>https://weege126.github.io/post/2013-12-10-chengdu/</link>
+      <link>https://weedge.github.io/post/2013-12-10-chengdu/</link>
       <pubDate>Tue, 10 Dec 2013 01:16:30 +0800</pubDate>
       
-      <guid>https://weege126.github.io/post/2013-12-10-chengdu/</guid>
+      <guid>https://weedge.github.io/post/2013-12-10-chengdu/</guid>
       
         <description>&lt;p&gt;由于入职时间的改变，有几天的时间空闲下来了，本来就没有准备的行程，以前没有想过的户外运动，本来是想体验一把的，趁这段时间，和老宋说好过去玩后，当天晚上啥都没有准备，直接就A过去了。这一趟还是挺有意思的，写这篇的时候，此刻正在老宋住的地方，准备着回北京的路上，写完后，收拾心情，准备好好工作。人生也许有很多的第一次，才能使生活变得更加的有意义吧。&lt;/p&gt;
 
@@ -934,10 +934,10 @@
     
     <item>
       <title>像黑客一样写博客</title>
-      <link>https://weege126.github.io/post/2013-01-12-hello/</link>
+      <link>https://weedge.github.io/post/2013-01-12-hello/</link>
       <pubDate>Tue, 01 Jan 2013 20:26:23 +0800</pubDate>
       
-      <guid>https://weege126.github.io/post/2013-01-12-hello/</guid>
+      <guid>https://weedge.github.io/post/2013-01-12-hello/</guid>
       
         <description>&lt;p&gt;最近一段时间想整个博客，来记录一些事情，感觉记忆力不如从前了，想起以前有位老程序员，身边总是挂一个小挎包，装了一些小便条(todo list)；我想人的精力是有限的，当做完一件事， 过段时间，可能忘了曾今做过的事，说的话；本来想用worldpress，但是貌似需要申请空间，不同以往了，现在都是收费的了，无意间发现了&lt;a href=&#34;http://octopress.org/docs/&#34;&gt;octopress&lt;/a&gt;,这是个好东东啊，轻量级的，不像worldpress臃肿，不需要使用mysql,通过git直接可以部署到github pages上搭建一个副本。也可以部署到&lt;a href=&#34;http://www.heroku.com/&#34;&gt;heroku&lt;/a&gt;；国内好像也有对octopress的部署支持。&lt;/p&gt;
 
@@ -1008,10 +1008,10 @@
     
     <item>
       <title>happy new year</title>
-      <link>https://weege126.github.io/post/2013-01-01-happy-new-year/</link>
+      <link>https://weedge.github.io/post/2013-01-01-happy-new-year/</link>
       <pubDate>Tue, 01 Jan 2013 00:26:23 +0800</pubDate>
       
-      <guid>https://weege126.github.io/post/2013-01-01-happy-new-year/</guid>
+      <guid>https://weedge.github.io/post/2013-01-01-happy-new-year/</guid>
       
         <description>&lt;p&gt;新年开始了，工作了半年，经历一些，懂得一些，认识一些，对自己的未来总是在不断的寻觅中，却迷茫着~，每次家里人问起是否在这个城市待得习惯，不断的问我是否过得好，总是回复家人过得好，放心好了，出门在外，家人总是希望自己能够过得好，而对家人总是报喜不报忧；新年了，有些变化，给自己一些时间，计划似乎永远赶不上变化，改正自己，尽快恢复过来，加油吧~！&lt;/p&gt;
 
