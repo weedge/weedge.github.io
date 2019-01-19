@@ -17,7 +17,7 @@
       <pubDate>Sat, 15 Nov 2014 21:04:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/post/2014-11-15-gnu-global/</guid>
-      <description>&lt;h3 id=&#34;gnu-gloab&#34;&gt;gnu gloab&lt;/h3&gt;
+      <description>&lt;h3 id=&#34;gnu-global&#34;&gt;gnu global&lt;/h3&gt;
 
 &lt;p&gt;源码标记，浏览源码挺好用的工具,轻量级的，简单易用。 gtags类似ctags,但是效率比ctags高，具体比较查看&lt;a href=&#34;https://github.com/OpenGrok/OpenGrok/wiki/Comparison-with-Similar-Tools&#34;&gt;这里&lt;/a&gt;(OpenGrok使用相对比较复杂)，而且未来支持的语言也比较多。对Linux-2.6.32源码390M的文件进行标签产出289MB的标签文件。&lt;/p&gt;
 

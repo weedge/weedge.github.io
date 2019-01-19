@@ -18,7 +18,7 @@
       
       <guid>https://weedge.github.io/about/</guid>
       
-        <description>&lt;p&gt;简单的木头人,简单，呆木，喜欢自言自语，愚人自扰型。时间飞逝，仅仅记录，留住某人某事，某些好玩的技术，KISS and just do IT.&lt;/p&gt;
+        <description>&lt;p&gt;简单的木头人，简单，呆木，喜欢自言自语，愚人自扰型。时间飞逝，仅仅记录，留住某人某事，某些好玩的技术，KISS and just do IT.&lt;/p&gt;
 </description>
       
     </item>
@@ -69,7 +69,7 @@
 
 &lt;h3 id=&#34;方案概要&#34;&gt;方案概要&lt;/h3&gt;
 
-&lt;p&gt;以上给出的具体实施方案，篇幅有限，这里主要是讨论GeoHash编码方式来表示空间信息。具体空间信息采集可以采集高地地图的接口，或者&lt;a href=&#34;https://github.com/lzxue/WeiboDataShare&#34;&gt;微博的一份数据&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;以上给出的具体实施方案，篇幅有限，这里主要是讨论GeoHash编码方式来表示空间信息。具体空间信息采集可以采集高德地图的接口，或者&lt;a href=&#34;https://github.com/lzxue/WeiboDataShare&#34;&gt;微博的一份数据&lt;/a&gt;&lt;/p&gt;
 
 &lt;h3 id=&#34;geohash&#34;&gt;GeoHash&lt;/h3&gt;
 
@@ -364,7 +364,7 @@
       
       <guid>https://weedge.github.io/post/2014-11-15-gnu-global/</guid>
       
-        <description>&lt;h3 id=&#34;gnu-gloab&#34;&gt;gnu gloab&lt;/h3&gt;
+        <description>&lt;h3 id=&#34;gnu-global&#34;&gt;gnu global&lt;/h3&gt;
 
 &lt;p&gt;源码标记，浏览源码挺好用的工具,轻量级的，简单易用。 gtags类似ctags,但是效率比ctags高，具体比较查看&lt;a href=&#34;https://github.com/OpenGrok/OpenGrok/wiki/Comparison-with-Similar-Tools&#34;&gt;这里&lt;/a&gt;(OpenGrok使用相对比较复杂)，而且未来支持的语言也比较多。对Linux-2.6.32源码390M的文件进行标签产出289MB的标签文件。&lt;/p&gt;
 
