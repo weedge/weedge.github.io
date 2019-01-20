@@ -19,7 +19,7 @@
       <guid>https://weedge.github.io/post/2017-12-12-idgen/</guid>
       <description>&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
 
-&lt;p&gt;用户业务数据增长过快，比如文章评论系统，feed流系统，订单系统；数据的存放模型需要从主从的单机单库 演变成 分布式集群数据库； 分库分表的数据查询需用到全局唯一标识的id来查询业务，比如莫个feed的评论数据、推送消息、购物订单、活动优惠劵等等都需要进行唯一ID标识；以便分布式存储(mysql,nosql,newsql)索引(b+tree, LSMtree,inverted index；至于数据一致性通过约定规范协议保证(强：类Paxos算法/raft算法，弱: mq)), 快速查询。&lt;/p&gt;</description>
+&lt;p&gt;&amp;emsp;&amp;emsp;用户业务数据增长过快，比如文章评论系统，feed流系统，订单系统；数据的存放模型需要从主从的单机单库 演变成 分布式集群数据库； 分库分表的数据查询需用到全局唯一标识的id来查询业务，比如莫个feed的评论数据、推送消息、购物订单、活动优惠劵等等都需要进行唯一ID标识；以便分布式存储(mysql,nosql,newsql)索引(b+tree, LSMtree,inverted index)快速查询；至于数据一致性通过约定规范协议保证(强：类Paxos算法/raft算法，弱: mq) 。&lt;/p&gt;</description>
     </item>
     
   </channel>
