@@ -10,6 +10,20 @@
   </url>
   
   <url>
+    <loc>https://weedge.github.io/post/2018-11-23-mackeyboard-hhkb/</loc>
+    <lastmod>2019-01-19T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/2017-12-12-idgen/</loc>
+    <lastmod>2018-02-03T00:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
     <loc>https://weedge.github.io/post/2015-06-03-geohash/</loc>
     <lastmod>2018-05-03T00:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
@@ -101,8 +115,22 @@
   </url>
   
   <url>
+    <loc>https://weedge.github.io/tags/idgen/</loc>
+    <lastmod>2018-02-03T00:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://weedge.github.io/tags/linux/</loc>
     <lastmod>2014-11-15T21:04:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/macbook/</loc>
+    <lastmod>2019-01-19T10:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
@@ -116,7 +144,7 @@
   
   <url>
     <loc>https://weedge.github.io/post/</loc>
-    <lastmod>2018-05-03T00:26:23+08:00</lastmod>
+    <lastmod>2019-01-19T10:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
@@ -137,7 +165,7 @@
   
   <url>
     <loc>https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/</loc>
-    <lastmod>2018-05-03T00:26:23+08:00</lastmod>
+    <lastmod>2018-02-03T00:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
@@ -158,7 +186,7 @@
   
   <url>
     <loc>https://weedge.github.io/categories/%E7%94%9F%E6%B4%BB/</loc>
-    <lastmod>2014-09-21T22:04:23+08:00</lastmod>
+    <lastmod>2019-01-19T10:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>

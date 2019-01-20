@@ -6,10 +6,32 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 03 Jun 2015 00:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 19 Jan 2019 10:26:23 +0800</lastBuildDate>
     
 	<atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>屏蔽macbook内置键盘</title>
+      <link>https://weedge.github.io/post/2018-11-23-mackeyboard-hhkb/</link>
+      <pubDate>Sat, 19 Jan 2019 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/2018-11-23-mackeyboard-hhkb/</guid>
+      <description>&lt;iframe frameborder=&#34;no&#34; border=&#34;0&#34; marginwidth=&#34;0&#34; marginheight=&#34;0&#34; width=130 height=86 src=&#34;//music.163.com/outchain/player?type=2&amp;id=28828074&amp;auto=1&amp;height=66&#34;&gt;&lt;/iframe&gt;
+
+&lt;p&gt;&amp;emsp;&amp;emsp;昨天晚上和女友争吵，不小心把水洒在macbook的键盘上了，当时没有及时关机烘干，直接就把本给关上了，导致今天早上起来发现键盘按z左边的shift键失灵，有时候一直重复z键，过了一段时间z键失灵，还有其他几个键也失灵了，网上搜了一下，有可能是排线的原因，找官网修理一下, 估计也得300到1000不等；想想这些维修费用都可以买个键盘了。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>id生成</title>
+      <link>https://weedge.github.io/post/2017-12-12-idgen/</link>
+      <pubDate>Tue, 12 Dec 2017 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/2017-12-12-idgen/</guid>
+      <description>&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
+
+&lt;p&gt;用户业务数据增长过快，比如文章评论系统，feed流系统，订单系统；数据的存放模型需要从主从的单机单库 演变成 分布式集群数据库； 分库分表的数据查询需用到全局唯一标识的id来查询业务，比如莫个feed的评论数据、推送消息、购物订单、活动优惠劵等等都需要进行唯一ID标识；以便分布式存储(mysql,nosql,newsql)索引(b+tree, LSMtree,inverted index；至于数据一致性通过约定规范协议保证(强：类Paxos算法/raft算法，弱: mq)), 快速查询。&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>附近POI: geohash原理</title>
@@ -52,6 +74,8 @@
 &lt;p&gt;会当凌绝顶，一览众山小  &amp;ndash; 杜甫《望岳》&lt;br /&gt;
 平明登日观，举手开云关  &amp;ndash; 李白《游泰山》&lt;/p&gt;
 
+&lt;iframe frameborder=&#34;no&#34; border=&#34;0&#34; marginwidth=&#34;0&#34; marginheight=&#34;0&#34; width=330 height=86 src=&#34;//music.163.com/outchain/player?type=2&amp;id=28748340&amp;auto=1&amp;height=66&#34;&gt;&lt;/iframe&gt;
+
 &lt;h3 id=&#34;出发&#34;&gt;出发&lt;/h3&gt;
 
 &lt;p&gt;登泰山，一次突然做出的决定，木有看攻略，木有做啥子准备，备点衣服和一些吃的就走了。为了赶火车，提前下班打卡就从公司出发啦~（ps:哈哈，恰好周五公司发下午茶，多拿了一盒水果，感谢公司福利，~！~)。在南站与老宋汇合后，在车站吃了点晚餐就走了。&lt;br /&gt;
@@ -66,7 +90,9 @@
       <pubDate>Tue, 10 Dec 2013 01:16:30 +0800</pubDate>
       
       <guid>https://weedge.github.io/post/2013-12-10-chengdu/</guid>
-      <description>&lt;p&gt;由于入职时间的改变，有几天的时间空闲下来了，本来就没有准备的行程，以前没有想过的户外运动，本来是想体验一把的，趁这段时间，和老宋说好过去玩后，当天晚上啥都没有准备，直接就A过去了。这一趟还是挺有意思的，写这篇的时候，此刻正在老宋住的地方，准备着回北京的路上，写完后，收拾心情，准备好好工作。人生也许有很多的第一次，才能使生活变得更加的有意义吧。&lt;/p&gt;</description>
+      <description>&lt;iframe frameborder=&#34;no&#34; border=&#34;0&#34; marginwidth=&#34;0&#34; marginheight=&#34;0&#34; width=330 height=86 src=&#34;//music.163.com/outchain/player?type=2&amp;id=28748340&amp;auto=1&amp;height=66&#34;&gt;&lt;/iframe&gt;
+
+&lt;p&gt;由于入职时间的改变，有几天的时间空闲下来了，本来就没有准备的行程，以前没有想过的户外运动，本来是想体验一把的，趁这段时间，和老宋说好过去玩后，当天晚上啥都没有准备，直接就A过去了。这一趟还是挺有意思的，写这篇的时候，此刻正在老宋住的地方，准备着回北京的路上，写完后，收拾心情，准备好好工作。人生也许有很多的第一次，才能使生活变得更加的有意义吧。&lt;/p&gt;</description>
     </item>
     
     <item>
