@@ -119,7 +119,7 @@ twitter中的feed数据从mysql迁移至Cassandra中存放，cassandra没有顺�
 &lt;li&gt;稳定上mysql生成id方案比较好，全局唯一，单个mysql实例可以保证单调递增，扩容多实例变成趋势递增(proxy wrr负载均衡w=1)，性能和主从同步延迟导致id重复问题，这些问题可以通过内存中的ID范围段segment来计算生成自增序列id解决。应用场景订单号，消息id&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h2 id=&#34;参考阅读&#34;&gt;参考阅读：&lt;/h2&gt;
+&lt;h2 id=&#34;参考阅读&#34;&gt;参考阅读&lt;/h2&gt;
 
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/F7WTNeC3OUr76sZARtqRjw&#34;&gt;分布式架构系统生成全局唯一序列号的一个思路&lt;/a&gt;&lt;/li&gt;
@@ -151,8 +151,11 @@ twitter中的feed数据从mysql迁移至Cassandra中存放，cassandra没有顺�
 &lt;li&gt;&lt;p&gt;建立自己的博客，用markdown写文章，然后本地查看，检查ok在发布到github page上；具体操作看&lt;a href=&#34;https://gohugo.io/documentation/&#34;&gt;官方文档&lt;/a&gt;吧， 这里就不介绍了哈。&lt;/p&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;&amp;emsp;&amp;emsp;现在就开始新的写作记录旅程吧!
-&amp;gt; 路漫漫其修远兮，吾将上下而求索(The road ahead will be long, I shall search)&lt;/p&gt;</description>
+&lt;p&gt;&amp;emsp;&amp;emsp;现在就开始新的写作记录旅程吧!&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;路漫漫其修远兮，吾将上下而求索(The road ahead will be long, I shall search)&lt;/p&gt;
+&lt;/blockquote&gt;</description>
       
     </item>
     
@@ -1076,7 +1079,11 @@ twitter中的feed数据从mysql迁移至Cassandra中存放，cassandra没有顺�
       
       <guid>https://weedge.github.io/post/2013-01-12-hello/</guid>
       
-        <description>&lt;p&gt;最近一段时间想整个博客，来记录一些事情，感觉记忆力不如从前了，想起以前有位老程序员，身边总是挂一个小挎包，装了一些小便条(todo list)；我想人的精力是有限的，当做完一件事， 过段时间，可能忘了曾今做过的事，说的话；本来想用worldpress，但是貌似需要申请空间，不同以往了，现在都是收费的了，无意间发现了&lt;a href=&#34;http://octopress.org/docs/&#34;&gt;octopress&lt;/a&gt;,这是个好东东啊，轻量级的，不像worldpress臃肿，不需要使用mysql,通过git直接可以部署到github pages上搭建一个副本。也可以部署到&lt;a href=&#34;http://www.heroku.com/&#34;&gt;heroku&lt;/a&gt;；国内好像也有对octopress的部署支持。&lt;/p&gt;
+        <description>&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
+
+&lt;p&gt;最近一段时间想整个博客，来记录一些事情，感觉记忆力不如从前了，想起以前有位老程序员，身边总是挂一个小挎包，装了一些小便条(todo list)；我想人的精力是有限的，当做完一件事， 过段时间，可能忘了曾今做过的事，说的话；本来想用worldpress，但是貌似需要申请空间，不同以往了，现在都是收费的了，无意间发现了&lt;a href=&#34;http://octopress.org/docs/&#34;&gt;octopress&lt;/a&gt;,这是个好东东啊，轻量级的，不像worldpress臃肿，不需要使用mysql,通过git直接可以部署到github pages上搭建一个副本。也可以部署到&lt;a href=&#34;http://www.heroku.com/&#34;&gt;heroku&lt;/a&gt;；国内好像也有对octopress的部署支持。&lt;/p&gt;
+
+&lt;h2 id=&#34;octopress&#34;&gt;octopress&lt;/h2&gt;
 
 &lt;p&gt;在开始写过程之前先说下为毛这样做，其实也是觉得对新鲜的东东比较感兴趣吧！&lt;/p&gt;
 
@@ -1103,7 +1110,7 @@ twitter中的feed数据从mysql迁移至Cassandra中存放，cassandra没有顺�
 
 &lt;!--more--&gt;
 
-&lt;p&gt;由于自己对ruby不熟悉，但是想使用tag插件，不想使用octpress自带的分类插件，所以在网上找了下，感觉&lt;a href=&#34;http://mrzhang.me/&#34; title=&#34;wǒ_is神仙&#34;&gt;wǒ_is神仙&lt;/a&gt;童themes风格挺好的，于是采用了&lt;a href=&#34;https://github.com/jsw0528/octopress/tree/mrzhang_me/&#34;&gt;他Fork的Octopress&lt;/a&gt;，谢谢他的开源，与原始版本的的区别如下：&lt;/p&gt;
+&lt;p&gt;由于自己对ruby不熟悉，但是想使用tag插件，不想使用octpress自带的分类插件，所以在网上找了下，采用了&lt;a href=&#34;https://github.com/jsw0528/octopress/tree/mrzhang_me/&#34;&gt;https://github.com/jsw0528/octopress/tree/mrzhang_me/&lt;/a&gt;这个风格，与原始版本的的区别如下：&lt;/p&gt;
 
 &lt;ol&gt;
 &lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://github.com/jsw0528/octopress/blob/mrzhang_me/.rvmrc&#34;&gt;.Rvmrc&lt;/a&gt;&lt;br /&gt;
@@ -1129,17 +1136,22 @@ twitter中的feed数据从mysql迁移至Cassandra中存放，cassandra没有顺�
 神仙同学的博客主题(./themes主题风格文件夹，可以自己定制)&lt;/p&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;Tips: 在看source(来自第7条所说文件同rake install[theme]复制生成的)源码时，发现采用缓存(&lt;a href=&#34;http://www.cnblogs.com/brainmao/archive/2011/09/27/2193495.html&#34;&gt;Cache Manifest&lt;/a&gt;)，
+&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;在看source(来自第7条所说文件同rake install[theme]复制生成的)源码时，发现采用缓存(&lt;a href=&#34;http://www.cnblogs.com/brainmao/archive/2011/09/27/2193495.html&#34;&gt;Cache Manifest&lt;/a&gt;)，
 主要在页面中通过 iframe 来引用offline-cache.html这个静态文件，其中assets.manifest缓存了样式，图片，js信息，
 以达到我们不缓存当面页面，只缓存我们希望缓存文件的目的，所以有时候你对其他页面修改了，
 比如修改该了post的文件名的话，会以为没有更新成功的情况，其实已经在github服务器上了，要做的就是清除浏览器中的页面缓存或者按Ctrl+F5刷新下。&lt;/p&gt;
 
 &lt;p&gt;ok~ 开始像黑客一样写博客吧~！&lt;/p&gt;
 
-&lt;p&gt;参考：
-1. &lt;a href=&#34;http://www.yangzhiping.com/tech/octopress.html&#34;&gt;octopress-黑客一样写博客&lt;/a&gt;
-2. &lt;a href=&#34;http://www.yangzhiping.com/tech/r-markdown-knitr.html&#34;&gt;Markdown写作浅谈&lt;/a&gt;
-3. &lt;a href=&#34;http://lucifr.com/2011/12/21/octopress-on-server-and-portable-scheme/&#34;&gt;服务器端Octopress搭建及移动方案&lt;/a&gt;&lt;/p&gt;</description>
+&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.yangzhiping.com/tech/octopress.html&#34;&gt;octopress-黑客一样写博客&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.yangzhiping.com/tech/r-markdown-knitr.html&#34;&gt;Markdown写作浅谈&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://lucifr.com/2011/12/21/octopress-on-server-and-portable-scheme/&#34;&gt;服务器端Octopress搭建及移动方案&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</description>
       
     </item>
     

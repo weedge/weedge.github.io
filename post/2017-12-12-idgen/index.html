@@ -74,7 +74,7 @@
 
 <meta itemprop="datePublished" content="2017-12-12T10:26:23&#43;08:00" />
 <meta itemprop="dateModified" content="2018-02-03T00:26:23&#43;08:00" />
-<meta itemprop="wordCount" content="2507">
+<meta itemprop="wordCount" content="2506">
 
 
 
@@ -328,7 +328,7 @@
 <li><a href="#特征">特征</a></li>
 <li><a href="#方案">方案</a></li>
 <li><a href="#总结">总结</a></li>
-<li><a href="#参考阅读">参考阅读：</a></li>
+<li><a href="#参考阅读">参考阅读</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -407,7 +407,7 @@ twitter中的feed数据从mysql迁移至Cassandra中存放，cassandra没有顺�
 <li>稳定上mysql生成id方案比较好，全局唯一，单个mysql实例可以保证单调递增，扩容多实例变成趋势递增(proxy wrr负载均衡w=1)，性能和主从同步延迟导致id重复问题，这些问题可以通过内存中的ID范围段segment来计算生成自增序列id解决。应用场景订单号，消息id</li>
 </ul>
 
-<h2 id="参考阅读">参考阅读：</h2>
+<h2 id="参考阅读">参考阅读</h2>
 
 <ul>
 <li><a href="https://mp.weixin.qq.com/s/F7WTNeC3OUr76sZARtqRjw">分布式架构系统生成全局唯一序列号的一个思路</a></li>
