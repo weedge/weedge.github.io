@@ -138,6 +138,329 @@
     </item>
     
     <item>
+      <title>golang学习笔记</title>
+      <link>https://weedge.github.io/post/2017-11-1-golang/</link>
+      <pubDate>Wed, 01 Nov 2017 01:16:30 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/2017-11-1-golang/</guid>
+      
+        <description>&lt;p&gt;刚开始接触golang的时候是在大学时候，当时大概是2010年左右，对这门新语言比较好奇，但是没有深入去了解，只是道听途说这门语言在并发处理上很方便，对于协程这个东西也是第一次听说。自从工作之后，就一直没有接触过这门语言,最近公司想往golang上转，开发新的项目平台，毕竟golang运行效率和开发效率都要比其他语言要简单方便很多(听说c++都快20了)。&lt;/p&gt;
+
+&lt;p&gt;吉祥物：（憨厚小地鼠 move~move~move~ Bui~~~~    go~go~go~ ）&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/go-mascot.png&#34; alt=&#34;地鼠&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;（萌萌の勤劳小地鼠~）并发协作：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/go-concurrence.png&#34; alt=&#34;并发协作&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;语言&#34;&gt;语言&lt;/h2&gt;
+
+&lt;p&gt;看七周七语言中提到的，语言各有特色，用于不同的开发场景，对应团队的工具栈；经常用自己熟悉的编程语言，思维模式也会有所不同；总的来说，支持KISS原则，方便高效开发/测试/部署/运行，并发运行解决问题，流出更多时间关注业务或者：
+&amp;gt; kick ass &amp;amp;&amp;amp; Chew bubblegum (just a joke~)&lt;/p&gt;
+
+&lt;h3 id=&#34;发展历史&#34;&gt;发展历史：&lt;/h3&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;发明这个语言的初衷，「不忘初心，方得始终」&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+&lt;li&gt;初心：简单,开发简洁，方便快速开发编译发布(开发语言的作者来自c和java, 作者Rob Pike实现并发思想)&lt;/li&gt;
+&lt;li&gt;源码：&lt;a href=&#34;https://github.com/golang/go&#34;&gt;https://github.com/golang/go&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;特殊节点：2008 6.6 ~1.5版本去除了c代码实现自举(1.5+直接用go来编译安装即可)， now 10年+ golang2.0 版  &lt;a href=&#34;https://github.com/golang/go/wiki/Go2&#34;&gt;https://github.com/golang/go/wiki/Go2&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;语言作者ppt: &lt;a href=&#34;https://talks.golang.org/2014/hellogophers.slide##12&#34;&gt;https://talks.golang.org/2014/hellogophers.slide##12&lt;/a&gt; （golang作者之一Rob Pike 讲的golang发展史，及众家语言之所长，发明这个语言的初衷）&lt;/li&gt;
+&lt;li&gt;the why of go 很详细的介绍了GC,并发: &lt;a href=&#34;https://www.infoq.com/presentations/go-concurrency-gc&#34;&gt;https://www.infoq.com/presentations/go-concurrency-gc&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&#34;特征&#34;&gt;特征：&lt;/h4&gt;
+
+&lt;ul&gt;
+&lt;li&gt;KISS；简单朴实 （做工程的人最喜欢的就是简单实用的东西）；&lt;/li&gt;
+&lt;li&gt;运行占用资源低(可运行在嵌入式平台linux arm)，跨平台&lt;/li&gt;
+&lt;li&gt;((内存)数据结构+算法+抽象定义接口)；&lt;/li&gt;
+&lt;li&gt;语法简单，25个关键字；&lt;/li&gt;
+&lt;li&gt;c语言结构体形式模拟继承方法重写机制；&lt;/li&gt;
+&lt;li&gt;基础数据结构类型：byte,string, array; slice, map,chanel 引用类型；(其他数据结构heap(优先队列),list,ring(circular list)这些在官方提供的公共库中)&lt;/li&gt;
+&lt;li&gt;强类型语言，interface{} 表示通用类型(相当于stl中的模板)；&lt;/li&gt;
+&lt;li&gt;异常处理: defer, panic, recover 抛出一个panic的异常（异常指的是意料之外的情况，比如引用了空指针，下标越界，除数为0，不应该出现的分支，比如default），然后在defer中通过recover捕获这个异常，最后正常处理；注意如果没有recover去捕获异常，程序就会退出；&lt;/li&gt;
+&lt;li&gt;错误机制: error，错误指的是意料之中的情况，比如文件可能会打开失败，网络连接可能断开导致连接失败等等，错误是业务过程的一部分，而异常不是 (业务需定义常见的错误码标识对应错误信息)&lt;/li&gt;
+&lt;li&gt;变量对象内存分配通过tcmalloc来申请一块span, 分成多个page提供使用，充分利用内存空间，通过gc回收runtime对象(随着版本迭代，对gc的效率逐渐提高，有专门的runtime团队支持)&lt;/li&gt;
+&lt;li&gt;并发程序通过channel共享内存(share memory by communicating)；&lt;/li&gt;
+&lt;li&gt;适合web后端开发(官方golang.org已提供的基础库&lt;a href=&#34;https://golang.org/pkg/，net/http(请求，响应，client，server&#34;&gt;https://golang.org/pkg/，net/http(请求，响应，client，server&lt;/a&gt;), http/template, 数据库客户端驱动接口定义database/sql(三方根据接口标准可以自定义实现，也可以自己单独定义一套标准实现)，数据加密crypto）；&lt;/li&gt;
+&lt;li&gt;通过goroutine(协程，用户级别轻量级线程)支持并发， 协程通过channel通信(一元操作； &amp;lt;-ch 接收&amp;reg;，二元操作： ch&amp;lt;-interface{} 发送(w))；同步通过sync机制(lock(锁接口) mutex(某个goroutine加互斥锁) rwlock(对读写操作加锁) WaitGroup(pv操作,对goroutine组) ，Cond(条件变量，信号量))；&lt;/li&gt;
+&lt;li&gt;Golang实现了 CSP(Communicating Sequential Process &lt;a href=&#34;http://www.usingcsp.com/cspbook.pdf&#34;&gt;http://www.usingcsp.com/cspbook.pdf&lt;/a&gt; )并发模型做为并发基础，底层使用goroutine做为并发实体，goroutine非常轻量级可以创建几十万个实体；实体间通过 channel 继续匿名消息传递使之解耦，在语言层面实现了自动调度，这样屏蔽了很多内部细节，对外提供简单的语法关键字(go,select,channel)，大大简化了并发编程的思维转换和管理线程的复杂性；&lt;/li&gt;
+&lt;li&gt;SO OPEN，import 三方库源(大部分git的方式来自github/gitlib，还支持hg)，源码直接可以修改编译(取之于源用之源)；&lt;/li&gt;
+&lt;li&gt;Go 命令工具方便开发自测调试： &lt;a href=&#34;https://golang.org/cmd/go/&#34;&gt;https://golang.org/cmd/go/&lt;/a&gt;
+
+&lt;ul&gt;
+&lt;li&gt;通过go test来单元测试，覆盖测试，性能测试(cpu,pprof)，直接可以测试用例先行，&lt;/li&gt;
+&lt;li&gt;go tool,  pprof (进行性能分析 &lt;a href=&#34;http://cizixs.com/2017/09/11/profiling-golang-program&#34;&gt;http://cizixs.com/2017/09/11/profiling-golang-program&lt;/a&gt; ）objdump(dump出汇编代码）&lt;/li&gt;
+&lt;li&gt;go get -u ~=  download to go build and install , go run 单独运行&lt;/li&gt;
+&lt;li&gt;Gofmt&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Go 2.0正待发布，10年发展，会有一些优化和新特性&lt;/li&gt;
+&lt;li&gt;More…..&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&#34;工作上使用语言进化&#34;&gt;工作上使用语言进化&lt;/h4&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/coder.jpg&#34; alt=&#34;coder&#34; /&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;C/C++ -&amp;gt; *.so -&amp;gt; php/python  |   java -&amp;gt; *.jar  ==&amp;gt;&amp;gt;  go -&amp;gt; *.a ——import——&amp;gt; apps ——compile——&amp;gt;  binary program&lt;br /&gt;
+（ps:如果用go来调用.so动态链接库，需要用cgo机制）&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;复杂  ——&amp;gt;  简单&lt;/p&gt;
+
+&lt;p&gt;Go 相当于兼顾了c的执行效率，python的开发效率，择中方案，适合服务端开发(业务开发，基础组件开发(网关，db，AI)，自动化运维工具开发devops)&lt;/p&gt;
+
+&lt;p&gt;语法对比参考：&lt;a href=&#34;http://hyperpolyglot.org/c&#34;&gt;http://hyperpolyglot.org/c&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;学习&#34;&gt;学习&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;开始入门：&lt;a href=&#34;https://golang.org/doc/code.html&#34;&gt;https://golang.org/doc/code.html&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;golang的基本语法知识，可以通过gotour来进行简单的学习入门，godoc查看具体基础文档和get到本地的三方库接口文档，
+Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book/blob/master/Go%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%20%E7%AC%AC%E5%9B%9B%E7%89%88.pdf&#34;&gt;语法快速入门&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;练习习题：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://goquiz.github.io/&#34;&gt;Go语言经典笔试题&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://gobyexample.com&#34;&gt;Go实例&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;最佳实践：(这个会根据实践场景逐渐完善，最终可能会形成一个标准规范)&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://talks.golang.org/2013/bestpractices.slide&#34;&gt;12条最佳实践&lt;/a&gt; &lt;a href=&#34;http://maiyang.me/2017/10/21/twelve-best-practices-in-golang/&#34;&gt;中文解释&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;业务常用依赖阶级开发：(掌握一些三方库，方便快速集成开发)&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Web开发框架：
+
+&lt;ul&gt;
+&lt;li&gt;beego &lt;a href=&#34;https://github.com/astaxie/beego&#34;&gt;https://github.com/astaxie/beego&lt;/a&gt;  支持mvc, orm; 适用于cms，mis管理后台开始开发 （重量点，开发框架已经搭好，基础web开发组件已有，RBAC规范后台权限）&lt;/li&gt;
+&lt;li&gt;gin &lt;a href=&#34;https://github.com/gin-gonic/gin&#34;&gt;https://github.com/gin-gonic/gin&lt;/a&gt; 利用httprouter实现高性能路由 (轻量点，适合diy)&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;数据库 （client driver）
+
+&lt;ul&gt;
+&lt;li&gt;msyql: &lt;a href=&#34;https://github.com/go-sql-driver/mysql&#34;&gt;https://github.com/go-sql-driver/mysql&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Redis: &lt;a href=&#34;https://github.com/garyburd/redigo&#34;&gt;https://github.com/garyburd/redigo&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Mongo: &lt;a href=&#34;https://github.com/go-mgo/mgo&#34;&gt;https://github.com/go-mgo/mgo&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;ZK client: &lt;a href=&#34;https://github.com/samuel/go-zookeeper/zk&#34;&gt;https://github.com/samuel/go-zookeeper/zk&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Grpc: &lt;a href=&#34;https://github.com/grpc/grpc-go&#34;&gt;https://github.com/grpc/grpc-go&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Log: &lt;a href=&#34;https://github.com/sirupsen/logrus&#34;&gt;https://github.com/sirupsen/logrus&lt;/a&gt; (以hook机制添加自定的日志，lograte:&lt;a href=&#34;https://github.com/sirupsen/logrus##rotation，或者https://github.com/natefinch/lumberjack&#34;&gt;https://github.com/sirupsen/logrus##rotation，或者https://github.com/natefinch/lumberjack&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;队列: &lt;a href=&#34;https://github.com/nsqio/nsq&#34;&gt;https://github.com/nsqio/nsq&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;订阅资源blog:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://blog.golang.org&#34;&gt;https://blog.golang.org&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.goinggo.net&#34;&gt;https://www.goinggo.net&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://gocn.io/&#34;&gt;https://gocn.io/&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;实践踩的坑：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://zhuanlan.zhihu.com/p/29545675&#34;&gt;https://zhuanlan.zhihu.com/p/29545675&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://zhuanlan.zhihu.com/p/31395716&#34;&gt;https://zhuanlan.zhihu.com/p/31395716&lt;/a&gt; (channel,引发的死锁）&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;应用场景：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://zhuanlan.zhihu.com/p/26777189&#34;&gt;新闻实时推送&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;More:  DIY （u can do it）&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;好的开源项目：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/hackstoic/golang-open-source-projects&#34;&gt;golang-open-source-projects&lt;/a&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://github.com/avelino/awesome-go&#34;&gt;awesome-go&lt;/a&gt; (full-stack dev for venture company )&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Web server服务：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Caddy：类似nginx,apache,middleware chain(责任链模式) 管理方式，独立的mw也可拆分单独运行，比如负载均衡模块，反向代理，fastcgi代理 &lt;a href=&#34;https://github.com/mholt/caddy&#34;&gt;https://github.com/mholt/caddy&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;网关：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;krakend: &lt;a href=&#34;https://github.com/devopsfaith/krakend&#34;&gt;https://github.com/devopsfaith/krakend&lt;/a&gt;  （高性能，相比kong&amp;hellip;)&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;微服务：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;go-micro (&lt;a href=&#34;https://github.com/micro/go-micro&#34;&gt;https://github.com/micro/go-micro&lt;/a&gt;  +  plugins: &lt;a href=&#34;https://github.com/micro/go-plugins&#34;&gt;https://github.com/micro/go-plugins&lt;/a&gt;  )&lt;/li&gt;
+&lt;li&gt;Go-kit (&lt;a href=&#34;https://github.com/go-kit/kit&#34;&gt;https://github.com/go-kit/kit&lt;/a&gt;  very nice micro-service lib framework) diy 借鉴 相关介绍：&lt;a href=&#34;https://www.youtube.com/watch?v=NX0sHF8ZZgw&#34;&gt;https://www.youtube.com/watch?v=NX0sHF8ZZgw&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;服务发现：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;etcd: &lt;a href=&#34;https://github.com/coreos/etcd&#34;&gt;https://github.com/coreos/etcd&lt;/a&gt; (功能介绍: &lt;a href=&#34;http://www.infoq.com/cn/articles/etcd-interpretation-application-scenario-implement-principle&#34;&gt;http://www.infoq.com/cn/articles/etcd-interpretation-application-scenario-implement-principle&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;Consul: &lt;a href=&#34;https://github.com/hashicorp/consul&#34;&gt;https://github.com/hashicorp/consul&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Rpc：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;grpc: &lt;a href=&#34;https://github.com/grpc/grpc-go&#34;&gt;https://github.com/grpc/grpc-go&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;thrift: &lt;a href=&#34;https://github.com/apache/thrift/tree/master/lib/go&#34;&gt;https://github.com/apache/thrift/tree/master/lib/go&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Web开发框架：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;beego(支持mvc模式开发,&lt;a href=&#34;https://github.com/astaxie/beego)，&#34;&gt;https://github.com/astaxie/beego)，&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;gin(高性能路由请求处理,&lt;a href=&#34;https://github.com/gin-gonic/gin&#34;&gt;https://github.com/gin-gonic/gin&lt;/a&gt; )&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;数据库服务：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Tidb (NewSQL 数据库，水平扩展，强一致，分布式事务，多种数据引擎选择，mysql协议通信 &lt;a href=&#34;https://github.com/pingcap/tidb&#34;&gt;https://github.com/pingcap/tidb&lt;/a&gt; 国内公司用的比较多）&lt;/li&gt;
+&lt;li&gt;Cockroachdb  (NewSQL 数据库，有百度的同学提交维护 &lt;a href=&#34;https://github.com/cockroachdb/cockroach&#34;&gt;https://github.com/cockroachdb/cockroach&lt;/a&gt; ）&lt;/li&gt;
+&lt;li&gt;Influxdb (时序数据库，应用于监控日志数据存储，提供实时数据展现，&lt;a href=&#34;https://github.com/influxdata/influxdb）&#34;&gt;https://github.com/influxdata/influxdb）&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Bboltdb (本地嵌入式数据库 , LMDB的go实现版本,&lt;a href=&#34;https://github.com/coreos/bbolt&#34;&gt;https://github.com/coreos/bbolt&lt;/a&gt;)&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;推送：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Gorush: &lt;a href=&#34;https://github.com/appleboy/gorush&#34;&gt;https://github.com/appleboy/gorush&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;链路跟踪：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Opentracing: &lt;a href=&#34;https://github.com/opentracing/opentracing-go&#34;&gt;https://github.com/opentracing/opentracing-go&lt;/a&gt;  结合zipkin&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;实时消息队列平台：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;NSQ: &lt;a href=&#34;https://github.com/nsqio/nsq&#34;&gt;https://github.com/nsqio/nsq&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;监控:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;grafana：&lt;a href=&#34;https://github.com/grafana/grafana&#34;&gt;https://github.com/grafana/grafana&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;prometheus: &lt;a href=&#34;https://github.com/prometheus/prometheus&#34;&gt;https://github.com/prometheus/prometheus&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;容器管理：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Kubernetes(K8S): &lt;a href=&#34;https://github.com/kubernetes/kubernetes&#34;&gt;https://github.com/kubernetes/kubernetes&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Kubernetes Handbook: &lt;a href=&#34;https://jimmysong.io/kubernetes-handbook/&#34;&gt;https://jimmysong.io/kubernetes-handbook/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;代码仓库服务：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;gogs (轻量级的代码工具，可以运行在pi上, 界面和github相似,&lt;a href=&#34;https://github.com/gogits/gogs）&#34;&gt;https://github.com/gogits/gogs）&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;CI/CD(Continuous Delivery):&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Drone: &lt;a href=&#34;https://github.com/drone/drone&#34;&gt;https://github.com/drone/drone&lt;/a&gt; （可配套自研上线运维平台）&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;工具：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Gotty: &lt;a href=&#34;https://github.com/yudai/gotty&#34;&gt;https://github.com/yudai/gotty&lt;/a&gt; （webshell)&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;静态网页生成器：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;hugo: &lt;a href=&#34;https://github.com/gohugoio/hugo&#34;&gt;https://github.com/gohugoio/hugo&lt;/a&gt; (可以用来写个人技术博客)&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;数据科学(cheat sheet)： &lt;a href=&#34;https://www.cheatography.com/chewxy/cheat-sheets/data-science-in-go-a/pdf/&#34;&gt;https://www.cheatography.com/chewxy/cheat-sheets/data-science-in-go-a/pdf/&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;深入理解&#34;&gt;深入理解&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/goroutine.jpg&#34; alt=&#34;goroutine实现机制&#34; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;goroutine实现机制：&lt;a href=&#34;https://www.zhihu.com/question/20862617&#34;&gt;https://www.zhihu.com/question/20862617&lt;/a&gt; （M:内核OS线程；G:goroutine用户态轻量级线程，自己的栈，正在等待的channel等；P: 调度的上下文，是调度协调的处理器，P的数量代表了真正的并发度)
+    （tips：相对于java中并发库实现是不是要简洁高效些呢，&lt;a href=&#34;https://golang.org/doc/faq##goroutines&#34;&gt;https://golang.org/doc/faq##goroutines&lt;/a&gt;  这个解释了golang为什么用协成代替线程）&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;同步机制：sync lock(锁接口) mutex(某个goroutine加互斥锁) rwlock(对读写操作加锁) WaitGroup(pv操作,对goroutine组) ，Cond(条件变量，信号量) 用法参考：&lt;a href=&#34;https://deepzz.com/post/golang-sync-package-usage.html&#34;&gt;https://deepzz.com/post/golang-sync-package-usage.html&lt;/a&gt;  (其实就是OS中的同步机制实现)   锁的话是一个原子操作，要么锁住，要么不做，通过atomic操作底层的cpu指令(CHANGE*, SWAP* &amp;hellip;.etc指令根据不同的cpu/gpu厂商定义，intel/amd)&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;内存管理： &lt;a href=&#34;http://legendtkl.com/2017/04/02/golang-alloc/&#34;&gt;http://legendtkl.com/2017/04/02/golang-alloc/&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;GC机制：&lt;a href=&#34;http://legendtkl.com/2017/04/28/golang-gc/&#34;&gt;http://legendtkl.com/2017/04/28/golang-gc/&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;深入了解golang的执行原理，&lt;a href=&#34;https://github.com/qyuhen/book/blob/master/Go%201.5%20%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90.pdf&#34;&gt;https://github.com/qyuhen/book/blob/master/Go%201.5%20%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90.pdf&lt;/a&gt; (底层的运行时逻辑有点像php的执行过程, php7底层运行结构也借鉴了golang的设计思想，比如内存的申请)&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;faq&#34;&gt;FAQ:&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://golang.org/doc/faq&#34;&gt;https://golang.org/doc/faq&lt;/a&gt;  相当有用值得一读
+热更新方案： &lt;a href=&#34;https://studygolang.com/topics/1194&#34;&gt;https://studygolang.com/topics/1194&lt;/a&gt;  (监控一个当前版本文件是否变动了，如果变动然后将老的执行文件软连指向新的执行文件(rm 软连,ln 创建新的软连，然后通过hup信号优雅的重启由endless启动的服务)&lt;/p&gt;
+
+&lt;h2 id=&#34;开发工具&#34;&gt;开发工具&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;vim-go: &lt;a href=&#34;https://github.com/fatih/vim-go&#34;&gt;https://github.com/fatih/vim-go&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;vscode-go: &lt;a href=&#34;https://github.com/Microsoft/vscode-go&#34;&gt;https://github.com/Microsoft/vscode-go&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;goland: &lt;a href=&#34;https://www.jetbrains.com/go/&#34;&gt;https://www.jetbrains.com/go/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;diy&#34;&gt;DIY&lt;/h2&gt;
+
+&lt;p&gt;(熟悉三方源码，基础库，自行diy服务)&lt;/p&gt;
+
+&lt;ul class=&#34;task-list&#34;&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; 网关服务&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; 网关后台&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; abtest&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; abtest后台&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; 微服务
+
+&lt;ul class=&#34;task-list&#34;&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; passport&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; activity&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;More…&lt;/li&gt;
+&lt;/ul&gt;&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; 资源管理(K8S)&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; 监控&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; ci/cd构建发布上线&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; 队列
+
+
+
+
+
+
+&lt;br /&gt;&lt;/label&gt;&lt;/li&gt;
+&lt;/ul&gt;</description>
+      
+    </item>
+    
+    <item>
       <title>更换博客</title>
       <link>https://weedge.github.io/post/2017-10-12-use-hugo-blog/</link>
       <pubDate>Thu, 12 Oct 2017 10:26:23 +0800</pubDate>

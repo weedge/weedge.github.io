@@ -23,6 +23,15 @@
     </item>
     
     <item>
+      <title>golang学习笔记</title>
+      <link>https://weedge.github.io/post/2017-11-1-golang/</link>
+      <pubDate>Wed, 01 Nov 2017 01:16:30 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/2017-11-1-golang/</guid>
+      <description>&lt;p&gt;刚开始接触golang的时候是在大学时候，当时大概是2010年左右，对这门新语言比较好奇，但是没有深入去了解，只是道听途说这门语言在并发处理上很方便，对于协程这个东西也是第一次听说。自从工作之后，就一直没有接触过这门语言,最近公司想往golang上转，开发新的项目平台，毕竟golang运行效率和开发效率都要比其他语言要简单方便很多(听说c++都快20了)。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
       <title>附近POI: geohash原理</title>
       <link>https://weedge.github.io/post/2015-06-03-geohash/</link>
       <pubDate>Wed, 03 Jun 2015 00:26:23 +0800</pubDate>
