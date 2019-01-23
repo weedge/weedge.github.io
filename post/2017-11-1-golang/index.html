@@ -70,7 +70,7 @@
 
 <meta itemprop="datePublished" content="2017-11-01T01:16:30&#43;08:00" />
 <meta itemprop="dateModified" content="2017-11-01T01:16:30&#43;08:00" />
-<meta itemprop="wordCount" content="4249">
+<meta itemprop="wordCount" content="4218">
 
 
 
@@ -404,13 +404,13 @@
 <p><img src="https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/coder.jpg" alt="coder" /></p>
 
 <blockquote>
-<p>C/C++ -&gt; *.so -&gt; php/python  |   java -&gt; *.jar  ==&gt;&gt;  go -&gt; *.a ——import——&gt; apps ——compile——&gt;  binary program<br />
-（ps:如果用go来调用.so动态链接库，需要用cgo机制）</p>
+<p>C/C++ -&gt; *.so -&gt; php/python  |   java -&gt; *.jar  ==&gt;&gt;  go -&gt; *.a -import-&gt; pkg -compile-&gt;  binary program</p>
 </blockquote>
 
-<p>复杂  ——&gt;  简单</p>
+<p>编写运行：复杂  -&gt;  简单</p>
 
-<p>Go 相当于兼顾了c的执行效率，python的开发效率，择中方案，适合服务端开发(业务开发，基础组件开发(网关，db，AI)，自动化运维工具开发devops)</p>
+<p>Go 相当于兼顾了c的执行效率，python的开发效率，择中方案，适合服务端开发(业务开发，基础组件开发(网关，db，AI)，自动化运维工具开发devops);
+如果用go来调用.so动态链接库，需要用cgo机制</p>
 
 <p>语法对比参考：<a href="http://hyperpolyglot.org/c">http://hyperpolyglot.org/c</a></p>
 
@@ -614,8 +614,9 @@ Gotour简单入门 ——&gt; <a href="https://github.com/qyuhen/book/blob/maste
 
 <h2 id="faq">FAQ:</h2>
 
-<p><a href="https://golang.org/doc/faq">https://golang.org/doc/faq</a>  相当有用值得一读
-热更新方案： <a href="https://studygolang.com/topics/1194">https://studygolang.com/topics/1194</a>  (监控一个当前版本文件是否变动了，如果变动然后将老的执行文件软连指向新的执行文件(rm 软连,ln 创建新的软连，然后通过hup信号优雅的重启由endless启动的服务)</p>
+<p><a href="https://golang.org/doc/faq">https://golang.org/doc/faq</a>  相当有用值得一读</p>
+
+<p>热更新方案： <a href="https://studygolang.com/topics/1194">https://studygolang.com/topics/1194</a>  (监控一个当前版本文件是否变动了，如果变动然后将老的执行文件软连指向新的执行文件(rm 软连,ln 创建新的软连，然后通过hup信号优雅的重启由endless启动的服务)</p>
 
 <h2 id="开发工具">开发工具</h2>
 

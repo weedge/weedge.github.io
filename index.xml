@@ -208,13 +208,13 @@
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/coder.jpg&#34; alt=&#34;coder&#34; /&gt;&lt;/p&gt;
 
 &lt;blockquote&gt;
-&lt;p&gt;C/C++ -&amp;gt; *.so -&amp;gt; php/python  |   java -&amp;gt; *.jar  ==&amp;gt;&amp;gt;  go -&amp;gt; *.a ——import——&amp;gt; apps ——compile——&amp;gt;  binary program&lt;br /&gt;
-（ps:如果用go来调用.so动态链接库，需要用cgo机制）&lt;/p&gt;
+&lt;p&gt;C/C++ -&amp;gt; *.so -&amp;gt; php/python  |   java -&amp;gt; *.jar  ==&amp;gt;&amp;gt;  go -&amp;gt; *.a -import-&amp;gt; pkg -compile-&amp;gt;  binary program&lt;/p&gt;
 &lt;/blockquote&gt;
 
-&lt;p&gt;复杂  ——&amp;gt;  简单&lt;/p&gt;
+&lt;p&gt;编写运行：复杂  -&amp;gt;  简单&lt;/p&gt;
 
-&lt;p&gt;Go 相当于兼顾了c的执行效率，python的开发效率，择中方案，适合服务端开发(业务开发，基础组件开发(网关，db，AI)，自动化运维工具开发devops)&lt;/p&gt;
+&lt;p&gt;Go 相当于兼顾了c的执行效率，python的开发效率，择中方案，适合服务端开发(业务开发，基础组件开发(网关，db，AI)，自动化运维工具开发devops);
+如果用go来调用.so动态链接库，需要用cgo机制&lt;/p&gt;
 
 &lt;p&gt;语法对比参考：&lt;a href=&#34;http://hyperpolyglot.org/c&#34;&gt;http://hyperpolyglot.org/c&lt;/a&gt;&lt;/p&gt;
 
@@ -418,8 +418,9 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
 
 &lt;h2 id=&#34;faq&#34;&gt;FAQ:&lt;/h2&gt;
 
-&lt;p&gt;&lt;a href=&#34;https://golang.org/doc/faq&#34;&gt;https://golang.org/doc/faq&lt;/a&gt;  相当有用值得一读
-热更新方案： &lt;a href=&#34;https://studygolang.com/topics/1194&#34;&gt;https://studygolang.com/topics/1194&lt;/a&gt;  (监控一个当前版本文件是否变动了，如果变动然后将老的执行文件软连指向新的执行文件(rm 软连,ln 创建新的软连，然后通过hup信号优雅的重启由endless启动的服务)&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://golang.org/doc/faq&#34;&gt;https://golang.org/doc/faq&lt;/a&gt;  相当有用值得一读&lt;/p&gt;
+
+&lt;p&gt;热更新方案： &lt;a href=&#34;https://studygolang.com/topics/1194&#34;&gt;https://studygolang.com/topics/1194&lt;/a&gt;  (监控一个当前版本文件是否变动了，如果变动然后将老的执行文件软连指向新的执行文件(rm 软连,ln 创建新的软连，然后通过hup信号优雅的重启由endless启动的服务)&lt;/p&gt;
 
 &lt;h2 id=&#34;开发工具&#34;&gt;开发工具&lt;/h2&gt;
 
