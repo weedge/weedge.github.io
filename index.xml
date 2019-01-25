@@ -166,11 +166,17 @@
 &lt;/blockquote&gt;
 
 &lt;ul&gt;
-&lt;li&gt;初心：简单,开发简洁，方便快速开发编译发布(开发语言的作者来自c和java, 作者Rob Pike实现并发思想)&lt;/li&gt;
-&lt;li&gt;源码：&lt;a href=&#34;https://github.com/golang/go&#34;&gt;https://github.com/golang/go&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;特殊节点：2008 6.6 ~1.5版本去除了c代码实现自举(1.5+直接用go来编译安装即可)， now 10年+ golang2.0 版  &lt;a href=&#34;https://github.com/golang/go/wiki/Go2&#34;&gt;https://github.com/golang/go/wiki/Go2&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;语言作者ppt: &lt;a href=&#34;https://talks.golang.org/2014/hellogophers.slide##12&#34;&gt;https://talks.golang.org/2014/hellogophers.slide##12&lt;/a&gt; （golang作者之一Rob Pike 讲的golang发展史，及众家语言之所长，发明这个语言的初衷）&lt;/li&gt;
-&lt;li&gt;the why of go 很详细的介绍了GC,并发: &lt;a href=&#34;https://www.infoq.com/presentations/go-concurrency-gc&#34;&gt;https://www.infoq.com/presentations/go-concurrency-gc&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;为毛需要这个语言：&lt;a href=&#34;https://www.oschina.net/translate/go-at-google-language-design-in-the-service-of-software-engineering&#34;&gt;https://www.oschina.net/translate/go-at-google-language-design-in-the-service-of-software-engineering&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;初心：简单,开发简洁，方便快速开发编译发布(开发语言的作者来自c和java, 作者Rob Pike实现并发思想)&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;源码：&lt;a href=&#34;https://github.com/golang/go&#34;&gt;https://github.com/golang/go&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;特殊节点：2008 6.6 ~1.5版本去除了c代码实现自举(1.5+直接用go来编译安装即可)， now 10年+ golang2.0 版  &lt;a href=&#34;https://github.com/golang/go/wiki/Go2&#34;&gt;https://github.com/golang/go/wiki/Go2&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;语言作者ppt: &lt;a href=&#34;https://talks.golang.org/2014/hellogophers.slide##12&#34;&gt;https://talks.golang.org/2014/hellogophers.slide##12&lt;/a&gt; （golang作者之一Rob Pike 讲的golang发展史，及众家语言之所长，发明这个语言的初衷）&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;the why of go 很详细的介绍了GC,并发: &lt;a href=&#34;https://www.infoq.com/presentations/go-concurrency-gc&#34;&gt;https://www.infoq.com/presentations/go-concurrency-gc&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h4 id=&#34;特征&#34;&gt;特征：&lt;/h4&gt;
