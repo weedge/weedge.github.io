@@ -25,10 +25,10 @@
     
     <item>
       <title>屏蔽macbook内置键盘</title>
-      <link>https://weedge.github.io/post/2018-11-23-mackeyboard-hhkb/</link>
+      <link>https://weedge.github.io/post/mackeyboard-hhkb/</link>
       <pubDate>Sat, 19 Jan 2019 10:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/2018-11-23-mackeyboard-hhkb/</guid>
+      <guid>https://weedge.github.io/post/mackeyboard-hhkb/</guid>
       
         <description>&lt;iframe frameborder=&#34;no&#34; border=&#34;0&#34; marginwidth=&#34;0&#34; marginheight=&#34;0&#34; width=130 height=86 src=&#34;//music.163.com/outchain/player?type=2&amp;id=28828074&amp;auto=1&amp;height=66&#34;&gt;&lt;/iframe&gt;
 
@@ -43,11 +43,22 @@
     </item>
     
     <item>
+      <title>abtest</title>
+      <link>https://weedge.github.io/todo/abtest/</link>
+      <pubDate>Sat, 23 Dec 2017 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/todo/abtest/</guid>
+      
+        <description></description>
+      
+    </item>
+    
+    <item>
       <title>id生成</title>
-      <link>https://weedge.github.io/post/2017-12-12-idgen/</link>
+      <link>https://weedge.github.io/post/idgen/</link>
       <pubDate>Tue, 12 Dec 2017 10:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/2017-12-12-idgen/</guid>
+      <guid>https://weedge.github.io/post/idgen/</guid>
       
         <description>&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
 
@@ -138,11 +149,69 @@
     </item>
     
     <item>
+      <title>消息队列</title>
+      <link>https://weedge.github.io/todo/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/</link>
+      <pubDate>Sun, 12 Nov 2017 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/todo/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/</guid>
+      
+        <description>
+
+&lt;h2 id=&#34;消息队列介绍what&#34;&gt;消息队列介绍what&lt;/h2&gt;
+
+&lt;h3 id=&#34;协议&#34;&gt;协议：&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;MQTT&lt;/strong&gt;(Message Queuing Telemetry Transport，消息队列遥测传输，基于二进制消息的发布/订阅编程模式的消息协议):&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://docs.emqtt.cn/zh_CN/latest/mqtt.html&#34;&gt;http://docs.emqtt.cn/zh_CN/latest/mqtt.html&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://zhuanlan.zhihu.com/p/20888181&#34;&gt;https://zhuanlan.zhihu.com/p/20888181&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;简单的协议:&lt;a href=&#34;http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html&#34;&gt;http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;由于规范协议很简单，非常适合需要低功耗和网络带宽有限的IoT场景。&lt;/p&gt;
+
+&lt;p&gt;​&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;AMQP&lt;/strong&gt;(Advanced Message Queuing Protocol,一个提供统一消息服务的应用层标准高级消息队列协议，是应用层协议的一个开发标准，为面向消息的中间件设计)：&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;​&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;XMPP&lt;/strong&gt;(可扩展消息处理现场协议，Extensible Messaging and Presence Protocol）是基于可扩展标记语言的协议，多用于即时消息)：&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;​&lt;/p&gt;
+
+&lt;p&gt;​&lt;/p&gt;
+
+&lt;h2 id=&#34;消息-队列原理why&#34;&gt;&lt;strong&gt;消息&lt;/strong&gt;队列原理why&lt;/h2&gt;
+
+&lt;h2 id=&#34;消息队列使用场景where&#34;&gt;消息队列使用场景where&lt;/h2&gt;
+
+&lt;h2 id=&#34;如何设计消息队列how&#34;&gt;如何设计消息队列how&lt;/h2&gt;
+
+&lt;h2 id=&#34;开源消息队列&#34;&gt;开源消息队列&lt;/h2&gt;
+
+&lt;h3 id=&#34;kafka&#34;&gt;kafka&lt;/h3&gt;
+
+&lt;h3 id=&#34;nps&#34;&gt;NPS&lt;/h3&gt;
+
+&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+</description>
+      
+    </item>
+    
+    <item>
       <title>golang学习笔记</title>
-      <link>https://weedge.github.io/post/2017-11-1-golang/</link>
+      <link>https://weedge.github.io/post/golang/</link>
       <pubDate>Wed, 01 Nov 2017 01:16:30 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/2017-11-1-golang/</guid>
+      <guid>https://weedge.github.io/post/golang/</guid>
       
         <description>&lt;p&gt;刚开始接触golang的时候是在大学时候，当时大概是2010年左右，对这门新语言比较好奇，但是没有深入去了解，只是道听途说这门语言在并发处理上很方便，对于协程这个东西也是第一次听说。自从工作之后，就一直没有接触过这门语言,最近公司想往golang上转，开发新的项目平台，毕竟golang运行效率和开发效率都要比其他语言要简单方便很多(听说c++都快20了)。&lt;/p&gt;
 
@@ -156,8 +225,7 @@
 
 &lt;h2 id=&#34;语言&#34;&gt;语言&lt;/h2&gt;
 
-&lt;p&gt;看七周七语言中提到的，语言各有特色，用于不同的开发场景，对应团队的工具栈；经常用自己熟悉的编程语言，思维模式也会有所不同；总的来说，支持KISS原则，方便高效开发/测试/部署/运行，并发运行解决问题，流出更多时间关注业务或者：
-&amp;gt; kick ass &amp;amp;&amp;amp; Chew bubblegum (just a joke~)&lt;/p&gt;
+&lt;p&gt;看七周七语言中提到的，语言各有特色，用于不同的开发场景，对应团队的工具栈；经常用自己熟悉的编程语言，思维模式也会有所不同；总的来说，支持KISS原则，方便高效开发/测试/部署/运行，并发运行解决问题，流出更多时间关注业务或者&lt;code&gt;kick ass &amp;amp;&amp;amp; Chew bubblegum (just a joke~)&lt;/code&gt;&lt;/p&gt;
 
 &lt;h3 id=&#34;发展历史&#34;&gt;发展历史：&lt;/h3&gt;
 
@@ -166,17 +234,12 @@
 &lt;/blockquote&gt;
 
 &lt;ul&gt;
-&lt;li&gt;&lt;p&gt;为毛需要这个语言：&lt;a href=&#34;https://www.oschina.net/translate/go-at-google-language-design-in-the-service-of-software-engineering&#34;&gt;https://www.oschina.net/translate/go-at-google-language-design-in-the-service-of-software-engineering&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;初心：简单,开发简洁，方便快速开发编译发布(开发语言的作者来自c和java, 作者Rob Pike实现并发思想)&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;源码：&lt;a href=&#34;https://github.com/golang/go&#34;&gt;https://github.com/golang/go&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;特殊节点：2008 6.6 ~1.5版本去除了c代码实现自举(1.5+直接用go来编译安装即可)， now 10年+ golang2.0 版  &lt;a href=&#34;https://github.com/golang/go/wiki/Go2&#34;&gt;https://github.com/golang/go/wiki/Go2&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;语言作者ppt: &lt;a href=&#34;https://talks.golang.org/2014/hellogophers.slide##12&#34;&gt;https://talks.golang.org/2014/hellogophers.slide##12&lt;/a&gt; （golang作者之一Rob Pike 讲的golang发展史，及众家语言之所长，发明这个语言的初衷）&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;the why of go 很详细的介绍了GC,并发: &lt;a href=&#34;https://www.infoq.com/presentations/go-concurrency-gc&#34;&gt;https://www.infoq.com/presentations/go-concurrency-gc&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;为毛需要这个语言：&lt;a href=&#34;https://www.oschina.net/translate/go-at-google-language-design-in-the-service-of-software-engineering&#34;&gt;https://www.oschina.net/translate/go-at-google-language-design-in-the-service-of-software-engineering&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;初心：简单,开发简洁，方便快速开发编译发布(开发语言的作者来自c和java, 作者Rob Pike实现并发思想)&lt;/li&gt;
+&lt;li&gt;源码：&lt;a href=&#34;https://github.com/golang/go&#34;&gt;https://github.com/golang/go&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;特殊节点：2008 6.6 ~1.5版本去除了c代码实现自举(1.5+直接用go来编译安装即可)， now 10年+ golang2.0 版  &lt;a href=&#34;https://github.com/golang/go/wiki/Go2&#34;&gt;https://github.com/golang/go/wiki/Go2&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;语言作者ppt: &lt;a href=&#34;https://talks.golang.org/2014/hellogophers.slide##12&#34;&gt;https://talks.golang.org/2014/hellogophers.slide##12&lt;/a&gt; （golang作者之一Rob Pike 讲的golang发展史，及众家语言之所长，发明这个语言的初衷）&lt;/li&gt;
+&lt;li&gt;Go Concurrency Patterns: &lt;a href=&#34;https://www.youtube.com/watch?v=f6kdp27TYZs&#34;&gt;https://www.youtube.com/watch?v=f6kdp27TYZs&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h4 id=&#34;特征&#34;&gt;特征：&lt;/h4&gt;
@@ -363,10 +426,11 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
 &lt;li&gt;NSQ: &lt;a href=&#34;https://github.com/nsqio/nsq&#34;&gt;https://github.com/nsqio/nsq&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
 
-&lt;li&gt;&lt;p&gt;监控:&lt;/p&gt;
+&lt;li&gt;&lt;p&gt;监控:&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;grafana：&lt;a href=&#34;https://github.com/grafana/grafana&#34;&gt;https://github.com/grafana/grafana&lt;/a&gt;&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;grafana：&lt;a href=&#34;https://github.com/grafana/grafana&#34;&gt;https://github.com/grafana/grafana&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;prometheus: &lt;a href=&#34;https://github.com/prometheus/prometheus&#34;&gt;https://github.com/prometheus/prometheus&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
 
@@ -455,24 +519,17 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
 &lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; 资源管理(K8S)&lt;/label&gt;&lt;/li&gt;
 &lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; 监控&lt;/label&gt;&lt;/li&gt;
 &lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; ci/cd构建发布上线&lt;/label&gt;&lt;/li&gt;
-&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; 队列
-
-
-
-
-
-
-&lt;br /&gt;&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; 队列&lt;/label&gt;&lt;/li&gt;
 &lt;/ul&gt;</description>
       
     </item>
     
     <item>
       <title>更换博客</title>
-      <link>https://weedge.github.io/post/2017-10-12-use-hugo-blog/</link>
+      <link>https://weedge.github.io/post/use-hugo-blog/</link>
       <pubDate>Thu, 12 Oct 2017 10:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/2017-10-12-use-hugo-blog/</guid>
+      <guid>https://weedge.github.io/post/use-hugo-blog/</guid>
       
         <description>&lt;p&gt;&amp;emsp;&amp;emsp;博客有段时间一直没有跟新过了，说白了，就是太懒了，或者没有动力去push你去干好这件事情；看着以前的博客，寥寥无几的几篇，质量也不高；早上上班经常看一些公众号文章，有个作者每天坚持写一篇文章，都已经坚持了大半年了，从生活的思考记录，到技术的积累，而且输出的文章质量不错，至少自己读了之后会产生一些共鸣，或者学到一些知识点。&lt;/p&gt;
 
@@ -498,10 +555,10 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
     
     <item>
       <title>附近POI: geohash原理</title>
-      <link>https://weedge.github.io/post/2015-06-03-geohash/</link>
+      <link>https://weedge.github.io/post/geohash/</link>
       <pubDate>Wed, 03 Jun 2015 00:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/2015-06-03-geohash/</guid>
+      <guid>https://weedge.github.io/post/geohash/</guid>
       
         <description>&lt;h3 id=&#34;问题&#34;&gt;问题&lt;/h3&gt;
 
@@ -832,10 +889,10 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
     
     <item>
       <title>工具盒子-GNU global</title>
-      <link>https://weedge.github.io/post/2014-11-15-gnu-global/</link>
+      <link>https://weedge.github.io/post/gnu-global/</link>
       <pubDate>Sat, 15 Nov 2014 21:04:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/2014-11-15-gnu-global/</guid>
+      <guid>https://weedge.github.io/post/gnu-global/</guid>
       
         <description>&lt;h3 id=&#34;gnu-global&#34;&gt;gnu global&lt;/h3&gt;
 
@@ -882,10 +939,10 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
     
     <item>
       <title>登泰山</title>
-      <link>https://weedge.github.io/post/2014-09-21-taishan/</link>
+      <link>https://weedge.github.io/post/taishan/</link>
       <pubDate>Sun, 21 Sep 2014 22:04:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/2014-09-21-taishan/</guid>
+      <guid>https://weedge.github.io/post/taishan/</guid>
       
         <description>&lt;h2 id=&#34;登泰山看日出&#34;&gt;登泰山看日出&lt;/h2&gt;
 
@@ -1078,10 +1135,10 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
     
     <item>
       <title>成都行</title>
-      <link>https://weedge.github.io/post/2013-12-10-chengdu/</link>
+      <link>https://weedge.github.io/post/chengdu/</link>
       <pubDate>Tue, 10 Dec 2013 01:16:30 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/2013-12-10-chengdu/</guid>
+      <guid>https://weedge.github.io/post/chengdu/</guid>
       
         <description>&lt;iframe frameborder=&#34;no&#34; border=&#34;0&#34; marginwidth=&#34;0&#34; marginheight=&#34;0&#34; width=330 height=86 src=&#34;//music.163.com/outchain/player?type=2&amp;id=41641784&amp;auto=1&amp;height=66&#34;&gt;&lt;/iframe&gt;
 
@@ -1411,10 +1468,10 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
     
     <item>
       <title>像黑客一样写博客</title>
-      <link>https://weedge.github.io/post/2013-01-12-hello/</link>
+      <link>https://weedge.github.io/post/hello/</link>
       <pubDate>Tue, 01 Jan 2013 20:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/2013-01-12-hello/</guid>
+      <guid>https://weedge.github.io/post/hello/</guid>
       
         <description>&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
 
@@ -1494,10 +1551,10 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
     
     <item>
       <title>happy new year</title>
-      <link>https://weedge.github.io/post/2013-01-01-happy-new-year/</link>
+      <link>https://weedge.github.io/post/happy-new-year/</link>
       <pubDate>Tue, 01 Jan 2013 00:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/2013-01-01-happy-new-year/</guid>
+      <guid>https://weedge.github.io/post/happy-new-year/</guid>
       
         <description>&lt;p&gt;新年开始了，工作了半年，经历一些，懂得一些，认识一些，对自己的未来总是在不断的寻觅中，却迷茫着~，每次家里人问起是否在这个城市待得习惯，不断的问我是否过得好，总是回复家人过得好，放心好了，出门在外，家人总是希望自己能够过得好，而对家人总是报喜不报忧；新年了，有些变化，给自己一些时间，计划似乎永远赶不上变化，改正自己，尽快恢复过来，加油吧~！&lt;/p&gt;
 

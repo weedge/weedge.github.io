@@ -13,10 +13,10 @@
     
     <item>
       <title>附近POI: geohash原理</title>
-      <link>https://weedge.github.io/post/2015-06-03-geohash/</link>
+      <link>https://weedge.github.io/post/geohash/</link>
       <pubDate>Wed, 03 Jun 2015 00:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/2015-06-03-geohash/</guid>
+      <guid>https://weedge.github.io/post/geohash/</guid>
       <description>&lt;h3 id=&#34;问题&#34;&gt;问题&lt;/h3&gt;
 
 &lt;p&gt;&amp;emsp;&amp;emsp;现在吃穿住行的app大都有定位的功能；如何让手机app所在的定位寻找出附近的POI(Point of Interest)呢？至于用户手机是如何获取定位的可以自行Google/Baidu，有时间整理一下。&lt;/p&gt;

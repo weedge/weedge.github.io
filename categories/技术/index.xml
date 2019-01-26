@@ -6,37 +6,55 @@
     <description>Recent content in 技术 on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 12 Dec 2017 10:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 23 Dec 2017 10:26:23 +0800</lastBuildDate>
     
 	<atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
+      <title>abtest</title>
+      <link>https://weedge.github.io/todo/abtest/</link>
+      <pubDate>Sat, 23 Dec 2017 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/todo/abtest/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>id生成</title>
-      <link>https://weedge.github.io/post/2017-12-12-idgen/</link>
+      <link>https://weedge.github.io/post/idgen/</link>
       <pubDate>Tue, 12 Dec 2017 10:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/2017-12-12-idgen/</guid>
+      <guid>https://weedge.github.io/post/idgen/</guid>
       <description>&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
 
 &lt;p&gt;&amp;emsp;&amp;emsp;用户业务数据增长过快，比如文章评论系统，feed流系统，订单系统；数据的存放模型需要从主从的单机单库 演变成 分布式集群数据库； 分库分表的数据查询需用到全局唯一标识的id来查询业务，比如莫个feed的评论数据、推送消息、购物订单、活动优惠劵等等都需要进行唯一ID标识；以便分布式存储(mysql,nosql,newsql)索引(b+tree, LSMtree,inverted index)快速查询；至于数据一致性通过约定规范协议保证(强：类Paxos算法/raft算法，弱: mq) 。&lt;/p&gt;</description>
     </item>
     
     <item>
+      <title>消息队列</title>
+      <link>https://weedge.github.io/todo/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/</link>
+      <pubDate>Sun, 12 Nov 2017 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/todo/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/</guid>
+      <description>消息队列介绍what 协议： MQTT(Message Queuing Telemetry Transport，消息队列遥测传输，基于二进制消息的发布/订阅编程模式的消息协议): http://docs.emqtt.cn/zh_CN/latest/mqtt.html https://zhuanlan.zhihu.com/p/20888181 简单的协议:htt</description>
+    </item>
+    
+    <item>
       <title>golang学习笔记</title>
-      <link>https://weedge.github.io/post/2017-11-1-golang/</link>
+      <link>https://weedge.github.io/post/golang/</link>
       <pubDate>Wed, 01 Nov 2017 01:16:30 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/2017-11-1-golang/</guid>
+      <guid>https://weedge.github.io/post/golang/</guid>
       <description>&lt;p&gt;刚开始接触golang的时候是在大学时候，当时大概是2010年左右，对这门新语言比较好奇，但是没有深入去了解，只是道听途说这门语言在并发处理上很方便，对于协程这个东西也是第一次听说。自从工作之后，就一直没有接触过这门语言,最近公司想往golang上转，开发新的项目平台，毕竟golang运行效率和开发效率都要比其他语言要简单方便很多(听说c++都快20了)。&lt;/p&gt;</description>
     </item>
     
     <item>
       <title>附近POI: geohash原理</title>
-      <link>https://weedge.github.io/post/2015-06-03-geohash/</link>
+      <link>https://weedge.github.io/post/geohash/</link>
       <pubDate>Wed, 03 Jun 2015 00:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/2015-06-03-geohash/</guid>
+      <guid>https://weedge.github.io/post/geohash/</guid>
       <description>&lt;h3 id=&#34;问题&#34;&gt;问题&lt;/h3&gt;
 
 &lt;p&gt;&amp;emsp;&amp;emsp;现在吃穿住行的app大都有定位的功能；如何让手机app所在的定位寻找出附近的POI(Point of Interest)呢？至于用户手机是如何获取定位的可以自行Google/Baidu，有时间整理一下。&lt;/p&gt;
