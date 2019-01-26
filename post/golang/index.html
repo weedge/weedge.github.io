@@ -70,7 +70,7 @@
 
 <meta itemprop="datePublished" content="2017-11-01T01:16:30&#43;08:00" />
 <meta itemprop="dateModified" content="2017-11-01T01:16:30&#43;08:00" />
-<meta itemprop="wordCount" content="4316">
+<meta itemprop="wordCount" content="4323">
 
 
 
@@ -483,50 +483,42 @@ Gotour简单入门 ——&gt; <a href="https://github.com/qyuhen/book/blob/maste
 
 <ul>
 <li><a href="https://github.com/hackstoic/golang-open-source-projects">golang-open-source-projects</a></li>
-
-<li><p><a href="https://github.com/avelino/awesome-go">awesome-go</a> (full-stack dev for venture company )</p></li>
-
-<li><p>Web server服务：</p>
+<li><a href="https://github.com/avelino/awesome-go">awesome-go</a> (full-stack dev for venture company )</li>
+<li>Web server服务：
 
 <ul>
 <li>Caddy：类似nginx,apache,middleware chain(责任链模式) 管理方式，独立的mw也可拆分单独运行，比如负载均衡模块，反向代理，fastcgi代理 <a href="https://github.com/mholt/caddy">https://github.com/mholt/caddy</a></li>
 </ul></li>
-
-<li><p>网关：</p>
+<li>网关：
 
 <ul>
 <li>krakend: <a href="https://github.com/devopsfaith/krakend">https://github.com/devopsfaith/krakend</a>  （高性能，相比kong&hellip;)</li>
 </ul></li>
-
-<li><p>微服务：</p>
+<li>微服务：
 
 <ul>
 <li>go-micro (<a href="https://github.com/micro/go-micro">https://github.com/micro/go-micro</a>  +  plugins: <a href="https://github.com/micro/go-plugins">https://github.com/micro/go-plugins</a>  )</li>
 <li>Go-kit (<a href="https://github.com/go-kit/kit">https://github.com/go-kit/kit</a>  very nice micro-service lib framework) diy 借鉴 相关介绍：<a href="https://www.youtube.com/watch?v=NX0sHF8ZZgw">https://www.youtube.com/watch?v=NX0sHF8ZZgw</a></li>
 </ul></li>
-
-<li><p>服务发现：</p>
+<li>服务发现：
 
 <ul>
 <li>etcd: <a href="https://github.com/coreos/etcd">https://github.com/coreos/etcd</a> (功能介绍: <a href="http://www.infoq.com/cn/articles/etcd-interpretation-application-scenario-implement-principle">http://www.infoq.com/cn/articles/etcd-interpretation-application-scenario-implement-principle</a>)</li>
 <li>Consul: <a href="https://github.com/hashicorp/consul">https://github.com/hashicorp/consul</a></li>
 </ul></li>
-
-<li><p>Rpc：</p>
+<li>Rpc：
 
 <ul>
 <li>grpc: <a href="https://github.com/grpc/grpc-go">https://github.com/grpc/grpc-go</a></li>
 <li>thrift: <a href="https://github.com/apache/thrift/tree/master/lib/go">https://github.com/apache/thrift/tree/master/lib/go</a></li>
 </ul></li>
-
-<li><p>Web开发框架：</p>
+<li>Web开发框架：
 
 <ul>
 <li>beego(支持mvc模式开发,<a href="https://github.com/astaxie/beego)，">https://github.com/astaxie/beego)，</a></li>
 <li>gin(高性能路由请求处理,<a href="https://github.com/gin-gonic/gin">https://github.com/gin-gonic/gin</a> )</li>
 </ul></li>
-
-<li><p>数据库服务：</p>
+<li>数据库服务：
 
 <ul>
 <li>Tidb (NewSQL 数据库，水平扩展，强一致，分布式事务，多种数据引擎选择，mysql协议通信 <a href="https://github.com/pingcap/tidb">https://github.com/pingcap/tidb</a> 国内公司用的比较多）</li>
@@ -534,65 +526,60 @@ Gotour简单入门 ——&gt; <a href="https://github.com/qyuhen/book/blob/maste
 <li>Influxdb (时序数据库，应用于监控日志数据存储，提供实时数据展现，<a href="https://github.com/influxdata/influxdb）">https://github.com/influxdata/influxdb）</a></li>
 <li>Bboltdb (本地嵌入式数据库 , LMDB的go实现版本,<a href="https://github.com/coreos/bbolt">https://github.com/coreos/bbolt</a>)</li>
 </ul></li>
-
-<li><p>推送：</p>
+<li>推送：
 
 <ul>
 <li>Gorush: <a href="https://github.com/appleboy/gorush">https://github.com/appleboy/gorush</a></li>
 </ul></li>
+<li>爬虫：
 
-<li><p>链路跟踪：</p>
+<ul>
+<li>Gocolly: <a href="https://github.com/gocolly/colly">https://github.com/gocolly/colly</a></li>
+<li>Gocrawl: <a href="https://github.com/PuerkitoBio/gocrawl">https://github.com/PuerkitoBio/gocrawl</a></li>
+</ul></li>
+<li>链路跟踪：
 
 <ul>
 <li>Opentracing: <a href="https://github.com/opentracing/opentracing-go">https://github.com/opentracing/opentracing-go</a>  结合zipkin</li>
 </ul></li>
-
-<li><p>实时消息队列平台：</p>
+<li>实时消息队列平台：
 
 <ul>
 <li>NSQ: <a href="https://github.com/nsqio/nsq">https://github.com/nsqio/nsq</a></li>
 </ul></li>
-
-<li><p>监控:</p></li>
-
-<li><p>grafana：<a href="https://github.com/grafana/grafana">https://github.com/grafana/grafana</a></p>
+<li>监控:</li>
+<li>grafana：<a href="https://github.com/grafana/grafana">https://github.com/grafana/grafana</a>
 
 <ul>
 <li>prometheus: <a href="https://github.com/prometheus/prometheus">https://github.com/prometheus/prometheus</a></li>
 </ul></li>
-
-<li><p>容器管理：</p>
+<li>容器管理：
 
 <ul>
 <li>Kubernetes(K8S): <a href="https://github.com/kubernetes/kubernetes">https://github.com/kubernetes/kubernetes</a></li>
 <li>Kubernetes Handbook: <a href="https://jimmysong.io/kubernetes-handbook/">https://jimmysong.io/kubernetes-handbook/</a></li>
 </ul></li>
-
-<li><p>代码仓库服务：</p>
+<li>代码仓库服务：
 
 <ul>
 <li>gogs (轻量级的代码工具，可以运行在pi上, 界面和github相似,<a href="https://github.com/gogits/gogs）">https://github.com/gogits/gogs）</a></li>
 </ul></li>
-
-<li><p>CI/CD(Continuous Delivery):</p>
+<li>CI/CD(Continuous Delivery):
 
 <ul>
 <li>Drone: <a href="https://github.com/drone/drone">https://github.com/drone/drone</a> （可配套自研上线运维平台）</li>
 </ul></li>
-
-<li><p>工具：</p>
+<li>工具：
 
 <ul>
 <li>Gotty: <a href="https://github.com/yudai/gotty">https://github.com/yudai/gotty</a> （webshell)</li>
 </ul></li>
-
-<li><p>静态网页生成器：</p>
+<li>静态网页生成器：
 
 <ul>
 <li>hugo: <a href="https://github.com/gohugoio/hugo">https://github.com/gohugoio/hugo</a> (可以用来写个人技术博客)</li>
 </ul></li>
-
-<li><p>数据科学(cheat sheet)： <a href="https://www.cheatography.com/chewxy/cheat-sheets/data-science-in-go-a/pdf/">https://www.cheatography.com/chewxy/cheat-sheets/data-science-in-go-a/pdf/</a></p></li>
+<li>数据科学(cheat sheet)： <a href="https://www.cheatography.com/chewxy/cheat-sheets/data-science-in-go-a/pdf/">https://www.cheatography.com/chewxy/cheat-sheets/data-science-in-go-a/pdf/</a></li>
 </ul></li>
 </ol>
 

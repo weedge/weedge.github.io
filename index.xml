@@ -356,50 +356,42 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
 
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/hackstoic/golang-open-source-projects&#34;&gt;golang-open-source-projects&lt;/a&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://github.com/avelino/awesome-go&#34;&gt;awesome-go&lt;/a&gt; (full-stack dev for venture company )&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;Web server服务：&lt;/p&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/avelino/awesome-go&#34;&gt;awesome-go&lt;/a&gt; (full-stack dev for venture company )&lt;/li&gt;
+&lt;li&gt;Web server服务：
 
 &lt;ul&gt;
 &lt;li&gt;Caddy：类似nginx,apache,middleware chain(责任链模式) 管理方式，独立的mw也可拆分单独运行，比如负载均衡模块，反向代理，fastcgi代理 &lt;a href=&#34;https://github.com/mholt/caddy&#34;&gt;https://github.com/mholt/caddy&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;网关：&lt;/p&gt;
+&lt;li&gt;网关：
 
 &lt;ul&gt;
 &lt;li&gt;krakend: &lt;a href=&#34;https://github.com/devopsfaith/krakend&#34;&gt;https://github.com/devopsfaith/krakend&lt;/a&gt;  （高性能，相比kong&amp;hellip;)&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;微服务：&lt;/p&gt;
+&lt;li&gt;微服务：
 
 &lt;ul&gt;
 &lt;li&gt;go-micro (&lt;a href=&#34;https://github.com/micro/go-micro&#34;&gt;https://github.com/micro/go-micro&lt;/a&gt;  +  plugins: &lt;a href=&#34;https://github.com/micro/go-plugins&#34;&gt;https://github.com/micro/go-plugins&lt;/a&gt;  )&lt;/li&gt;
 &lt;li&gt;Go-kit (&lt;a href=&#34;https://github.com/go-kit/kit&#34;&gt;https://github.com/go-kit/kit&lt;/a&gt;  very nice micro-service lib framework) diy 借鉴 相关介绍：&lt;a href=&#34;https://www.youtube.com/watch?v=NX0sHF8ZZgw&#34;&gt;https://www.youtube.com/watch?v=NX0sHF8ZZgw&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;服务发现：&lt;/p&gt;
+&lt;li&gt;服务发现：
 
 &lt;ul&gt;
 &lt;li&gt;etcd: &lt;a href=&#34;https://github.com/coreos/etcd&#34;&gt;https://github.com/coreos/etcd&lt;/a&gt; (功能介绍: &lt;a href=&#34;http://www.infoq.com/cn/articles/etcd-interpretation-application-scenario-implement-principle&#34;&gt;http://www.infoq.com/cn/articles/etcd-interpretation-application-scenario-implement-principle&lt;/a&gt;)&lt;/li&gt;
 &lt;li&gt;Consul: &lt;a href=&#34;https://github.com/hashicorp/consul&#34;&gt;https://github.com/hashicorp/consul&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;Rpc：&lt;/p&gt;
+&lt;li&gt;Rpc：
 
 &lt;ul&gt;
 &lt;li&gt;grpc: &lt;a href=&#34;https://github.com/grpc/grpc-go&#34;&gt;https://github.com/grpc/grpc-go&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;thrift: &lt;a href=&#34;https://github.com/apache/thrift/tree/master/lib/go&#34;&gt;https://github.com/apache/thrift/tree/master/lib/go&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;Web开发框架：&lt;/p&gt;
+&lt;li&gt;Web开发框架：
 
 &lt;ul&gt;
 &lt;li&gt;beego(支持mvc模式开发,&lt;a href=&#34;https://github.com/astaxie/beego)，&#34;&gt;https://github.com/astaxie/beego)，&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;gin(高性能路由请求处理,&lt;a href=&#34;https://github.com/gin-gonic/gin&#34;&gt;https://github.com/gin-gonic/gin&lt;/a&gt; )&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;数据库服务：&lt;/p&gt;
+&lt;li&gt;数据库服务：
 
 &lt;ul&gt;
 &lt;li&gt;Tidb (NewSQL 数据库，水平扩展，强一致，分布式事务，多种数据引擎选择，mysql协议通信 &lt;a href=&#34;https://github.com/pingcap/tidb&#34;&gt;https://github.com/pingcap/tidb&lt;/a&gt; 国内公司用的比较多）&lt;/li&gt;
@@ -407,65 +399,60 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
 &lt;li&gt;Influxdb (时序数据库，应用于监控日志数据存储，提供实时数据展现，&lt;a href=&#34;https://github.com/influxdata/influxdb）&#34;&gt;https://github.com/influxdata/influxdb）&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Bboltdb (本地嵌入式数据库 , LMDB的go实现版本,&lt;a href=&#34;https://github.com/coreos/bbolt&#34;&gt;https://github.com/coreos/bbolt&lt;/a&gt;)&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;推送：&lt;/p&gt;
+&lt;li&gt;推送：
 
 &lt;ul&gt;
 &lt;li&gt;Gorush: &lt;a href=&#34;https://github.com/appleboy/gorush&#34;&gt;https://github.com/appleboy/gorush&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;爬虫：
 
-&lt;li&gt;&lt;p&gt;链路跟踪：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Gocolly: &lt;a href=&#34;https://github.com/gocolly/colly&#34;&gt;https://github.com/gocolly/colly&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Gocrawl: &lt;a href=&#34;https://github.com/PuerkitoBio/gocrawl&#34;&gt;https://github.com/PuerkitoBio/gocrawl&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;链路跟踪：
 
 &lt;ul&gt;
 &lt;li&gt;Opentracing: &lt;a href=&#34;https://github.com/opentracing/opentracing-go&#34;&gt;https://github.com/opentracing/opentracing-go&lt;/a&gt;  结合zipkin&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;实时消息队列平台：&lt;/p&gt;
+&lt;li&gt;实时消息队列平台：
 
 &lt;ul&gt;
 &lt;li&gt;NSQ: &lt;a href=&#34;https://github.com/nsqio/nsq&#34;&gt;https://github.com/nsqio/nsq&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;监控:&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;grafana：&lt;a href=&#34;https://github.com/grafana/grafana&#34;&gt;https://github.com/grafana/grafana&lt;/a&gt;&lt;/p&gt;
+&lt;li&gt;监控:&lt;/li&gt;
+&lt;li&gt;grafana：&lt;a href=&#34;https://github.com/grafana/grafana&#34;&gt;https://github.com/grafana/grafana&lt;/a&gt;
 
 &lt;ul&gt;
 &lt;li&gt;prometheus: &lt;a href=&#34;https://github.com/prometheus/prometheus&#34;&gt;https://github.com/prometheus/prometheus&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;容器管理：&lt;/p&gt;
+&lt;li&gt;容器管理：
 
 &lt;ul&gt;
 &lt;li&gt;Kubernetes(K8S): &lt;a href=&#34;https://github.com/kubernetes/kubernetes&#34;&gt;https://github.com/kubernetes/kubernetes&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Kubernetes Handbook: &lt;a href=&#34;https://jimmysong.io/kubernetes-handbook/&#34;&gt;https://jimmysong.io/kubernetes-handbook/&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;代码仓库服务：&lt;/p&gt;
+&lt;li&gt;代码仓库服务：
 
 &lt;ul&gt;
 &lt;li&gt;gogs (轻量级的代码工具，可以运行在pi上, 界面和github相似,&lt;a href=&#34;https://github.com/gogits/gogs）&#34;&gt;https://github.com/gogits/gogs）&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;CI/CD(Continuous Delivery):&lt;/p&gt;
+&lt;li&gt;CI/CD(Continuous Delivery):
 
 &lt;ul&gt;
 &lt;li&gt;Drone: &lt;a href=&#34;https://github.com/drone/drone&#34;&gt;https://github.com/drone/drone&lt;/a&gt; （可配套自研上线运维平台）&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;工具：&lt;/p&gt;
+&lt;li&gt;工具：
 
 &lt;ul&gt;
 &lt;li&gt;Gotty: &lt;a href=&#34;https://github.com/yudai/gotty&#34;&gt;https://github.com/yudai/gotty&lt;/a&gt; （webshell)&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;静态网页生成器：&lt;/p&gt;
+&lt;li&gt;静态网页生成器：
 
 &lt;ul&gt;
 &lt;li&gt;hugo: &lt;a href=&#34;https://github.com/gohugoio/hugo&#34;&gt;https://github.com/gohugoio/hugo&lt;/a&gt; (可以用来写个人技术博客)&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;数据科学(cheat sheet)： &lt;a href=&#34;https://www.cheatography.com/chewxy/cheat-sheets/data-science-in-go-a/pdf/&#34;&gt;https://www.cheatography.com/chewxy/cheat-sheets/data-science-in-go-a/pdf/&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;数据科学(cheat sheet)： &lt;a href=&#34;https://www.cheatography.com/chewxy/cheat-sheets/data-science-in-go-a/pdf/&#34;&gt;https://www.cheatography.com/chewxy/cheat-sheets/data-science-in-go-a/pdf/&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
