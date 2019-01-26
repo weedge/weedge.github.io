@@ -266,9 +266,10 @@
 &lt;li&gt;通过go test来单元测试，覆盖测试，性能测试(cpu,pprof)，直接可以测试用例先行，&lt;/li&gt;
 &lt;li&gt;go tool,  pprof (进行性能分析 &lt;a href=&#34;http://cizixs.com/2017/09/11/profiling-golang-program&#34;&gt;http://cizixs.com/2017/09/11/profiling-golang-program&lt;/a&gt; ）objdump(dump出汇编代码）&lt;/li&gt;
 &lt;li&gt;go get -u ~=  download to go build and install , go run 单独运行&lt;/li&gt;
-&lt;li&gt;Gofmt&lt;/li&gt;
+&lt;li&gt;go fmt 代码格式化，统一编码风格，方便协同编程&lt;/li&gt;
+&lt;li&gt;go mod: &lt;a href=&#34;https://github.com/golang/go/wiki/Modules&#34;&gt;https://github.com/golang/go/wiki/Modules&lt;/a&gt; 1.11新引入的功能，方便package依赖管理，类似nodejs中的npm&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;Go 2.0正待发布，10年发展，会有一些优化和新特性&lt;/li&gt;
+&lt;li&gt;Go 2.0正待发布，10年+发展，会有一些优化和新特性&lt;/li&gt;
 &lt;li&gt;More…..&lt;/li&gt;
 &lt;/ul&gt;
 
@@ -441,6 +442,7 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
 
 &lt;ul&gt;
 &lt;li&gt;Drone: &lt;a href=&#34;https://github.com/drone/drone&#34;&gt;https://github.com/drone/drone&lt;/a&gt; （可配套自研上线运维平台）&lt;/li&gt;
+&lt;li&gt;jenkins-x: &lt;a href=&#34;https://github.com/jenkins-x/jx&#34;&gt;https://github.com/jenkins-x/jx&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
 &lt;li&gt;工具：
 
