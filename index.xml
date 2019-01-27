@@ -433,7 +433,7 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
 &lt;li&gt;代码仓库服务：
 
 &lt;ul&gt;
-&lt;li&gt;gogs (轻量级的代码工具，可以运行在pi上, 界面和github相似,&lt;a href=&#34;https://github.com/gogits/gogs）&#34;&gt;https://github.com/gogits/gogs）&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;gogs (轻量级的代码工具，可以运行在pi上, 界面和github相似, &lt;a href=&#34;https://github.com/gogits/gogs&#34;&gt;https://github.com/gogits/gogs&lt;/a&gt; ）&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
 &lt;li&gt;CI/CD(Continuous Delivery):
 
