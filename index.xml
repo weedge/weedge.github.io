@@ -422,11 +422,8 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
 &lt;li&gt;NSQ: &lt;a href=&#34;https://github.com/nsqio/nsq&#34;&gt;https://github.com/nsqio/nsq&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
 &lt;li&gt;监控:&lt;/li&gt;
-&lt;li&gt;grafana：&lt;a href=&#34;https://github.com/grafana/grafana&#34;&gt;https://github.com/grafana/grafana&lt;/a&gt;
-
-&lt;ul&gt;
+&lt;li&gt;grafana：&lt;a href=&#34;https://github.com/grafana/grafana&#34;&gt;https://github.com/grafana/grafana&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;prometheus: &lt;a href=&#34;https://github.com/prometheus/prometheus&#34;&gt;https://github.com/prometheus/prometheus&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
 &lt;li&gt;容器管理：
 
 &lt;ul&gt;
