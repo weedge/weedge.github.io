@@ -235,11 +235,14 @@
 
 &lt;ul&gt;
 &lt;li&gt;为毛需要这个语言：&lt;a href=&#34;https://www.oschina.net/translate/go-at-google-language-design-in-the-service-of-software-engineering&#34;&gt;https://www.oschina.net/translate/go-at-google-language-design-in-the-service-of-software-engineering&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;初心：简单,开发简洁，方便快速开发编译发布(开发语言的作者来自c和java, 作者Rob Pike实现并发思想)&lt;/li&gt;
+&lt;li&gt;初心：简单,开发简洁，方便快速开发编译发布(开发语言的作者来自c和java, 作者Rob Pike实现并发思想,布道者，他相关的视频和文章需要多看，精髓哦，This guy is a genius~ )&lt;/li&gt;
 &lt;li&gt;源码：&lt;a href=&#34;https://github.com/golang/go&#34;&gt;https://github.com/golang/go&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;特殊节点：2008 6.6 ~1.5版本去除了c代码实现自举(1.5+直接用go来编译安装即可)， now 10年+ golang2.0 版  &lt;a href=&#34;https://github.com/golang/go/wiki/Go2&#34;&gt;https://github.com/golang/go/wiki/Go2&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;语言作者ppt: &lt;a href=&#34;https://talks.golang.org/2014/hellogophers.slide##12&#34;&gt;https://talks.golang.org/2014/hellogophers.slide##12&lt;/a&gt; （golang作者之一Rob Pike 讲的golang发展史，及众家语言之所长，发明这个语言的初衷）&lt;/li&gt;
-&lt;li&gt;Go Concurrency Patterns: &lt;a href=&#34;https://www.youtube.com/watch?v=f6kdp27TYZs&#34;&gt;https://www.youtube.com/watch?v=f6kdp27TYZs&lt;/a&gt;  &lt;a href=&#34;https://talks.golang.org/2012/concurrency.slide&#34;&gt;slide&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Hello,Gopher（golang作者之一Rob Pike 讲的golang发展史，及众家语言之所长，发明这个语言的初衷）:&lt;a href=&#34;https://www.youtube.com/watch?v=VoS7DsT1rdM&amp;amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd&#34;&gt;https://www.youtube.com/watch?v=VoS7DsT1rdM&amp;amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd&lt;/a&gt; &lt;a href=&#34;https://talks.golang.org/2014/hellogophers.slide##12&#34;&gt;slide&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Go Concurrency Patterns(一些并发模式case, goroutine通过channel组合传递共享数据, no race like DAG): &lt;a href=&#34;https://www.youtube.com/watch?v=f6kdp27TYZs&amp;amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd&#34;&gt;https://www.youtube.com/watch?v=f6kdp27TYZs&amp;amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd&lt;/a&gt;  &lt;a href=&#34;https://talks.golang.org/2012/concurrency.slide&#34;&gt;slide&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Concurrency Is Not Parallelism: &lt;a href=&#34;https://blog.golang.org/concurrency-is-not-parallelism&#34;&gt;https://blog.golang.org/concurrency-is-not-parallelism&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Simplicity is Complicated: &lt;a href=&#34;https://www.youtube.com/watch?v=rFejpH_tAHM&amp;amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd&#34;&gt;https://www.youtube.com/watch?v=rFejpH_tAHM&amp;amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd&lt;/a&gt; &lt;a href=&#34;https://talks.golang.org/2015/simplicity-is-complicated.slide#1&#34;&gt;slide&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;The Design of the Go Assembler：&lt;a href=&#34;https://www.youtube.com/watch?v=KINIAgRpkDA&amp;amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd&#34;&gt;https://www.youtube.com/watch?v=KINIAgRpkDA&amp;amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd&lt;/a&gt; &lt;a href=&#34;https://talks.golang.org/2016/asm.slide#1&#34;&gt;slide&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h4 id=&#34;特征&#34;&gt;特征：&lt;/h4&gt;
@@ -256,8 +259,8 @@
 &lt;li&gt;错误机制: error，错误指的是意料之中的情况，比如文件可能会打开失败，网络连接可能断开导致连接失败等等，错误是业务过程的一部分，而异常不是 (业务需定义常见的错误码标识对应错误信息)&lt;/li&gt;
 &lt;li&gt;变量对象内存分配通过tcmalloc来申请一块span, 分成多个page提供使用，充分利用内存空间，通过gc回收runtime对象(随着版本迭代，对gc的效率逐渐提高，有专门的runtime团队支持)&lt;/li&gt;
 &lt;li&gt;并发程序通过channel共享内存(share memory by communicating)；&lt;/li&gt;
-&lt;li&gt;适合web后端开发(官方golang.org已提供的基础库&lt;a href=&#34;https://golang.org/pkg/，net/http(请求，响应，client，server&#34;&gt;https://golang.org/pkg/，net/http(请求，响应，client，server&lt;/a&gt;), http/template, 数据库客户端驱动接口定义database/sql(三方根据接口标准可以自定义实现，也可以自己单独定义一套标准实现)，数据加密crypto）；&lt;/li&gt;
-&lt;li&gt;通过goroutine(协程，用户级别轻量级线程)支持并发， 协程通过channel通信(一元操作； &amp;lt;-ch 接收&amp;reg;，二元操作： ch&amp;lt;-interface{} 发送(w))；同步通过sync机制(lock(锁接口) mutex(某个goroutine加互斥锁) rwlock(对读写操作加锁) WaitGroup(pv操作,对goroutine组) ，Cond(条件变量，信号量))；&lt;/li&gt;
+&lt;li&gt;适合web后端开发(官方golang.org已提供的基础库 &lt;a href=&#34;https://golang.org/pkg/&#34;&gt;https://golang.org/pkg/&lt;/a&gt; ，net/http(请求，响应，client，server), http/template, 数据库客户端驱动接口定义database/sql(三方根据接口标准可以自定义实现，也可以自己单独定义一套标准实现)，数据加密crypto）；&lt;/li&gt;
+&lt;li&gt;通过goroutine(协程，用户级别轻量级线程)支持并发， 协程通过channel通信(一元操作； &amp;lt;-ch 接收( r )，二元操作： ch&amp;lt;-interface{} 发送(w))；同步通过sync机制(lock(锁接口) mutex(某个goroutine加互斥锁) rwlock(对读写操作加锁) WaitGroup(pv操作,对goroutine组) ，Cond(条件变量，信号量))；&lt;/li&gt;
 &lt;li&gt;Golang实现了 CSP(Communicating Sequential Process &lt;a href=&#34;http://www.usingcsp.com/cspbook.pdf&#34;&gt;http://www.usingcsp.com/cspbook.pdf&lt;/a&gt; )并发模型做为并发基础，底层使用goroutine做为并发实体，goroutine非常轻量级可以创建几十万个实体；实体间通过 channel 继续匿名消息传递使之解耦，在语言层面实现了自动调度，这样屏蔽了很多内部细节，对外提供简单的语法关键字(go,select,channel)，大大简化了并发编程的思维转换和管理线程的复杂性；&lt;/li&gt;
 &lt;li&gt;SO OPEN，import 三方库源(大部分git的方式来自github/gitlib，还支持hg)，源码直接可以修改编译(取之于源用之源)；&lt;/li&gt;
 &lt;li&gt;Go 命令工具方便开发自测调试： &lt;a href=&#34;https://golang.org/cmd/go/&#34;&gt;https://golang.org/cmd/go/&lt;/a&gt;
@@ -411,6 +414,11 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
 &lt;li&gt;Gocolly: &lt;a href=&#34;https://github.com/gocolly/colly&#34;&gt;https://github.com/gocolly/colly&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Gocrawl: &lt;a href=&#34;https://github.com/PuerkitoBio/gocrawl&#34;&gt;https://github.com/PuerkitoBio/gocrawl&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;文件：
+
+&lt;ul&gt;
+&lt;li&gt;Upspin: &lt;a href=&#34;https://github.com/upspin/upspin&#34;&gt;https://github.com/upspin/upspin&lt;/a&gt; (Rob Pike 主导的一个实验项目，&lt;a href=&#34;https://www.youtube.com/watch?v=ENLWEfi0Tkg&#34;&gt;https://www.youtube.com/watch?v=ENLWEfi0Tkg&lt;/a&gt;)&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
 &lt;li&gt;链路跟踪：
 
 &lt;ul&gt;
@@ -422,8 +430,7 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
 &lt;li&gt;NSQ: &lt;a href=&#34;https://github.com/nsqio/nsq&#34;&gt;https://github.com/nsqio/nsq&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
 &lt;li&gt;监控:&lt;/li&gt;
-&lt;li&gt;grafana：&lt;a href=&#34;https://github.com/grafana/grafana&#34;&gt;https://github.com/grafana/grafana&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;prometheus: &lt;a href=&#34;https://github.com/prometheus/prometheus&#34;&gt;https://github.com/prometheus/prometheus&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;grafana：&lt;a href=&#34;https://github.com/grafana/grafanaprometheus:&#34;&gt;https://github.com/grafana/grafanaprometheus:&lt;/a&gt; &lt;a href=&#34;https://github.com/prometheus/prometheus&#34;&gt;https://github.com/prometheus/prometheus&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;容器管理：
 
 &lt;ul&gt;

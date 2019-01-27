@@ -70,7 +70,7 @@
 
 <meta itemprop="datePublished" content="2017-11-01T01:16:30&#43;08:00" />
 <meta itemprop="dateModified" content="2017-11-01T01:16:30&#43;08:00" />
-<meta itemprop="wordCount" content="4358">
+<meta itemprop="wordCount" content="4691">
 
 
 
@@ -362,11 +362,14 @@
 
 <ul>
 <li>为毛需要这个语言：<a href="https://www.oschina.net/translate/go-at-google-language-design-in-the-service-of-software-engineering">https://www.oschina.net/translate/go-at-google-language-design-in-the-service-of-software-engineering</a></li>
-<li>初心：简单,开发简洁，方便快速开发编译发布(开发语言的作者来自c和java, 作者Rob Pike实现并发思想)</li>
+<li>初心：简单,开发简洁，方便快速开发编译发布(开发语言的作者来自c和java, 作者Rob Pike实现并发思想,布道者，他相关的视频和文章需要多看，精髓哦，This guy is a genius~ )</li>
 <li>源码：<a href="https://github.com/golang/go">https://github.com/golang/go</a></li>
 <li>特殊节点：2008 6.6 ~1.5版本去除了c代码实现自举(1.5+直接用go来编译安装即可)， now 10年+ golang2.0 版  <a href="https://github.com/golang/go/wiki/Go2">https://github.com/golang/go/wiki/Go2</a></li>
-<li>语言作者ppt: <a href="https://talks.golang.org/2014/hellogophers.slide##12">https://talks.golang.org/2014/hellogophers.slide##12</a> （golang作者之一Rob Pike 讲的golang发展史，及众家语言之所长，发明这个语言的初衷）</li>
-<li>Go Concurrency Patterns: <a href="https://www.youtube.com/watch?v=f6kdp27TYZs">https://www.youtube.com/watch?v=f6kdp27TYZs</a>  <a href="https://talks.golang.org/2012/concurrency.slide">slide</a></li>
+<li>Hello,Gopher（golang作者之一Rob Pike 讲的golang发展史，及众家语言之所长，发明这个语言的初衷）:<a href="https://www.youtube.com/watch?v=VoS7DsT1rdM&amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd">https://www.youtube.com/watch?v=VoS7DsT1rdM&amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd</a> <a href="https://talks.golang.org/2014/hellogophers.slide##12">slide</a></li>
+<li>Go Concurrency Patterns(一些并发模式case, goroutine通过channel组合传递共享数据, no race like DAG): <a href="https://www.youtube.com/watch?v=f6kdp27TYZs&amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd">https://www.youtube.com/watch?v=f6kdp27TYZs&amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd</a>  <a href="https://talks.golang.org/2012/concurrency.slide">slide</a></li>
+<li>Concurrency Is Not Parallelism: <a href="https://blog.golang.org/concurrency-is-not-parallelism">https://blog.golang.org/concurrency-is-not-parallelism</a></li>
+<li>Simplicity is Complicated: <a href="https://www.youtube.com/watch?v=rFejpH_tAHM&amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd">https://www.youtube.com/watch?v=rFejpH_tAHM&amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd</a> <a href="https://talks.golang.org/2015/simplicity-is-complicated.slide#1">slide</a></li>
+<li>The Design of the Go Assembler：<a href="https://www.youtube.com/watch?v=KINIAgRpkDA&amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd">https://www.youtube.com/watch?v=KINIAgRpkDA&amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd</a> <a href="https://talks.golang.org/2016/asm.slide#1">slide</a></li>
 </ul>
 
 <h4 id="特征">特征：</h4>
@@ -383,8 +386,8 @@
 <li>错误机制: error，错误指的是意料之中的情况，比如文件可能会打开失败，网络连接可能断开导致连接失败等等，错误是业务过程的一部分，而异常不是 (业务需定义常见的错误码标识对应错误信息)</li>
 <li>变量对象内存分配通过tcmalloc来申请一块span, 分成多个page提供使用，充分利用内存空间，通过gc回收runtime对象(随着版本迭代，对gc的效率逐渐提高，有专门的runtime团队支持)</li>
 <li>并发程序通过channel共享内存(share memory by communicating)；</li>
-<li>适合web后端开发(官方golang.org已提供的基础库<a href="https://golang.org/pkg/，net/http(请求，响应，client，server">https://golang.org/pkg/，net/http(请求，响应，client，server</a>), http/template, 数据库客户端驱动接口定义database/sql(三方根据接口标准可以自定义实现，也可以自己单独定义一套标准实现)，数据加密crypto）；</li>
-<li>通过goroutine(协程，用户级别轻量级线程)支持并发， 协程通过channel通信(一元操作； &lt;-ch 接收&reg;，二元操作： ch&lt;-interface{} 发送(w))；同步通过sync机制(lock(锁接口) mutex(某个goroutine加互斥锁) rwlock(对读写操作加锁) WaitGroup(pv操作,对goroutine组) ，Cond(条件变量，信号量))；</li>
+<li>适合web后端开发(官方golang.org已提供的基础库 <a href="https://golang.org/pkg/">https://golang.org/pkg/</a> ，net/http(请求，响应，client，server), http/template, 数据库客户端驱动接口定义database/sql(三方根据接口标准可以自定义实现，也可以自己单独定义一套标准实现)，数据加密crypto）；</li>
+<li>通过goroutine(协程，用户级别轻量级线程)支持并发， 协程通过channel通信(一元操作； &lt;-ch 接收( r )，二元操作： ch&lt;-interface{} 发送(w))；同步通过sync机制(lock(锁接口) mutex(某个goroutine加互斥锁) rwlock(对读写操作加锁) WaitGroup(pv操作,对goroutine组) ，Cond(条件变量，信号量))；</li>
 <li>Golang实现了 CSP(Communicating Sequential Process <a href="http://www.usingcsp.com/cspbook.pdf">http://www.usingcsp.com/cspbook.pdf</a> )并发模型做为并发基础，底层使用goroutine做为并发实体，goroutine非常轻量级可以创建几十万个实体；实体间通过 channel 继续匿名消息传递使之解耦，在语言层面实现了自动调度，这样屏蔽了很多内部细节，对外提供简单的语法关键字(go,select,channel)，大大简化了并发编程的思维转换和管理线程的复杂性；</li>
 <li>SO OPEN，import 三方库源(大部分git的方式来自github/gitlib，还支持hg)，源码直接可以修改编译(取之于源用之源)；</li>
 <li>Go 命令工具方便开发自测调试： <a href="https://golang.org/cmd/go/">https://golang.org/cmd/go/</a>
@@ -538,6 +541,11 @@ Gotour简单入门 ——&gt; <a href="https://github.com/qyuhen/book/blob/maste
 <li>Gocolly: <a href="https://github.com/gocolly/colly">https://github.com/gocolly/colly</a></li>
 <li>Gocrawl: <a href="https://github.com/PuerkitoBio/gocrawl">https://github.com/PuerkitoBio/gocrawl</a></li>
 </ul></li>
+<li>文件：
+
+<ul>
+<li>Upspin: <a href="https://github.com/upspin/upspin">https://github.com/upspin/upspin</a> (Rob Pike 主导的一个实验项目，<a href="https://www.youtube.com/watch?v=ENLWEfi0Tkg">https://www.youtube.com/watch?v=ENLWEfi0Tkg</a>)</li>
+</ul></li>
 <li>链路跟踪：
 
 <ul>
@@ -549,8 +557,7 @@ Gotour简单入门 ——&gt; <a href="https://github.com/qyuhen/book/blob/maste
 <li>NSQ: <a href="https://github.com/nsqio/nsq">https://github.com/nsqio/nsq</a></li>
 </ul></li>
 <li>监控:</li>
-<li>grafana：<a href="https://github.com/grafana/grafana">https://github.com/grafana/grafana</a></li>
-<li>prometheus: <a href="https://github.com/prometheus/prometheus">https://github.com/prometheus/prometheus</a></li>
+<li>grafana：<a href="https://github.com/grafana/grafanaprometheus:">https://github.com/grafana/grafanaprometheus:</a> <a href="https://github.com/prometheus/prometheus">https://github.com/prometheus/prometheus</a></li>
 <li>容器管理：
 
 <ul>
