@@ -24,6 +24,106 @@
     </item>
     
     <item>
+      <title>2019 TODO</title>
+      <link>https://weedge.github.io/post/2019todo/</link>
+      <pubDate>Sat, 26 Jan 2019 01:16:30 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/2019todo/</guid>
+      
+        <description>&lt;p&gt;&amp;emsp;&amp;emsp;2018年感觉过的好快，时间荏苒，有些事和人，感觉在2018变化很大；人都是有欲望的，在欲望的驱使下，去实现自己的目标，其中有失败，有成功，还有一直在路上前行的；每年给自己定的目标要么期望太高，要么随遇而安，到头来给自己的感觉是不太务实，有点好高骛远了和缺乏动力；但是如果没有梦想和目标，和咸鱼有什么分别呢？所以把2019年的新年目标任务写下来，给自己立个flag，实施准则：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;低头看书学习做事，抬头思考总结做人~&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&#34;书&#34;&gt;书&lt;/h2&gt;
+
+&lt;p&gt;现在大部分时间看书都是利用手机，在上班下班的时间，碎片化阅读；双休日和假期的时候，找一个天上午下午来深度阅读；不过感觉后面给书的时间越来越少了，时间的管理是越发的重要。&lt;/p&gt;
+
+&lt;h3 id=&#34;非技术类&#34;&gt;非技术类&lt;/h3&gt;
+
+&lt;p&gt;读书不分先后顺序， 按一年12个月算，暂时定每个月看完一到两本书，这里大部分心理学和经济学方面的：&lt;/p&gt;
+
+&lt;ul class=&#34;task-list&#34;&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt;  &lt;a href=&#34;https://book.douban.com/subject/1012611/&#34;&gt;乌合之众&lt;/a&gt;&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt;  &lt;a href=&#34;https://book.douban.com/subject/10785583/&#34;&gt;思考，快与慢&lt;/a&gt; (书比较难啃)&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt;  &lt;a href=&#34;https://book.douban.com/subject/10785583/&#34;&gt;原则&lt;/a&gt;&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; &lt;a href=&#34;https://book.douban.com/subject/11445548/&#34;&gt;自私的基因&lt;/a&gt;&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; &lt;a href=&#34;https://book.douban.com/subject/30259720/&#34;&gt;今日简史&lt;/a&gt; &lt;a href=&#34;https://book.douban.com/subject/26945094/&#34;&gt;未来简史&lt;/a&gt; &lt;a href=&#34;https://book.douban.com/subject/25985021/&#34;&gt;人类简史&lt;/a&gt;&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; &lt;a href=&#34;https://book.douban.com/subject/30186119/&#34;&gt;硅谷增长黑客实战笔记&lt;/a&gt; (适合ab策略数据分析)&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt;  &lt;a href=&#34;https://book.douban.com/subject/27167992/&#34;&gt;见识&lt;/a&gt;&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt;  &lt;a href=&#34;https://book.douban.com/subject/26704143/&#34;&gt;把时间当作朋友&lt;/a&gt;&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt;  &lt;a href=&#34;https://book.douban.com/subject/27662713/&#34;&gt;舆论&lt;/a&gt;&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt; &lt;a href=&#34;https://book.douban.com/subject/26412113/&#34;&gt;机器人叛乱&lt;/a&gt;&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt;  &lt;a href=&#34;https://book.douban.com/subject/6811366/&#34;&gt;禅与摩托车维修艺术&lt;/a&gt;&lt;/label&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;技术类&#34;&gt;技术类&lt;/h3&gt;
+
+&lt;p&gt;技术类的主要是最近工作可能会用到的，作为参考书籍，具体还需要到工作中实践转化成自己，就如一本武功秘籍，还需要日积月累的修炼，大侠不是一招一式就能混迹江湖的；技术迭代越来越快，学习是一个长期的过期，新技术层出不穷(新技术的学习离不开开源社区github，代码是最好的文档)，但是计算机基础的东西是不变的，技术的迭代都是在原有的基础技术上发展，所以修炼内功心法还是很重要的：&lt;/p&gt;
+
+&lt;ul class=&#34;task-list&#34;&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt;  &lt;a href=&#34;https://book.douban.com/subject/26337939/&#34;&gt;七周七并发模型&lt;/a&gt;&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt;  &lt;a href=&#34;https://book.douban.com/subject/26586598/&#34;&gt;性能之巅&lt;/a&gt;&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt;  &lt;a href=&#34;https://book.douban.com/subject/26586598/&#34;&gt;Linux高性能服务器编程&lt;/a&gt;&lt;/label&gt;&lt;/li&gt;
+&lt;li&gt;&lt;label&gt;&lt;input type=&#34;checkbox&#34; disabled class=&#34;task-list-item&#34;&gt;  &lt;a href=&#34;https://book.douban.com/subject/10590856/&#34;&gt;统计学习方法&lt;/a&gt; &lt;a href=&#34;https://book.douban.com/subject/26708119/&#34;&gt;机器学习&lt;/a&gt; &lt;a href=&#34;https://book.douban.com/subject/27087503/&#34;&gt;深度学习&lt;/a&gt; (这个学起来有些枯燥，需要网上找点代码case来结合实际应用场景)&lt;/label&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;其他语言类的，网络编程类的，数据库操作优化类的数据都可以在越到问题的时候，通过技术专有的关键字可以google/百度一下, 去解决实际越到问题，要比直接看书要印象深刻的多，知其然而知所以然。&lt;/p&gt;
+
+&lt;h2 id=&#34;事&#34;&gt;事&lt;/h2&gt;
+
+&lt;p&gt;2018的事还是比较简单的。&lt;/p&gt;
+
+&lt;p&gt;工作上大部分时间是解决业务需求，偶尔也会写出一些bug, 做事缺乏全面的考虑，有些事情不是自己愿意去做的，有时候缺乏积极性；作为一个在职场混迹六年的人来说，范这些错误，难免会有点尴尬，所以在后面的职场工作中，不管是喜欢和重复厌倦的事情，都要认真负责的去对待，工作是给公司解决问题，不能带着情绪化处理；还有工作上需要协调把控好效率和产出质量。&lt;/p&gt;
+
+&lt;p&gt;感情上通过相亲认识了投缘的另一半，虽然两人外形上可能有些不搭调~，但是最后异地恋走在一起挺不容易的；年底总数把买房子的事情给结尾，装修的事情两人商量着慢慢来，彼此相信会有一个温馨的家🏠&lt;/p&gt;
+
+&lt;p&gt;2019的规划：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;主要是自己工作上有突破，不管是技能还是处理事情&lt;/li&gt;
+&lt;li&gt;帮助她找到一份还算满意的工作&lt;/li&gt;
+&lt;li&gt;弄完房子准备结婚🎎&lt;/li&gt;
+&lt;li&gt;接父母过来玩&lt;/li&gt;
+&lt;li&gt;more&amp;hellip;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;思&#34;&gt;思&lt;/h2&gt;
+
+&lt;p&gt;年复一年，岁月催人老，30+的程序猿看着00后都已经开始上大学，开始进入社会实习了，突然危机感油然而生，是否就一定会被社会淘汰呢，是否就到了35+岁, 就不能编程了呢，给公司创造的价值就打折了呢？也许这些问题和社会上的鸭梨一直会存在，并激励着资历老猿们去反思，去复盘总结；经验是有的，斗志在，就怕不学习，俗话说的好：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;活到老，学到老，干到老！（为即将或者已成老猿 代言，笔芯~）&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&#34;最后&#34;&gt;最后&lt;/h2&gt;
+
+&lt;p&gt;借用我最喜欢的乔布斯语录，作为本文的结尾（虽然有点鸡血的感觉）：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;人这一辈子没法做太多的事情，所以每一件都要做得精彩绝伦。&lt;/p&gt;
+
+&lt;p&gt;你的时间有限，所以不要为别人而活。不要被教条所限，不要活在别人的观念里。不要让别人的意见左右自己内心的声音。&lt;/p&gt;
+
+&lt;p&gt;最重要的是，勇敢的去追随自己的心灵和直觉，只有自己的心灵和直觉才知道你自己的真实想法，其他一切都是次要。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&#34;链接&#34;&gt;链接：&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s?__biz=MjM5MDE0Mjc4MA==&amp;amp;mid=2651011968&amp;amp;idx=1&amp;amp;sn=3d500660f7dd47c9fa4033bd9fa69c2f&#34;&gt;解读2018：我们处在一个什么样的技术浪潮当中？&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://www.zhihu.com/question/22937279&#34;&gt;程序员工作只能做到 35 岁吗？&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s?__biz=MzI2MDI5NDQwMg==&amp;amp;mid=2247483959&amp;amp;idx=1&amp;amp;sn=bcb5fb9eb2aca5810d87ad3b63c4612b&amp;amp;chksm=ea6a905add1d194c57468ac88b611b9005290d1d922154a7b6fe9fec3fdd710c27de41282608&amp;amp;mpshare=1&amp;amp;scene=1&amp;amp;srcid=0327cbNpv&#34;&gt;35岁以后的大龄程序员，正处于怎样一种状态?&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;​&lt;/p&gt;</description>
+      
+    </item>
+    
+    <item>
       <title>屏蔽macbook内置键盘</title>
       <link>https://weedge.github.io/post/mackeyboard-hhkb/</link>
       <pubDate>Sat, 19 Jan 2019 10:26:23 +0800</pubDate>

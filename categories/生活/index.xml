@@ -6,10 +6,23 @@
     <description>Recent content in 生活 on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sat, 19 Jan 2019 10:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 26 Jan 2019 01:16:30 +0800</lastBuildDate>
     
 	<atom:link href="https://weedge.github.io/categories/%E7%94%9F%E6%B4%BB/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>2019 TODO</title>
+      <link>https://weedge.github.io/post/2019todo/</link>
+      <pubDate>Sat, 26 Jan 2019 01:16:30 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/2019todo/</guid>
+      <description>&lt;p&gt;&amp;emsp;&amp;emsp;2018年感觉过的好快，时间荏苒，有些事和人，感觉在2018变化很大；人都是有欲望的，在欲望的驱使下，去实现自己的目标，其中有失败，有成功，还有一直在路上前行的；每年给自己定的目标要么期望太高，要么随遇而安，到头来给自己的感觉是不太务实，有点好高骛远了和缺乏动力；但是如果没有梦想和目标，和咸鱼有什么分别呢？所以把2019年的新年目标任务写下来，给自己立个flag，实施准则：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;低头看书学习做事，抬头思考总结做人~&lt;/p&gt;
+&lt;/blockquote&gt;</description>
+    </item>
     
     <item>
       <title>屏蔽macbook内置键盘</title>

@@ -10,6 +10,13 @@
   </url>
   
   <url>
+    <loc>https://weedge.github.io/post/2019todo/</loc>
+    <lastmod>2019-01-26T01:16:30+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
     <loc>https://weedge.github.io/post/mackeyboard-hhkb/</loc>
     <lastmod>2019-01-19T10:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
@@ -200,7 +207,7 @@
   
   <url>
     <loc>https://weedge.github.io/post/</loc>
-    <lastmod>2019-01-19T10:26:23+08:00</lastmod>
+    <lastmod>2019-01-26T01:16:30+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
@@ -256,14 +263,14 @@
   
   <url>
     <loc>https://weedge.github.io/categories/%E7%94%9F%E6%B4%BB/</loc>
-    <lastmod>2019-01-19T10:26:23+08:00</lastmod>
+    <lastmod>2019-01-26T01:16:30+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://weedge.github.io/tags/%E9%9A%8F%E7%AC%94%E8%AE%B0%E5%BD%95/</loc>
-    <lastmod>2014-09-21T22:04:23+08:00</lastmod>
+    <lastmod>2019-01-26T01:16:30+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0</priority>
   </url>
