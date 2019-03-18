@@ -362,7 +362,7 @@
 &lt;li&gt;变量对象内存分配通过tcmalloc来申请一块span, 分成多个page提供使用，充分利用内存空间，通过gc回收runtime对象(随着版本迭代，对gc的效率逐渐提高，有专门的runtime团队支持)&lt;/li&gt;
 &lt;li&gt;并发程序通过channel共享内存(share memory by communicating)；&lt;/li&gt;
 &lt;li&gt;适合web后端开发(官方golang.org已提供的基础库 &lt;a href=&#34;https://golang.org/pkg/&#34;&gt;https://golang.org/pkg/&lt;/a&gt; ，net/http(请求，响应，client，server), http/template, 数据库客户端驱动接口定义database/sql(三方根据接口标准可以自定义实现，也可以自己单独定义一套标准实现)，数据加密crypto）；&lt;/li&gt;
-&lt;li&gt;通过goroutine(协程，用户级别轻量级线程)支持并发， 协程通过channel通信(一元操作； &amp;lt;-ch 接收( r )，二元操作： ch&amp;lt;-interface{} 发送(w))；同步通过sync机制(lock(锁接口) mutex(某个goroutine加互斥锁) rwlock(对读写操作加锁) WaitGroup(pv操作,对goroutine组) ，Cond(条件变量，信号量))；&lt;/li&gt;
+&lt;li&gt;通过goroutine(协程，用户级别轻量级线程)支持并发， 协程通过channel通信( &amp;lt;-chan interface{} 接收chan；chan&amp;lt;-interface{} 发送chan；同步通过sync机制(lock(锁接口) mutex(某个goroutine加互斥锁) rwlock(对读写操作加锁) WaitGroup(pv操作,对goroutine组) ，Cond(条件变量，信号量))；&lt;/li&gt;
 &lt;li&gt;Golang实现了 CSP(Communicating Sequential Process &lt;a href=&#34;http://www.usingcsp.com/cspbook.pdf&#34;&gt;http://www.usingcsp.com/cspbook.pdf&lt;/a&gt; )并发模型做为并发基础，底层使用goroutine做为并发实体，goroutine非常轻量级可以创建几十万个实体；实体间通过 channel 继续匿名消息传递使之解耦，在语言层面实现了自动调度，这样屏蔽了很多内部细节，对外提供简单的语法关键字(go,select,channel)，大大简化了并发编程的思维转换和管理线程的复杂性；&lt;/li&gt;
 &lt;li&gt;SO OPEN，import 三方库源(大部分git的方式来自github/gitlib，还支持hg)，源码直接可以修改编译(取之于源用之源)；&lt;/li&gt;
 &lt;li&gt;Go 命令工具方便开发自测调试： &lt;a href=&#34;https://golang.org/cmd/go/&#34;&gt;https://golang.org/cmd/go/&lt;/a&gt;
@@ -374,7 +374,7 @@
 &lt;li&gt;go fmt 代码格式化，统一编码风格，方便协同编程&lt;/li&gt;
 &lt;li&gt;go mod: &lt;a href=&#34;https://github.com/golang/go/wiki/Modules&#34;&gt;https://github.com/golang/go/wiki/Modules&lt;/a&gt; 1.11新引入的功能，方便package依赖管理，类似nodejs中的npm&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;Go 2.0正待发布，10年+发展，会有一些优化和新特性&lt;/li&gt;
+&lt;li&gt;Go 2.0正待发布，10年+发展，会有一些优化和新特性  &lt;a href=&#34;https://www.youtube.com/watch?v=RIvL2ONhFBI&#34;&gt;https://www.youtube.com/watch?v=RIvL2ONhFBI&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;More…..&lt;/li&gt;
 &lt;/ul&gt;
 
@@ -396,25 +396,26 @@
 &lt;h2 id=&#34;学习&#34;&gt;学习&lt;/h2&gt;
 
 &lt;ol&gt;
-&lt;li&gt;&lt;p&gt;开始入门：&lt;a href=&#34;https://golang.org/doc/code.html&#34;&gt;https://golang.org/doc/code.html&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;golang的基本语法知识，可以通过gotour来进行简单的学习入门，godoc查看具体基础文档和get到本地的三方库接口文档，
-Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book/blob/master/Go%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%20%E7%AC%AC%E5%9B%9B%E7%89%88.pdf&#34;&gt;语法快速入门&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;练习习题：&lt;/p&gt;
+&lt;li&gt;开始入门：&lt;a href=&#34;https://golang.org/doc/code.html&#34;&gt;https://golang.org/doc/code.html&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;golang的基本语法知识，可以通过gotour来进行简单的学习入门，godoc查看具体基础文档和get到本地的三方库接口文档，
+Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book/blob/master/Go%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%20%E7%AC%AC%E5%9B%9B%E7%89%88.pdf&#34;&gt;语法快速入门&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;练习习题：
 
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://goquiz.github.io/&#34;&gt;Go语言经典笔试题&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://gobyexample.com&#34;&gt;Go实例&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;最佳实践：(这个会根据实践场景逐渐完善，最终可能会形成一个标准规范)&lt;/p&gt;
+&lt;li&gt;最佳实践：(这个会根据实践场景逐渐完善，最终可能会形成一个标准规范)
 
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://talks.golang.org/2013/bestpractices.slide&#34;&gt;12条最佳实践&lt;/a&gt; &lt;a href=&#34;http://maiyang.me/2017/10/21/twelve-best-practices-in-golang/&#34;&gt;中文解释&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;面向对象设计SOLID：
 
-&lt;li&gt;&lt;p&gt;业务常用依赖阶级开发：(掌握一些三方库，方便快速集成开发)&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://blog.gokit.info/post/go-solid-design/&#34;&gt;SOLID&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;业务常用依赖阶级开发：(掌握一些三方库，方便快速集成开发)
 
 &lt;ul&gt;
 &lt;li&gt;Web开发框架：
@@ -435,16 +436,14 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
 &lt;li&gt;Log: &lt;a href=&#34;https://github.com/sirupsen/logrus&#34;&gt;https://github.com/sirupsen/logrus&lt;/a&gt; (以hook机制添加自定的日志，lograte:&lt;a href=&#34;https://github.com/sirupsen/logrus##rotation，或者https://github.com/natefinch/lumberjack&#34;&gt;https://github.com/sirupsen/logrus##rotation，或者https://github.com/natefinch/lumberjack&lt;/a&gt;)&lt;/li&gt;
 &lt;li&gt;队列: &lt;a href=&#34;https://github.com/nsqio/nsq&#34;&gt;https://github.com/nsqio/nsq&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;订阅资源blog:&lt;/p&gt;
+&lt;li&gt;订阅资源blog:
 
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://blog.golang.org&#34;&gt;https://blog.golang.org&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.goinggo.net&#34;&gt;https://www.goinggo.net&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://gocn.io/&#34;&gt;https://gocn.io/&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;实践踩的坑：&lt;/p&gt;
+&lt;li&gt;实践踩的坑：
 
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://zhuanlan.zhihu.com/p/29545675&#34;&gt;https://zhuanlan.zhihu.com/p/29545675&lt;/a&gt;&lt;/li&gt;

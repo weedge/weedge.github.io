@@ -70,7 +70,7 @@
 
 <meta itemprop="datePublished" content="2017-11-01T01:16:30&#43;08:00" />
 <meta itemprop="dateModified" content="2018-10-03T00:26:23&#43;08:00" />
-<meta itemprop="wordCount" content="4691">
+<meta itemprop="wordCount" content="4716">
 
 
 
@@ -387,7 +387,7 @@
 <li>变量对象内存分配通过tcmalloc来申请一块span, 分成多个page提供使用，充分利用内存空间，通过gc回收runtime对象(随着版本迭代，对gc的效率逐渐提高，有专门的runtime团队支持)</li>
 <li>并发程序通过channel共享内存(share memory by communicating)；</li>
 <li>适合web后端开发(官方golang.org已提供的基础库 <a href="https://golang.org/pkg/">https://golang.org/pkg/</a> ，net/http(请求，响应，client，server), http/template, 数据库客户端驱动接口定义database/sql(三方根据接口标准可以自定义实现，也可以自己单独定义一套标准实现)，数据加密crypto）；</li>
-<li>通过goroutine(协程，用户级别轻量级线程)支持并发， 协程通过channel通信(一元操作； &lt;-ch 接收( r )，二元操作： ch&lt;-interface{} 发送(w))；同步通过sync机制(lock(锁接口) mutex(某个goroutine加互斥锁) rwlock(对读写操作加锁) WaitGroup(pv操作,对goroutine组) ，Cond(条件变量，信号量))；</li>
+<li>通过goroutine(协程，用户级别轻量级线程)支持并发， 协程通过channel通信( &lt;-chan interface{} 接收chan；chan&lt;-interface{} 发送chan；同步通过sync机制(lock(锁接口) mutex(某个goroutine加互斥锁) rwlock(对读写操作加锁) WaitGroup(pv操作,对goroutine组) ，Cond(条件变量，信号量))；</li>
 <li>Golang实现了 CSP(Communicating Sequential Process <a href="http://www.usingcsp.com/cspbook.pdf">http://www.usingcsp.com/cspbook.pdf</a> )并发模型做为并发基础，底层使用goroutine做为并发实体，goroutine非常轻量级可以创建几十万个实体；实体间通过 channel 继续匿名消息传递使之解耦，在语言层面实现了自动调度，这样屏蔽了很多内部细节，对外提供简单的语法关键字(go,select,channel)，大大简化了并发编程的思维转换和管理线程的复杂性；</li>
 <li>SO OPEN，import 三方库源(大部分git的方式来自github/gitlib，还支持hg)，源码直接可以修改编译(取之于源用之源)；</li>
 <li>Go 命令工具方便开发自测调试： <a href="https://golang.org/cmd/go/">https://golang.org/cmd/go/</a>
@@ -399,7 +399,7 @@
 <li>go fmt 代码格式化，统一编码风格，方便协同编程</li>
 <li>go mod: <a href="https://github.com/golang/go/wiki/Modules">https://github.com/golang/go/wiki/Modules</a> 1.11新引入的功能，方便package依赖管理，类似nodejs中的npm</li>
 </ul></li>
-<li>Go 2.0正待发布，10年+发展，会有一些优化和新特性</li>
+<li>Go 2.0正待发布，10年+发展，会有一些优化和新特性  <a href="https://www.youtube.com/watch?v=RIvL2ONhFBI">https://www.youtube.com/watch?v=RIvL2ONhFBI</a></li>
 <li>More…..</li>
 </ul>
 
@@ -421,25 +421,26 @@
 <h2 id="学习">学习</h2>
 
 <ol>
-<li><p>开始入门：<a href="https://golang.org/doc/code.html">https://golang.org/doc/code.html</a></p></li>
-
-<li><p>golang的基本语法知识，可以通过gotour来进行简单的学习入门，godoc查看具体基础文档和get到本地的三方库接口文档，
-Gotour简单入门 ——&gt; <a href="https://github.com/qyuhen/book/blob/master/Go%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%20%E7%AC%AC%E5%9B%9B%E7%89%88.pdf">语法快速入门</a></p></li>
-
-<li><p>练习习题：</p>
+<li>开始入门：<a href="https://golang.org/doc/code.html">https://golang.org/doc/code.html</a><br /></li>
+<li>golang的基本语法知识，可以通过gotour来进行简单的学习入门，godoc查看具体基础文档和get到本地的三方库接口文档，
+Gotour简单入门 ——&gt; <a href="https://github.com/qyuhen/book/blob/master/Go%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%20%E7%AC%AC%E5%9B%9B%E7%89%88.pdf">语法快速入门</a></li>
+<li>练习习题：
 
 <ul>
 <li><a href="https://goquiz.github.io/">Go语言经典笔试题</a></li>
 <li><a href="https://gobyexample.com">Go实例</a></li>
 </ul></li>
-
-<li><p>最佳实践：(这个会根据实践场景逐渐完善，最终可能会形成一个标准规范)</p>
+<li>最佳实践：(这个会根据实践场景逐渐完善，最终可能会形成一个标准规范)
 
 <ul>
 <li><a href="https://talks.golang.org/2013/bestpractices.slide">12条最佳实践</a> <a href="http://maiyang.me/2017/10/21/twelve-best-practices-in-golang/">中文解释</a></li>
 </ul></li>
+<li>面向对象设计SOLID：
 
-<li><p>业务常用依赖阶级开发：(掌握一些三方库，方便快速集成开发)</p>
+<ul>
+<li><a href="https://blog.gokit.info/post/go-solid-design/">SOLID</a></li>
+</ul></li>
+<li>业务常用依赖阶级开发：(掌握一些三方库，方便快速集成开发)
 
 <ul>
 <li>Web开发框架：
@@ -460,16 +461,14 @@ Gotour简单入门 ——&gt; <a href="https://github.com/qyuhen/book/blob/maste
 <li>Log: <a href="https://github.com/sirupsen/logrus">https://github.com/sirupsen/logrus</a> (以hook机制添加自定的日志，lograte:<a href="https://github.com/sirupsen/logrus##rotation，或者https://github.com/natefinch/lumberjack">https://github.com/sirupsen/logrus##rotation，或者https://github.com/natefinch/lumberjack</a>)</li>
 <li>队列: <a href="https://github.com/nsqio/nsq">https://github.com/nsqio/nsq</a></li>
 </ul></li>
-
-<li><p>订阅资源blog:</p>
+<li>订阅资源blog:
 
 <ul>
 <li><a href="https://blog.golang.org">https://blog.golang.org</a><br /></li>
 <li><a href="https://www.goinggo.net">https://www.goinggo.net</a><br /></li>
 <li><a href="https://gocn.io/">https://gocn.io/</a><br /></li>
 </ul></li>
-
-<li><p>实践踩的坑：</p>
+<li>实践踩的坑：
 
 <ul>
 <li><a href="https://zhuanlan.zhihu.com/p/29545675">https://zhuanlan.zhihu.com/p/29545675</a></li>
