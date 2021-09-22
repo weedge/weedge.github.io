@@ -184,6 +184,35 @@
     </item>
     
     <item>
+      <title>网络模型</title>
+      <link>https://weedge.github.io/post/poller/</link>
+      <pubDate>Thu, 02 Sep 2021 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/poller/</guid>
+      
+        <description>&lt;p&gt;看了一些开源的网络I/O模型框架库，尝试着按照理解简单实现一个相对简单的网络I/O模型框架，类似netty的reactor模型。&lt;/p&gt;
+&lt;p&gt;Netty的NIO模型是Reactor反应堆模型（Reactor相当于有分发功能的多路复用器Selector）。每一个连接对应一个Channel（多路指多个Channel，复用指多个连接复用了一个线程或少量线程，在Netty指EventLoop），一个Channel对应唯一的ChannelPipeline，多个Handler串行的加入到Pipeline中，每个Handler关联唯一的ChannelHandlerContext。&lt;/p&gt;
+&lt;p&gt;Reactor 模式的基本工作流程如下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Server 端完成在 &lt;code&gt;bind&amp;amp;listen&lt;/code&gt; 之后，将 listenfd 注册到 epollfd 中，最后进入 event-loop 事件循环。循环过程中会调用 &lt;code&gt;select/poll/epoll_wait&lt;/code&gt; 阻塞等待，若有在 listenfd 上的新连接事件则解除阻塞返回，并调用 &lt;code&gt;socket.accept&lt;/code&gt; 接收新连接 connfd，并将 connfd 加入到 epollfd 的 I/O 复用（监听）队列。&lt;/li&gt;
+&lt;li&gt;当 connfd 上发生可读/可写事件也会解除 &lt;code&gt;select/poll/epoll_wait&lt;/code&gt; 的阻塞等待，然后进行 I/O 读写操作，这里读写 I/O 都是非阻塞 I/O，这样才不会阻塞 event-loop 的下一个循环。然而，这样容易割裂业务逻辑，不易理解和维护。&lt;/li&gt;
+&lt;li&gt;调用 &lt;code&gt;read&lt;/code&gt; 读取数据之后进行解码并放入队列中，等待工作线程处理。&lt;/li&gt;
+&lt;li&gt;工作线程处理完数据之后，返回到 event-loop 线程，由这个线程负责调用 &lt;code&gt;write&lt;/code&gt; 把数据写回 client。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;参考这些网络模型，采用golang封装的底层epoll/kqueue系统调用方法，支持tcp协议，实现一个相对简单的网络模型，框架如下：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/im/main/go-epoll.png&#34; alt=&#34;go-epoll.png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;代码实现：&lt;a href=&#34;https://github.com/weedge/lib/tree/main/poller&#34;&gt;https://github.com/weedge/lib/tree/main/poller&lt;/a&gt;  (对一个开源库进行的改造，codec编解码器待完善)&lt;/p&gt;
+&lt;h4 id=&#34;参考&#34;&gt;参考：&lt;/h4&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/panjf2000/gnet&#34;&gt;gnet&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/cloudwego/netpoll&#34;&gt;netpoll&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/tidwall/evio&#34;&gt;evio&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/AlexStocks/getty&#34;&gt;getty&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/netty/netty&#34;&gt;netty&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/xinali/articles/issues/57&#34;&gt;Linux网络编程模型&lt;/a&gt;&lt;/p&gt;</description>
+      
+    </item>
+    
+    <item>
       <title>教学直播概括</title>
       <link>https://weedge.github.io/post/jxzb/</link>
       <pubDate>Wed, 01 Sep 2021 22:04:23 +0800</pubDate>
@@ -2359,97 +2388,6 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
 &lt;/li&gt;
 &lt;/ol&gt;
 </description>
-      
-    </item>
-    
-    <item>
-      <title></title>
-      <link>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/jxzt-live-saas/livestationdsl/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/jxzt-live-saas/livestationdsl/</guid>
-      
-        <description>&lt;h4 id=&#34;介绍&#34;&gt;介绍&lt;/h4&gt;
-&lt;p&gt;​	直播中台提供细粒度的场景和聚合接口操作，针对直播间场景，主播初始，开始，暂停，切换，结束直播间；观众初始，开始，切换，结束直播间；获取直播间相关的辅助信息;&lt;/p&gt;
-&lt;p&gt;​	抽象出2中action类型： 一个是场景action（事件触发），一个是聚合action（无状态数据，可聚合资源）；通过dsl进行描述，方便流程可配置，可视化，方便监控定位&lt;/p&gt;
-&lt;h5 id=&#34;场景action&#34;&gt;场景action&lt;/h5&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;{
-    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;sceneAction&amp;#34;&lt;/span&gt;,
-    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;action&amp;#34;&lt;/span&gt;: {
-        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;desc&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;场景demo action&amp;#34;&lt;/span&gt;,
-        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;sceneDemoAction&amp;#34;&lt;/span&gt;,
-        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;run&amp;#34;&lt;/span&gt;: [
-            {
-                &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;method&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;M1&amp;#34;&lt;/span&gt;,
-                &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;required&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;,
-                &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;requests&amp;#34;&lt;/span&gt;:[
-                    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;this.curRoomInfos&amp;#34;&lt;/span&gt;
-                ]
-            },
-            {
-                &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;method&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;M2&amp;#34;&lt;/span&gt;,
-                &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;required&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;,
-                &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;requests&amp;#34;&lt;/span&gt;:[
-                    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;this.lcsConfig&amp;#34;&lt;/span&gt;
-                ]
-            },
-            {
-                &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;method&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;M3&amp;#34;&lt;/span&gt;,
-                &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;required&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;,
-                &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;requests&amp;#34;&lt;/span&gt;:[
-                    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;this.streamInfos&amp;#34;&lt;/span&gt;
-                ]
-            },
-            {
-                &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;method&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;M4&amp;#34;&lt;/span&gt;,
-                &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;required&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;,
-                &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;requests&amp;#34;&lt;/span&gt;: [
-                    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;nmq.updateUserInfos,required&amp;#34;&lt;/span&gt;,
-                    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;nmq.updateStatus,required&amp;#34;&lt;/span&gt;
-                ]
-            }
-        ]
-    }
-}
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h5 id=&#34;heading&#34;&gt;&lt;/h5&gt;
-&lt;h5 id=&#34;聚合action&#34;&gt;聚合action&lt;/h5&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;{
-    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;type&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;aggrAction&amp;#34;&lt;/span&gt;,
-    &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;action&amp;#34;&lt;/span&gt;: {
-        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;name&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;aggrDemo&amp;#34;&lt;/span&gt;,
-        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;desc&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;聚合demo action&amp;#34;&lt;/span&gt;,
-        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;concurrency&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;,
-        &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;properties&amp;#34;&lt;/span&gt;: [
-        {
-            &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;field&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;clarityCdnList&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;fieldType&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;method&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;GetPullAddress&amp;#34;&lt;/span&gt;
-        },
-        {
-            &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;field&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;pullAddress&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;method&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;GetPullAddress&amp;#34;&lt;/span&gt;
-        },
-        {
-            &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;field&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;streamRoomId&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;fieldType&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;method&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;GetStreamInfo&amp;#34;&lt;/span&gt;
-        },
-        {
-            &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;field&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;appId&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;fieldType&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;method&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;GetStreamInfo&amp;#34;&lt;/span&gt;
-        },
-        {
-            &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;field&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;token&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;fieldType&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;method&amp;#34;&lt;/span&gt;:&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;GetStreamInfo&amp;#34;&lt;/span&gt;
-        }
-        ]
-    }
-}
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
       
     </item>
     
