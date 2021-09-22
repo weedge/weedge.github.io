@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>golang on 时间飘过</title>
+    <link>https://weedge.github.io/tags/golang/</link>
+    <description>Recent content in golang on 时间飘过</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Thu, 02 Sep 2021 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/golang/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>网络模型</title>
+      <link>https://weedge.github.io/post/poller/</link>
+      <pubDate>Thu, 02 Sep 2021 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/poller/</guid>
+      <description>&lt;p&gt;看了一些开源的网络I/O模型框架库，尝试着按照理解简单实现一个相对简单的网络I/O模型框架，类似netty的reactor模型。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>
