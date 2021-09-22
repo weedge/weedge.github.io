@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>技术 on 时间飘过</title>
@@ -6,10 +6,24 @@
     <description>Recent content in 技术 on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sat, 23 Dec 2017 10:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 01 Sep 2021 22:04:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>教学直播概括</title>
+      <link>https://weedge.github.io/post/jxzb/</link>
+      <pubDate>Wed, 01 Sep 2021 22:04:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/jxzb/</guid>
+      <description>背景： 不同于常规的主播互动直播；教学直播，面向k12人群， 前期会有课前的准备工作比如课程创建，学生购买数据，老师课件，试卷题目的准备； 双师模</description>
+    </item>
     
-	<atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
-    
+    <item>
+      <title>policy worker</title>
+      <link>https://weedge.github.io/todo/policyworker/</link>
+      <pubDate>Wed, 10 Jun 2020 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/todo/policyworker/</guid>
+      <description>策略模型 package main import ( &amp;#34;sync/atomic&amp;#34; &amp;#34;time&amp;#34; ) func loadConfig() map[string]string { // 从数据库或者文件系统中读取配置信息，然后以map的形式存放在内存里 return make(map[string]string) } func requests() chan int { // 将从外界中接受到的请求放</description>
+    </item>
     
     <item>
       <title>abtest</title>
@@ -27,8 +41,7 @@
       
       <guid>https://weedge.github.io/post/idgen/</guid>
       <description>&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
-
-&lt;p&gt;&amp;emsp;&amp;emsp;用户业务数据增长过快，比如文章评论系统，feed流系统，订单系统；数据的存放模型需要从主从的单机单库 演变成 分布式集群数据库； 分库分表的数据查询需用到全局唯一标识的id来查询业务，比如莫个feed的评论数据、推送消息、购物订单、活动优惠劵等等都需要进行唯一ID标识；以便分布式存储(mysql,nosql,newsql)索引(b+tree, LSMtree,inverted index)快速查询；至于数据一致性通过约定规范协议保证(强：类Paxos算法/raft算法，弱: mq) 。&lt;/p&gt;</description>
+&lt;p&gt;  用户业务数据增长过快，比如文章评论系统，feed流系统，订单系统；数据的存放模型需要从主从的单机单库 演变成 分布式集群数据库； 分库分表的数据查询需用到全局唯一标识的id来查询业务，比如莫个feed的评论数据、推送消息、购物订单、活动优惠劵等等都需要进行唯一ID标识；以便分布式存储(mysql,nosql,newsql)索引(b+tree, LSMtree,inverted index)快速查询；至于数据一致性通过约定规范协议保证(强：类Paxos算法/raft算法，弱: mq) 。&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -56,11 +69,8 @@
       
       <guid>https://weedge.github.io/post/geohash/</guid>
       <description>&lt;h3 id=&#34;问题&#34;&gt;问题&lt;/h3&gt;
-
-&lt;p&gt;&amp;emsp;&amp;emsp;现在吃穿住行的app大都有定位的功能；如何让手机app所在的定位寻找出附近的POI(Point of Interest)呢？至于用户手机是如何获取定位的可以自行Google/Baidu，有时间整理一下。&lt;/p&gt;
-
+&lt;p&gt;  现在吃穿住行的app大都有定位的功能；如何让手机app所在的定位寻找出附近的POI(Point of Interest)呢？至于用户手机是如何获取定位的可以自行Google/Baidu，有时间整理一下。&lt;/p&gt;
 &lt;p&gt;地图上定位一个地方，通过经度(longitude)和纬度(latitude)来标记，由WGS84规定(为GPS全球定位系统使用而建立的坐标系统)；比如地球🌍作为一个球体，纬度是指&lt;code&gt;所在位置的纬线到地心的直线&lt;/code&gt;和&lt;code&gt;赤道的纬线到地心的直线&lt;/code&gt;的夹角，通常北纬为正，南纬为负；经度是指&lt;code&gt;所在位置的经线平面&lt;/code&gt;和&lt;code&gt;规定的本初子午线平面&lt;/code&gt;的夹角，以东为东经，以西为西经，通常东经为正，西经为负；&lt;/p&gt;
-
 &lt;p&gt;一个地点的经度一般与它于协调世界时之间的时差相应：每天有24小时，而一个圆圈有360度，因此地球每小时自转15度。因此假如一个人的地方时比协调世界UTC(Coordinated Universal Time)时早3小时的话，那么他在东经45度左右，比如北京是在东经116左右，那时区+8作为中国标准时间CST(China Standard Time)&lt;/p&gt;</description>
     </item>
     

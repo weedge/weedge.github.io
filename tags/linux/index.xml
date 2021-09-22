@@ -1,16 +1,12 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Linux on 时间飘过</title>
+    <title>linux on 时间飘过</title>
     <link>https://weedge.github.io/tags/linux/</link>
-    <description>Recent content in Linux on 时间飘过</description>
+    <description>Recent content in linux on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sat, 15 Nov 2014 21:04:23 +0800</lastBuildDate>
-    
-	<atom:link href="https://weedge.github.io/tags/linux/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Sat, 15 Nov 2014 21:04:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/linux/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>工具盒子-GNU global</title>
       <link>https://weedge.github.io/post/gnu-global/</link>
@@ -18,12 +14,9 @@
       
       <guid>https://weedge.github.io/post/gnu-global/</guid>
       <description>&lt;h3 id=&#34;gnu-global&#34;&gt;gnu global&lt;/h3&gt;
-
 &lt;p&gt;源码标记，浏览源码挺好用的工具,轻量级的，简单易用。 gtags类似ctags,但是效率比ctags高，具体比较查看&lt;a href=&#34;https://github.com/OpenGrok/OpenGrok/wiki/Comparison-with-Similar-Tools&#34;&gt;这里&lt;/a&gt;(OpenGrok使用相对比较复杂)，而且未来支持的语言也比较多。对Linux-2.6.32源码390M的文件进行标签产出289MB的标签文件。&lt;/p&gt;
-
-&lt;p&gt;可以通过源码安装就OK &lt;code&gt;wget &lt;a href=&#34;http://tamacom.com/global/global-6.3.2.tar.gz&#34;&gt;http://tamacom.com/global/global-6.3.2.tar.gz&lt;/a&gt;; tar zxvf global-6.3.2.tar.gz; cd global-6.3.2; ./configure; make &amp;amp;&amp;amp; make install&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;在需要查找的目录下运行&lt;code&gt;gtags&lt;/code&gt;,会生成三个文件： GTAGS&amp;ndash;定义的函数变量； GRTAGS&amp;ndash;引用的函数变量； GPATH&amp;ndash;函数变量所在文件的路径。&lt;/p&gt;</description>
+&lt;p&gt;可以通过源码安装就OK &lt;!-- raw HTML omitted --&gt;wget &lt;a href=&#34;http://tamacom.com/global/global-6.3.2.tar.gz;&#34;&gt;http://tamacom.com/global/global-6.3.2.tar.gz;&lt;/a&gt; tar zxvf global-6.3.2.tar.gz; cd global-6.3.2; ./configure; make &amp;amp;&amp;amp; make install&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
+&lt;p&gt;在需要查找的目录下运行&lt;!-- raw HTML omitted --&gt;gtags&lt;!-- raw HTML omitted --&gt;,会生成三个文件： GTAGS&amp;ndash;定义的函数变量； GRTAGS&amp;ndash;引用的函数变量； GPATH&amp;ndash;函数变量所在文件的路径。&lt;/p&gt;</description>
     </item>
     
   </channel>

@@ -7,7 +7,7 @@
   
 
 <meta name="renderer" content="webkit" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
 
 <meta name="MobileOptimized" content="width"/>
 <meta name="HandheldFriendly" content="true"/>
@@ -32,10 +32,12 @@
 
 
 
-<meta name="generator" content="Hugo 0.52" />
+<meta name="generator" content="Hugo 0.88.1" />
 
 
 <link rel="canonical" href="https://weedge.github.io/todo/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/" />
+
+
 
 
 
@@ -51,7 +53,7 @@
 
 
 
-<link rel="stylesheet" href="/sass/jane.min.c8c1ff75dee09b44060a6c38f41b9036bac2512ccdb22d7f296cec12dc786375.css" integrity="sha256-yMH/dd7gm0QGCmw49BuQNrrCUSzNsi1/KWzsEtx4Y3U=" media="screen" crossorigin="anonymous">
+<link rel="stylesheet" href="/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css" integrity="sha256-&#43;ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media="screen" crossorigin="anonymous">
 
 
 
@@ -60,21 +62,15 @@
 <meta property="og:title" content="消息队列" />
 <meta property="og:description" content="消息队列介绍what 协议： MQTT(Message Queuing Telemetry Transport，消息队列遥测传输，基于二进制消息的发布/订阅编程模式的消息协议): http://docs.emqtt.cn/zh_CN/latest/mqtt.html https://zhuanlan.zhihu.com/p/20888181 简单的协议:htt" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://weedge.github.io/todo/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/" /><meta property="article:published_time" content="2017-11-12T10:26:23&#43;08:00"/>
-<meta property="article:modified_time" content="2017-11-12T10:26:23&#43;08:00"/>
+<meta property="og:url" content="https://weedge.github.io/todo/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/" /><meta property="article:section" content="todo" />
+<meta property="article:published_time" content="2017-11-12T10:26:23+08:00" />
+<meta property="article:modified_time" content="2017-11-12T10:26:23+08:00" />
 
 <meta itemprop="name" content="消息队列">
-<meta itemprop="description" content="消息队列介绍what 协议： MQTT(Message Queuing Telemetry Transport，消息队列遥测传输，基于二进制消息的发布/订阅编程模式的消息协议): http://docs.emqtt.cn/zh_CN/latest/mqtt.html https://zhuanlan.zhihu.com/p/20888181 简单的协议:htt">
-
-
-<meta itemprop="datePublished" content="2017-11-12T10:26:23&#43;08:00" />
-<meta itemprop="dateModified" content="2017-11-12T10:26:23&#43;08:00" />
-<meta itemprop="wordCount" content="339">
-
-
-
-<meta itemprop="keywords" content="消息队列," />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="description" content="消息队列介绍what 协议： MQTT(Message Queuing Telemetry Transport，消息队列遥测传输，基于二进制消息的发布/订阅编程模式的消息协议): http://docs.emqtt.cn/zh_CN/latest/mqtt.html https://zhuanlan.zhihu.com/p/20888181 简单的协议:htt"><meta itemprop="datePublished" content="2017-11-12T10:26:23+08:00" />
+<meta itemprop="dateModified" content="2017-11-12T10:26:23+08:00" />
+<meta itemprop="wordCount" content="335">
+<meta itemprop="keywords" content="消息队列," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="消息队列"/>
 <meta name="twitter:description" content="消息队列介绍what 协议： MQTT(Message Queuing Telemetry Transport，消息队列遥测传输，基于二进制消息的发布/订阅编程模式的消息协议): http://docs.emqtt.cn/zh_CN/latest/mqtt.html https://zhuanlan.zhihu.com/p/20888181 简单的协议:htt"/>
 
@@ -141,6 +137,8 @@
         
       </li>
     
+
+    
   </ul>
 </nav>
 
@@ -202,6 +200,8 @@
     </div>
     </div>
 </div>
+
+  
 
   
 
@@ -275,6 +275,10 @@
 
       </li>
     
+
+    
+    
+
     
   </ul>
 </nav>
@@ -303,76 +307,52 @@
   <h2 class="post-toc-title">文章目录</h2>
   <div class="post-toc-content">
     <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#消息队列介绍what">消息队列介绍what</a>
-<ul>
-<li><a href="#协议">协议：</a></li>
-</ul></li>
-<li><a href="#消息-队列原理why"><strong>消息</strong>队列原理why</a></li>
-<li><a href="#消息队列使用场景where">消息队列使用场景where</a></li>
-<li><a href="#如何设计消息队列how">如何设计消息队列how</a></li>
-<li><a href="#开源消息队列">开源消息队列</a>
-<ul>
-<li><a href="#kafka">kafka</a></li>
-<li><a href="#nps">NPS</a></li>
-</ul></li>
-<li><a href="#参考">参考</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li><a href="#消息队列介绍what">消息队列介绍what</a>
+      <ul>
+        <li><a href="#协议">协议：</a></li>
+      </ul>
+    </li>
+    <li><a href="#消息队列原理why"><strong>消息</strong>队列原理why</a></li>
+    <li><a href="#消息队列使用场景where">消息队列使用场景where</a></li>
+    <li><a href="#如何设计消息队列how">如何设计消息队列how</a></li>
+    <li><a href="#开源消息队列">开源消息队列</a>
+      <ul>
+        <li><a href="#kafka">kafka</a></li>
+        <li><a href="#nsq">NSQ</a></li>
+      </ul>
+    </li>
+    <li><a href="#参考">参考</a></li>
+  </ul>
 </nav>
   </div>
 </div>
 
   
   <div class="post-content">
-      
-
-<h2 id="消息队列介绍what">消息队列介绍what</h2>
-
+      <h2 id="消息队列介绍what">消息队列介绍what</h2>
 <h3 id="协议">协议：</h3>
-
 <ol>
-<li><strong>MQTT</strong>(Message Queuing Telemetry Transport，消息队列遥测传输，基于二进制消息的发布/订阅编程模式的消息协议):</li>
-</ol>
-
+<li>
+<p><strong>MQTT</strong>(Message Queuing Telemetry Transport，消息队列遥测传输，基于二进制消息的发布/订阅编程模式的消息协议):</p>
 <p><a href="http://docs.emqtt.cn/zh_CN/latest/mqtt.html">http://docs.emqtt.cn/zh_CN/latest/mqtt.html</a></p>
-
 <p><a href="https://zhuanlan.zhihu.com/p/20888181">https://zhuanlan.zhihu.com/p/20888181</a></p>
-
 <p>简单的协议:<a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html">http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html</a></p>
-
 <p>由于规范协议很简单，非常适合需要低功耗和网络带宽有限的IoT场景。</p>
-
-<p>​</p>
-
-<ol>
-<li><strong>AMQP</strong>(Advanced Message Queuing Protocol,一个提供统一消息服务的应用层标准高级消息队列协议，是应用层协议的一个开发标准，为面向消息的中间件设计)：</li>
+</li>
+<li>
+<p><strong>AMQP</strong>(Advanced Message Queuing Protocol,一个提供统一消息服务的应用层标准高级消息队列协议，是应用层协议的一个开发标准，为面向消息的中间件设计)：</p>
+</li>
+<li>
+<p><strong>XMPP</strong>(可扩展消息处理现场协议，Extensible Messaging and Presence Protocol）是基于可扩展标记语言的协议，多用于即时消息)：</p>
+</li>
 </ol>
-
-<p>​</p>
-
-<ol>
-<li><strong>XMPP</strong>(可扩展消息处理现场协议，Extensible Messaging and Presence Protocol）是基于可扩展标记语言的协议，多用于即时消息)：</li>
-</ol>
-
-<p>​</p>
-
-<p>​</p>
-
-<h2 id="消息-队列原理why"><strong>消息</strong>队列原理why</h2>
-
+<h2 id="消息队列原理why"><strong>消息</strong>队列原理why</h2>
 <h2 id="消息队列使用场景where">消息队列使用场景where</h2>
-
 <h2 id="如何设计消息队列how">如何设计消息队列how</h2>
-
 <h2 id="开源消息队列">开源消息队列</h2>
-
 <h3 id="kafka">kafka</h3>
-
-<h3 id="nps">NPS</h3>
-
+<h3 id="nsq">NSQ</h3>
 <h2 id="参考">参考</h2>
 
   </div>
@@ -386,7 +366,10 @@
   </p>
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
-    <span class="item-content">2017-11-12</span>
+    <span class="item-content">
+      2017-11-12
+      
+    </span>
   </p>
   
   <p class="copyright-item">
@@ -404,6 +387,8 @@
 
 
   
+
+  
   
 
   
@@ -411,17 +396,17 @@
   
 
   
-  
+
     
 
-
+  
 
         </div>
       </div>
     </main>
 
     <footer id="footer" class="footer">
-      <div class="social-links">
+      <div class="icon-links">
   
   
     <a href="mailto:weege007@gmail.com" rel="me noopener" class="iconfont"
@@ -466,7 +451,7 @@
 </svg>
 
   </a>
-  
+   
 </div>
 
 <div class="copyright">
@@ -482,7 +467,7 @@
     &copy;
     
       2013 -
-    2019
+    2021
     <span class="heart">
       
       <i class="iconfont">
@@ -500,6 +485,8 @@
       </span></span>
 
   
+  
+
   
 </div>
 
@@ -531,11 +518,19 @@
 
 
 
+
+
+
+
+
+
   
     <script type="text/javascript" src="/js/load-photoswipe.js"></script>
     <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
     <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
   
+
+
 
 
 

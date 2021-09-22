@@ -7,7 +7,7 @@
   
 
 <meta name="renderer" content="webkit" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
 
 <meta name="MobileOptimized" content="width"/>
 <meta name="HandheldFriendly" content="true"/>
@@ -33,10 +33,12 @@
 
 
 
-<meta name="generator" content="Hugo 0.52" />
+<meta name="generator" content="Hugo 0.88.1" />
 
 
 <link rel="canonical" href="https://weedge.github.io/post/golang/" />
+
+
 
 
 
@@ -52,7 +54,7 @@
 
 
 
-<link rel="stylesheet" href="/sass/jane.min.c8c1ff75dee09b44060a6c38f41b9036bac2512ccdb22d7f296cec12dc786375.css" integrity="sha256-yMH/dd7gm0QGCmw49BuQNrrCUSzNsi1/KWzsEtx4Y3U=" media="screen" crossorigin="anonymous">
+<link rel="stylesheet" href="/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css" integrity="sha256-&#43;ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media="screen" crossorigin="anonymous">
 
 
 
@@ -61,21 +63,15 @@
 <meta property="og:title" content="golang学习笔记" />
 <meta property="og:description" content="刚开始接触golang的时候是在大学时候，当时大概是2010年左右，对这门新语言比较好奇，但是没有深入去了解，只是道听途说这门语言在并发处理上很方便，对于协程这个东西也是第一次听说。自从工作之后，就一直没有接触过这门语言,最近公司想往golang上转，开发新的项目平台，毕竟golang运行效率和开发效率都要比其他语言要简单方便很多(听说c&#43;&#43;都快20了)。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://weedge.github.io/post/golang/" /><meta property="article:published_time" content="2017-11-01T01:16:30&#43;08:00"/>
-<meta property="article:modified_time" content="2018-10-03T00:26:23&#43;08:00"/>
+<meta property="og:url" content="https://weedge.github.io/post/golang/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2017-11-01T01:16:30+08:00" />
+<meta property="article:modified_time" content="2018-10-03T00:26:23+08:00" />
 
 <meta itemprop="name" content="golang学习笔记">
-<meta itemprop="description" content="刚开始接触golang的时候是在大学时候，当时大概是2010年左右，对这门新语言比较好奇，但是没有深入去了解，只是道听途说这门语言在并发处理上很方便，对于协程这个东西也是第一次听说。自从工作之后，就一直没有接触过这门语言,最近公司想往golang上转，开发新的项目平台，毕竟golang运行效率和开发效率都要比其他语言要简单方便很多(听说c&#43;&#43;都快20了)。">
-
-
-<meta itemprop="datePublished" content="2017-11-01T01:16:30&#43;08:00" />
-<meta itemprop="dateModified" content="2018-10-03T00:26:23&#43;08:00" />
-<meta itemprop="wordCount" content="4716">
-
-
-
-<meta itemprop="keywords" content="go," />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="description" content="刚开始接触golang的时候是在大学时候，当时大概是2010年左右，对这门新语言比较好奇，但是没有深入去了解，只是道听途说这门语言在并发处理上很方便，对于协程这个东西也是第一次听说。自从工作之后，就一直没有接触过这门语言,最近公司想往golang上转，开发新的项目平台，毕竟golang运行效率和开发效率都要比其他语言要简单方便很多(听说c&#43;&#43;都快20了)。"><meta itemprop="datePublished" content="2017-11-01T01:16:30+08:00" />
+<meta itemprop="dateModified" content="2018-10-03T00:26:23+08:00" />
+<meta itemprop="wordCount" content="4706">
+<meta itemprop="keywords" content="go," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="golang学习笔记"/>
 <meta name="twitter:description" content="刚开始接触golang的时候是在大学时候，当时大概是2010年左右，对这门新语言比较好奇，但是没有深入去了解，只是道听途说这门语言在并发处理上很方便，对于协程这个东西也是第一次听说。自从工作之后，就一直没有接触过这门语言,最近公司想往golang上转，开发新的项目平台，毕竟golang运行效率和开发效率都要比其他语言要简单方便很多(听说c&#43;&#43;都快20了)。"/>
 
@@ -142,6 +138,8 @@
         
       </li>
     
+
+    
   </ul>
 </nav>
 
@@ -203,6 +201,8 @@
     </div>
     </div>
 </div>
+
+  
 
   
 
@@ -276,6 +276,10 @@
 
       </li>
     
+
+    
+    
+
     
   </ul>
 </nav>
@@ -316,24 +320,18 @@
   <h2 class="post-toc-title">文章目录</h2>
   <div class="post-toc-content">
     <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#语言">语言</a>
-<ul>
-<li><a href="#发展历史">发展历史：</a>
-<ul>
-<li><a href="#特征">特征：</a></li>
-<li><a href="#工作上使用语言进化">工作上使用语言进化</a></li>
-</ul></li>
-</ul></li>
-<li><a href="#学习">学习</a></li>
-<li><a href="#深入理解">深入理解</a></li>
-<li><a href="#faq">FAQ:</a></li>
-<li><a href="#开发工具">开发工具</a></li>
-<li><a href="#diy">DIY</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li><a href="#语言">语言</a>
+      <ul>
+        <li><a href="#发展历史">发展历史：</a></li>
+      </ul>
+    </li>
+    <li><a href="#学习">学习</a></li>
+    <li><a href="#深入理解">深入理解</a></li>
+    <li><a href="#faq">FAQ:</a></li>
+    <li><a href="#开发工具">开发工具</a></li>
+    <li><a href="#diy">DIY</a></li>
+  </ul>
 </nav>
   </div>
 </div>
@@ -341,39 +339,28 @@
     
     <div class="post-content">
       <p>刚开始接触golang的时候是在大学时候，当时大概是2010年左右，对这门新语言比较好奇，但是没有深入去了解，只是道听途说这门语言在并发处理上很方便，对于协程这个东西也是第一次听说。自从工作之后，就一直没有接触过这门语言,最近公司想往golang上转，开发新的项目平台，毕竟golang运行效率和开发效率都要比其他语言要简单方便很多(听说c++都快20了)。</p>
-
 <p>吉祥物：（憨厚小地鼠 move~move~move~ Bui~~~~    go~go~go~ ）</p>
-
-<p><img src="https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/go-mascot.png" alt="地鼠" /></p>
-
+<p><img src="https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/go-mascot.png" alt="地鼠"></p>
 <p>（萌萌の勤劳小地鼠~）并发协作：</p>
-
-<p><img src="https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/go-concurrence.png" alt="并发协作" /></p>
-
+<p><img src="https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/go-concurrence.png" alt="并发协作"></p>
 <h2 id="语言">语言</h2>
-
 <p>看七周七语言中提到的，语言各有特色，用于不同的开发场景，对应团队的工具栈；经常用自己熟悉的编程语言，思维模式也会有所不同；总的来说，支持KISS原则，方便高效开发/测试/部署/运行，并发运行解决问题，流出更多时间关注业务或者<code>kick ass &amp;&amp; Chew bubblegum (just a joke~)</code></p>
-
 <h3 id="发展历史">发展历史：</h3>
-
 <blockquote>
 <p>发明这个语言的初衷，「不忘初心，方得始终」</p>
 </blockquote>
-
 <ul>
-<li>为毛需要这个语言：<a href="https://www.oschina.net/translate/go-at-google-language-design-in-the-service-of-software-engineering">https://www.oschina.net/translate/go-at-google-language-design-in-the-service-of-software-engineering</a></li>
+<li>为毛需要这个语言：https://www.oschina.net/translate/go-at-google-language-design-in-the-service-of-software-engineering</li>
 <li>初心：简单,开发简洁，方便快速开发编译发布(开发语言的作者来自c和java, 作者Rob Pike实现并发思想,布道者，他相关的视频和文章需要多看，精髓哦，This guy is a genius~ )</li>
-<li>源码：<a href="https://github.com/golang/go">https://github.com/golang/go</a></li>
+<li>源码：https://github.com/golang/go</li>
 <li>特殊节点：2008 6.6 ~1.5版本去除了c代码实现自举(1.5+直接用go来编译安装即可)， now 10年+ golang2.0 版  <a href="https://github.com/golang/go/wiki/Go2">https://github.com/golang/go/wiki/Go2</a></li>
-<li>Hello,Gopher（golang作者之一Rob Pike 讲的golang发展史，及众家语言之所长，发明这个语言的初衷）:<a href="https://www.youtube.com/watch?v=VoS7DsT1rdM&amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd">https://www.youtube.com/watch?v=VoS7DsT1rdM&amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd</a> <a href="https://talks.golang.org/2014/hellogophers.slide##12">slide</a></li>
+<li>Hello,Gopher（golang作者之一Rob Pike 讲的golang发展史，及众家语言之所长，发明这个语言的初衷）:https://www.youtube.com/watch?v=VoS7DsT1rdM&amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd <a href="https://talks.golang.org/2014/hellogophers.slide##12">slide</a></li>
 <li>Go Concurrency Patterns(一些并发模式case, goroutine通过channel组合传递共享数据, no race like DAG): <a href="https://www.youtube.com/watch?v=f6kdp27TYZs&amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd">https://www.youtube.com/watch?v=f6kdp27TYZs&amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd</a>  <a href="https://talks.golang.org/2012/concurrency.slide">slide</a></li>
 <li>Concurrency Is Not Parallelism: <a href="https://blog.golang.org/concurrency-is-not-parallelism">https://blog.golang.org/concurrency-is-not-parallelism</a></li>
 <li>Simplicity is Complicated: <a href="https://www.youtube.com/watch?v=rFejpH_tAHM&amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd">https://www.youtube.com/watch?v=rFejpH_tAHM&amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd</a> <a href="https://talks.golang.org/2015/simplicity-is-complicated.slide#1">slide</a></li>
-<li>The Design of the Go Assembler：<a href="https://www.youtube.com/watch?v=KINIAgRpkDA&amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd">https://www.youtube.com/watch?v=KINIAgRpkDA&amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd</a> <a href="https://talks.golang.org/2016/asm.slide#1">slide</a></li>
+<li>The Design of the Go Assembler：https://www.youtube.com/watch?v=KINIAgRpkDA&amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd <a href="https://talks.golang.org/2016/asm.slide#1">slide</a></li>
 </ul>
-
 <h4 id="特征">特征：</h4>
-
 <ul>
 <li>KISS；简单朴实 （做工程的人最喜欢的就是简单实用的东西）；</li>
 <li>运行占用资源低(可运行在嵌入式平台linux arm)，跨平台</li>
@@ -391,254 +378,258 @@
 <li>Golang实现了 CSP(Communicating Sequential Process <a href="http://www.usingcsp.com/cspbook.pdf">http://www.usingcsp.com/cspbook.pdf</a> )并发模型做为并发基础，底层使用goroutine做为并发实体，goroutine非常轻量级可以创建几十万个实体；实体间通过 channel 继续匿名消息传递使之解耦，在语言层面实现了自动调度，这样屏蔽了很多内部细节，对外提供简单的语法关键字(go,select,channel)，大大简化了并发编程的思维转换和管理线程的复杂性；</li>
 <li>SO OPEN，import 三方库源(大部分git的方式来自github/gitlib，还支持hg)，源码直接可以修改编译(取之于源用之源)；</li>
 <li>Go 命令工具方便开发自测调试： <a href="https://golang.org/cmd/go/">https://golang.org/cmd/go/</a>
-
 <ul>
 <li>通过go test来单元测试，覆盖测试，性能测试(cpu,pprof)，直接可以测试用例先行，</li>
 <li>go tool,  pprof (进行性能分析 <a href="http://cizixs.com/2017/09/11/profiling-golang-program">http://cizixs.com/2017/09/11/profiling-golang-program</a> ）objdump(dump出汇编代码）</li>
 <li>go get -u ~=  download to go build and install , go run 单独运行</li>
 <li>go fmt 代码格式化，统一编码风格，方便协同编程</li>
 <li>go mod: <a href="https://github.com/golang/go/wiki/Modules">https://github.com/golang/go/wiki/Modules</a> 1.11新引入的功能，方便package依赖管理，类似nodejs中的npm</li>
-</ul></li>
+</ul>
+</li>
 <li>Go 2.0正待发布，10年+发展，会有一些优化和新特性  <a href="https://www.youtube.com/watch?v=RIvL2ONhFBI">https://www.youtube.com/watch?v=RIvL2ONhFBI</a></li>
 <li>More…..</li>
 </ul>
-
 <h4 id="工作上使用语言进化">工作上使用语言进化</h4>
-
-<p><img src="https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/coder.jpg" alt="coder" /></p>
-
+<p><img src="https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/coder.jpg" alt="coder"></p>
 <blockquote>
-<p>C/C++ -&gt; *.so -&gt; php/python  |   java -&gt; *.jar  ==&gt;&gt;  go -&gt; *.a -import-&gt; pkg -compile-&gt;  binary program</p>
+<p>C/C++ -&gt; *.so -&gt; php/python  |   java -&gt; *.jar  ==&raquo;  go -&gt; *.a -import-&gt; pkg -compile-&gt;  binary program</p>
 </blockquote>
-
 <p>编写运行：复杂  -&gt;  简单</p>
-
 <p>Go 相当于兼顾了c的执行效率，python的开发效率，择中方案，适合服务端开发(业务开发，基础组件开发(网关，db，AI)，自动化运维工具开发devops);
 如果用go来调用.so动态链接库，需要用cgo机制</p>
-
-<p>语法对比参考：<a href="http://hyperpolyglot.org/c">http://hyperpolyglot.org/c</a></p>
-
+<p>语法对比参考：http://hyperpolyglot.org/c</p>
 <h2 id="学习">学习</h2>
-
-<ol>
-<li>开始入门：<a href="https://golang.org/doc/code.html">https://golang.org/doc/code.html</a><br /></li>
+<ol start="0">
+<li>开始入门：https://golang.org/doc/code.html</li>
 <li>golang的基本语法知识，可以通过gotour来进行简单的学习入门，godoc查看具体基础文档和get到本地的三方库接口文档，
 Gotour简单入门 ——&gt; <a href="https://github.com/qyuhen/book/blob/master/Go%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%20%E7%AC%AC%E5%9B%9B%E7%89%88.pdf">语法快速入门</a></li>
-<li>练习习题：
-
+<li>练习习题：</li>
+</ol>
 <ul>
 <li><a href="https://goquiz.github.io/">Go语言经典笔试题</a></li>
 <li><a href="https://gobyexample.com">Go实例</a></li>
-</ul></li>
-<li>最佳实践：(这个会根据实践场景逐渐完善，最终可能会形成一个标准规范)
-
+</ul>
+<ol start="3">
+<li>最佳实践：(这个会根据实践场景逐渐完善，最终可能会形成一个标准规范)</li>
+</ol>
 <ul>
 <li><a href="https://talks.golang.org/2013/bestpractices.slide">12条最佳实践</a> <a href="http://maiyang.me/2017/10/21/twelve-best-practices-in-golang/">中文解释</a></li>
-</ul></li>
-<li>面向对象设计SOLID：
-
+</ul>
+<ol start="4">
+<li>面向对象设计SOLID：</li>
+</ol>
 <ul>
 <li><a href="https://blog.gokit.info/post/go-solid-design/">SOLID</a></li>
-</ul></li>
-<li>业务常用依赖阶级开发：(掌握一些三方库，方便快速集成开发)
-
+</ul>
+<ol start="5">
+<li>业务常用依赖阶级开发：(掌握一些三方库，方便快速集成开发)</li>
+</ol>
 <ul>
 <li>Web开发框架：
-
 <ul>
-<li>beego <a href="https://github.com/astaxie/beego">https://github.com/astaxie/beego</a>  支持mvc, orm; 适用于cms，mis管理后台开始开发 （重量点，开发框架已经搭好，基础web开发组件已有，RBAC规范后台权限）</li>
+<li>beego <a href="https://github.com/astaxie/beego">https://github.com/astaxie/beego</a>  支持mvc, orm; 适用于cms，mis管理后台开始开发 （重量点，开发框架已经搭好，基础web开发组件已有，RBAC规范后台权限）
+<ul>
 <li>gin <a href="https://github.com/gin-gonic/gin">https://github.com/gin-gonic/gin</a> 利用httprouter实现高性能路由 (轻量点，适合diy)</li>
-</ul></li>
+</ul>
+</li>
+</ul>
+</li>
 <li>数据库 （client driver）
-
 <ul>
-<li>msyql: <a href="https://github.com/go-sql-driver/mysql">https://github.com/go-sql-driver/mysql</a></li>
+<li>msyql: <a href="https://github.com/go-sql-driver/mysql">https://github.com/go-sql-driver/mysql</a>
+<ul>
 <li>Redis: <a href="https://github.com/garyburd/redigo">https://github.com/garyburd/redigo</a></li>
 <li>Mongo: <a href="https://github.com/go-mgo/mgo">https://github.com/go-mgo/mgo</a></li>
-</ul></li>
+</ul>
+</li>
+</ul>
+</li>
 <li>ZK client: <a href="https://github.com/samuel/go-zookeeper/zk">https://github.com/samuel/go-zookeeper/zk</a></li>
 <li>Grpc: <a href="https://github.com/grpc/grpc-go">https://github.com/grpc/grpc-go</a></li>
-<li>Log: <a href="https://github.com/sirupsen/logrus">https://github.com/sirupsen/logrus</a> (以hook机制添加自定的日志，lograte:<a href="https://github.com/sirupsen/logrus##rotation，或者https://github.com/natefinch/lumberjack">https://github.com/sirupsen/logrus##rotation，或者https://github.com/natefinch/lumberjack</a>)</li>
+<li>Log: <a href="https://github.com/sirupsen/logrus">https://github.com/sirupsen/logrus</a> (以hook机制添加自定的日志，lograte:https://github.com/sirupsen/logrus##rotation，或者https://github.com/natefinch/lumberjack)</li>
 <li>队列: <a href="https://github.com/nsqio/nsq">https://github.com/nsqio/nsq</a></li>
-</ul></li>
-<li>订阅资源blog:
-
+</ul>
+<ol start="6">
+<li>订阅资源blog:</li>
+</ol>
 <ul>
-<li><a href="https://blog.golang.org">https://blog.golang.org</a><br /></li>
-<li><a href="https://www.goinggo.net">https://www.goinggo.net</a><br /></li>
-<li><a href="https://gocn.io/">https://gocn.io/</a><br /></li>
-</ul></li>
-<li>实践踩的坑：
-
+<li><a href="https://blog.golang.org">https://blog.golang.org</a></li>
+<li><a href="https://www.goinggo.net">https://www.goinggo.net</a></li>
+<li><a href="https://gocn.io/">https://gocn.io/</a></li>
+</ul>
+<ol start="7">
+<li>实践踩的坑：</li>
+</ol>
 <ul>
 <li><a href="https://zhuanlan.zhihu.com/p/29545675">https://zhuanlan.zhihu.com/p/29545675</a></li>
 <li><a href="https://zhuanlan.zhihu.com/p/31395716">https://zhuanlan.zhihu.com/p/31395716</a> (channel,引发的死锁）</li>
-</ul></li>
-
-<li><p>应用场景：</p>
-
+</ul>
+<ol start="8">
+<li>应用场景：</li>
+</ol>
 <ul>
 <li><a href="https://zhuanlan.zhihu.com/p/26777189">新闻实时推送</a></li>
 <li>More:  DIY （u can do it）</li>
-</ul></li>
-
-<li><p>好的开源项目：</p>
-
+</ul>
+<ol start="9">
+<li>好的开源项目：</li>
+</ol>
 <ul>
 <li><a href="https://github.com/hackstoic/golang-open-source-projects">golang-open-source-projects</a></li>
 <li><a href="https://github.com/avelino/awesome-go">awesome-go</a> (full-stack dev for venture company )</li>
 <li>Web server服务：
-
 <ul>
 <li>Caddy：类似nginx,apache,middleware chain(责任链模式) 管理方式，独立的mw也可拆分单独运行，比如负载均衡模块，反向代理，fastcgi代理 <a href="https://github.com/mholt/caddy">https://github.com/mholt/caddy</a></li>
-</ul></li>
+</ul>
+</li>
 <li>网关：
-
 <ul>
 <li>krakend: <a href="https://github.com/devopsfaith/krakend">https://github.com/devopsfaith/krakend</a>  （高性能，相比kong&hellip;)</li>
-</ul></li>
+</ul>
+</li>
 <li>微服务：
-
 <ul>
-<li>go-micro (<a href="https://github.com/micro/go-micro">https://github.com/micro/go-micro</a>  +  plugins: <a href="https://github.com/micro/go-plugins">https://github.com/micro/go-plugins</a>  )</li>
-<li>Go-kit (<a href="https://github.com/go-kit/kit">https://github.com/go-kit/kit</a>  very nice micro-service lib framework) diy 借鉴 相关介绍：<a href="https://www.youtube.com/watch?v=NX0sHF8ZZgw">https://www.youtube.com/watch?v=NX0sHF8ZZgw</a></li>
-</ul></li>
+<li>go-micro (<a href="https://github.com/micro/go-micro">https://github.com/micro/go-micro</a>  +  plugins: <a href="https://github.com/micro/go-plugins">https://github.com/micro/go-plugins</a>  )
+<ul>
+<li>Go-kit (<a href="https://github.com/go-kit/kit">https://github.com/go-kit/kit</a>  very nice micro-service lib framework) diy 借鉴 相关介绍：https://www.youtube.com/watch?v=NX0sHF8ZZgw</li>
+</ul>
+</li>
+</ul>
+</li>
 <li>服务发现：
-
 <ul>
 <li>etcd: <a href="https://github.com/coreos/etcd">https://github.com/coreos/etcd</a> (功能介绍: <a href="http://www.infoq.com/cn/articles/etcd-interpretation-application-scenario-implement-principle">http://www.infoq.com/cn/articles/etcd-interpretation-application-scenario-implement-principle</a>)</li>
 <li>Consul: <a href="https://github.com/hashicorp/consul">https://github.com/hashicorp/consul</a></li>
-</ul></li>
+</ul>
+</li>
 <li>Rpc：
-
 <ul>
 <li>grpc: <a href="https://github.com/grpc/grpc-go">https://github.com/grpc/grpc-go</a></li>
 <li>thrift: <a href="https://github.com/apache/thrift/tree/master/lib/go">https://github.com/apache/thrift/tree/master/lib/go</a></li>
-</ul></li>
+</ul>
+</li>
 <li>Web开发框架：
-
 <ul>
-<li>beego(支持mvc模式开发,<a href="https://github.com/astaxie/beego)，">https://github.com/astaxie/beego)，</a></li>
-<li>gin(高性能路由请求处理,<a href="https://github.com/gin-gonic/gin">https://github.com/gin-gonic/gin</a> )</li>
-</ul></li>
+<li>beego(支持mvc模式开发,https://github.com/astaxie/beego)，</li>
+<li>gin(高性能路由请求处理,https://github.com/gin-gonic/gin )</li>
+</ul>
+</li>
 <li>数据库服务：
-
 <ul>
 <li>Tidb (NewSQL 数据库，水平扩展，强一致，分布式事务，多种数据引擎选择，mysql协议通信 <a href="https://github.com/pingcap/tidb">https://github.com/pingcap/tidb</a> 国内公司用的比较多）</li>
 <li>Cockroachdb  (NewSQL 数据库，有百度的同学提交维护 <a href="https://github.com/cockroachdb/cockroach">https://github.com/cockroachdb/cockroach</a> ）</li>
-<li>Influxdb (时序数据库，应用于监控日志数据存储，提供实时数据展现，<a href="https://github.com/influxdata/influxdb）">https://github.com/influxdata/influxdb）</a></li>
-<li>Bboltdb (本地嵌入式数据库 , LMDB的go实现版本,<a href="https://github.com/coreos/bbolt">https://github.com/coreos/bbolt</a>)</li>
-</ul></li>
+<li>Influxdb (时序数据库，应用于监控日志数据存储，提供实时数据展现，https://github.com/influxdata/influxdb）</li>
+<li>Bboltdb (本地嵌入式数据库 , LMDB的go实现版本,https://github.com/coreos/bbolt)</li>
+</ul>
+</li>
 <li>推送：
-
 <ul>
 <li>Gorush: <a href="https://github.com/appleboy/gorush">https://github.com/appleboy/gorush</a></li>
-</ul></li>
+</ul>
+</li>
 <li>爬虫：
-
 <ul>
 <li>Gocolly: <a href="https://github.com/gocolly/colly">https://github.com/gocolly/colly</a></li>
 <li>Gocrawl: <a href="https://github.com/PuerkitoBio/gocrawl">https://github.com/PuerkitoBio/gocrawl</a></li>
-</ul></li>
+</ul>
+</li>
 <li>文件：
-
 <ul>
-<li>Upspin: <a href="https://github.com/upspin/upspin">https://github.com/upspin/upspin</a> (Rob Pike 主导的一个实验项目，<a href="https://www.youtube.com/watch?v=ENLWEfi0Tkg">https://www.youtube.com/watch?v=ENLWEfi0Tkg</a>)</li>
-</ul></li>
+<li>Upspin: <a href="https://github.com/upspin/upspin">https://github.com/upspin/upspin</a> (Rob Pike 主导的一个实验项目，https://www.youtube.com/watch?v=ENLWEfi0Tkg)</li>
+</ul>
+</li>
 <li>链路跟踪：
-
 <ul>
 <li>Opentracing: <a href="https://github.com/opentracing/opentracing-go">https://github.com/opentracing/opentracing-go</a>  结合zipkin</li>
-</ul></li>
+</ul>
+</li>
 <li>实时消息队列平台：
-
 <ul>
 <li>NSQ: <a href="https://github.com/nsqio/nsq">https://github.com/nsqio/nsq</a></li>
-</ul></li>
-<li>监控:</li>
-<li>grafana：<a href="https://github.com/grafana/grafanaprometheus:">https://github.com/grafana/grafanaprometheus:</a> <a href="https://github.com/prometheus/prometheus">https://github.com/prometheus/prometheus</a></li>
+</ul>
+</li>
+<li>监控:
+<ul>
+<li>grafana：https://github.com/grafana/grafana</li>
+<li>prometheus: <a href="https://github.com/prometheus/prometheus">https://github.com/prometheus/prometheus</a></li>
+</ul>
+</li>
 <li>容器管理：
-
 <ul>
 <li>Kubernetes(K8S): <a href="https://github.com/kubernetes/kubernetes">https://github.com/kubernetes/kubernetes</a></li>
 <li>Kubernetes Handbook: <a href="https://jimmysong.io/kubernetes-handbook/">https://jimmysong.io/kubernetes-handbook/</a></li>
-</ul></li>
+</ul>
+</li>
 <li>代码仓库服务：
-
 <ul>
 <li>gogs (轻量级的代码工具，可以运行在pi上, 界面和github相似, <a href="https://github.com/gogits/gogs">https://github.com/gogits/gogs</a> ）</li>
-</ul></li>
+</ul>
+</li>
 <li>CI/CD(Continuous Delivery):
-
 <ul>
 <li>Drone: <a href="https://github.com/drone/drone">https://github.com/drone/drone</a> （可配套自研上线运维平台）</li>
 <li>jenkins-x: <a href="https://github.com/jenkins-x/jx">https://github.com/jenkins-x/jx</a></li>
-</ul></li>
+</ul>
+</li>
 <li>工具：
-
 <ul>
 <li>Gotty: <a href="https://github.com/yudai/gotty">https://github.com/yudai/gotty</a> （webshell)</li>
-</ul></li>
+</ul>
+</li>
 <li>静态网页生成器：
-
 <ul>
 <li>hugo: <a href="https://github.com/gohugoio/hugo">https://github.com/gohugoio/hugo</a> (可以用来写个人技术博客)</li>
-</ul></li>
-<li>数据科学(cheat sheet)： <a href="https://www.cheatography.com/chewxy/cheat-sheets/data-science-in-go-a/pdf/">https://www.cheatography.com/chewxy/cheat-sheets/data-science-in-go-a/pdf/</a></li>
-</ul></li>
-</ol>
-
-<h2 id="深入理解">深入理解</h2>
-
-<p><img src="https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/goroutine.jpg" alt="goroutine实现机制" /></p>
-
-<ul>
-<li><p>goroutine实现机制：<a href="https://www.zhihu.com/question/20862617">https://www.zhihu.com/question/20862617</a> （M:内核OS线程；G:goroutine用户态轻量级线程，自己的栈，正在等待的channel等；P: 调度的上下文，是调度协调的处理器，P的数量代表了真正的并发度)
-    （tips：相对于java中并发库实现是不是要简洁高效些呢，<a href="https://golang.org/doc/faq##goroutines">https://golang.org/doc/faq##goroutines</a>  这个解释了golang为什么用协成代替线程）</p></li>
-
-<li><p>同步机制：sync lock(锁接口) mutex(某个goroutine加互斥锁) rwlock(对读写操作加锁) WaitGroup(pv操作,对goroutine组) ，Cond(条件变量，信号量) 用法参考：<a href="https://deepzz.com/post/golang-sync-package-usage.html">https://deepzz.com/post/golang-sync-package-usage.html</a>  (其实就是OS中的同步机制实现)   锁的话是一个原子操作，要么锁住，要么不做，通过atomic操作底层的cpu指令(CHANGE*, SWAP* &hellip;.etc指令根据不同的cpu/gpu厂商定义，intel/amd)</p></li>
-
-<li><p>内存管理： <a href="http://legendtkl.com/2017/04/02/golang-alloc/">http://legendtkl.com/2017/04/02/golang-alloc/</a></p></li>
-
-<li><p>GC机制：<a href="http://legendtkl.com/2017/04/28/golang-gc/">http://legendtkl.com/2017/04/28/golang-gc/</a></p></li>
-
-<li><p>深入了解golang的执行原理，<a href="https://github.com/qyuhen/book/blob/master/Go%201.5%20%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90.pdf">https://github.com/qyuhen/book/blob/master/Go%201.5%20%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90.pdf</a> (底层的运行时逻辑有点像php的执行过程, php7底层运行结构也借鉴了golang的设计思想，比如内存的申请)</p></li>
 </ul>
-
+</li>
+<li>数据科学(cheat sheet)： <a href="https://www.cheatography.com/chewxy/cheat-sheets/data-science-in-go-a/pdf/">https://www.cheatography.com/chewxy/cheat-sheets/data-science-in-go-a/pdf/</a></li>
+</ul>
+<h2 id="深入理解">深入理解</h2>
+<p><img src="https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/goroutine.jpg" alt="goroutine实现机制"></p>
+<ul>
+<li>
+<p>goroutine实现机制：https://www.zhihu.com/question/20862617 （M:内核OS线程；G:goroutine用户态轻量级线程，自己的栈，正在等待的channel等；P: 调度的上下文，是调度协调的处理器，P的数量代表了真正的并发度)
+（tips：相对于java中并发库实现是不是要简洁高效些呢，https://golang.org/doc/faq##goroutines  这个解释了golang为什么用协成代替线程）</p>
+</li>
+<li>
+<p>同步机制：sync lock(锁接口) mutex(某个goroutine加互斥锁) rwlock(对读写操作加锁) WaitGroup(pv操作,对goroutine组) ，Cond(条件变量，信号量) 用法参考：https://deepzz.com/post/golang-sync-package-usage.html  (其实就是OS中的同步机制实现)   锁的话是一个原子操作，要么锁住，要么不做，通过atomic操作底层的cpu指令(CHANGE*, SWAP* &hellip;.etc指令根据不同的cpu/gpu厂商定义，intel/amd)</p>
+</li>
+<li>
+<p>内存管理： <a href="http://legendtkl.com/2017/04/02/golang-alloc/">http://legendtkl.com/2017/04/02/golang-alloc/</a></p>
+</li>
+<li>
+<p>GC机制：http://legendtkl.com/2017/04/28/golang-gc/</p>
+</li>
+<li>
+<p>深入了解golang的执行原理，https://github.com/qyuhen/book/blob/master/Go%201.5%20%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90.pdf (底层的运行时逻辑有点像php的执行过程, php7底层运行结构也借鉴了golang的设计思想，比如内存的申请)</p>
+</li>
+</ul>
 <h2 id="faq">FAQ:</h2>
-
 <p><a href="https://golang.org/doc/faq">https://golang.org/doc/faq</a>  相当有用值得一读</p>
-
 <p>热更新方案： <a href="https://studygolang.com/topics/1194">https://studygolang.com/topics/1194</a>  (监控一个当前版本文件是否变动了，如果变动然后将老的执行文件软连指向新的执行文件(rm 软连,ln 创建新的软连，然后通过hup信号优雅的重启由endless启动的服务)</p>
-
 <h2 id="开发工具">开发工具</h2>
-
 <ul>
 <li>vim-go: <a href="https://github.com/fatih/vim-go">https://github.com/fatih/vim-go</a></li>
 <li>vscode-go: <a href="https://github.com/Microsoft/vscode-go">https://github.com/Microsoft/vscode-go</a></li>
 <li>goland: <a href="https://www.jetbrains.com/go/">https://www.jetbrains.com/go/</a></li>
 </ul>
-
 <h2 id="diy">DIY</h2>
-
 <p>(熟悉三方源码，基础库，自行diy服务)</p>
-
-<ul class="task-list">
-<li><label><input type="checkbox" disabled class="task-list-item"> 网关服务</label></li>
-<li><label><input type="checkbox" disabled class="task-list-item"> 网关后台</label></li>
-<li><label><input type="checkbox" disabled class="task-list-item"> abtest</label></li>
-<li><label><input type="checkbox" disabled class="task-list-item"> abtest后台</label></li>
-<li><label><input type="checkbox" disabled class="task-list-item"> 微服务
-
-<ul class="task-list">
-<li><label><input type="checkbox" disabled class="task-list-item"> passport</label></li>
-<li><label><input type="checkbox" disabled class="task-list-item"> activity</label></li>
+<ul>
+<li><input disabled="" type="checkbox"> 网关服务</li>
+<li><input disabled="" type="checkbox"> 网关后台</li>
+<li><input disabled="" type="checkbox"> abtest</li>
+<li><input disabled="" type="checkbox"> abtest后台</li>
+<li><input disabled="" type="checkbox"> 微服务
+<ul>
+<li><input disabled="" type="checkbox"> passport</li>
+<li><input disabled="" type="checkbox"> activity</li>
 <li>More…</li>
-</ul></label></li>
-<li><label><input type="checkbox" disabled class="task-list-item"> 资源管理(K8S)</label></li>
-<li><label><input type="checkbox" disabled class="task-list-item"> 监控</label></li>
-<li><label><input type="checkbox" disabled class="task-list-item"> ci/cd构建发布上线</label></li>
-<li><label><input type="checkbox" disabled class="task-list-item"> 队列</label></li>
+</ul>
+</li>
+<li><input disabled="" type="checkbox"> 资源管理(K8S)</li>
+<li><input disabled="" type="checkbox"> 监控</li>
+<li><input disabled="" type="checkbox"> ci/cd构建发布上线</li>
+<li><input disabled="" type="checkbox"> 队列</li>
 </ul>
     </div>
 
@@ -651,7 +642,10 @@ Gotour简单入门 ——&gt; <a href="https://github.com/qyuhen/book/blob/maste
   </p>
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
-    <span class="item-content">2018-10-03</span>
+    <span class="item-content">
+      2018-10-03
+      
+    </span>
   </p>
   
   <p class="copyright-item">
@@ -711,6 +705,8 @@ Gotour简单入门 ——&gt; <a href="https://github.com/qyuhen/book/blob/maste
   
 
   
+
+  
   
 
   
@@ -718,17 +714,17 @@ Gotour简单入门 ——&gt; <a href="https://github.com/qyuhen/book/blob/maste
   
 
   
-  
+
     
 
-
+  
 
         </div>
       </div>
     </main>
 
     <footer id="footer" class="footer">
-      <div class="social-links">
+      <div class="icon-links">
   
   
     <a href="mailto:weege007@gmail.com" rel="me noopener" class="iconfont"
@@ -773,7 +769,7 @@ Gotour简单入门 ——&gt; <a href="https://github.com/qyuhen/book/blob/maste
 </svg>
 
   </a>
-  
+   
 </div>
 
 <div class="copyright">
@@ -789,7 +785,7 @@ Gotour简单入门 ——&gt; <a href="https://github.com/qyuhen/book/blob/maste
     &copy;
     
       2013 -
-    2019
+    2021
     <span class="heart">
       
       <i class="iconfont">
@@ -807,6 +803,8 @@ Gotour简单入门 ——&gt; <a href="https://github.com/qyuhen/book/blob/maste
       </span></span>
 
   
+  
+
   
 </div>
 
@@ -838,11 +836,19 @@ Gotour简单入门 ——&gt; <a href="https://github.com/qyuhen/book/blob/maste
 
 
 
+
+
+
+
+
+
   
     <script type="text/javascript" src="/js/load-photoswipe.js"></script>
     <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
     <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
   
+
+
 
 
 

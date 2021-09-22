@@ -1,25 +1,20 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Macbook on 时间飘过</title>
+    <title>macbook on 时间飘过</title>
     <link>https://weedge.github.io/tags/macbook/</link>
-    <description>Recent content in Macbook on 时间飘过</description>
+    <description>Recent content in macbook on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sat, 19 Jan 2019 10:26:23 +0800</lastBuildDate>
-    
-	<atom:link href="https://weedge.github.io/tags/macbook/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Sat, 19 Jan 2019 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/macbook/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>屏蔽macbook内置键盘</title>
       <link>https://weedge.github.io/post/mackeyboard-hhkb/</link>
       <pubDate>Sat, 19 Jan 2019 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/post/mackeyboard-hhkb/</guid>
-      <description>&lt;iframe frameborder=&#34;no&#34; border=&#34;0&#34; marginwidth=&#34;0&#34; marginheight=&#34;0&#34; width=130 height=86 src=&#34;//music.163.com/outchain/player?type=2&amp;id=28828074&amp;auto=1&amp;height=66&#34;&gt;&lt;/iframe&gt;
-
-&lt;p&gt;&amp;emsp;&amp;emsp;昨天晚上和女友争吵，不小心把水洒在macbook的键盘上了，当时没有及时关机烘干，直接就把本给关上了，导致今天早上起来发现键盘按z左边的shift键失灵，有时候一直重复z键，过了一段时间z键失灵，还有其他几个键也失灵了，网上搜了一下，有可能是排线的原因，找官网修理一下, 估计也得300到1000不等；想想这些维修费用都可以买个键盘了。&lt;/p&gt;</description>
+      <description>&lt;!-- raw HTML omitted --&gt;
+&lt;p&gt;  昨天晚上和女友争吵，不小心把水洒在macbook的键盘上了，当时没有及时关机烘干，直接就把本给关上了，导致今天早上起来发现键盘按z左边的shift键失灵，有时候一直重复z键，过了一段时间z键失灵，还有其他几个键也失灵了，网上搜了一下，有可能是排线的原因，找官网修理一下, 估计也得300到1000不等；想想这些维修费用都可以买个键盘了。&lt;/p&gt;</description>
     </item>
     
   </channel>

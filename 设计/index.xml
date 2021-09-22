@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>设计s on 时间飘过</title>
+    <link>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/</link>
+    <description>Recent content in 设计s on 时间飘过</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language><atom:link href="https://weedge.github.io/%E8%AE%BE%E8%AE%A1/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title></title>
+      <link>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/jxzt-live-saas/livedashboard/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/jxzt-live-saas/livedashboard/</guid>
+      <description>介绍 后台管理发布生产环境的dsl配置，包括新增，修改，审核，发布，回滚等功能； 多人发布的时候，检查当前的版本是否已经发布，并进行版本diff</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/jxzt-live-saas/livestationdsl/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/jxzt-live-saas/livestationdsl/</guid>
+      <description>介绍 ​ 直播中台提供细粒度的场景和聚合接口操作，针对直播间场景，主播初始，开始，暂停，切换，结束直播间；观众初始，开始，切换，结束直播间；获取</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/jxzt-live-saas/%E7%9B%B4%E6%92%ADsaas/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/jxzt-live-saas/%E7%9B%B4%E6%92%ADsaas/</guid>
+      <description>目标 现代化建设，业务增长，需要用技术中台平台赋能，提高人效，抽象共性，细节区别决定成效 抽象 流程可控(filter)，可配置，可视化，隔离已有</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/jxzt-live-saas/%E7%9B%B4%E6%92%AD%E5%9C%BA%E6%99%AF%E9%A2%84%E7%83%AD/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/jxzt-live-saas/%E7%9B%B4%E6%92%AD%E5%9C%BA%E6%99%AF%E9%A2%84%E7%83%AD/</guid>
+      <description>背景 线下场景迁移至线上场景上课，组织形态多样； 线上场景产品创新的组织互动形态； 直播场景形态： 拉新 -&amp;gt; 转化 -&amp;gt; 留存； 针对不同的学习用户对应的不同直</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/jxzt-live-saas/%E7%9B%B4%E6%92%AD%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%9C%BA%E6%99%AF/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/jxzt-live-saas/%E7%9B%B4%E6%92%AD%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%9C%BA%E6%99%AF/</guid>
+      <description>场景： 上课进入直播间非常集中，和秒杀的场景很像，写操作全部异步，直接缓存(元数据直接本地缓存+接口透传，旁路diff更新)操作用户数据；评估</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/rpc%E8%AE%BE%E8%AE%A1/idl-schema%E8%AE%BE%E8%AE%A1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/rpc%E8%AE%BE%E8%AE%A1/idl-schema%E8%AE%BE%E8%AE%A1/</guid>
+      <description>介绍 设计成像 pb(protobuff ) or thirft 的二进制IDL schema 核心功能： 定义IDL，输出go文件：对应请求/响应结构体 和 服务包.方法名</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/rpc%E8%AE%BE%E8%AE%A1/simple-rpc%E8%AE%BE%E8%AE%A1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/rpc%E8%AE%BE%E8%AE%A1/simple-rpc%E8%AE%BE%E8%AE%A1/</guid>
+      <description>介绍 利用go自带的网络框架实现一个简单rpc服务 实现服务的注册，和 invoke操作 ![image-20200902195558209](/Users/wuyong/Library/Application Support/typora-user-images/image-20200902195558209.png)</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/%E9%A2%84%E7%83%AD%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/%E9%A2%84%E7%83%AD%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6/</guid>
+      <description>背景 ​ 暑寒假学生报名量增大，如果不节制预热速度，预热学生数据写入对依赖模块会造成压力 目的 1. 合理利用每台预热机器资源； 2. 限制预热并发流程对依赖</description>
+    </item>
+    
+  </channel>
+</rss>
