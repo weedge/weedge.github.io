@@ -235,7 +235,7 @@
 &lt;ol&gt;
 &lt;li&gt;将当天课前准备的课件，试卷题目，课程章节老师辅导相关的等非状态非易变接口数据在上课之前预热至缓存中；因为课中上课是突发流量场景，减少对后台接口db的并发压力； 对课中不会变的接口数据可以加上本地缓存，提高相应吞吐效率；(读多写少场景接口，cache-aside模式）&lt;/li&gt;
 &lt;li&gt;课前对课中异动易变数据需要直播间缓存，业务组织缓存等初始化缓存数据；提供给课中互动场景使用；后面通过业务策略绑定，把业务组织数据抽象一个课中理解的数据模型，直播间缓存， 组织树节点缓存，学生所在直播间节点缓存等初始数据；（基于这个课中缓存数据模型，进行编码，隔离业务属性）&lt;/li&gt;
-&lt;li&gt;对于异动状态易变更新频繁的接口直接课中缓存交互，异步落盘，降低相应延迟减少对后台接口的读写压力；（写多读少场景接口，write-behind模式）&lt;/li&gt;
+&lt;li&gt;对于异动状态易变更新频繁的接口直接课中缓存交互，异步落盘，降低相应延迟减少对后台接口的读写压力；（写多频繁场景接口，write-behind模式）&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;&lt;strong&gt;教学直播课中互动：&lt;/strong&gt;&lt;/p&gt;
 &lt;ol&gt;
@@ -263,6 +263,7 @@
 &lt;li&gt;&lt;a href=&#34;https://insights.thoughtworks.cn/tag/domain-driven-design/&#34;&gt;Thoughtworks洞见-领域驱动设计&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://tech.meituan.com/2020/03/19/design-pattern-practice-in-marketing.html&#34;&gt;设计模式在美团外卖营销业务中的实践&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://tech.meituan.com/2017/12/22/ddd-in-practice.html&#34;&gt;领域驱动设计在互联网业务开发中的实践&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://read.douban.com/ebook/169386436/&#34;&gt;架构整洁之道&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://book.douban.com/subject/26938710/&#34;&gt;系统架构-复杂系统的产品设计与开发&lt;/a&gt;: 理论知识，多读多思考多实践，&amp;lsquo;&amp;lsquo;虚实&#39;&amp;lsquo;结合&lt;/li&gt;
 &lt;/ol&gt;</description>
       

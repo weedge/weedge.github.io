@@ -81,7 +81,7 @@
 双师模式：学生会分配给不同的辅导老师，辅导老师会对学生进行分班处理，课中也会有学生选组上课互动的场景，辅导老师也可以给学生上课，也会在后台进行跟课，监督学生上课；
 相对于常规的主播互动，会模拟线下上课的场景到线上课中直播，形成一套线上教学直播间场景模式"><meta itemprop="datePublished" content="2021-09-01T22:04:23+08:00" />
 <meta itemprop="dateModified" content="2021-09-01T22:04:23+08:00" />
-<meta itemprop="wordCount" content="1681">
+<meta itemprop="wordCount" content="1687">
 <meta itemprop="keywords" content="直播," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="教学直播概括"/>
 <meta name="twitter:description" content="背景：
@@ -364,7 +364,7 @@
 <ol>
 <li>将当天课前准备的课件，试卷题目，课程章节老师辅导相关的等非状态非易变接口数据在上课之前预热至缓存中；因为课中上课是突发流量场景，减少对后台接口db的并发压力； 对课中不会变的接口数据可以加上本地缓存，提高相应吞吐效率；(读多写少场景接口，cache-aside模式）</li>
 <li>课前对课中异动易变数据需要直播间缓存，业务组织缓存等初始化缓存数据；提供给课中互动场景使用；后面通过业务策略绑定，把业务组织数据抽象一个课中理解的数据模型，直播间缓存， 组织树节点缓存，学生所在直播间节点缓存等初始数据；（基于这个课中缓存数据模型，进行编码，隔离业务属性）</li>
-<li>对于异动状态易变更新频繁的接口直接课中缓存交互，异步落盘，降低相应延迟减少对后台接口的读写压力；（写多读少场景接口，write-behind模式）</li>
+<li>对于异动状态易变更新频繁的接口直接课中缓存交互，异步落盘，降低相应延迟减少对后台接口的读写压力；（写多频繁场景接口，write-behind模式）</li>
 </ol>
 <p><strong>教学直播课中互动：</strong></p>
 <ol>
@@ -392,6 +392,7 @@
 <li><a href="https://insights.thoughtworks.cn/tag/domain-driven-design/">Thoughtworks洞见-领域驱动设计</a></li>
 <li><a href="https://tech.meituan.com/2020/03/19/design-pattern-practice-in-marketing.html">设计模式在美团外卖营销业务中的实践</a></li>
 <li><a href="https://tech.meituan.com/2017/12/22/ddd-in-practice.html">领域驱动设计在互联网业务开发中的实践</a></li>
+<li><a href="https://read.douban.com/ebook/169386436/">架构整洁之道</a></li>
 <li><a href="https://book.douban.com/subject/26938710/">系统架构-复杂系统的产品设计与开发</a>: 理论知识，多读多思考多实践，&lsquo;&lsquo;虚实'&lsquo;结合</li>
 </ol>
     </div>
