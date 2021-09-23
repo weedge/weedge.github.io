@@ -81,7 +81,7 @@
 双师模式：学生会分配给不同的辅导老师，辅导老师会对学生进行分班处理，课中也会有学生选组上课互动的场景，辅导老师也可以给学生上课，也会在后台进行跟课，监督学生上课；
 相对于常规的主播互动，会模拟线下上课的场景到线上课中直播，形成一套线上教学直播间场景模式"><meta itemprop="datePublished" content="2021-09-01T22:04:23+08:00" />
 <meta itemprop="dateModified" content="2021-09-01T22:04:23+08:00" />
-<meta itemprop="wordCount" content="1379">
+<meta itemprop="wordCount" content="1681">
 <meta itemprop="keywords" content="直播," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="教学直播概括"/>
 <meta name="twitter:description" content="背景：
@@ -339,6 +339,7 @@
     <li><a href="#业务发展">业务发展：</a></li>
     <li><a href="#上课业务流程介绍">上课业务流程介绍：</a></li>
     <li><a href="#教学整体概括架构">教学整体概括架构</a></li>
+    <li><a href="#总结思考">总结思考</a></li>
     <li><a href="#references">references</a></li>
   </ul>
 </nav>
@@ -383,9 +384,15 @@
 </ol>
 <h2 id="教学整体概括架构">教学整体概括架构</h2>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/zyb-jx.png" alt="jxzb"></p>
+<h2 id="总结思考">总结思考</h2>
+<p>​	底层的基础建设比较重要(<strong>高效能</strong>)；上层业务的发展离不开基础组件的稳定性(<strong>高可用</strong>)；以及服务多了之后，如何高效快速迭代，上线之后保证整体服务性能的稳定性(<strong>高并发/低延迟/可监控/可配置</strong>)； 以及服务模块之间的划分合理，细化出功能组件，异动业务代码的可维护性（<strong>低耦合高内聚</strong>）；这些都需要理论知识加以指导(比如服务划分抽象原则DDD, 业务抽象设计原则SOLID)，以及实践场景中去平衡折中改进；没有永恒的银弹(内卷)，尚需不断迭代提高。一个字 &ldquo;稳&rdquo;。</p>
 <h2 id="references">references</h2>
 <ol>
-<li>学而思网校直播课堂的架构演进之路：https://www.infoq.cn/article/9jn0qfcx2xq7h6xltwa9</li>
+<li><a href="https://www.infoq.cn/article/9jn0qfcx2xq7h6xltwa9">学而思网校直播课堂的架构演进之路</a></li>
+<li><a href="https://insights.thoughtworks.cn/tag/domain-driven-design/">Thoughtworks洞见-领域驱动设计</a></li>
+<li><a href="https://tech.meituan.com/2020/03/19/design-pattern-practice-in-marketing.html">设计模式在美团外卖营销业务中的实践</a></li>
+<li><a href="https://tech.meituan.com/2017/12/22/ddd-in-practice.html">领域驱动设计在互联网业务开发中的实践</a></li>
+<li><a href="https://book.douban.com/subject/26938710/">系统架构-复杂系统的产品设计与开发</a>: 理论知识，多读多思考多实践，&lsquo;&lsquo;虚实'&lsquo;结合</li>
 </ol>
     </div>
 
