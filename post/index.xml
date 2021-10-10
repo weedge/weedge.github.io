@@ -6,7 +6,17 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sun, 05 Sep 2021 21:04:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 02 Oct 2021 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>工程师六大意识</title>
+      <link>https://weedge.github.io/post/rd/</link>
+      <pubDate>Sat, 02 Oct 2021 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/rd/</guid>
+      <description>&lt;h2 id=&#34;1时间意识&#34;&gt;&lt;strong&gt;1.时间意识&lt;/strong&gt;&lt;/h2&gt;
+&lt;p&gt;​    时间意识的终极目标是按时保质的完成工作。时间是一种宝贵的资源，由于每天工作时间的有限的而需要处理事情是复杂多变性的，为了按时保质的完成工作，我们首先需要有极强的时间意识，使用科学的时间管理策略。总的来说，时间管理就是让我们更有计划的知道需要做什么，什么时候做什么，而时间管理的难点为：事情具有突发性、完成时间难以预算性、执行力和预期不符合。&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>组织引擎</title>
       <link>https://weedge.github.io/post/zborg/</link>
@@ -37,6 +47,15 @@
 &lt;p&gt;前期会有课前的准备工作比如课程创建，学生购买数据，老师课件，试卷题目的准备；&lt;/p&gt;
 &lt;p&gt;双师模式：学生会分配给不同的辅导老师，辅导老师会对学生进行分班处理，课中也会有学生选组上课互动的场景，辅导老师也可以给学生上课，也会在后台进行跟课，监督学生上课；&lt;/p&gt;
 &lt;p&gt;相对于常规的主播互动，会模拟线下上课的场景到线上课中直播，形成一套线上教学直播间场景模式&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>玩转直播系列之消息模块演进</title>
+      <link>https://weedge.github.io/post/jxzbim/</link>
+      <pubDate>Mon, 02 Nov 2020 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/jxzbim/</guid>
+      <description></description>
     </item>
     
     <item>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>工程师 on 时间飘过</title>
+    <link>https://weedge.github.io/tags/%E5%B7%A5%E7%A8%8B%E5%B8%88/</link>
+    <description>Recent content in 工程师 on 时间飘过</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sat, 02 Oct 2021 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/%E5%B7%A5%E7%A8%8B%E5%B8%88/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>工程师六大意识</title>
+      <link>https://weedge.github.io/post/rd/</link>
+      <pubDate>Sat, 02 Oct 2021 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/rd/</guid>
+      <description>&lt;h2 id=&#34;1时间意识&#34;&gt;&lt;strong&gt;1.时间意识&lt;/strong&gt;&lt;/h2&gt;
+&lt;p&gt;​    时间意识的终极目标是按时保质的完成工作。时间是一种宝贵的资源，由于每天工作时间的有限的而需要处理事情是复杂多变性的，为了按时保质的完成工作，我们首先需要有极强的时间意识，使用科学的时间管理策略。总的来说，时间管理就是让我们更有计划的知道需要做什么，什么时候做什么，而时间管理的难点为：事情具有突发性、完成时间难以预算性、执行力和预期不符合。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>玩转直播系列之消息模块演进</title>
+      <link>https://weedge.github.io/post/jxzbim/</link>
+      <pubDate>Mon, 02 Nov 2020 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/jxzbim/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>
