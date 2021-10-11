@@ -318,13 +318,14 @@
     </item>
     
     <item>
-      <title>玩转直播系列之消息模块演进</title>
+      <title>直播系列之消息模块演进</title>
       <link>https://weedge.github.io/post/jxzbim/</link>
       <pubDate>Mon, 02 Nov 2020 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/post/jxzbim/</guid>
       
-        <description>&lt;p&gt;&lt;img src=&#34;https://weedge.github.io/Users/wuyong/Downloads/teacherim.png&#34; alt=&#34;image-20211009173750907&#34;&gt;&lt;/p&gt;
+        <description>&lt;h4 id=&#34;整体服务框架&#34;&gt;整体服务框架&lt;/h4&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/im/blob/main/zbim.png?raw=true&#34; alt=&#34;zbim&#34;&gt;&lt;/p&gt;
 </description>
       
     </item>
