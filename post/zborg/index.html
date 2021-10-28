@@ -72,7 +72,7 @@
 <meta itemprop="description" content="背景：
 教学直播间场景多样性，按年龄段区分辅导后台角色，构成整个教学课中直播和互动的多样性，为了快速支持业务发展，导致后端服务接口过多，不易维护，统一管理。"><meta itemprop="datePublished" content="2021-09-05T21:04:23+08:00" />
 <meta itemprop="dateModified" content="2021-09-05T21:04:23+08:00" />
-<meta itemprop="wordCount" content="4165">
+<meta itemprop="wordCount" content="4986">
 <meta itemprop="keywords" content="直播," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="组织引擎"/>
 <meta name="twitter:description" content="背景：
@@ -325,12 +325,14 @@
   <ul>
     <li><a href="#背景">背景：</a></li>
     <li><a href="#设计目标">设计目标：</a></li>
+    <li><a href="#数据模型">数据模型：</a></li>
     <li><a href="#数据量">数据量：</a></li>
     <li><a href="#依赖中间件基础服务">依赖中间件基础服务</a></li>
     <li><a href="#流程">流程</a>
       <ul>
         <li><a href="#数据对接方"><strong>数据对接方</strong></a></li>
         <li><a href="#场景直播间维度"><strong>场景（直播间维度）</strong></a></li>
+        <li><a href="#流程-1">流程</a></li>
       </ul>
     </li>
     <li><a href="#策略规则平台policy">策略规则平台policy：</a></li>
@@ -366,7 +368,48 @@
 <li>提供可配置后台，管理服务接口；</li>
 <li>将读写io最小化，提高原子化接口响应时间RT</li>
 </ol>
-<p>思想： 高内聚低耦合、空间换时间</p>
+<p>原则： 高内聚低耦合、空间换时间</p>
+<h2 id="数据模型">数据模型：</h2>
+<ol>
+<li>
+<p>一个章节会有多个直播间，比如辅导老师出镜(课前，课中，课后)，最多3n+1个直播间，n为课程章节下的辅导老师数目，liveRoom</p>
+</li>
+<li>
+<p>不同直播间，对应不同的直播间业务流程:  bizType</p>
+<ol>
+<li>三分屏直播间，进入教室→签到→直播/互动→离开(切直播间)</li>
+<li>小组直播间，进入教室→课件下载→分组→签到→直播/互动→离开(切直播间)</li>
+<li>小班直播间，进入直播间→ 课件下载→ 分班→ 直播/互动→离开(切直播间)</li>
+<li>自习室直播间，进入直播间→ 签到→直播</li>
+</ol>
+</li>
+<li>
+<p>不同直播间，对应不同的流媒体推拉流方案：streamPolicy</p>
+<ol>
+<li>三分屏直播间，rtmp + 长链接</li>
+<li>小组直播间，rtc + 长链接</li>
+<li>小班直播间，rtc + 长链接</li>
+<li>自习室直播间，rtmp + 长链接</li>
+</ol>
+</li>
+<li>
+<p>不同组织关系对应聊天互动广播统计维度，抽象组织结构：orgPolicy, orgTree(node)</p>
+<ol>
+<li>一课三分屏：/课程章节,  无班主任，全员互动；课中自动生成；</li>
+<li>小英小数小语文小组直播间，/课程章节/辅导老师/{队/小组}，  辅导老师： 低幼辅导，班主任(班课)，督学服务，0转化督学服务等， 队/小组由课中学生选组自动生成；低幼辅导，班主任，督学服务，0转化督学服务提供数据；</li>
+<li>班主任小班直播间，/课程章节/辅导老师/小班，辅导老师： 低幼辅导，班主任(班课)，小班由辅导侧课前排灌班生成；低幼辅导，班主任服务提供数据；</li>
+<li>短训班，/课程章节/督学LPC/微信群，微信群有督学老师课前排灌班生产，督学服务提供数据；</li>
+<li>0转化服务，/课程章节/督学LPC , 0转化督学服务提供数据；</li>
+</ol>
+<p>lessonPolicy: (bizType,streamPolicy,orgPolicy)</p>
+</li>
+</ol>
+<p>原则：</p>
+<ol>
+<li>直播中台解耦业务属性，支持抽象业务场景，作为底层直播能力输出；</li>
+<li>可复用，直播功能，性能，稳定性的复用；比如三分屏，班课，小组，伪直播等不同维度业务属性解耦前置到预热阶段；</li>
+<li>可扩展，直播数据模型属性如有新增，不会影响原有属性；</li>
+</ol>
 <h2 id="数据量">数据量：</h2>
 <p>1天最高峰2w节课，总报名学生数量600w+， 在线学生100w+ ， 课中进入上课页面qps 120w+</p>
 <p>处理数据量：按一个课程章节来计算，最大的报名学生数目3w+  实际测试用60w+ 的报名学生，预热大概45多分钟</p>
@@ -375,11 +418,11 @@
 <p>policy (id,conf,desc,name)</p>
 <p>lessonPolicy (keyId,keyType,bizType,partition,policyId)</p>
 <p>直播间数量： 3n+1 (n是班主任数目，出镜场景） 最多181个直播间 180<em>8</em>5(id,roomId,virturalRoomId,rootId,bizId,roomType,teacherUid,startTime,endTime,status) = 7.2KB</p>
-<p>组织节点数量：3w/6=5000个小组节点，5000/6 = 800多个队节点，60个辅导老师节点，总共6000个组织节点， 6000<em>8</em>7(id, nodeId,parentId,rootId,virturalNodeId,sourceId,path) =328KB</p>
-<p>用户数量： 3w+  每个班主任最多带500个学生，  3w/500 = 60  个班主任，最多 181 个直播间， 180<em>500 + 3w =12w条直播间用户数据， 按直播间维度协程任务分批处理; 12w</em>8*4(id,uid,nodeId,roomId) =3.7MB</p>
-<p>一天大概总共 2w * 4M =  78GB数据可能需要课前预热 （报名学生2w*3w =6亿）</p>
+<p>组织节点数量：3w/6=5000个小组节点，5000/6 = 800多个队节点，60个辅导老师节点，总共6000个组织节点， 6000*8*7(id, nodeId,parentId,rootId,virturalNodeId,sourceId,path) =328KB</p>
+<p>用户数量： 3w+  每个班主任最多带500个学生，  3w/500 = 60  个班主任，最多 181 个直播间， 180*500 + 3w =12w条直播间用户数据， 按直播间维度协程任务分批处理; 12w*8*4(id,uid,nodeId,roomId) =3.7MB</p>
+<p>一天大概总共 2w * 4M =  78GB数据可能需要课前预热 （以一天最大2w节课程章节，每个章节报名人数3w计算, 报名学生2w*3w =6亿）</p>
 <h2 id="依赖中间件基础服务">依赖中间件基础服务</h2>
-<p><strong>redis (stored k/v存储）  前期是哨兵模式架构， 后期采用proxy模式架构，类似pika,ledis</strong></p>
+<p><strong>redis (stored k/v存储）  前期是哨兵模式架构， 后期采用proxy模式架构</strong></p>
 <p><strong>DB(mysql ) 主从架构，未使用proxy数据库中间件</strong></p>
 <p><strong>MQ(NMQ, RocketMQ) 消息队列</strong></p>
 <p>前期用的NMQ  消息以push的方式发送的消费方，通过groupKey来保证有序，以及消息积压报警，无限重试，消费方来保证幂等</p>
@@ -403,6 +446,8 @@
 <li>多个章节情况都转化成一个章节下的直播间情况 （共享）</li>
 <li>跟课场景：一个章节可能给不同的辅导侧在使用，辅导平台的数据源不同，一个组织树对应多个业务组织，一个直播间主讲推流，多个辅导侧后台拉流监控</li>
 </ol>
+<h3 id="流程-1">流程</h3>
+<p>定义规范辅导侧数据接入 → 上课课程章节绑定对应策略(如不满足，新增支持）→ 分发任务前置预热 → 生成中台理解的属性 (liveRoom,lessonPolicy,orgTree 等)  →直播中台面向这些属性编程，提供原子化读写接口</p>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/%E7%9B%B4%E6%92%AD%E4%B8%AD%E5%8F%B0-%E7%BB%84%E7%BB%87%E5%BC%95%E6%93%8E%E6%B5%81%E7%A8%8B%E6%A1%86%E6%A1%86%E6%96%BD%E5%B7%A5%E5%9B%BE.jpg" alt="直播中台-组织引擎流程框框施工图.jpg"></p>
 <h2 id="策略规则平台policy">策略规则平台policy：</h2>
 <p>用于不同的业务直播间类型绑定组织策略，开发提供给运营产品团队使用（like istio Pilot）</p>
