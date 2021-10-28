@@ -417,7 +417,7 @@
 <p>策略数据： 一个章节对应一个策略，一个策略可以给多个章节使用，</p>
 <p>policy (id,conf,desc,name)</p>
 <p>lessonPolicy (keyId,keyType,bizType,partition,policyId)</p>
-<p>直播间数量： 3n+1 (n是班主任数目，出镜场景） 最多181个直播间 180<em>8</em>5(id,roomId,virturalRoomId,rootId,bizId,roomType,teacherUid,startTime,endTime,status) = 7.2KB</p>
+<p>直播间数量： 3n+1 (n是班主任数目，出镜场景） 最多181个直播间 180*8*5(id,roomId,virturalRoomId,rootId,bizId,roomType,teacherUid,startTime,endTime,status) = 7.2KB</p>
 <p>组织节点数量：3w/6=5000个小组节点，5000/6 = 800多个队节点，60个辅导老师节点，总共6000个组织节点， 6000*8*7(id, nodeId,parentId,rootId,virturalNodeId,sourceId,path) =328KB</p>
 <p>用户数量： 3w+  每个班主任最多带500个学生，  3w/500 = 60  个班主任，最多 181 个直播间， 180*500 + 3w =12w条直播间用户数据， 按直播间维度协程任务分批处理; 12w*8*4(id,uid,nodeId,roomId) =3.7MB</p>
 <p>一天大概总共 2w * 4M =  78GB数据可能需要课前预热 （以一天最大2w节课程章节，每个章节报名人数3w计算, 报名学生2w*3w =6亿）</p>
