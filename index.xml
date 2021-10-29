@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sat, 02 Oct 2021 10:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 26 Oct 2021 22:04:23 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -19,6 +19,66 @@
       <guid>https://weedge.github.io/about/</guid>
       
         <description>&lt;p&gt;简单的木头人，简单，呆木，喜欢自言自语，愚人自扰型。时间飞逝，仅仅记录，留住某人某事，某些好玩的技术，KISS and just do IT.&lt;/p&gt;
+</description>
+      
+    </item>
+    
+    <item>
+      <title>服务改造简述</title>
+      <link>https://weedge.github.io/post/servicetransformation/</link>
+      <pubDate>Tue, 26 Oct 2021 22:04:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/servicetransformation/</guid>
+      
+        <description>&lt;p&gt;直播整体服务分为4个阶段：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;快速上线，需求多，迭代快，开发团队整体熟悉开发框架用的odp（php开发语言），（效益：前期起步使用rd熟悉的开发脚本语言，支持需求快速迭代）&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;后面功能复用， 建设业务中台， 直播中台，互动中台的建设，中台的请求大，采用golang进行开发，（效益：整体机器资源消耗减少, 高峰期机器负载降低)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;根据直播业务场景，抽象中台底层数据模型，（效益：减少人力，提高复用，增加整体研发效能）&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;开发语言迁移， 服务模型从多进程脚本弱类型语言切到多协程强类型语言，需要适配接口&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;需要梳理核心服务接口和非核心服务接口，&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;服务上线，迁移老接口， 需要做流量的切分，新老接口的diff , 有两种方案：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;在业务层面加上灰度策略，通过策略配置，对不同的业务id进行异步分流，一份请求数据，2份响应数据，只返回老的响应数据，新老响应数据进行diff处理；优点：业务改造方自己把控；缺点：对业务代码有侵入，如果改造灰度策略多的话，会降低业务代码逻辑稳定性；&lt;/li&gt;
+&lt;li&gt;在新老服务之上加一层接口代理层，接口适配，灰度策略流量切分，新老接口diff功能 移至 接口代理层做，相当于提供一层网关服务来处理；优点： 对接口灰度进行统一管理，不会对业务代码有浸入操作；缺点：多了一层代理层，接口响应时间会有所增加，需要保证代理层的稳定性；&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;两种方案都可以，需要结合组织结构来考虑开发技术成本， 方案一：不需要额外的人力来支持维护代理层；方案二：需要单独的团队或者开发人员来维护代理层； 如果看整体收益的话，偏向于第二种方案，前者就是战术编程，后者就是战略编程，应该侧重战略编程。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;课中直播是流量突发的场景，对于服务优化改造，服务压力测试必不可少：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;接口压测，关注qps，接口响应时间，服务监控，负载等情况；&lt;/li&gt;
+&lt;li&gt;全链路压侧，关注tps，整体链路调用接口响应时间耗时，总响应时间耗时，各服务监控，负载等情况；并且输出测试报表；为了不污染线上数据，需要对基础存储组件 单独部署一套影子系统，服务链路上需要加上压侧标签参数；可参考：&lt;a href=&#34;https://help.aliyun.com/document_detail/29337.html&#34;&gt;性能测试 PTS&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;保证切流过程中服务比较稳定，进行周期性引流，切流观察：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;旁路引流diff，覆盖到业务全场景的情况，diff在可接受范围内，进行下一步 流量切流&lt;/li&gt;
+&lt;li&gt;为了保证服务稳定性，不出现p0,p1,p2事故，流量切换的周期一般比较长，按覆盖到的业务场景和整体服务监控情况而定，按1%、2%、10%、20%，40%，80%放量；查看客户端是否有异常以及用户的反馈工单，切流放量阶段diff还是正常进行，返回是否有问题，存放数据是否一致；没有问题，进入下一步  线上观察&lt;/li&gt;
+&lt;li&gt;线上观察一段时间，会以月为单位，观察阶段主要服务流量是新改造的服务，如果发现有异动，还可以切回原来的服务；如果观察阶段没有问题，可以下掉原来的服务了；&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;服务改造过程中，会有新的业务需求进来，如果是大的需求，开发周期比较长的项目，如果是紧急项目，只能在原有服务上进行开发，后续在迁移至新系统中；对于非紧急需求，可以暂缓压压，可以等新服务上线稳定之后，在使用新服务框架开发，上线部署，主要看需求中是否需要修改老接口，还是直接提供新接口就可以满足；&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;容器化改造，上云（效益：整体测试，线上环节保持一致，节约开发测试时间；线上服务治理通过K8S+Istio,进行网格化治理，待续）&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
 </description>
       
     </item>
@@ -211,8 +271,8 @@
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;直播间，组织节点，学生数据&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;内部优化设计：（原则：尽量减少读写io, 达到最优解）&lt;/li&gt;
+&lt;p&gt;内部优化设计：（原则：尽量减少读写io, 达到最优解）&lt;/p&gt;
+&lt;ol start=&#34;2&#34;&gt;
 &lt;li&gt;异步缓冲buffer数据批量发送队列入库，减少网络io，降低db的写压力&lt;/li&gt;
 &lt;li&gt;课中老师的课件信令记录，zset存缓存，学生高并发场景获取直播间信令记录，通过本地缓存来减少对zset 大key数据读取压力&lt;/li&gt;
 &lt;li&gt;任务池化，并发批量处理任务，提高吞吐相应速度&lt;/li&gt;
@@ -1657,21 +1717,6 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
 &lt;li&gt;&lt;a href=&#34;http://www.yangzhiping.com/tech/r-markdown-knitr.html&#34;&gt;Markdown写作浅谈&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;http://lucifr.com/2011/12/21/octopress-on-server-and-portable-scheme/&#34;&gt;服务器端Octopress搭建及移动方案&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>happy new year</title>
-      <link>https://weedge.github.io/post/happy-new-year/</link>
-      <pubDate>Tue, 01 Jan 2013 00:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/happy-new-year/</guid>
-      
-        <description>&lt;p&gt;新年开始了，工作了半年，经历一些，懂得一些，认识一些，对自己的未来总是在不断的寻觅中，却迷茫着~，每次家里人问起是否在这个城市待得习惯，不断的问我是否过得好，总是回复家人过得好，放心好了，出门在外，家人总是希望自己能够过得好，而对家人总是报喜不报忧；新年了，有些变化，给自己一些时间，计划似乎永远赶不上变化，改正自己，尽快恢复过来，加油吧~！&lt;/p&gt;
-&lt;p&gt;简单踏实就好，奶奶经常给说的话，一直记着。【step by step, 懂得珍惜】&lt;/p&gt;
-&lt;p&gt;最近在看柴进写的《看见》, 用心在生活着。去年新年的时候，她的&lt;a href=&#34;http://blog.sina.com.cn/chjguancha&#34;&gt;博客&lt;/a&gt;中有句话摘抄下来：&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;“有人问，你的新年计划是什么？ 谁能计划啥，碰到什么是什么，山高月小，就滴个石，乱石穿空，就拍个岸，遇上高山峡谷，自成江河湖海。但人总得流淌，没这个动作就算完了。 问为了什么？ 啥也不为，这么着高兴，痛快。”&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;happy new year~! 2013 传递笑脸 ^!^  :)&lt;/p&gt;</description>
       
     </item>
     

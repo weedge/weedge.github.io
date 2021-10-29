@@ -6,7 +6,16 @@
     <description>Recent content in 技术 on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sat, 02 Oct 2021 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 26 Oct 2021 22:04:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>服务改造简述</title>
+      <link>https://weedge.github.io/post/servicetransformation/</link>
+      <pubDate>Tue, 26 Oct 2021 22:04:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/servicetransformation/</guid>
+      <description>直播整体服务分为4个阶段： 快速上线，需求多，迭代快，开发团队整体熟悉开发框架用的odp（php开发语言），（效益：前期起步使用rd熟悉的开发</description>
+    </item>
+    
     <item>
       <title>工程师六大意识</title>
       <link>https://weedge.github.io/post/rd/</link>
