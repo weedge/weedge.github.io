@@ -76,7 +76,7 @@
 &lt;/ol&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;容器化改造，上云（效益：整体测试，线上环节保持一致，节约开发测试时间；线上服务治理通过K8S+Istio,进行网格化治理，待续）&lt;/p&gt;
+&lt;p&gt;容器化改造，上云（效益：整体测试，线上环节保持一致，节约开发测试时间；线上服务治理通过K8S+Istio,进行网格化治理）&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
 </description>
