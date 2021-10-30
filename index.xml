@@ -76,7 +76,7 @@
 &lt;/ol&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;容器化改造，上云（效益：整体测试，线上环节保持一致，节约开发测试时间；线上服务治理通过K8S+Istio,进行网格化治理）&lt;/p&gt;
+&lt;p&gt;容器化改造，上云（效益：整体测试，线上环节保持一致，节约开发测试时间；线上服务治理通过K8S+Istio,进行网格化治理, 以前部署在物理机或者虚拟机上，混部的情况，资源分配和隔离不合理，迁移后，可以充分合理利用宿主物理机资源，隔离，弹性扩缩容）可参考：&lt;a href=&#34;https://jimmysong.io/migrating-to-cloud-native-application-architectures/&#34;&gt;迁移到云原生应用架构&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
 </description>
