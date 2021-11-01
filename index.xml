@@ -95,6 +95,7 @@
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://jimmysong.io/kubernetes-handbook/practice/service-discovery-and-loadbalancing.html&#34;&gt;k8s-service-discovery-and-loadbalancing&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.servicemesher.com/istio-handbook/practice/integration-registry.html&#34;&gt;istio集成服务注册中心&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.servicemesher.com/istio-handbook/concepts/sidecar-injection.html&#34;&gt;Sidecar 模式&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>
