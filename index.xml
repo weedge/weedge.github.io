@@ -90,7 +90,12 @@
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;h4 id=&#34;总结&#34;&gt;总结&lt;/h4&gt;
-&lt;p&gt;随着业务的发展，服务不断迭代改造，涉及到业务层面抽象改造，以及基础平台服务的升级；最终目的都是为了满足日益增长的需求，缩短需求发布到上线的周期，复用，减少迭代对服务整体稳定性的影响。&lt;/p&gt;</description>
+&lt;p&gt;随着业务的发展，服务不断迭代改造，涉及到业务层面抽象改造，以及基础平台服务的升级；最终目的都是为了满足日益增长的需求，缩短需求发布到上线的周期，复用，减少迭代对服务整体稳定性的影响。&lt;/p&gt;
+&lt;h4 id=&#34;references&#34;&gt;References&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://jimmysong.io/kubernetes-handbook/practice/service-discovery-and-loadbalancing.html&#34;&gt;k8s-service-discovery-and-loadbalancing&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.servicemesher.com/istio-handbook/practice/integration-registry.html&#34;&gt;istio集成服务注册中心&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;</description>
       
     </item>
     
