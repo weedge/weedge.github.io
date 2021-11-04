@@ -97,7 +97,6 @@
 &lt;li&gt;&lt;a href=&#34;https://www.servicemesher.com/istio-handbook/practice/integration-registry.html&#34;&gt;istio集成服务注册中心&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.servicemesher.com/istio-handbook/concepts/sidecar-injection.html&#34;&gt;Sidecar 模式&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://zhaohuabing.com/post/2019-10-21-pilot-discovery-code-analysis/&#34;&gt;Istio Pilot 组件介绍&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s?__biz=MzkwOTIxNDQ3OA==&amp;amp;mid=2247532348&amp;amp;idx=1&amp;amp;sn=23c72ce218f4f2873e15ee47997aaedc&#34;&gt;基于Flink+ServiceMesh的腾讯游戏大数据实践&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>
