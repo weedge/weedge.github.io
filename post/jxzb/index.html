@@ -72,7 +72,7 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://weedge.github.io/post/jxzb/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-09-01T22:04:23+08:00" />
-<meta property="article:modified_time" content="2021-10-27T17:26:23+08:00" />
+<meta property="article:modified_time" content="2021-11-06T17:26:23+08:00" />
 
 <meta itemprop="name" content="教学直播概括">
 <meta itemprop="description" content="背景：
@@ -80,8 +80,8 @@
 前期会有课前的准备工作比如课程创建，学生购买数据，老师课件，试卷题目的准备；
 双师模式：学生会分配给不同的辅导老师，辅导老师会对学生进行分班处理，课中也会有学生选组上课互动的场景，辅导老师也可以给学生上课，也会在后台进行跟课，监督学生上课；
 相对于常规的主播互动，会模拟线下上课的场景到线上课中直播，形成一套线上教学直播间场景模式"><meta itemprop="datePublished" content="2021-09-01T22:04:23+08:00" />
-<meta itemprop="dateModified" content="2021-10-27T17:26:23+08:00" />
-<meta itemprop="wordCount" content="1755">
+<meta itemprop="dateModified" content="2021-11-06T17:26:23+08:00" />
+<meta itemprop="wordCount" content="1946">
 <meta itemprop="keywords" content="直播," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="教学直播概括"/>
 <meta name="twitter:description" content="背景：
@@ -375,6 +375,7 @@
 <li>辅导跟课后台：进入跟课后台→ 进入直播间→通过流媒体拉流/通过长链接发送聊天消息→处理报警/遮盖/鉴黄/标记→直播结束获取计算好的学生到课时长，作答率，出勤率，完课率等</li>
 </ol>
 </li>
+<li>互动依赖长链接，答题，pk等场景，都有开始到结束的过程，对每个互动场景用互动id来管理生命周期，涉及金额的互动，需要考虑黑产的影响，需要对答案加密，以及金额的提前计算预热和防止多发少发，互动读写接口尽量细化，防止读写io多在同一个接口中；尽量把计算放在用户端来处理， 比如 答题是否成功，pk是否赢了等，分散服务端流量压力；(原则：统一管理互动类型，可配置化，细化io, 计算前置,分流)</li>
 </ol>
 <p><strong>教学直播课后回放：</strong></p>
 <ol>
@@ -413,7 +414,7 @@
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
     <span class="item-content">
-      2021-10-27
+      2021-11-06
       
     </span>
   </p>
