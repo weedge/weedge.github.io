@@ -425,6 +425,7 @@
 &lt;p&gt;​	底层的基础建设比较重要(&lt;strong&gt;高效能&lt;/strong&gt;)；上层业务的发展离不开基础组件的稳定性(&lt;strong&gt;高可用&lt;/strong&gt;)；以及服务多了之后，如何高效快速迭代，上线之后保证整体服务性能的稳定性(&lt;strong&gt;高并发/低延迟/可监控/可配置&lt;/strong&gt;)； 以及服务模块之间的划分合理，细化出功能组件，异动业务代码的可维护性（&lt;strong&gt;低耦合高内聚&lt;/strong&gt;）；这些都需要理论知识加以指导(比如服务划分抽象原则DDD, 业务抽象设计原则SOLID)，以及实践场景中去平衡折中改进；没有永恒的银弹(内卷)，尚需不断迭代提高。一个字 &amp;ldquo;稳&amp;rdquo;。&lt;/p&gt;
 &lt;h2 id=&#34;references&#34;&gt;references&lt;/h2&gt;
 &lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.infoq.cn/theme/97?source=app_share&#34;&gt;作业帮AI+大数据技术实践&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.infoq.cn/article/9jn0qfcx2xq7h6xltwa9&#34;&gt;学而思网校直播课堂的架构演进之路&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://insights.thoughtworks.cn/tag/domain-driven-design/&#34;&gt;Thoughtworks洞见-领域驱动设计&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://tech.meituan.com/2020/03/19/design-pattern-practice-in-marketing.html&#34;&gt;设计模式在美团外卖营销业务中的实践&lt;/a&gt;&lt;/li&gt;
