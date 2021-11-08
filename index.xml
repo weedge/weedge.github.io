@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 26 Oct 2021 22:04:23 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 08 Nov 2021 10:26:23 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -20,6 +20,163 @@
       
         <description>&lt;p&gt;简单的木头人，简单，呆木，喜欢自言自语，愚人自扰型。时间飞逝，仅仅记录，留住某人某事，某些好玩的技术，KISS and just do IT.&lt;/p&gt;
 </description>
+      
+    </item>
+    
+    <item>
+      <title>缓存淘汰策略-LRU</title>
+      <link>https://weedge.github.io/post/lru/</link>
+      <pubDate>Mon, 08 Nov 2021 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/lru/</guid>
+      
+        <description>&lt;h2 id=&#34;序言&#34;&gt;序言&lt;/h2&gt;
+&lt;p&gt;​	在计算机硬件中缓/内存设计是用来机器启动的时候加载程序，分配运行空间数据，停机，缓/内存中的数据会丢失；磁盘用来持久化存储，提供数据加载到内存中，内存的读写速度比磁盘快很多，以下是Jeff Dean &amp;ldquo;Numbers Everyone Should Know&amp;rdquo; 中提供的数据(虽然过去10多年了)， 读取1MB数据，从内存中读比从磁盘中读取快100+倍；但是缓/内存的空间比磁盘空间少，为了加快数据的访问，减少缓存/磁盘io，大概分为三种：1. 可以提前将数据从磁盘加载到内/缓存中(page)、2. 内/缓存miss从下层存储获取数据(cache,pool,page)、3. 无需加载，直接内/缓存evict；如果提供给进程的最大内/缓存资源到了最大限制，需要对存储资源进行evict操作，常用的evict策略可以从&lt;a href=&#34;https://en.wikipedia.org/wiki/Cache_replacement_policies&#34;&gt;Cache_replacement_policies&lt;/a&gt;中了解；有关特定于分页的详细算法，请参阅&lt;a href=&#34;https://en.wikipedia.org/wiki/Page_replacement_algorithm&#34;&gt;页面替换算法&lt;/a&gt;；有关特定于 CPU 和 RAM 之间缓存的详细算法，请参阅&lt;a href=&#34;https://en.wikipedia.org/wiki/CPU_cache&#34;&gt;CPU 缓存&lt;/a&gt;。这里主要关注LRU evict相关策略。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;OP(io)&lt;/th&gt;
+&lt;th&gt;cost（1s= 10^9ns)&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;L1 cache reference 读取CPU的一级缓存&lt;/td&gt;
+&lt;td&gt;0.5 ns&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Branch mispredict(转移、分支预测)&lt;/td&gt;
+&lt;td&gt;5 ns&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;L2 cache reference 读取CPU的二级缓存&lt;/td&gt;
+&lt;td&gt;7 ns&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Mutex lock/unlock 互斥锁\解锁&lt;/td&gt;
+&lt;td&gt;100 ns&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Main memory reference 读取内存数据&lt;/td&gt;
+&lt;td&gt;100 ns&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Compress 1K bytes with Zippy 1k字节压缩&lt;/td&gt;
+&lt;td&gt;10,000 ns&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Send 2K bytes over 1 Gbps network 在1Gbps的网络上发送2k字节&lt;/td&gt;
+&lt;td&gt;20,000 ns&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Read 1 MB sequentially from memory 从内存顺序读取1MB&lt;/td&gt;
+&lt;td&gt;250,000 ns&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Round trip within same datacenter 从一个数据中心往返一次，ping一下&lt;/td&gt;
+&lt;td&gt;500,000 ns&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Disk seek  磁盘搜索&lt;/td&gt;
+&lt;td&gt;10,000,000 ns&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Read 1 MB sequentially from network 从网络上顺序读取1兆的数据&lt;/td&gt;
+&lt;td&gt;10,000,000 ns&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Read 1 MB sequentially from disk 从磁盘里面读出1MB&lt;/td&gt;
+&lt;td&gt;30,000,000 ns&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Send packet CA-&amp;gt;Netherlands-&amp;gt;CA 一个包的一次远程访问&lt;/td&gt;
+&lt;td&gt;150,000,000 ns&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id=&#34;lru算法&#34;&gt;LRU算法&lt;/h2&gt;
+&lt;p&gt;​	LRU(least recently used)是一种缓存 evict 策略算法：在缓存有限的情况下，如果有新的数据需要加载进缓存，则需要将最不可能被继续访问的缓存剔除掉。这是一种提前预判假设的算法，因为缓存是否可能被访问到没法做预测的，所以假设 &lt;strong&gt;一个key经常被访问，那么该key的idle time应该是最小的。&lt;/strong&gt; (但这个假设也是基于概率，并不是充要条件,很明显,idle time最小的,甚至都不一定会被再次访问到)。&lt;/p&gt;
+&lt;p&gt;​	LRU 的工作原理是一种时间局部性原理的假设，在过去的几条指令中使用最多的页面最有可能在接下来的几条指令中也被大量使用。&lt;/p&gt;
+&lt;p&gt;​	实现方式可以采用wiki中的实现，每个缓存item中有具有序列号(每个新访问的增量为 1)，缓存满了将序列号最低的替换掉，这种实现需要找到最低的进行比较替换；还有种实现实现方式是通过hashMap+双向链表的方式实现，空间换时间的方式，&lt;a href=&#34;https://leetcode-cn.com/problems/lru-cache/&#34;&gt;leetcode上有这道题&lt;/a&gt;，一般面试会问到；&lt;/p&gt;
+&lt;p&gt;实际工程实现中，由于实现成本，根据使用场景，考虑空间利用和时间的折中，使用的&lt;a href=&#34;https://en.wikipedia.org/wiki/Page_replacement_algorithm#Variants_on_LRU&#34;&gt;LRU算法变体&lt;/a&gt;：(以下定义来自wiki)&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;1. [LRU-K](https://en.wikipedia.org/wiki/Page_replacement_algorithm#cite_note-15) 驱逐过去第 K 次最近访问最远的页面。例如，LRU-1 只是 LRU，而 LRU-2 根据倒数第二次访问的时间驱逐页面。LRU-K 在时间上的局部性方面大大改进了 LRU。
+2. [ARC](https://en.wikipedia.org/wiki/Page_replacement_algorithm#cite_note-16) 算法通过保持最近驱逐页面的历史可LRU，并使用此选项可以更改的偏好近期或频繁访问。它对顺序扫描特别有抵抗力。
+3. [2Q](https://en.wikipedia.org/wiki/Page_replacement_algorithm#cite_note-17) 算法改进了 LRU 和 LRU/2 算法。通过具有两个队列，一个用于热路径项目，另一个用于慢路径项目，项目首先被放置在慢路径队列中，并且在第二次访问放置在热路径项目中的项目之后；由于对添加项的引用比 LRU 和 LRU/2 算法中的保留时间更长，因此它具有更好的热路径队列，从而提高了缓存的命中率。
+4. [SLRU](https://en.wikipedia.org/wiki/Cache_replacement_policies#Segmented_LRU_(SLRU)) 缓存分为两个段，试用段和保护段。每个段中的行按从最近访问到最近最少访问的顺序排列。来自未命中的数据被添加到试用段最近访问的末端的缓存中。命中从它们当前所在的任何地方删除，并添加到受保护段的最近访问端。因此，受保护段中的行至少被访问了两次。
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;本地缓存中的实现机制&#34;&gt;本地缓存中的实现机制&lt;/h2&gt;
+&lt;p&gt;go语言实现的本地缓存策略中有开源的实现方案&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/golang/groupcache&#34;&gt;https://github.com/golang/groupcache&lt;/a&gt;  (LRU)&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;http://github.com/dgryski/go-s4lru&#34;&gt;http://github.com/dgryski/go-s4lru&lt;/a&gt; (S4LRU)&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/dgryski/go-arc&#34;&gt;https://github.com/dgryski/go-arc&lt;/a&gt; (ARC)&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/hashicorp/golang-lru&#34;&gt;https://github.com/hashicorp/golang-lru&lt;/a&gt; (LRU, ARC, TwoQueue)&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/vmihailenco/go-cache-benchmark&#34;&gt;https://github.com/vmihailenco/go-cache-benchmark&lt;/a&gt; 对不同的cache 淘汰策略的对比&lt;/p&gt;
+&lt;h2 id=&#34;分布式存储组件中的实现机制&#34;&gt;分布式存储组件中的实现机制&lt;/h2&gt;
+&lt;h3 id=&#34;redis-dict-lru-evict策略&#34;&gt;redis Dict LRU evict策略&lt;/h3&gt;
+&lt;p&gt;redis删除缓存，分为定期删除，惰性删除&lt;/p&gt;
+&lt;p&gt;Redis整体上是一个大的dict，如果实现一个双向链表需要在每个key上首先增加两个指针，需要16个字节，并且额外需要一个list结构体去存储该双向链表的头尾节点信息。Redis作者认为这样实现不仅内存占用太大，而且可能导致性能降低。具体详见作者博客文章：[&lt;a href=&#34;http://antirez.com/news/109&#34;&gt;Random notes on improving the Redis LRU algorithm&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Redis的LRU算法不是一个严格的LRU实现。这意味着Redis不能选择最佳候选键来回收，也就是最久未被访问的那些键。相反，Redis 会尝试执行一个近似的LRU算法，通过采样一小部分键，然后在采样键中回收最适合(拥有最久访问时间)的那个。然而，从Redis3.0开始，算法被改进为维护一个回收候选键池。这改善了算法的性能，使得更接近于真实的LRU算法的行为。Redis的LRU算法有一点很重要，你可以调整算法的精度，通过改变每次回收时检查的采样数量。这个参数可以通过如下配置指令：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;maxmemory-samples 5&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Redis没有使用真实的LRU实现的原因，是因为这会消耗更多的内存。然而，近似值对使用Redis的应用来说基本上也是等价的。文章&lt;a href=&#34;https://redis.io/topics/lru-cache&#34;&gt;Using Redis as an LRU cache&lt;/a&gt;为Redis使用的LRU近似值和真实LRU之间的比较。&lt;/p&gt;
+&lt;p&gt;具体源码分析见文档： &lt;a href=&#34;http://www.redis.cn/articles/20161114002.html&#34;&gt;由浅入深介绍 Redis LRU 策略的具体实现 &lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;mysql-innodb-page-buffer-pool-lru-evict策略&#34;&gt;mysql InnoDB page buffer pool LRU evict策略&lt;/h3&gt;
+&lt;p&gt;数据库的数据是放在磁盘空间以表空间存放的，加载的时候以页page为单位进行加载，页是InnoDB存储引擎磁盘管理的最小单位，每个页默认16KB；可以通过参数innodb_page_size设置(一个页内必须存储2行记录，否则就不是B+tree，而是链表了)，页面类型：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;数据页（B-tree Node）&lt;/p&gt;
+&lt;p&gt;undo页（undo Log Page）&lt;/p&gt;
+&lt;p&gt;系统页（System Page）&lt;/p&gt;
+&lt;p&gt;事务数据页（Transaction system Page）&lt;/p&gt;
+&lt;p&gt;插入缓冲位图页（Insert Buffer Page）&lt;/p&gt;
+&lt;p&gt;插入缓冲空闲列表页（Insert Buffer Free List）&lt;/p&gt;
+&lt;p&gt;未压缩的二进制大对象页（Uncompressd BLOB Page）&lt;/p&gt;
+&lt;p&gt;压缩的二进制大对象页（Compressd BLOB Page）&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://blogstatic.haohtml.com/uploads/2019/08/innodb_engine_struct.png&#34; alt=&#34;innodb_engine_struct&#34;&gt;&lt;/p&gt;
+&lt;p&gt;从InnoDB存储引擎的逻辑结构看，所有数据都被逻辑地存放在一个空间内，称为表空间(tablespace)，而表空间由段（sengment）、区（extent）、页（page）组成。 在一些文档中extend又称块（block）。这里有几个概念简单介绍下：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;**表空间（Tablespace）**是一个逻辑容器，表空间存储的对象是段，在一个表空间中可以有一个或多个段，但是一个段只能属于一个表空间。数据库由一个或多个表空间组成，表空间从管理上可以划分为系统表空间、用户表空间、撤销表空间、临时表空间等。&lt;/p&gt;
+&lt;p&gt;在 InnoDB 中存在两种表空间的类型：共享表空间和独立表空间。如果是共享表空间就意味着多张表共用一个表空间。如果是独立表空间，就意味着每张表有一个独立的表空间，也就是数据和索引信息都会保存在自己的表空间中。独立的表空间可以在不同的数据库之间进行迁移。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;**段（Segment）**由一个或多个区组成，区在文件系统是一个连续分配的空间（在 InnoDB 中是连续的 64 个页），不过在段中不要求区与区之间是相邻的。段是数据库中的分配单位，不同类型的数据库对象以不同的段形式存在。当我们创建数据表、索引的时候，就会相应创建对应的段，比如创建一张表时会创建一个表段，创建一个索引时会创建一个索引段。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;**区（extent）**在 InnoDB 存储引擎中，一个区会分配 64 个连续的页。因为 InnoDB 中的页大小默认是 16KB，所以一个区的大小是 64*16KB=1MB。在任何情况下每个区大小都为1MB，为了保证页的连续性，InnoDB存储引擎每次从磁盘一次申请4-5个区。默认情况下，InnoDB存储引擎的页大小为16KB，即一个区中有64个连续的页。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;**页（page）**是InnoDB存储引擎磁盘管理的最小单位，每个页默认16KB，页结构如下：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://blogstatic.haohtml.com/uploads/2019/08/1d49c975639e53fe92466f0b1ebe2b2a99672e8b-1024x828.jpeg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Page directory 页目录用来存储每组最后一条记录的地址偏移量，这些地址偏移量会按照先后顺序存储起来，每组的地址偏移量也被称之为槽（slot），每个槽相当于指针指向了不同组的最后一个记录，这样方便二分查找快速定位到记录；&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://blogstatic.haohtml.com/uploads/2019/08/innodb-page-dir-1024x959.jpg&#34; alt=&#34;page-slot&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;**行（row）**InnoDB存储引擎是按行进行存放的，每个页存放的行记录也是有硬性定义的，最多允许存放16KB/2-200，即7992行记录。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;B+ 树是如何进行记录检索的？&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;如果通过 B+ 树的索引查询行记录，首先是从 B+ 树的根开始，逐层检索，直到找到&lt;strong&gt;叶子节点&lt;/strong&gt;，也就是找到对应的&lt;strong&gt;数据页&lt;/strong&gt;为止，将数据页加载到内存&lt;strong&gt;缓冲池(buffer pool)&lt;strong&gt;中，页目录中的&lt;/strong&gt;槽(slot)&lt;strong&gt;采用二分查找的方式先找到一个粗略的&lt;/strong&gt;记录分组&lt;/strong&gt;，然后再在分组中通过链表遍历的方式查找&lt;strong&gt;记录&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;**缓冲池(buffer pool)**是主内存中的一个区域，用于在 &lt;code&gt;InnoDB&lt;/code&gt;访问时缓存表和索引数据。缓冲池允许直接从内存访问经常使用的数据，从而加快处理速度。在专用服务器上，多达 80% 的物理内存通常分配给缓冲池。&lt;/p&gt;
+&lt;p&gt;这里有个问题，比如有如下 场景，一个直播间id为1的观看人数上百万，加入运营后台需要查找全部数据，&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;select * from room_student_history where room_id=1  and id&amp;gt;=(select id from room_student_history where order by id limit 1000000,1) order by id limit 1000&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;如果room_student_history中有大量长尾用户数据并且读取之后不会继续使用,则LRU头部会被大量的room_student_history中的数据占据。这样会造成热点数据被逐出缓存从而导致大量的磁盘io ;&lt;/p&gt;
+&lt;p&gt;mysql innodb的buffer pool使用了一种改进的LRU算法，大意是将LRU链表分成两部分，一部分为newlist,一部分为oldlist,newlist是头部热点数据，oldlist是非热点数据,oldlist默认占整个list长度的3/8.当初次加载一个page的时候，会首先放入oldlist的头部，再次访问时才会移动到newlist。详细介绍见&lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/innodb-buffer-pool.html&#34;&gt;官方文档&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://dev.mysql.com/doc/refman/8.0/en/images/innodb-buffer-pool-list.png&#34; alt=&#34;innodb-buffer-pool&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;references&#34;&gt;references&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)&#34;&gt;Cache_replacement_policies#Least_recently_used_(LRU)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Adaptive_replacement_cache&#34;&gt;Adaptive_replacement_cache&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Page_replacement_algorithm&#34;&gt;Page_replacement_algorithm&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://antirez.com/news/109&#34;&gt;Random notes on improving the Redis LRU algorithm&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://redis.io/topics/lru-cache&#34;&gt;Using Redis as an LRU cache&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://brenocon.com/dean_perf.html&#34;&gt;Numbers Everyone Should Know&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/innodb-buffer-pool.html&#34;&gt;mysql8.0 innodb-buffer-pool&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://dev.mysql.com/doc/dev/mysql-server/latest/dir_7bd8f96740b7dc138f256daa629f1e06.html&#34;&gt;mysql8.0 source code page Directory Reference&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;</description>
       
     </item>
     
@@ -1653,89 +1810,6 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
 &lt;p&gt;离开时，拍的。再见~！&lt;/p&gt;
 &lt;h2 id=&#34;感悟&#34;&gt;感悟&lt;/h2&gt;
 &lt;p&gt;以后还是好好准备去做，做事别太仓促了，不过该做的，说做就做吧(因为有些时候，时间是不等人的)，即使是错的，在途中慢慢意识到，也有可能在正确的时间回到正常的轨道上。&lt;/p&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>像黑客一样写博客</title>
-      <link>https://weedge.github.io/post/hello/</link>
-      <pubDate>Tue, 01 Jan 2013 20:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/hello/</guid>
-      
-        <description>&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
-&lt;p&gt;最近一段时间想整个博客，来记录一些事情，感觉记忆力不如从前了，想起以前有位老程序员，身边总是挂一个小挎包，装了一些小便条(todo list)；我想人的精力是有限的，当做完一件事， 过段时间，可能忘了曾今做过的事，说的话；本来想用worldpress，但是貌似需要申请空间，不同以往了，现在都是收费的了，无意间发现了&lt;a href=&#34;http://octopress.org/docs/&#34;&gt;octopress&lt;/a&gt;,这是个好东东啊，轻量级的，不像worldpress臃肿，不需要使用mysql,通过git直接可以部署到github pages上搭建一个副本。也可以部署到&lt;a href=&#34;http://www.heroku.com/&#34;&gt;heroku&lt;/a&gt;；国内好像也有对octopress的部署支持。&lt;/p&gt;
-&lt;h2 id=&#34;octopress&#34;&gt;octopress&lt;/h2&gt;
-&lt;p&gt;在开始写过程之前先说下为毛这样做，其实也是觉得对新鲜的东东比较感兴趣吧！&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;用octopress写博客，就像网上说的-像黑客一样写博客，貌似需要那么一点伪技术，看上去就像geek那样啦~~ 呵呵。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;整个服务的搭建是完全免费的，也许对于我这个比较穷困专业挨踢男来说是一个开源节流的渠道吧。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;使用octopress来写博客，支持&lt;a href=&#34;http://wowubuntu.com/markdown/basic.html&#34;&gt;markdown&lt;/a&gt;,和&lt;a href=&#34;http://en.wikipedia.org/wiki/Haml&#34;&gt;haml&lt;/a&gt;,
-个人喜欢使用前者，github上可以直接对其编辑；而且主要的是用命令来发布，这动作很cool,like it~!,感觉比较碉，哎呦，不错哦~！
-可以使用&lt;code&gt;rake -T&lt;/code&gt;来查看信息,发布常用的命令:
-&lt;code&gt;rake install[theme]  rake preview  rake new_post[title]  rake generate  rake deploy&lt;/code&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;最后是可以离线写博客还是挺爽的，用git对文章进行备份，以及静态页面生成，style也不错。&lt;/p&gt;
-&lt;p&gt;这里不具体的介绍octpress搭建在gitHub的过程，可以查看octpress的在线文档，说的很清楚的。
-不过在deploy的时候可能需要ssh key,在终端执行：
-&lt;code&gt;[[ -f ~/.ssh/id_rsa.pub ]] || ssh-keygen -t rsa&lt;/code&gt;
-将其显示:
-&lt;code&gt;[[ -f ~/.ssh/id_rsa.pub ]] &amp;amp;&amp;amp; cat ~/.ssh/id_rsa.pub&lt;/code&gt;
-然后进入&lt;a href=&#34;https://github.com/account/ssh&#34;&gt;https://github.com/account/ssh&lt;/a&gt;中点击Add another public key，粘贴前面步骤复制的信息，请格外注意，不要在Title中填写内容，直接将复制的内容粘贴到Key中，然后点击：Add Key即可。
-还可以参考：&lt;a href=&#34;https://help.github.com/articles/generating-ssh-keys&#34;&gt;github上的帮助文档&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;!-- raw HTML omitted --&gt;
-&lt;p&gt;由于自己对ruby不熟悉，但是想使用tag插件，不想使用octpress自带的分类插件，所以在网上找了下，采用了&lt;a href=&#34;https://github.com/jsw0528/octopress/tree/mrzhang_me/&#34;&gt;https://github.com/jsw0528/octopress/tree/mrzhang_me/&lt;/a&gt;这个风格，与原始版本的的区别如下：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/jsw0528/octopress/blob/mrzhang_me/.rvmrc&#34;&gt;.Rvmrc&lt;/a&gt;&lt;br&gt;
-神仙同学用的是Ruby1.9.3，Octopress最低要求1.9.2(采用rvm安装ruby,比较方便)&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/jsw0528/octopress/blob/mrzhang_me/Gemfile&#34;&gt;Gemfile&lt;/a&gt;&lt;br&gt;
-源改成了ruby.taobao.org的，去掉了部分gem的版本号限制&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/jsw0528/octopress/blob/mrzhang_me/Rakefile&#34;&gt;Rakefile&lt;/a&gt;&lt;br&gt;
-这个文件可以修改自己喜欢的编辑方式(haml,markdown)，octopress默认使用markdown,作者采用haml,
-修改了时区，降低主题对custom目录的依赖&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/jsw0528/octopress/blob/mrzhang_me/_config.yml&#34;&gt;_config.yml&lt;/a&gt;&lt;br&gt;
-定制化配置信息，日期格式、永久链接、微博，评论(默认支持disqus,可以使用国内的多说)等等&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/jsw0528/octopress/blob/mrzhang_me/plugins/sh_js.rb&#34;&gt;Plugins/sh_js.rb&lt;/a&gt;&lt;br&gt;
-代码高亮插件(plugins是用ruby写的插件库，自己可以扩展)&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/jsw0528/octopress/blob/mrzhang_me/plugins/tag_generator.rb&#34;&gt;Plugins/tag_generator.rb&lt;/a&gt;&lt;br&gt;
-支持中文的Tag插件&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/jsw0528/octopress/blob/mrzhang_me/.themes/blog/&#34;&gt;.Themes/blog/&lt;/a&gt;&lt;br&gt;
-神仙同学的博客主题(./themes主题风格文件夹，可以自己定制)&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
-&lt;p&gt;在看source(来自第7条所说文件同rake install[theme]复制生成的)源码时，发现采用缓存(&lt;a href=&#34;http://www.cnblogs.com/brainmao/archive/2011/09/27/2193495.html&#34;&gt;Cache Manifest&lt;/a&gt;)，
-主要在页面中通过 iframe 来引用offline-cache.html这个静态文件，其中assets.manifest缓存了样式，图片，js信息，
-以达到我们不缓存当面页面，只缓存我们希望缓存文件的目的，所以有时候你对其他页面修改了，
-比如修改该了post的文件名的话，会以为没有更新成功的情况，其实已经在github服务器上了，要做的就是清除浏览器中的页面缓存或者按Ctrl+F5刷新下。&lt;/p&gt;
-&lt;p&gt;ok~ 开始像黑客一样写博客吧~！&lt;/p&gt;
-&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;http://www.yangzhiping.com/tech/octopress.html&#34;&gt;octopress-黑客一样写博客&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://www.yangzhiping.com/tech/r-markdown-knitr.html&#34;&gt;Markdown写作浅谈&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://lucifr.com/2011/12/21/octopress-on-server-and-portable-scheme/&#34;&gt;服务器端Octopress搭建及移动方案&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;</description>
       
     </item>
     
