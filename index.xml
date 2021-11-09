@@ -104,33 +104,56 @@
 &lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Page_replacement_algorithm#cite_note-17&#34;&gt;2Q&lt;/a&gt; 算法改进了 LRU 和 LRU/2 算法。通过具有两个队列，一个用于热路径项目，另一个用于慢路径项目，项目首先被放置在慢路径队列中，并且在第二次访问放置在热路径项目中的项目之后；由于对添加项的引用比 LRU 和 LRU/2 算法中的保留时间更长，因此它具有更好的热路径队列，从而提高了缓存的命中率。&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Cache_replacement_policies#Segmented_LRU_(SLRU)&#34;&gt;SLRU&lt;/a&gt; 缓存分为两个段，试用段和保护段。每个段中的行按从最近访问到最近最少访问的顺序排列。来自未命中的数据被添加到试用段最近访问的末端的缓存中。命中从它们当前所在的任何地方删除，并添加到受保护段的最近访问端。因此，受保护段中的行至少被访问了两次。&lt;/p&gt;
 &lt;h2 id=&#34;本地缓存中的实现机制&#34;&gt;本地缓存中的实现机制&lt;/h2&gt;
-&lt;p&gt;go语言实现的本地缓存策略中有开源的实现方案&lt;/p&gt;
+&lt;p&gt;go语言实现的本地缓存策略中有开源方案&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/golang/groupcache&#34;&gt;https://github.com/golang/groupcache&lt;/a&gt;  (LRU)&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;http://github.com/dgryski/go-s4lru&#34;&gt;http://github.com/dgryski/go-s4lru&lt;/a&gt; (S4LRU)&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/dgryski/go-arc&#34;&gt;https://github.com/dgryski/go-arc&lt;/a&gt; (ARC)&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/hashicorp/golang-lru&#34;&gt;https://github.com/hashicorp/golang-lru&lt;/a&gt; (LRU, ARC, TwoQueue)&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/vmihailenco/go-cache-benchmark&#34;&gt;https://github.com/vmihailenco/go-cache-benchmark&lt;/a&gt; 对不同的cache 淘汰策略的对比&lt;/p&gt;
-&lt;h2 id=&#34;分布式存储组件中的实现机制&#34;&gt;分布式存储组件中的实现机制&lt;/h2&gt;
-&lt;h3 id=&#34;redis-dict-lru-evict策略&#34;&gt;redis Dict LRU evict策略&lt;/h3&gt;
-&lt;p&gt;redis 是缓存数据库，缓存空间是有限的，可以指定最大内存使用空间；redis提供过期机制，给key制定过期时间，redis实现了删除这些过期key的删除策略（定期删除+惰性删除），但是还是存在问题，对于一些key没有设置过期时间，总会到最大内存使用空间，需要实现内存淘汰回收策略，其中策略就是LRU, 操作对象分为全部key (allkeys-lru) 和 过期key(volatile-lru)；这里整体介绍下redis缓存策略，然后单独介绍对应的redis Dict LRU evict策略:&lt;/p&gt;
+&lt;h2 id=&#34;存储组件中的实现机制&#34;&gt;存储组件中的实现机制&lt;/h2&gt;
+&lt;h3 id=&#34;redis-dictredisobject-lru-evict策略&#34;&gt;redis Dict(redisObject) LRU evict策略&lt;/h3&gt;
+&lt;p&gt;redis 是缓存数据库，缓存空间是有限的，可以指定最大内存使用空间；redis提供过期机制，给key制定过期时间，redis实现了删除这些过期key的删除策略（定期删除+惰性删除），但是还是存在问题，对于一些key没有设置过期时间，总会到最大内存使用空间，需要实现内存淘汰回收策略，其中策略就是LRU, 操作对象分为全部key (allkeys-lru) 和 过期key(volatile-lru)；这里整体介绍下redis缓存策略，然后单独介绍对应的redis LRU evict策略:&lt;/p&gt;
 &lt;h4 id=&#34;最大内存配置选项&#34;&gt;最大内存配置选项&lt;/h4&gt;
 &lt;p&gt;maxmemory 配置选项使用来配置 Redis 的存储数据所能使用的最大内存限制。可以通过在内置文件redis.conf中配置，也可在Redis运行时通过命令CONFIG SET来配置。例如，我们要配置内存上限是100M的Redis缓存，那么我们可以在 redis.conf 配置如下：maxmemory 100mb&lt;/p&gt;
 &lt;p&gt;设置 maxmemory 为 0 表示没有内存限制。在 64-bit 系统中，默认是 0 无限制，但是在 32-bit 系统中默认是 3GB。当存储数据达到限制时，Redis 会根据情形选择不同策略，或者返回errors（这样会导致浪费更多的内存），或者清除一些旧数据回收内存来添加新数据。&lt;/p&gt;
 &lt;h4 id=&#34;过期删除缓存策略&#34;&gt;过期删除缓存策略&lt;/h4&gt;
-&lt;p&gt;分为定期删除，惰性删除：&lt;/p&gt;
+&lt;p&gt;分为定期删除，惰性删除, 两种策略配合使用：&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;定期删除&lt;/strong&gt; 指的是Redis默认会每隔一定时间（默认100ms）就会&lt;!-- raw HTML omitted --&gt;抽取一批设置了过期时间的key&lt;!-- raw HTML omitted --&gt;来检测是否过期，过期就删除。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;惰性删除&lt;/strong&gt; 在获取某个Key时Redis会先检测一下，这个key是否设置了过期时间？如果设置了过期时间那么是否过期？过期就删除。&lt;/p&gt;
+&lt;p&gt;在Redis2.6版本中，规定每秒运行10次，大概100ms运行一次。在Redis2.8版本后，可以通过修改配置文件redis.conf 的 &lt;strong&gt;hz&lt;/strong&gt; 选项来调整每秒次数(一般用默认值， 过高会的cpu造成一定压力)。由redis.c/activeExpireCycle 函数实现。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;惰性删除&lt;/strong&gt; 在获取某个Key时Redis会先检测一下，这个key是否设置了过期时间？如果设置了过期时间那么是否过期？过期就删除。由 db.c/expireIfNeeded 函数实现。&lt;/p&gt;
 &lt;p&gt;如果定期抽取一批过期key删除, 以及没有对过期key访问了，这样会存在大量过期key未删除回收的情况，会导致内存使用率大大降低；所以redis内部提供了不同的内存淘汰回收策略。&lt;/p&gt;
 &lt;h4 id=&#34;内存淘汰回收策略&#34;&gt;内存淘汰回收策略&lt;/h4&gt;
 &lt;p&gt;当内存达到限制时，Redis 具体的回收策略是通过 maxmemory-policy 配置项配置的。&lt;/p&gt;
 &lt;p&gt;以下的策略都是可用的：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;noenviction：不清除数据，只是返回错误，这样会导致浪费掉更多的内存，对大多数写命令（DEL 命令和其他的少数命令例外）&lt;/li&gt;
-&lt;li&gt;allkeys-lru：从所有的数据集（server.db[i].dict）中挑选最近最少使用的数据淘汰，以供新数据使用&lt;/li&gt;
-&lt;li&gt;volatile-lru：从已设置过期时间的数据集（server.db[i].expires）中挑选最近最少使用的数据淘汰，以供新数据使用&lt;/li&gt;
-&lt;li&gt;allkeys-random：从所有数据集（server.db[i].dict）中任意选择数据淘汰，以供新数据使用&lt;/li&gt;
-&lt;li&gt;volatile-random：从已设置过期时间的数据集（server.db[i].expires）中任意选择数据淘汰，以供新数据使用&lt;/li&gt;
-&lt;li&gt;volatile-ttl：从已设置过期时间的数据集（server.db[i].expires）中挑选将要过期的数据淘汰，以供新数据使用&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;noenviction：不清除数据，只是返回错误，这样会导致浪费掉更多的内存，对大多数写命令（DEL 命令和其他的少数命令例外）&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;allkeys-lru：从所有的数据集（server.db[i].dict）中挑选最近最少使用的数据淘汰，以供新数据使用&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;volatile-lru：从已设置过期时间的数据集（server.db[i].expires）中挑选最近最少使用的数据淘汰，以供新数据使用&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;allkeys-random：从所有数据集（server.db[i].dict）中任意选择数据淘汰，以供新数据使用&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;volatile-random：从已设置过期时间的数据集（server.db[i].expires）中任意选择数据淘汰，以供新数据使用&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;volatile-ttl：从已设置过期时间的数据集（server.db[i].expires）中挑选将要过期的数据淘汰，以供新数据使用&lt;/p&gt;
+&lt;p&gt;从 Redis 4.0 版开始，引入了新的 LFU（最近最不常用）策略。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;volatile-lfu：从已设置过期时间的数据集（server.db[i].expires）中挑选近似 LFU 数据淘汰。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;allkeys-lfu：从所有的数据集（server.db[i].dict）中挑选近似 LFU 数据淘汰。&lt;/p&gt;
+&lt;p&gt;LFU 类似于 LRU：它使用一个概率计数器，称为&lt;a href=&#34;https://en.wikipedia.org/wiki/Approximate_counting_algorithm&#34;&gt;莫里斯计数器&lt;/a&gt;，以便仅使用每个对象的几位来估计对象访问频率，并结合衰减周期，以便计数器随着时间的推移而减少：在某些时候，我们不再希望将key视为经常访问的key，即使它们过去是这样，以便算法可以适应访问的转变。LFU具有可调参数:  （见：&lt;a href=&#34;http://antirez.com/news/109&#34;&gt;Random notes on improving the Redis LRU algorithm&lt;/a&gt; Least Frequently Used)&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;lfu-log-factor 10 //在大约一百万个请求时使计数器饱和因子，计数器对数因子会改变需要多少次命中才能使频率计数器饱和，这恰好在 0-255 的范围内。系数越高，需要越多的访问以达到最大值。系数越低，低访问计数器的分辨率越好，见redis示例redis.conf文件
+lfu-decay-time 1 //每一分钟衰减一次计数器。
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;当 cache 中没有符合清除条件的 key 时，回收策略 volatile-lru, volatile-random 和volatile-ttl 将会和 策略 noeviction 一样返回错误。选择正确的回收策略是很重要的，取决于你的应用程序的访问模式。但是，你可以在程序运行时重新配置策略，使用 INFO 输出来监控缓存命中和错过的次数，以调优你的设置。&lt;/p&gt;
 &lt;p&gt;普适经验规则：&lt;/p&gt;
@@ -150,10 +173,168 @@
 &lt;/ul&gt;
 &lt;p&gt;我们添加数据时通过检查，然后回收键以返回到限制以下，来连续不断的穿越内存限制的边界。如果一个命令导致大量的内存被占用(比如一个很大的集合保存到一个新的键)，那么内存限制很快就会被这个明显的内存量所超越。&lt;/p&gt;
 &lt;h4 id=&#34;近似lru算法&#34;&gt;近似LRU算法&lt;/h4&gt;
-&lt;p&gt;Redis整体上是一个大的dict，如果实现一个双向链表需要在每个key上首先增加两个指针，需要16个字节，并且额外需要一个list结构体去存储该双向链表的头尾节点信息。Redis作者认为这样实现不仅内存占用太大，而且可能导致性能降低。具体详见作者博客文章：[&lt;a href=&#34;http://antirez.com/news/109&#34;&gt;Random notes on improving the Redis LRU algorithm&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Redis整体上是一个大的dict，如果实现一个双向链表需要在每个key上首先增加两个指针，需要16个字节，并且额外需要一个list结构体去存储该双向链表的头尾节点信息。Redis作者认为这样实现不仅内存占用太大，而且可能导致性能降低。具体详见作者博客文章：&lt;a href=&#34;http://antirez.com/news/109&#34;&gt;Random notes on improving the Redis LRU algorithm&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;  &lt;strong&gt;Redis为什么不使用原生LRU算法？&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;原生LRU算法需要 双向链表 来管理数据，需要&lt;strong&gt;额外内存&lt;/strong&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;数据访问时涉及&lt;strong&gt;数据移动，有性能损耗&lt;/strong&gt;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Redis现有&lt;strong&gt;数据结构需要改造&lt;/strong&gt;，dictEntry, key指向sds, val指向redisObject，dictEntry 是个单向链表；&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;//server.h
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; redisObject {
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; type:&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; encoding:&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; lru:LRU_BITS; &lt;span style=&#34;color:#75715e&#34;&gt;/* LRU time (relative to global lru_clock) or
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;                            * LFU data (least significant 8 bits frequency
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;                            * and most significant 16 bits access time). */&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; refcount;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;ptr;
+} robj;
+
+&lt;span style=&#34;color:#75715e&#34;&gt;//dict.h
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; dictEntry {
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;key;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;union&lt;/span&gt; {
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;val;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;uint64_t&lt;/span&gt; u64;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;int64_t&lt;/span&gt; s64;
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;double&lt;/span&gt; d;
+    } v;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; dictEntry &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;next;
+} dictEntry;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; dictType {
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;uint64_t&lt;/span&gt; (&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;hashFunction)(&lt;span style=&#34;color:#66d9ef&#34;&gt;const&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;key);
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;keyDup)(&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;privdata, &lt;span style=&#34;color:#66d9ef&#34;&gt;const&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;key);
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;valDup)(&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;privdata, &lt;span style=&#34;color:#66d9ef&#34;&gt;const&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;obj);
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; (&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;keyCompare)(&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;privdata, &lt;span style=&#34;color:#66d9ef&#34;&gt;const&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;key1, &lt;span style=&#34;color:#66d9ef&#34;&gt;const&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;key2);
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; (&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;keyDestructor)(&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;privdata, &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;key);
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; (&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;valDestructor)(&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;privdata, &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;obj);
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; (&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;expandAllowed)(size_t moreMem, &lt;span style=&#34;color:#66d9ef&#34;&gt;double&lt;/span&gt; usedRatio);
+} dictType;
+
+&lt;span style=&#34;color:#75715e&#34;&gt;/* This is our hash table structure. Every dictionary has two of this as we
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * implement incremental rehashing, for the old to the new table. */&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; dictht {
+    dictEntry &lt;span style=&#34;color:#f92672&#34;&gt;**&lt;/span&gt;table;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;long&lt;/span&gt; size;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;long&lt;/span&gt; sizemask;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;long&lt;/span&gt; used;
+} dictht;
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; dict {
+    dictType &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;type;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;privdata;
+    dictht ht[&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;];
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;long&lt;/span&gt; rehashidx; &lt;span style=&#34;color:#75715e&#34;&gt;/* rehashing not in progress if rehashidx == -1 */&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;int16_t&lt;/span&gt; pauserehash; &lt;span style=&#34;color:#75715e&#34;&gt;/* If &amp;gt;0 rehashing is paused (&amp;lt;0 indicates coding error) */&lt;/span&gt;
+} dict;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;/* To improve the quality of the LRU approximation we take a set of keys
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * that are good candidate for eviction across performEvictions() calls.
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; *
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * Entries inside the eviction pool are taken ordered by idle time, putting
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * greater idle times to the right (ascending order).
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; *
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * When an LFU policy is used instead, a reverse frequency indication is used
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * instead of the idle time, so that we still evict by larger value (larger
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * inverse frequency means to evict keys with the least frequent accesses).
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; *
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * Empty entries have the key pointer set to NULL. */&lt;/span&gt;
+&lt;span style=&#34;color:#75715e&#34;&gt;#define EVPOOL_SIZE 16
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#define EVPOOL_CACHED_SDS_SIZE 255
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; evictionPoolEntry {
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;long&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;long&lt;/span&gt; idle;    &lt;span style=&#34;color:#75715e&#34;&gt;/* Object idle time (inverse frequency for LFU) */&lt;/span&gt;
+    sds key;                    &lt;span style=&#34;color:#75715e&#34;&gt;/* Key name. */&lt;/span&gt;
+    sds cached;                 &lt;span style=&#34;color:#75715e&#34;&gt;/* Cached SDS object for key name. */&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; dbid;                   &lt;span style=&#34;color:#75715e&#34;&gt;/* Key DB number. */&lt;/span&gt;
+};
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; evictionPoolEntry &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;EvictionPoolLRU;
+
+&lt;span style=&#34;color:#75715e&#34;&gt;/* ----------------------------------------------------------------------------
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * Implementation of eviction, aging and LRU
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * --------------------------------------------------------------------------*/&lt;/span&gt;
+
+&lt;span style=&#34;color:#75715e&#34;&gt;/* Return the LRU clock, based on the clock resolution. This is a time
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * in a reduced-bits format that can be used to set and check the
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * object-&amp;gt;lru field of redisObject structures. */&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;getLRUClock&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt;) {
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; (mstime()&lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt;LRU_CLOCK_RESOLUTION) &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt; LRU_CLOCK_MAX;
+}
+
+&lt;span style=&#34;color:#75715e&#34;&gt;/* This function is used to obtain the current LRU clock.
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * If the current resolution is lower than the frequency we refresh the
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * LRU clock (as it should be in production servers) we return the
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * precomputed value, otherwise we need to resort to a system call. */&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;LRU_CLOCK&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt;) {
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; lruclock;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (&lt;span style=&#34;color:#ae81ff&#34;&gt;1000&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt;server.hz &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;=&lt;/span&gt; LRU_CLOCK_RESOLUTION) {
+        atomicGet(server.lruclock,lruclock);
+    } &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt; {
+        lruclock &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; getLRUClock();
+    }
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; lruclock;
+}
+
+&lt;span style=&#34;color:#75715e&#34;&gt;/* Given an object returns the min number of milliseconds the object was never
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * requested, using an approximated LRU algorithm. */&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;long&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;long&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;estimateObjectIdleTime&lt;/span&gt;(robj &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;o) {
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;long&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;long&lt;/span&gt; lruclock &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; LRU_CLOCK();
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (lruclock &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;=&lt;/span&gt; o&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;lru) {
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; (lruclock &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt; o&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;lru) &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; LRU_CLOCK_RESOLUTION;
+    } &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt; {
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; (lruclock &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; (LRU_CLOCK_MAX &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt; o&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;lru)) &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;
+                    LRU_CLOCK_RESOLUTION;
+    }
+}
+
+&lt;span style=&#34;color:#75715e&#34;&gt;/* LRU approximation algorithm
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; *
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * Redis uses an approximation of the LRU algorithm that runs in constant
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * memory. Every time there is a key to expire, we sample N keys (with
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * N very small, usually in around 5) to populate a pool of best keys to
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * evict of M keys (the pool size is defined by EVPOOL_SIZE).
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; *
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * The N keys sampled are added in the pool of good keys to expire (the one
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * with an old access time) if they are better than one of the current keys
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * in the pool.
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; *
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * After the pool is populated, the best key we have in the pool is expired.
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * However note that we don&amp;#39;t remove keys from the pool when they are deleted
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * so the pool may contain keys that no longer exist.
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; *
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * When we try to evict a key, and all the entries in the pool don&amp;#39;t exist
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * we populate it again. This time we&amp;#39;ll be sure that the pool has at least
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * one key that can be evicted, if there is at least one key that can be
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt; * evicted in the whole database. */&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
 &lt;p&gt;Redis的LRU算法不是一个严格的LRU实现。这意味着Redis不能选择最佳候选键来回收，也就是最久未被访问的那些键。相反，Redis 会尝试执行一个近似的LRU算法，通过采样一小部分键，然后在采样键中回收最适合(拥有最久访问时间)的那个。然而，从Redis3.0开始，算法被改进为维护一个回收候选键池。这改善了算法的性能，使得更接近于真实的LRU算法的行为。Redis的LRU算法有一点很重要，你可以调整算法的精度，通过改变每次回收时检查的采样数量。这个参数可以通过如下配置指令：&lt;code&gt;maxmemory-samples 5&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;Redis没有使用真实的LRU实现的原因，是因为这会消耗更多的内存。然而，近似值对使用Redis的应用来说基本上也是等价的。文章&lt;a href=&#34;https://redis.io/topics/lru-cache&#34;&gt;Using Redis as an LRU cache&lt;/a&gt;为Redis使用的LRU近似值和真实LRU之间的比较。&lt;/p&gt;
+&lt;p&gt; 触发时机是在redis server执行新的写命令时, 当 mem_used &amp;gt; maxmemory 的时候，通过 &lt;a href=&#34;https://github.com/redis/redis/blob/c1718f9d862267bc44b2a326cdc8cb1ca5b81a39/src/evict.c#L531:5&#34;&gt;performEvictions&lt;/a&gt; 方法完成数据淘汰(所看的Redis6.2.6源码)。LRU策略淘汰核心逻辑在 &lt;a href=&#34;https://github.com/redis/redis/blob/c1718f9d862267bc44b2a326cdc8cb1ca5b81a39/src/evict.c#L145:6&#34;&gt;evictionPoolPopulate&lt;/a&gt;（淘汰数据集合填充） 方法。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Redis 近似LRU 淘汰策略逻辑：&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;首次淘汰：随机抽样选出【最多N个数据】放入【待淘汰数据池 evictionPoolEntry】&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;再次淘汰：随机抽样选出【最多N个数据】，只要数据比【待淘汰数据池 evictionPoolEntry】中的【任意一条】数据的 lru 小，则将该数据填充至 【待淘汰数据池】；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;ul&gt;
+&lt;li&gt;evictionPoolEntry 的容容量是 EVPOOL_SIZE = 16；&lt;/li&gt;
+&lt;li&gt;详见 源码 中 &lt;a href=&#34;https://github.com/redis/redis/blob/c1718f9d862267bc44b2a326cdc8cb1ca5b81a39/src/evict.c#L145:6&#34;&gt;evictionPoolPopulate&lt;/a&gt; 方法的注释；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;执行淘汰：挑选【待淘汰数据池】中 lru 最小的一条数据进行淘汰；&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
 &lt;p&gt;具体源码分析见文档： &lt;a href=&#34;http://www.redis.cn/articles/20161114002.html&#34;&gt;由浅入深介绍 Redis LRU 策略的具体实现 &lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/redis/redis/blob/79ac57561f268814babe212c9216efe45cfdf937/src/server.c#L5330&#34;&gt;触发代码在server.c中&lt;/a&gt;：activeExpireCycle performEvictions 函数 在 &lt;a href=&#34;https://github.com/redis/redis/blob/b71c5849e3e5c040b029c6e25cec2069d70760c1/README.md#serverc&#34;&gt;server.c&lt;/a&gt; readme中有介绍什么时候触发&lt;/p&gt;
 &lt;h3 id=&#34;mysql-innodb-page-buffer-pool-lru-evict策略&#34;&gt;mysql InnoDB page buffer pool LRU evict策略&lt;/h3&gt;
 &lt;h4 id=&#34;页page&#34;&gt;页Page&lt;/h4&gt;
 &lt;p&gt;数据库的数据是放在磁盘空间以表空间存放的，加载的时候以页page为单位进行加载，页是InnoDB存储引擎磁盘管理的最小单位，每个页默认16KB；可以通过参数innodb_page_size设置(一个页内必须存储2行记录，否则就不是B+tree，而是链表了)，页面类型：&lt;/p&gt;
@@ -194,13 +375,15 @@
 &lt;p&gt;如果通过 B+ 树的索引查询行记录，首先是从 B+ 树的根开始，逐层检索，直到找到&lt;strong&gt;叶子节点&lt;/strong&gt;，也就是找到对应的&lt;strong&gt;数据页&lt;/strong&gt;为止，将数据页加载到内存 &lt;strong&gt;缓冲池(buffer pool)&lt;/strong&gt; 中，页目录中的 &lt;strong&gt;槽(slot)&lt;/strong&gt; 采用二分查找的方式先找到一个粗略的&lt;strong&gt;记录分组&lt;/strong&gt;，然后再在分组中通过链表遍历的方式查找&lt;strong&gt;记录&lt;/strong&gt;。&lt;/p&gt;
 &lt;h4 id=&#34;缓冲池buffer-pool--lru链表&#34;&gt;缓冲池(buffer pool) + LRU链表&lt;/h4&gt;
 &lt;p&gt;&lt;strong&gt;缓冲池(buffer pool)&lt;/strong&gt; 是主内存中的一个区域，用于在 &lt;code&gt;InnoDB&lt;/code&gt;访问时缓存表和索引数据。缓冲池允许直接从内存访问经常使用的数据，从而加快处理速度。在专用服务器上，多达 80% 的物理内存通常分配给缓冲池。&lt;/p&gt;
-&lt;p&gt;这里有个问题，比如有如下 场景，一个直播间id为1的观看人数上百万，加入运营后台需要查找全部数据，&lt;/p&gt;
+&lt;p&gt;这里有个问题，比如有如下 场景，一个直播间id为1的观看人数上百万，假如运营后台需要查找全部数据，&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;select * from room_student_history where room_id=1  and id&amp;gt;=(select id from room_student_history where order by id limit 1000000,1) order by id limit 1000&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;如果room_student_history中有大量长尾用户数据并且读取之后不会继续使用,则LRU头部会被大量的room_student_history中的数据占据。这样会造成热点数据被逐出缓存从而导致大量的磁盘io ;&lt;/p&gt;
 &lt;p&gt;mysql innodb的buffer pool使用了一种改进的LRU算法，大意是将LRU链表分成两部分，一部分为newlist,一部分为oldlist,newlist是头部热点数据，oldlist是非热点数据,oldlist默认占整个list长度的3/8.当初次加载一个page的时候，会首先放入oldlist的头部，再次访问时才会移动到newlist。详细介绍见&lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/innodb-buffer-pool.html&#34;&gt;官方文档&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://dev.mysql.com/doc/refman/8.0/en/images/innodb-buffer-pool-list.png&#34; alt=&#34;innodb-buffer-pool&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
+&lt;p&gt;​	缓/内存io比磁盘io快许多，但是缓/内存空间有限，且无法持久化，所以需要提供缓/内存淘汰机制来保证缓/内存使用命中率，本文介绍常用的LRU算法；golang实现的开源方案，可以结合业务场景，进行使用，redis 为了节省空间，通过抽样将淘汰的数据放入待淘汰数据池(evictionPoolEntry) 进行淘汰，在 Redis 3.0 中使用 10 个样本大小，该近似值非常接近 Redis 3.0 的原始LRU理论性能.&lt;/p&gt;
 &lt;h2 id=&#34;references&#34;&gt;references&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)&#34;&gt;Cache_replacement_policies#Least_recently_used_(LRU)&lt;/a&gt;&lt;/li&gt;
