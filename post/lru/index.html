@@ -72,7 +72,7 @@
 <meta itemprop="description" content="序言
 ​	在计算机硬件中缓/内存设计是用来机器启动的时候加载程序，分配运行空间数据，停机，缓/内存中的数据会丢失；磁盘用来持久化存储，提供数据加载到内存中，内存的读写速度比磁盘快很多，以下是Jeff Dean &ldquo;Numbers Everyone Should Know&rdquo; 中提供的数据(虽然过去10多年了)， 读取1MB数据，从内存中读比从磁盘中读取快100&#43;倍；但是缓/内存的空间比磁盘空间少，为了加快数据的访问，减少缓存/磁盘io，大概分为三种：1. 可以提前将数据从磁盘加载到内/缓存中(page)、2. 内/缓存miss从下层存储获取数据(cache,pool,page)、3. 无需加载，直接内/缓存evict；如果提供给进程的最大内/缓存资源到了最大限制，需要对存储资源进行evict操作，常用的evict策略可以从Cache_replacement_policies中了解；有关特定于分页的详细算法，请参阅页面替换算法；有关特定于 CPU 和 RAM 之间缓存的详细算法，请参阅CPU 缓存。这里主要关注LRU evict相关策略。"><meta itemprop="datePublished" content="2021-11-08T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-11-08T10:26:23+08:00" />
-<meta itemprop="wordCount" content="8626">
+<meta itemprop="wordCount" content="8674">
 <meta itemprop="keywords" content="cache,LRU," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="缓存淘汰策略-LRU"/>
 <meta name="twitter:description" content="序言
@@ -556,7 +556,7 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。</p>
 </li>
 </ol>
 <p><strong>B+ 树是如何进行记录检索的？</strong></p>
-<p>如果通过 B+ 树的索引查询行记录，首先是从 B+ 树的根开始，逐层检索，直到找到<strong>叶子节点</strong>，也就是找到对应的<strong>数据页</strong>为止，将数据页加载到内存 <strong>缓冲池(buffer pool)</strong> 中，页目录中的 <strong>槽(slot)</strong> 采用二分查找的方式先找到一个粗略的<strong>记录分组</strong>，然后再在分组中通过链表遍历的方式查找<strong>记录</strong>。</p>
+<p>如果通过 B+ 树的索引查询行记录，首先是从 B+ 树的根开始，逐层检索，直到找到<strong>叶子节点</strong>，也就是找到对应的<strong>数据页</strong>为止，如果数据页没在缓冲池中，将数据页加载到内存 <strong>缓冲池(buffer pool)</strong> 中，页目录中的 <strong>槽(slot)</strong> 采用二分查找的方式先找到一个粗略的<strong>记录分组</strong>，然后再在分组中通过链表遍历的方式查找<strong>记录</strong>。</p>
 <h4 id="缓冲池buffer-pool--lru链表">缓冲池(buffer pool) + LRU链表</h4>
 <p><strong>缓冲池(buffer pool)</strong> 是主内存中的一个区域，用于在 <code>InnoDB</code>访问时缓存表和索引数据。缓冲池允许直接从内存访问经常使用的数据，从而加快处理速度。在专用服务器上，多达 80% 的物理内存通常分配给缓冲池。</p>
 <p>这里有个问题，比如有如下 场景，一个直播间id为1的观看人数上百万，假如运营后台需要查找全部数据，</p>
@@ -564,7 +564,7 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。</p>
 <p>select * from room_student_history where room_id=1  and id&gt;=(select id from room_student_history where order by id limit 1000000,1) order by id limit 1000</p>
 </blockquote>
 <p>如果room_student_history中有大量长尾用户数据并且读取之后不会继续使用,则LRU头部会被大量的room_student_history中的数据占据。这样会造成热点数据被逐出缓存从而导致大量的磁盘io ;</p>
-<p>mysql innodb的buffer pool使用了一种改进的LRU算法，大意是将LRU链表分成两部分，一部分为newlist,一部分为oldlist,newlist是头部热点数据，oldlist是非热点数据,oldlist默认占整个list长度的3/8.当初次加载一个page的时候，会首先放入oldlist的头部，再次访问时才会移动到newlist。详细介绍见<a href="https://dev.mysql.com/doc/refman/8.0/en/innodb-buffer-pool.html">官方文档</a></p>
+<p>mysql innodb的buffer pool使用了一种改进的LRU算法，大意是将LRU链表分成两部分，一部分为newlist,一部分为oldlist,newlist是头部热点数据，oldlist是非热点数据,oldlist默认占整个list长度的3/8.当初次加载一个page的时候，会首先放入oldlist的头部，只有满足一定条件后，才被移到new list上，主要是为了防止预读的数据页和全表扫描污染buffer pool。详细介绍见<a href="https://dev.mysql.com/doc/refman/8.0/en/innodb-buffer-pool.html">官方文档</a></p>
 <p><img src="https://dev.mysql.com/doc/refman/8.0/en/images/innodb-buffer-pool-list.png" alt="innodb-buffer-pool"></p>
 <h2 id="总结">总结</h2>
 <p>​	缓/内存io比磁盘io快许多，但是缓/内存空间有限，且无法持久化，所以需要提供缓/内存淘汰机制来保证缓/内存使用命中率，本文介绍常用的LRU算法；golang实现的开源方案，可以结合业务场景，进行使用，redis 为了节省空间，通过抽样将淘汰的数据放入待淘汰数据池(evictionPoolEntry) 进行淘汰，在 Redis 3.0 中使用 10 个样本大小，该近似值非常接近 Redis 3.0 的原始LRU理论性能。mysql 需要充分利用缓存池资源，减少磁盘io, 因为加载单元是page, 如果第一次加载放入LRU链表头，可能这些数据使用频率不高，导致缓存池命中率低，将LRU链表按3/8分成old list 和new list , 第一次加载放入oldList头，再次访问时才会移动到newlist。根据淘汰的结构，根据数据使用场景，将LRU算法优化, redis和mysql 都用到了pool, 但是是两种场景，redis是为了淘汰释放使用样本pool, 样本池中放入的是idle值，根据不同策略算出的值，用来淘汰最大的idle, 方便扩展优化算法； mysql 中的pool是buffer pool 缓冲池，主要是为了存放page, page 是innodb磁盘管理的最小单位，为了减少磁盘io, 尽量减少缓存miss, 增加hit率，提高读写操作方案。</p>
