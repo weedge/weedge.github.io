@@ -109,9 +109,15 @@
 &lt;p&gt;&lt;a href=&#34;http://github.com/dgryski/go-s4lru&#34;&gt;http://github.com/dgryski/go-s4lru&lt;/a&gt; (S4LRU)&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/dgryski/go-arc&#34;&gt;https://github.com/dgryski/go-arc&lt;/a&gt; (ARC)&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/hashicorp/golang-lru&#34;&gt;https://github.com/hashicorp/golang-lru&lt;/a&gt; (LRU, ARC, TwoQueue)&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/vmihailenco/go-cache-benchmark&#34;&gt;https://github.com/vmihailenco/go-cache-benchmark&lt;/a&gt; 对不同的cache 淘汰策略的对比&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/vmihailenco/go-cache-benchmark&#34;&gt;https://github.com/vmihailenco/go-cache-benchmark&lt;/a&gt; 对不同的cache 淘汰策略的对比，引用结果：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;TinyLFU最适合少量的key(少于100k)。TinyLFU内存开销可以通过第二个参数进行调整。
+Clock-pro有明显较小的内存使用大量的key(当key的数量超过 1m)。
+分段LRU的内存使用量更小，但命中率不一致。
+如果你需要它提供的额外功能，Ristretto仍然是一个不错的选择。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h2 id=&#34;存储组件中的实现机制&#34;&gt;存储组件中的实现机制&lt;/h2&gt;
-&lt;h3 id=&#34;redis-dictredisobject-lru-evict策略&#34;&gt;redis Dict(redisObject) LRU evict策略&lt;/h3&gt;
+&lt;h3 id=&#34;redis-dictsdsredisobject-lru-evict策略&#34;&gt;redis Dict(sds,redisObject) LRU evict策略&lt;/h3&gt;
 &lt;p&gt;redis 是缓存数据库，缓存空间是有限的，可以指定最大内存使用空间；redis提供过期机制，给key制定过期时间，redis实现了删除这些过期key的删除策略（定期删除+惰性删除），但是还是存在问题，对于一些key没有设置过期时间，总会到最大内存使用空间，需要实现内存淘汰回收策略，其中策略就是LRU, 操作对象分为全部key (allkeys-lru) 和 过期key(volatile-lru)；这里整体介绍下redis缓存策略，然后单独介绍对应的redis LRU evict策略:&lt;/p&gt;
 &lt;h4 id=&#34;最大内存配置选项&#34;&gt;最大内存配置选项&lt;/h4&gt;
 &lt;p&gt;maxmemory 配置选项使用来配置 Redis 的存储数据所能使用的最大内存限制。可以通过在内置文件redis.conf中配置，也可在Redis运行时通过命令CONFIG SET来配置。例如，我们要配置内存上限是100M的Redis缓存，那么我们可以在 redis.conf 配置如下：maxmemory 100mb&lt;/p&gt;
