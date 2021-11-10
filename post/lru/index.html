@@ -72,7 +72,7 @@
 <meta itemprop="description" content="序言
 ​	在计算机硬件中缓/内存设计是用来机器启动的时候加载程序，分配运行空间数据，停机，缓/内存中的数据会丢失；磁盘用来持久化存储，提供数据加载到内存中，内存的读写速度比磁盘快很多，以下是Jeff Dean &ldquo;Numbers Everyone Should Know&rdquo; 中提供的数据(虽然过去10多年了)， 读取1MB数据，从内存中读比从磁盘中读取快100&#43;倍；但是缓/内存的空间比磁盘空间少，为了加快数据的访问，减少缓存/磁盘io，大概分为三种：1. 可以提前将数据从磁盘加载到内/缓存中(page)、2. 内/缓存miss从下层存储获取数据(cache,pool,page)、3. 无需加载，直接内/缓存evict；如果提供给进程的最大内/缓存资源到了最大限制，需要对存储资源进行evict操作，常用的evict策略可以从Cache_replacement_policies中了解；有关特定于分页的详细算法，请参阅页面替换算法；有关特定于 CPU 和 RAM 之间缓存的详细算法，请参阅CPU 缓存。这里主要关注LRU evict相关策略。"><meta itemprop="datePublished" content="2021-11-08T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-11-08T10:26:23+08:00" />
-<meta itemprop="wordCount" content="8674">
+<meta itemprop="wordCount" content="8672">
 <meta itemprop="keywords" content="cache,LRU," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="缓存淘汰策略-LRU"/>
 <meta name="twitter:description" content="序言
@@ -408,7 +408,7 @@
 <h2 id="lru算法">LRU算法</h2>
 <p>​	LRU(least recently used)是一种缓存 evict 策略算法：在缓存有限的情况下，如果有新的数据需要加载进缓存，则需要将最不可能被继续访问的缓存剔除掉。这是一种提前预判假设的算法，因为缓存是否可能被访问到没法做预测的，所以假设 <strong>一个key经常被访问，那么该key的idle time应该是最小的。</strong> (但这个假设也是基于概率，并不是充要条件,很明显,idle time最小的,甚至都不一定会被再次访问到)。</p>
 <p>​	LRU 的工作原理是一种时间局部性原理的假设，在过去的几条指令中使用最多的页面最有可能在接下来的几条指令中也被大量使用。</p>
-<p>​	实现方式可以采用wiki中的实现，每个缓存item中有具有序列号(每个新访问的增量为 1)，缓存满了将序列号最低的替换掉，这种实现需要找到最低的进行比较替换；还有种实现实现方式是通过hashMap+双向链表的方式实现，空间换时间的方式，<a href="https://leetcode-cn.com/problems/lru-cache/">leetcode上有这道题</a>，一般面试会问到；</p>
+<p>​	实现方式可以采用wiki中的实现，每个缓存item中有序列号(每个新访问的增量为 1)，缓存满了将序列号最低的替换掉，这种实现需要找到最低的进行比较替换；还有种实现实现方式是通过hashMap+双向链表的方式实现，空间换时间的方式，<a href="https://leetcode-cn.com/problems/lru-cache/">leetcode上有这道题</a>，一般面试会问到；</p>
 <p>实际工程实现中，由于实现成本，根据使用场景，考虑空间利用和时间的折中，使用的<a href="https://en.wikipedia.org/wiki/Page_replacement_algorithm#Variants_on_LRU">LRU算法变体</a>：(以下定义来自wiki)</p>
 <p><a href="https://en.wikipedia.org/wiki/Page_replacement_algorithm#cite_note-15">LRU-K</a> 驱逐过去第 K 次最近访问最远的页面。例如，LRU-1 只是 LRU，而 LRU-2 根据倒数第二次访问的时间驱逐页面。LRU-K 在时间上的局部性方面大大改进了 LRU。</p>
 <p><a href="https://en.wikipedia.org/wiki/Page_replacement_algorithm#cite_note-16">ARC</a> 算法通过保持最近驱逐页面的历史可LRU，并使用此选项可以更改的偏好近期或频繁访问。它对顺序扫描特别有抵抗力。</p>

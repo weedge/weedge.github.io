@@ -97,7 +97,7 @@
 &lt;h2 id=&#34;lru算法&#34;&gt;LRU算法&lt;/h2&gt;
 &lt;p&gt;​	LRU(least recently used)是一种缓存 evict 策略算法：在缓存有限的情况下，如果有新的数据需要加载进缓存，则需要将最不可能被继续访问的缓存剔除掉。这是一种提前预判假设的算法，因为缓存是否可能被访问到没法做预测的，所以假设 &lt;strong&gt;一个key经常被访问，那么该key的idle time应该是最小的。&lt;/strong&gt; (但这个假设也是基于概率，并不是充要条件,很明显,idle time最小的,甚至都不一定会被再次访问到)。&lt;/p&gt;
 &lt;p&gt;​	LRU 的工作原理是一种时间局部性原理的假设，在过去的几条指令中使用最多的页面最有可能在接下来的几条指令中也被大量使用。&lt;/p&gt;
-&lt;p&gt;​	实现方式可以采用wiki中的实现，每个缓存item中有具有序列号(每个新访问的增量为 1)，缓存满了将序列号最低的替换掉，这种实现需要找到最低的进行比较替换；还有种实现实现方式是通过hashMap+双向链表的方式实现，空间换时间的方式，&lt;a href=&#34;https://leetcode-cn.com/problems/lru-cache/&#34;&gt;leetcode上有这道题&lt;/a&gt;，一般面试会问到；&lt;/p&gt;
+&lt;p&gt;​	实现方式可以采用wiki中的实现，每个缓存item中有序列号(每个新访问的增量为 1)，缓存满了将序列号最低的替换掉，这种实现需要找到最低的进行比较替换；还有种实现实现方式是通过hashMap+双向链表的方式实现，空间换时间的方式，&lt;a href=&#34;https://leetcode-cn.com/problems/lru-cache/&#34;&gt;leetcode上有这道题&lt;/a&gt;，一般面试会问到；&lt;/p&gt;
 &lt;p&gt;实际工程实现中，由于实现成本，根据使用场景，考虑空间利用和时间的折中，使用的&lt;a href=&#34;https://en.wikipedia.org/wiki/Page_replacement_algorithm#Variants_on_LRU&#34;&gt;LRU算法变体&lt;/a&gt;：(以下定义来自wiki)&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Page_replacement_algorithm#cite_note-15&#34;&gt;LRU-K&lt;/a&gt; 驱逐过去第 K 次最近访问最远的页面。例如，LRU-1 只是 LRU，而 LRU-2 根据倒数第二次访问的时间驱逐页面。LRU-K 在时间上的局部性方面大大改进了 LRU。&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Page_replacement_algorithm#cite_note-16&#34;&gt;ARC&lt;/a&gt; 算法通过保持最近驱逐页面的历史可LRU，并使用此选项可以更改的偏好近期或频繁访问。它对顺序扫描特别有抵抗力。&lt;/p&gt;
@@ -675,6 +675,7 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。&lt;
 &lt;p&gt;​	底层的基础建设比较重要(&lt;strong&gt;高效能&lt;/strong&gt;)；上层业务的发展离不开基础组件的稳定性(&lt;strong&gt;高可用&lt;/strong&gt;)；以及服务多了之后，如何高效快速迭代，上线之后保证整体服务性能的稳定性(&lt;strong&gt;高并发/低延迟/可监控/可配置&lt;/strong&gt;)； 以及服务模块之间的划分合理，细化出功能组件，异动业务代码的可维护性（&lt;strong&gt;低耦合高内聚&lt;/strong&gt;）；这些都需要理论知识加以指导(比如服务划分抽象原则DDD, 业务抽象设计原则SOLID)，以及实践场景中去平衡折中改进；没有永恒的银弹(内卷)，尚需不断迭代提高。一个字 &amp;ldquo;稳&amp;rdquo;。&lt;/p&gt;
 &lt;h2 id=&#34;references&#34;&gt;references&lt;/h2&gt;
 &lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.infoq.cn/theme/119&#34;&gt;作业帮云原生探索和实践&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.infoq.cn/article/9jn0qfcx2xq7h6xltwa9&#34;&gt;学而思网校直播课堂的架构演进之路&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://insights.thoughtworks.cn/tag/domain-driven-design/&#34;&gt;Thoughtworks洞见-领域驱动设计&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://tech.meituan.com/2020/03/19/design-pattern-practice-in-marketing.html&#34;&gt;设计模式在美团外卖营销业务中的实践&lt;/a&gt;&lt;/li&gt;
