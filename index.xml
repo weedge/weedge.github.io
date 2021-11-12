@@ -254,7 +254,7 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。&lt;
 &lt;p&gt;如果通过 B+ 树的索引查询行记录，首先是从 B+ 树的根开始，逐层检索，直到找到&lt;strong&gt;叶子节点&lt;/strong&gt;，也就是找到对应的&lt;strong&gt;数据页&lt;/strong&gt;为止，如果数据页没在缓冲池中，将数据页加载到内存 &lt;strong&gt;缓冲池(buffer pool)&lt;/strong&gt; 中，页目录中的 &lt;strong&gt;槽(slot)&lt;/strong&gt; 采用二分查找的方式先找到一个粗略的&lt;strong&gt;记录分组&lt;/strong&gt;，然后再在分组中通过链表遍历的方式查找&lt;strong&gt;记录&lt;/strong&gt;。&lt;/p&gt;
 &lt;h4 id=&#34;缓冲池buffer-pool--lru链表&#34;&gt;缓冲池(buffer pool) + LRU链表&lt;/h4&gt;
 &lt;p&gt;&lt;strong&gt;缓冲池(buffer pool)&lt;/strong&gt; 是主内存中的一个区域，用于在 &lt;code&gt;InnoDB&lt;/code&gt;访问时缓存表和索引数据。缓冲池允许直接从内存访问经常使用的数据，从而加快处理速度。在专用服务器上，多达 80% 的物理内存通常分配给缓冲池。&lt;/p&gt;
-&lt;p&gt;这里有个问题，比如有如下 场景，一个直播间id为1的观看人数上百万，假如运营后台需要查找全部数据，&lt;/p&gt;
+&lt;p&gt;这里有个问题，比如有如下 场景，一个直播间id为1的观看人数上百万，假如运营后台需要查找全部数据，（这里假设没有通过CQRS模式将数据放入ES中，ES查询缓存也用到了LRU, 可以参考这篇&lt;a href=&#34;https://www.easyice.cn/archives/367&#34;&gt;Elasticsearch 的查询缓存&lt;/a&gt;）&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;select * from room_student_history where room_id=1  and id&amp;gt;=(select id from room_student_history where order by id limit 1000000,1) order by id limit 1000&lt;/p&gt;
 &lt;/blockquote&gt;
