@@ -72,7 +72,7 @@
 <meta itemprop="description" content="序言
 ​	在计算机硬件中缓/内存设计是用来机器启动的时候加载程序，分配运行空间数据，停机，缓/内存中的数据会丢失；磁盘用来持久化存储，提供数据加载到内存中，内存的读写速度比磁盘快很多，以下是Jeff Dean  &ldquo;Numbers Everyone Should Know&rdquo; 中提供的数据(虽然过去10多年了)， 读取1MB数据，从内存中读比从磁盘中读取快100&#43;倍；但是缓/内存的空间比磁盘空间少，为了加快数据的访问，减少缓存/磁盘io，大概分为三种：1. 可以提前将数据从磁盘加载到内/缓存中(page)、2. 内/缓存miss从下层存储获取数据(cache,pool,page)、3. 无需加载，直接内/缓存evict；如果提供给进程的最大内/缓存资源到了最大限制，需要对存储资源进行evict操作，常用的evict策略可以从Cache_replacement_policies中了解；有关特定于分页的详细算法，请参阅页面替换算法；有关特定于 CPU 和 RAM 之间缓存的详细算法，请参阅CPU 缓存。这里主要关注LRU evict相关策略。"><meta itemprop="datePublished" content="2021-11-08T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-11-08T10:26:23+08:00" />
-<meta itemprop="wordCount" content="9338">
+<meta itemprop="wordCount" content="9356">
 <meta itemprop="keywords" content="cache,LRU," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="缓存淘汰策略-LRU"/>
 <meta name="twitter:description" content="序言
@@ -542,7 +542,7 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。</p>
 <p>从InnoDB存储引擎的逻辑结构看，所有数据都被逻辑地存放在一个空间内，称为表空间(tablespace)，而表空间由段（sengment）、区（extent）、页（page）组成。 在一些文档中extend又称块（block）。这里有几个概念简单介绍下：</p>
 <ol>
 <li>
-<p><strong>表空间（Tablespace）</strong> 是一个逻辑容器，表空间存储的对象是段，在一个表空间中可以有一个或多个段，但是一个段只能属于一个表空间。数据库由一个或多个表空间组成，表空间从管理上可以划分为<a href="https://dev.mysql.com/doc/refman/5.7/en/innodb-system-tablespace.html">系统表空间</a>、<a href="https://dev.mysql.com/doc/refman/5.7/en/innodb-file-per-table-tablespaces.html">File-per-table 表空间</a>、<a href="https://dev.mysql.com/doc/refman/5.7/en/general-tablespaces.html">通用表空间</a>、<a href="https://dev.mysql.com/doc/refman/5.7/en/innodb-undo-tablespaces.html">撤销表空间</a>、<a href="https://dev.mysql.com/doc/refman/5.7/en/innodb-temporary-tablespace.html">临时表空间</a>。</p>
+<p><strong>表空间（Tablespace）</strong> 是一个逻辑容器，表空间存储的对象是段，在一个表空间中可以有一个或多个段，但是一个段只能属于一个表空间。数据库由一个或多个表空间组成，表空间从管理上可以划分为<a href="https://dev.mysql.com/doc/refman/5.7/en/innodb-system-tablespace.html">系统表空间</a>、<a href="https://dev.mysql.com/doc/refman/5.7/en/innodb-file-per-table-tablespaces.html">File-per-table 表空间</a>、<a href="https://dev.mysql.com/doc/refman/5.7/en/general-tablespaces.html">通用表空间</a>、<a href="https://dev.mysql.com/doc/refman/5.7/en/innodb-undo-tablespaces.html">撤销表空间</a>、<a href="https://dev.mysql.com/doc/refman/5.7/en/innodb-temporary-tablespace.html">临时表空间</a>。(表空间文件可以通过xxd进行分析)</p>
 <p>在 InnoDB 中存在两种表空间的类型：共享表空间(例如系统表空间或通用表空间)和独立表空间(File-per-table 表空间)。如果是共享表空间就意味着多张表共用一个表空间。如果是独立表空间，就意味着每张表有一个独立的表空间，也就是数据和索引信息都会保存在自己的表空间中。独立的表空间可以在不同的数据库之间进行迁移。禁用<a href="https://dev.mysql.com/doc/refman/8.0/en/innodb-parameters.html#sysvar_innodb_file_per_table"><code>innodb_file_per_table</code></a> 会在系统表空间中创建表。</p>
 <p>mysql8.0 InnoDB存储引擎对磁盘结构中的表空间操作有些改变：</p>
 <ol>
