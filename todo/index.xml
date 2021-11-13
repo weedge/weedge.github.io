@@ -6,7 +6,25 @@
     <description>Recent content in Todoes on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 10 Jun 2020 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/todo/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 08 Nov 2021 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/todo/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>mysql-w</title>
+      <link>https://weedge.github.io/todo/mysql-w/</link>
+      <pubDate>Mon, 08 Nov 2021 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/todo/mysql-w/</guid>
+      <description>序言 一条mysql 写操作，增删改SQL语句通过mysql协议提交 InnoDB 存储引擎架构</description>
+    </item>
+    
+    <item>
+      <title>WAL</title>
+      <link>https://weedge.github.io/todo/wal/</link>
+      <pubDate>Mon, 08 Nov 2021 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/todo/wal/</guid>
+      <description>序言</description>
+    </item>
+    
     <item>
       <title>policy worker</title>
       <link>https://weedge.github.io/todo/policyworker/</link>
