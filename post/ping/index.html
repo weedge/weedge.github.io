@@ -79,7 +79,7 @@ The ping utility uses the ICMP protocol&rsquo;s mandatory ECHO_REQUEST datagram 
 The ping utility uses the ICMP protocol&rsquo;s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.  ECHO_REQUEST datagrams  (&ldquo;pings&#39;&#39;) have an IP and ICMP header, followed by a &ldquo;struct timeval&#39;&#39; and then an arbitrary number of &ldquo;pad&rdquo; bytes used to fill out the packet.
 "><meta itemprop="datePublished" content="2021-11-15T14:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-11-15T14:26:23+08:00" />
-<meta itemprop="wordCount" content="971">
+<meta itemprop="wordCount" content="769">
 <meta itemprop="keywords" content="ping," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="工具盒子-ping"/>
 <meta name="twitter:description" content="序言
@@ -353,34 +353,13 @@ The ping utility uses the ICMP protocol&rsquo;s mandatory ECHO_REQUEST datagram 
 <h4 id="ping">PING</h4>
 <p>PING (Packet Internet Grope)，因特网包探索器，用于测试网络连接量的程序。Ping发送一个ICMP回声请求消息给目的地并报告是否收到所希望的ICMP回声应答；具体流程如下：</p>
 <p><img src="https://raw.githubusercontent.com/weedge/lib/main/net/ping-icmp.png" alt="ping-icmp"></p>
-<p><strong>TTl</strong>： 生存时间，指定<!-- raw HTML omitted -->数据包被路由器丢弃之前允许通过的网段数量<!-- raw HTML omitted -->；<!-- raw HTML omitted --><strong>TTL 是由发送主机设置的，当其存活次数为0时，路由器便会取消数据包并发送一个ICMP TTL数据包给原数据包的发出者, 以防止数据包不断在 IP 互联网络上永不终止地循环, 而无法送达及耗尽网络资源</strong><!-- raw HTML omitted -->。转发 IP 数据包时，要求路由器至少将 TTL 减小 1；TTL 字段值不同操作系统类型对应的值不同，可以通过<code>ping 127.0.0.1</code> 本地来查看初始值,或者<code>sysctl -a |grep ttl </code>查看对应指；具体不同系统平台的初始值如下：</p>
-<pre tabindex="0"><code>　　UNIX 及类 UNIX 操作系统 ICMP 回显应答的 TTL 字段值为 255
-　　Compaq Tru64 5.0 ICMP 回显应答的 TTL 字段值为 64
-　　微软 Windows NT/2K操作系统 ICMP 回显应答的 TTL 字段值为 128
-　　微软 Windows 95 操作系统 ICMP 回显应答的 TTL 字段值为 32
-　　当然，返回的TTL值是相同的
-　　但有些情况下有所特殊
-　　LINUX Kernel 2.2.x &amp; 2.4.x ICMP 回显应答的 TTL 字段值为 64
-　　FreeBSD 4.1, 4.0, 3.4;
-　　Sun Solaris 2.5.1, 2.6, 2.7, 2.8;
-　　OpenBSD 2.6, 2.7,
-　　NetBSD
-　　HP UX 10.20
-　　ICMP 回显应答的 TTL 字段值为 255
-　　Windows 95/98/98SE
-　　Windows ME
-　　ICMP 回显应答的 TTL 字段值为 32
-　　Windows NT4 WRKS
-　　Windows NT4 Server
-　　Windows 2000
-　　Windows XP
-　　ICMP 回显应答的 TTL 字段值为 128
-</code></pre><h4 id="轮子">轮子</h4>
+<p><strong>TTl</strong>： 生存时间，指定<!-- raw HTML omitted -->数据包被路由器丢弃之前允许通过的网段数量<!-- raw HTML omitted -->；<!-- raw HTML omitted --><strong>TTL 是由发送主机设置的，当其存活次数为0时，路由器便会取消数据包并发送一个ICMP TTL数据包给原数据包的发出者, 以防止数据包不断在 IP 互联网络上永不终止地循环, 而无法送达及耗尽网络资源</strong><!-- raw HTML omitted -->。转发 IP 数据包时，要求路由器至少将 TTL 减小 1；TTL 字段值不同操作系统类型对应的值不同，可以通过<code>ping 127.0.0.1</code> 本地来查看初始值,或者<code>sysctl -a |grep ttl </code>查看对应值。</p>
+<h4 id="轮子">轮子</h4>
 <p>为啥要用golang重新写一个工具呢？ （已有开源的 <a href="https://github.com/go-ping/ping.git">go-ping</a>, 支持icmp, udp (icmp.ListenPacket <a href="https://godoc.org/golang.org/x/net/icmp">x/net/icmp</a>) 直接查看源码吧）</p>
 <ol>
 <li>平时虽然用，但是具体实现想了解下，主要是ICMP协议中的控制信息(<a href="https://en.wikipedia.org/w/index.php?title=Internet_Control_Message_Protocol#Control_messages">Control messages</a>)</li>
 <li>golang是跨系统平台编译语言，同一份代码编译运行在不同平台；</li>
-<li>可以做一些扩展，运用在K8S的编排容器中测试网络环境；因为icmp定义在网络层(链路层满足不了和传输层无需端口多了一次解包)，只需ip，无需服务端口，利用icmp协议做一些扩展功能；比如机器是否挂了，目的ip是否不可到达了等;</li>
+<li>可以做一些扩展，运用在K8S的编排容器中测试网络环境；因为icmp定义在网络层(链路层满足不了和传输层无需端口多了一次解包)，只需ip，无需服务端口，利用icmp协议做一些扩展功能；比如机器是否挂了，目的ip是否不可到达了等。</li>
 </ol>
 <h4 id="reference">reference</h4>
 <ol>

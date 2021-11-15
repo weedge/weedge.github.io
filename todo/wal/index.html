@@ -404,9 +404,7 @@
 之后版本的默认值。但是设置一个大一些的值可以提升数据库性能，因此实际情况下也可以将值适当调大，牺牲一定的一致性来获取更好的性能。</p>
 <h5 id="binlog日志格式">binlog日志格式</h5>
 <p><code>binlog </code>日志有三种格式，分别为 <code>STATMENT </code>、 <code>ROW </code>和 <code>MIXED </code>。</p>
-<blockquote>
 <p>在 <code>MySQL 5.7.7 </code>之前，默认的格式是 <code>STATEMENT </code>， <code>MySQL 5.7.7 </code>之后，默认值是 <code>ROW </code>。日志格式通过 <code>binlog-format </code>指定。</p>
-</blockquote>
 <ul>
 <li>
 <p><code>STATMENT </code>： 基于<code>SQL</code>语句的复制( <code>statement-based replication, SBR </code>)，每一条会修改数据的sql语句会记录到 <code>binlog </code>中 。</p>

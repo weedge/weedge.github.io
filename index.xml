@@ -38,34 +38,13 @@
 &lt;h4 id=&#34;ping&#34;&gt;PING&lt;/h4&gt;
 &lt;p&gt;PING (Packet Internet Grope)，因特网包探索器，用于测试网络连接量的程序。Ping发送一个ICMP回声请求消息给目的地并报告是否收到所希望的ICMP回声应答；具体流程如下：&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/lib/main/net/ping-icmp.png&#34; alt=&#34;ping-icmp&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;TTl&lt;/strong&gt;： 生存时间，指定&lt;!-- raw HTML omitted --&gt;数据包被路由器丢弃之前允许通过的网段数量&lt;!-- raw HTML omitted --&gt;；&lt;!-- raw HTML omitted --&gt;&lt;strong&gt;TTL 是由发送主机设置的，当其存活次数为0时，路由器便会取消数据包并发送一个ICMP TTL数据包给原数据包的发出者, 以防止数据包不断在 IP 互联网络上永不终止地循环, 而无法送达及耗尽网络资源&lt;/strong&gt;&lt;!-- raw HTML omitted --&gt;。转发 IP 数据包时，要求路由器至少将 TTL 减小 1；TTL 字段值不同操作系统类型对应的值不同，可以通过&lt;code&gt;ping 127.0.0.1&lt;/code&gt; 本地来查看初始值,或者&lt;code&gt;sysctl -a |grep ttl &lt;/code&gt;查看对应指；具体不同系统平台的初始值如下：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;　　UNIX 及类 UNIX 操作系统 ICMP 回显应答的 TTL 字段值为 255
-　　Compaq Tru64 5.0 ICMP 回显应答的 TTL 字段值为 64
-　　微软 Windows NT/2K操作系统 ICMP 回显应答的 TTL 字段值为 128
-　　微软 Windows 95 操作系统 ICMP 回显应答的 TTL 字段值为 32
-　　当然，返回的TTL值是相同的
-　　但有些情况下有所特殊
-　　LINUX Kernel 2.2.x &amp;amp; 2.4.x ICMP 回显应答的 TTL 字段值为 64
-　　FreeBSD 4.1, 4.0, 3.4;
-　　Sun Solaris 2.5.1, 2.6, 2.7, 2.8;
-　　OpenBSD 2.6, 2.7,
-　　NetBSD
-　　HP UX 10.20
-　　ICMP 回显应答的 TTL 字段值为 255
-　　Windows 95/98/98SE
-　　Windows ME
-　　ICMP 回显应答的 TTL 字段值为 32
-　　Windows NT4 WRKS
-　　Windows NT4 Server
-　　Windows 2000
-　　Windows XP
-　　ICMP 回显应答的 TTL 字段值为 128
-&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&#34;轮子&#34;&gt;轮子&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;TTl&lt;/strong&gt;： 生存时间，指定&lt;!-- raw HTML omitted --&gt;数据包被路由器丢弃之前允许通过的网段数量&lt;!-- raw HTML omitted --&gt;；&lt;!-- raw HTML omitted --&gt;&lt;strong&gt;TTL 是由发送主机设置的，当其存活次数为0时，路由器便会取消数据包并发送一个ICMP TTL数据包给原数据包的发出者, 以防止数据包不断在 IP 互联网络上永不终止地循环, 而无法送达及耗尽网络资源&lt;/strong&gt;&lt;!-- raw HTML omitted --&gt;。转发 IP 数据包时，要求路由器至少将 TTL 减小 1；TTL 字段值不同操作系统类型对应的值不同，可以通过&lt;code&gt;ping 127.0.0.1&lt;/code&gt; 本地来查看初始值,或者&lt;code&gt;sysctl -a |grep ttl &lt;/code&gt;查看对应值。&lt;/p&gt;
+&lt;h4 id=&#34;轮子&#34;&gt;轮子&lt;/h4&gt;
 &lt;p&gt;为啥要用golang重新写一个工具呢？ （已有开源的 &lt;a href=&#34;https://github.com/go-ping/ping.git&#34;&gt;go-ping&lt;/a&gt;, 支持icmp, udp (icmp.ListenPacket &lt;a href=&#34;https://godoc.org/golang.org/x/net/icmp&#34;&gt;x/net/icmp&lt;/a&gt;) 直接查看源码吧）&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;平时虽然用，但是具体实现想了解下，主要是ICMP协议中的控制信息(&lt;a href=&#34;https://en.wikipedia.org/w/index.php?title=Internet_Control_Message_Protocol#Control_messages&#34;&gt;Control messages&lt;/a&gt;)&lt;/li&gt;
 &lt;li&gt;golang是跨系统平台编译语言，同一份代码编译运行在不同平台；&lt;/li&gt;
-&lt;li&gt;可以做一些扩展，运用在K8S的编排容器中测试网络环境；因为icmp定义在网络层(链路层满足不了和传输层无需端口多了一次解包)，只需ip，无需服务端口，利用icmp协议做一些扩展功能；比如机器是否挂了，目的ip是否不可到达了等;&lt;/li&gt;
+&lt;li&gt;可以做一些扩展，运用在K8S的编排容器中测试网络环境；因为icmp定义在网络层(链路层满足不了和传输层无需端口多了一次解包)，只需ip，无需服务端口，利用icmp协议做一些扩展功能；比如机器是否挂了，目的ip是否不可到达了等。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h4 id=&#34;reference&#34;&gt;reference&lt;/h4&gt;
 &lt;ol&gt;
@@ -167,9 +146,7 @@
 之后版本的默认值。但是设置一个大一些的值可以提升数据库性能，因此实际情况下也可以将值适当调大，牺牲一定的一致性来获取更好的性能。&lt;/p&gt;
 &lt;h5 id=&#34;binlog日志格式&#34;&gt;binlog日志格式&lt;/h5&gt;
 &lt;p&gt;&lt;code&gt;binlog &lt;/code&gt;日志有三种格式，分别为 &lt;code&gt;STATMENT &lt;/code&gt;、 &lt;code&gt;ROW &lt;/code&gt;和 &lt;code&gt;MIXED &lt;/code&gt;。&lt;/p&gt;
-&lt;blockquote&gt;
 &lt;p&gt;在 &lt;code&gt;MySQL 5.7.7 &lt;/code&gt;之前，默认的格式是 &lt;code&gt;STATEMENT &lt;/code&gt;， &lt;code&gt;MySQL 5.7.7 &lt;/code&gt;之后，默认值是 &lt;code&gt;ROW &lt;/code&gt;。日志格式通过 &lt;code&gt;binlog-format &lt;/code&gt;指定。&lt;/p&gt;
-&lt;/blockquote&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;code&gt;STATMENT &lt;/code&gt;： 基于&lt;code&gt;SQL&lt;/code&gt;语句的复制( &lt;code&gt;statement-based replication, SBR &lt;/code&gt;)，每一条会修改数据的sql语句会记录到 &lt;code&gt;binlog &lt;/code&gt;中 。&lt;/p&gt;
