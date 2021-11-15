@@ -8,21 +8,12 @@
     <language>zh-cn</language>
     <lastBuildDate>Mon, 08 Nov 2021 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/todo/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>mysql-w</title>
-      <link>https://weedge.github.io/todo/mysql-w/</link>
-      <pubDate>Mon, 08 Nov 2021 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/todo/mysql-w/</guid>
-      <description>序言 一条mysql 写操作，增删改SQL语句通过mysql协议提交 InnoDB 存储引擎架构</description>
-    </item>
-    
-    <item>
       <title>WAL</title>
       <link>https://weedge.github.io/todo/wal/</link>
       <pubDate>Mon, 08 Nov 2021 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/todo/wal/</guid>
-      <description>序言</description>
+      <description>序言 ​ 数据落地之前，如果出现持久化存储引擎实例重启，或者服务当机重启，如何进行数据恢复呢？数据写操作增删改，这些操作状态数据，是如何保证原子</description>
     </item>
     
     <item>

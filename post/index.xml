@@ -6,7 +6,20 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 08 Nov 2021 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 15 Nov 2021 14:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>工具盒子-ping</title>
+      <link>https://weedge.github.io/post/ping/</link>
+      <pubDate>Mon, 15 Nov 2021 14:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/ping/</guid>
+      <description>&lt;h4 id=&#34;序言&#34;&gt;序言&lt;/h4&gt;
+&lt;p&gt;在访问网络是否ok, 通常喜欢用ping 命令来访问&lt;code&gt;ping www.baidu.com&lt;/code&gt; 看是否出现超时；ping在不同的操作系统平台实现方式差不多，底层都是用ICMP协议，每次发ICMP ECHO_REQUEST packet (IP地址/Host, ttl，icmp_seq序列号，RTT记录 ),  运行结束后统计每个RTT, 最大RTT, 最小RTT, 平均RTT, &lt;a href=&#34;https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford&#34;&gt;标准偏差&lt;/a&gt;RTT, 发送/接受packets总数，丢包率 等数据，ping工具在PING(8)中的定义如下：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The ping utility uses the ICMP protocol&amp;rsquo;s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.  ECHO_REQUEST datagrams  (&amp;ldquo;pings&#39;&#39;) have an IP and ICMP header, followed by a &amp;ldquo;struct timeval&#39;&#39; and then an arbitrary number of &amp;ldquo;pad&amp;rdquo; bytes used to fill out the packet.&lt;/p&gt;
+&lt;/blockquote&gt;</description>
+    </item>
+    
     <item>
       <title>缓存淘汰策略-LRU</title>
       <link>https://weedge.github.io/post/lru/</link>

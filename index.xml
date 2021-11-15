@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 08 Nov 2021 10:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 15 Nov 2021 14:26:23 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -24,17 +24,56 @@
     </item>
     
     <item>
-      <title>mysql-w</title>
-      <link>https://weedge.github.io/todo/mysql-w/</link>
-      <pubDate>Mon, 08 Nov 2021 10:26:23 +0800</pubDate>
+      <title>工具盒子-ping</title>
+      <link>https://weedge.github.io/post/ping/</link>
+      <pubDate>Mon, 15 Nov 2021 14:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/todo/mysql-w/</guid>
+      <guid>https://weedge.github.io/post/ping/</guid>
       
-        <description>&lt;h2 id=&#34;序言&#34;&gt;序言&lt;/h2&gt;
-&lt;p&gt;一条mysql 写操作，增删改SQL语句通过mysql协议提交&lt;/p&gt;
-&lt;p&gt;InnoDB 存储引擎架构&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://dev.mysql.com/doc/refman/8.0/en/images/innodb-architecture.png&#34; alt=&#34;innodb-architecture&#34;&gt;&lt;/p&gt;
-</description>
+        <description>&lt;h4 id=&#34;序言&#34;&gt;序言&lt;/h4&gt;
+&lt;p&gt;在访问网络是否ok, 通常喜欢用ping 命令来访问&lt;code&gt;ping www.baidu.com&lt;/code&gt; 看是否出现超时；ping在不同的操作系统平台实现方式差不多，底层都是用ICMP协议，每次发ICMP ECHO_REQUEST packet (IP地址/Host, ttl，icmp_seq序列号，RTT记录 ),  运行结束后统计每个RTT, 最大RTT, 最小RTT, 平均RTT, &lt;a href=&#34;https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford&#34;&gt;标准偏差&lt;/a&gt;RTT, 发送/接受packets总数，丢包率 等数据，ping工具在PING(8)中的定义如下：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The ping utility uses the ICMP protocol&amp;rsquo;s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.  ECHO_REQUEST datagrams  (&amp;ldquo;pings&#39;&#39;) have an IP and ICMP header, followed by a &amp;ldquo;struct timeval&#39;&#39; and then an arbitrary number of &amp;ldquo;pad&amp;rdquo; bytes used to fill out the packet.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;ping&#34;&gt;PING&lt;/h4&gt;
+&lt;p&gt;PING (Packet Internet Grope)，因特网包探索器，用于测试网络连接量的程序。Ping发送一个ICMP回声请求消息给目的地并报告是否收到所希望的ICMP回声应答；具体流程如下：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/lib/main/net/ping-icmp.png&#34; alt=&#34;ping-icmp&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;TTl&lt;/strong&gt;： 生存时间，指定&lt;!-- raw HTML omitted --&gt;数据包被路由器丢弃之前允许通过的网段数量&lt;!-- raw HTML omitted --&gt;；&lt;!-- raw HTML omitted --&gt;&lt;strong&gt;TTL 是由发送主机设置的，当其存活次数为0时，路由器便会取消数据包并发送一个ICMP TTL数据包给原数据包的发出者, 以防止数据包不断在 IP 互联网络上永不终止地循环, 而无法送达及耗尽网络资源&lt;/strong&gt;&lt;!-- raw HTML omitted --&gt;。转发 IP 数据包时，要求路由器至少将 TTL 减小 1；TTL 字段值不同操作系统类型对应的值不同，可以通过&lt;code&gt;ping 127.0.0.1&lt;/code&gt; 本地来查看初始值,或者&lt;code&gt;sysctl -a |grep ttl &lt;/code&gt;查看对应指；具体不同系统平台的初始值如下：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;　　UNIX 及类 UNIX 操作系统 ICMP 回显应答的 TTL 字段值为 255
+　　Compaq Tru64 5.0 ICMP 回显应答的 TTL 字段值为 64
+　　微软 Windows NT/2K操作系统 ICMP 回显应答的 TTL 字段值为 128
+　　微软 Windows 95 操作系统 ICMP 回显应答的 TTL 字段值为 32
+　　当然，返回的TTL值是相同的
+　　但有些情况下有所特殊
+　　LINUX Kernel 2.2.x &amp;amp; 2.4.x ICMP 回显应答的 TTL 字段值为 64
+　　FreeBSD 4.1, 4.0, 3.4;
+　　Sun Solaris 2.5.1, 2.6, 2.7, 2.8;
+　　OpenBSD 2.6, 2.7,
+　　NetBSD
+　　HP UX 10.20
+　　ICMP 回显应答的 TTL 字段值为 255
+　　Windows 95/98/98SE
+　　Windows ME
+　　ICMP 回显应答的 TTL 字段值为 32
+　　Windows NT4 WRKS
+　　Windows NT4 Server
+　　Windows 2000
+　　Windows XP
+　　ICMP 回显应答的 TTL 字段值为 128
+&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&#34;轮子&#34;&gt;轮子&lt;/h4&gt;
+&lt;p&gt;为啥要用golang重新写一个工具呢？ （已有开源的 &lt;a href=&#34;https://github.com/go-ping/ping.git&#34;&gt;go-ping&lt;/a&gt;, 支持icmp, udp (icmp.ListenPacket &lt;a href=&#34;https://godoc.org/golang.org/x/net/icmp&#34;&gt;x/net/icmp&lt;/a&gt;) 直接查看源码吧）&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;平时虽然用，但是具体实现想了解下，主要是ICMP协议中的控制信息(&lt;a href=&#34;https://en.wikipedia.org/w/index.php?title=Internet_Control_Message_Protocol&#34;&gt;Control messages&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;golang是跨系统平台语言，同一份代码运行在不同平台；&lt;/li&gt;
+&lt;li&gt;可以做一些扩展，运用在K8S的编排容器中测试网络环境；因为icmp定义在网络层(链路层满足不了和传输层无需端口多了一次解包)，只需ip，无需服务端口，利用icmp协议做一些扩展功能；比如机器是否挂了，目的ip是否不可到达了等;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&#34;reference&#34;&gt;reference&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Ping_(networking_utility)&#34;&gt;PING&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol&#34;&gt;ICMP&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.techtarget.com/searchnetworking/definition/time-to-live&#34;&gt;TTL&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=IIicPE38O-s&#34;&gt;PING Command - Troubleshooting&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;</description>
       
     </item>
     
@@ -46,6 +85,156 @@
       <guid>https://weedge.github.io/todo/wal/</guid>
       
         <description>&lt;h2 id=&#34;序言&#34;&gt;序言&lt;/h2&gt;
+&lt;p&gt;​	数据落地之前，如果出现持久化存储引擎实例重启，或者服务当机重启，如何进行数据恢复呢？数据写操作增删改，这些操作状态数据，是如何保证原子性()和持久化的呢？ 这些问题数据大拿们提出了&lt;a href=&#34;https://en.wikipedia.org/wiki/Algorithms_for_Recovery_and_Isolation_Exploiting_Semantics&#34;&gt;Algorithms for Recovery and Isolation Exploiting Semantics&lt;/a&gt; ，基于语义的恢复与隔离算法,现代数据库的基础理论；当前主流关系型数据在事务实现上都受到该理论的影响。&lt;/p&gt;
+&lt;h3 id=&#34;mysql&#34;&gt;mysql&lt;/h3&gt;
+&lt;h4 id=&#34;redolog&#34;&gt;redolog&lt;/h4&gt;
+&lt;h5 id=&#34;为什么需要redo-log&#34;&gt;为什么需要redo log&lt;/h5&gt;
+&lt;p&gt;我们都知道，事务的四大特性里面有一个是 &lt;strong&gt;持久性&lt;/strong&gt; ，具体来说就是
+&lt;strong&gt;只要事务提交成功，那么对数据库做的修改就被永久保存下来了，不可能因为任何原因再回到原来的状态&lt;/strong&gt; 。那么 &lt;code&gt;mysql&lt;/code&gt;
+是如何保证一致性的呢？最简单的做法是在每次事务提交的时候，将该事务涉及修改的数据页全部刷新到磁盘中。但是这么做会有严重的性能问题，主要体现在两个方面：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;因为 &lt;code&gt;Innodb &lt;/code&gt;是以 &lt;code&gt;页 &lt;/code&gt;为单位进行磁盘交互的，而一个事务很可能只修改一个数据页里面的几个字节，这个时候将完整的数据页刷到磁盘的话，太浪费资源了！&lt;/li&gt;
+&lt;li&gt;一个事务可能涉及修改多个数据页，并且这些数据页在物理上并不连续，使用随机IO写入性能太差！&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;因此 &lt;code&gt;mysql &lt;/code&gt;设计了 &lt;code&gt;redo log &lt;/code&gt;， &lt;strong&gt;具体来说就是只记录事务对数据页做了哪些修改&lt;/strong&gt;
+，这样就能完美地解决性能问题了(相对而言文件更小并且是顺序IO)。&lt;/p&gt;
+&lt;h5 id=&#34;redo-log基本概念&#34;&gt;redo log基本概念&lt;/h5&gt;
+&lt;p&gt;&lt;code&gt;redo log &lt;/code&gt;包括两部分：一个是内存中的日志缓冲( &lt;code&gt;redo log buffer &lt;/code&gt;)，另一个是磁盘上的日志文件( &lt;code&gt;redo log file&lt;/code&gt;)。 &lt;code&gt;mysql &lt;/code&gt;每执行一条 &lt;code&gt;DML &lt;/code&gt;语句，先将记录写入 &lt;code&gt;redo log buffer &lt;/code&gt;
+，后续某个时间点再一次性将多个操作记录写到 &lt;code&gt;redo log file &lt;/code&gt;。这种 &lt;strong&gt;先写日志，再写磁盘&lt;/strong&gt; 的技术就是 &lt;code&gt;MySQL&lt;/code&gt;
+里经常说到的 &lt;code&gt;WAL(Write-Ahead Logging) &lt;/code&gt;技术。&lt;/p&gt;
+&lt;p&gt;在计算机操作系统中，用户空间( &lt;code&gt;user space &lt;/code&gt;)下的缓冲区数据一般情况下是无法直接写入磁盘的，中间必须经过操作系统内核空间( &lt;code&gt;kernel space &lt;/code&gt;)缓冲区( &lt;code&gt;OS Buffer &lt;/code&gt;)。因此， &lt;code&gt;redo log buffer &lt;/code&gt;写入 &lt;code&gt;redo log file &lt;/code&gt;实际上是先写入 &lt;code&gt;OS Buffer &lt;/code&gt;，然后再通过系统调用 &lt;code&gt;fsync() &lt;/code&gt;将其刷到 &lt;code&gt;redo log file &lt;/code&gt;
+中，过程如下：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://segmentfault.com/img/remote/1460000023827701&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;mysql &lt;/code&gt;支持三种将 &lt;code&gt;redo log buffer &lt;/code&gt;写入 &lt;code&gt;redo log file &lt;/code&gt;的时机，可以通过 &lt;code&gt;innodb_flush_log_at_trx_commit &lt;/code&gt; 参数配置，各参数值含义如下：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;参数值&lt;/th&gt;
+&lt;th&gt;含义&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;0（延迟写）&lt;/td&gt;
+&lt;td&gt;事务提交时不会将 &lt;code&gt;redo log buffer &lt;/code&gt;中日志写入到 &lt;code&gt;os buffer &lt;/code&gt;，而是每秒写入 &lt;code&gt;os buffer &lt;/code&gt;并调用 &lt;code&gt;fsync() &lt;/code&gt;写入到 &lt;code&gt;redo log file &lt;/code&gt;中。也就是说设置为0时是(大约)每秒刷新写入到磁盘中的，当系统崩溃，会丢失1秒钟的数据。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;1（实时写，实时刷）&lt;/td&gt;
+&lt;td&gt;事务每次提交都会将 &lt;code&gt;redo log buffer &lt;/code&gt;中的日志写入 &lt;code&gt;os buffer &lt;/code&gt;并调用 &lt;code&gt;fsync() &lt;/code&gt;刷到 &lt;code&gt;redo log file &lt;/code&gt;中。这种方式即使系统崩溃也不会丢失任何数据，但是因为每次提交都写入磁盘，IO的性能较差。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;2（实时写，延迟刷）&lt;/td&gt;
+&lt;td&gt;每次提交都仅写入到 &lt;code&gt;os buffer &lt;/code&gt;，然后是每秒调用 &lt;code&gt;fsync() &lt;/code&gt;将 &lt;code&gt;os buffer &lt;/code&gt;中的日志写入到 &lt;code&gt;redo log file &lt;/code&gt;。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;&lt;img src=&#34;https://segmentfault.com/img/remote/1460000023827700&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;h5 id=&#34;redo-log记录形式&#34;&gt;redo log记录形式&lt;/h5&gt;
+&lt;p&gt;前面说过， &lt;code&gt;redo log &lt;/code&gt;实际上记录数据页的变更，而这种变更记录是没必要全部保存，因此 &lt;code&gt;redo log&lt;/code&gt;
+实现上采用了大小固定，循环写入的方式，当写到结尾时，会回到开头循环写日志。如下图：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://segmentfault.com/img/remote/1460000023827699&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;同时我们很容易得知， 在innodb中，既有&lt;code&gt;redo log&lt;/code&gt;需要刷盘，还有 &lt;code&gt;数据页 &lt;/code&gt;也需要刷盘， &lt;code&gt;redo log &lt;/code&gt;存在的意义主要就是降低对 &lt;code&gt;数据页 &lt;/code&gt;刷盘的要求 &lt;strong&gt;。在上图中， &lt;code&gt;write pos &lt;/code&gt;表示 &lt;code&gt;redo log &lt;/code&gt;当前记录的 &lt;code&gt;LSN&lt;/code&gt; (逻辑序列号)位置， &lt;code&gt;check point &lt;/code&gt;表示&lt;/strong&gt; 数据页更改记录** 刷盘后对应 &lt;code&gt;redo log &lt;/code&gt;所处的 &lt;code&gt;LSN &lt;/code&gt;(逻辑序列号)位置。 &lt;code&gt;write pos &lt;/code&gt;到 &lt;code&gt;check point &lt;/code&gt;之间的部分是 &lt;code&gt;redo log &lt;/code&gt;空着的部分，用于记录新的记录；&lt;code&gt;check point&lt;/code&gt;到 &lt;code&gt;write pos &lt;/code&gt;之间是 &lt;code&gt;redo log &lt;/code&gt;待落盘的数据页更改记录。当 &lt;code&gt;write pos &lt;/code&gt;追上 &lt;code&gt;check point &lt;/code&gt;时，会先推动 &lt;code&gt;check point &lt;/code&gt;向前移动，空出位置再记录新的日志。&lt;/p&gt;
+&lt;p&gt;启动 &lt;code&gt;innodb &lt;/code&gt;的时候，不管上次是正常关闭还是异常关闭，总是会进行恢复操作。因为 &lt;code&gt;redo log &lt;/code&gt;记录的是数据页的物理变化，因此恢复的时候速度比逻辑日志(如 &lt;code&gt;binlog &lt;/code&gt;)要快很多。 重启 &lt;code&gt;innodb &lt;/code&gt;时，首先会检查磁盘中数据页的 &lt;code&gt;LSN &lt;/code&gt;，如果数据页的 &lt;code&gt;LSN &lt;/code&gt;小于日志中的 &lt;code&gt;LSN &lt;/code&gt;，则会从 &lt;code&gt;checkpoint &lt;/code&gt;开始恢复。 还有一种情况，在宕机前正处于
+&lt;code&gt;checkpoint &lt;/code&gt;的刷盘过程，且数据页的刷盘进度超过了日志页的刷盘进度，此时会出现数据页中记录的 &lt;code&gt;LSN &lt;/code&gt;大于日志中的 &lt;code&gt;LSN&lt;/code&gt;
+，这时超出日志进度的部分将不会重做，因为这本身就表示已经做过的事情，无需再重做。&lt;/p&gt;
+&lt;h4 id=&#34;undolog&#34;&gt;undolog&lt;/h4&gt;
+&lt;p&gt;数据库事务四大特性中有一个是 &lt;strong&gt;原子性&lt;/strong&gt; ，具体来说就是 &lt;strong&gt;原子性是指对数据库的一系列操作，要么全部成功，要么全部失败，不可能出现部分成功的情况&lt;/strong&gt;。实际上， &lt;strong&gt;原子性&lt;/strong&gt; 底层就是通过 &lt;code&gt;undo log &lt;/code&gt;实现的。 &lt;code&gt;undo log &lt;/code&gt;主要记录了数据的逻辑变化，比如一条 &lt;code&gt; INSERT&lt;/code&gt;语句，对应一条 &lt;code&gt;DELETE &lt;/code&gt;的 &lt;code&gt;undo log &lt;/code&gt;，对于每个 &lt;code&gt;UPDATE &lt;/code&gt;语句，对应一条相反的 &lt;code&gt;UPDATE &lt;/code&gt;的&lt;code&gt;undo log &lt;/code&gt;，这样在发生错误时，就能回滚到事务之前的数据状态。同时， &lt;code&gt;undo log &lt;/code&gt;也是 &lt;code&gt;MVCC &lt;/code&gt;(多版本并发控制)实现的关键&lt;/p&gt;
+&lt;h4 id=&#34;binlog&#34;&gt;binlog&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;binlog &lt;/code&gt;用于记录数据库执行的写入性操作(不包括查询)信息，以二进制的形式保存在磁盘中。 &lt;code&gt;binlog &lt;/code&gt;是 &lt;code&gt;mysql&lt;/code&gt;
+的逻辑日志，并且由 &lt;code&gt;Server &lt;/code&gt;层进行记录，使用任何存储引擎的 &lt;code&gt;mysql &lt;/code&gt;数据库都会记录 &lt;code&gt;binlog &lt;/code&gt;日志。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;逻辑日志&lt;/strong&gt;： 可以简单理解为记录的就是sql语句 。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;物理日志&lt;/strong&gt;： &lt;code&gt;mysql &lt;/code&gt;数据最终是保存在数据页中的，物理日志记录的就是数据页变更 。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;code&gt;binlog &lt;/code&gt;是通过追加的方式进行写入的，可以通过 &lt;code&gt;max_binlog_size &lt;/code&gt;参数设置每个 &lt;code&gt;binlog&lt;/code&gt;
+文件的大小，当文件大小达到给定值之后，会生成新的文件来保存日志。&lt;/p&gt;
+&lt;h5 id=&#34;binlog使用场景&#34;&gt;binlog使用场景&lt;/h5&gt;
+&lt;p&gt;在实际应用中， &lt;code&gt;binlog &lt;/code&gt;的主要使用场景有两个，分别是 &lt;strong&gt;主从复制&lt;/strong&gt; 和 &lt;strong&gt;数据恢复&lt;/strong&gt; 。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;主从复制&lt;/strong&gt; ：在 &lt;code&gt;Master &lt;/code&gt;端开启 &lt;code&gt;binlog &lt;/code&gt;，然后将 &lt;code&gt;binlog &lt;/code&gt;发送到各个 &lt;code&gt;Slave &lt;/code&gt;端， &lt;code&gt;Slave &lt;/code&gt;端重放 &lt;code&gt;binlog &lt;/code&gt;从而达到主从数据一致。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;数据恢复&lt;/strong&gt; ：通过使用 &lt;code&gt;mysqlbinlog &lt;/code&gt;工具来恢复数据。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h5 id=&#34;binlog刷盘时机&#34;&gt;binlog刷盘时机&lt;/h5&gt;
+&lt;p&gt;对于 &lt;code&gt;InnoDB &lt;/code&gt;存储引擎而言，只有在事务提交时才会记录 &lt;code&gt;biglog &lt;/code&gt;，此时记录还在内存中，那么 &lt;code&gt;biglog&lt;/code&gt;
+是什么时候刷到磁盘中的呢？ &lt;code&gt;mysql &lt;/code&gt;通过 &lt;code&gt;sync_binlog &lt;/code&gt;参数控制 &lt;code&gt;biglog &lt;/code&gt;的刷盘时机，取值范围是 &lt;code&gt;0-N&lt;/code&gt;
+：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;0：不去强制要求，由系统自行判断何时写入磁盘；&lt;/li&gt;
+&lt;li&gt;1：每次 &lt;code&gt;commit &lt;/code&gt;的时候都要将 &lt;code&gt;binlog &lt;/code&gt;写入磁盘；&lt;/li&gt;
+&lt;li&gt;N：每N个事务，才会将 &lt;code&gt;binlog &lt;/code&gt;写入磁盘。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;从上面可以看出， &lt;code&gt;sync_binlog &lt;/code&gt;最安全的是设置是 &lt;code&gt;1 &lt;/code&gt;，这也是 &lt;code&gt;MySQL 5.7.7&lt;/code&gt;
+之后版本的默认值。但是设置一个大一些的值可以提升数据库性能，因此实际情况下也可以将值适当调大，牺牲一定的一致性来获取更好的性能。&lt;/p&gt;
+&lt;h5 id=&#34;binlog日志格式&#34;&gt;binlog日志格式&lt;/h5&gt;
+&lt;p&gt;&lt;code&gt;binlog &lt;/code&gt;日志有三种格式，分别为 &lt;code&gt;STATMENT &lt;/code&gt;、 &lt;code&gt;ROW &lt;/code&gt;和 &lt;code&gt;MIXED &lt;/code&gt;。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;在 &lt;code&gt;MySQL 5.7.7 &lt;/code&gt;之前，默认的格式是 &lt;code&gt;STATEMENT &lt;/code&gt;， &lt;code&gt;MySQL 5.7.7 &lt;/code&gt;之后，默认值是 &lt;code&gt;ROW &lt;/code&gt;。日志格式通过 &lt;code&gt;binlog-format &lt;/code&gt;指定。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;STATMENT &lt;/code&gt;： 基于&lt;code&gt;SQL&lt;/code&gt;语句的复制( &lt;code&gt;statement-based replication, SBR &lt;/code&gt;)，每一条会修改数据的sql语句会记录到 &lt;code&gt;binlog &lt;/code&gt;中 。&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code class=&#34;language-autohotkey&#34; data-lang=&#34;autohotkey&#34;&gt;* 优点： 不需要记录每一行的变化，减少了` binlog ` 日志量，节约了 ` IO ` , 从而提高了性能； 
+* 缺点： 在某些情况下会导致主从数据不一致，比如执行` sysdate() ` 、 ` slepp() ` 等 。 
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;ROW &lt;/code&gt;： 基于行的复制(&lt;code&gt;row-based replication, RBR&lt;/code&gt;)，不记录每条sql语句的上下文信息，仅需记录哪条数据被修改了 。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;优点： 不会出现某些特定情况下的存储过程、或function、或trigger的调用和触发无法被正确复制的问题 ；&lt;/li&gt;
+&lt;li&gt;缺点： 会产生大量的日志，尤其是&lt;code&gt;alter table&lt;/code&gt;的时候会让日志暴涨&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;MIXED &lt;/code&gt;： 基于&lt;code&gt;STATMENT&lt;/code&gt;和 &lt;code&gt;ROW &lt;/code&gt;两种模式的混合复制( &lt;code&gt;mixed-based replication, MBR &lt;/code&gt;)，一般的复制使用 &lt;code&gt;STATEMENT &lt;/code&gt;模式保存 &lt;code&gt;binlog &lt;/code&gt;，对于 &lt;code&gt;STATEMENT &lt;/code&gt;模式无法复制的操作使用 &lt;code&gt;ROW &lt;/code&gt;模式保存 &lt;code&gt;binlog&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;binlog日志主要是用来主从同步复制数据以及数据恢复，是mysql server层执行器进行操作(主)写入和(从)读入(relaylog)；&lt;/p&gt;
+&lt;p&gt;数据可以按天按周进行备份，顺序写入，没有大小限制(文件大小有限，但是整体没有限制，多个文件可以通过binlog.index定位)；&lt;/p&gt;
+&lt;p&gt;binlog 日志有三种格式，分别为 &lt;code&gt;STATMENT &lt;/code&gt;、 &lt;code&gt;ROW &lt;/code&gt;和 &lt;code&gt;MIXED &lt;/code&gt;；&lt;/p&gt;
+&lt;p&gt;不同于redolog, 虽然两者都可以用来恢复数据，但是mysql中的wal机制下生成的redolog有大小限制， redolog 实际上记录数据页的变更，而这种变更记录是没必要全部保存，因此 redolog实现上采用了大小固定，循环写入的方式，当写到结尾时，会回到开头循环写日志；而binlog主要是用来数据恢复，如果备份时间长，用户在某段时间有误操作，需要回滚操作，就可以同binlog来恢复到某个时间点的日志状态；对于redolog是做不到的；而且binlog 不是存储引擎特有的，所以可以在不同的存储引擎公用来恢复数据场景。&lt;/p&gt;
+&lt;h4 id=&#34;redo-log与binlog区别&#34;&gt;redo log与binlog区别&lt;/h4&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;th&gt;redo log&lt;/th&gt;
+&lt;th&gt;binlog&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;文件大小&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;redo log &lt;/code&gt;的大小是固定的。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;binlog &lt;/code&gt;可通过配置参数 &lt;code&gt;max_binlog_size &lt;/code&gt;设置每个&lt;code&gt;binlog&lt;/code&gt;文件的大小。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;实现方式&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;redo log &lt;/code&gt;是 &lt;code&gt;InnoDB &lt;/code&gt;引擎层实现的，并不是所有引擎都有。&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;binlog &lt;/code&gt;是 &lt;code&gt;Server&lt;/code&gt; 层实现的，所有引擎都可以使用 &lt;code&gt;binlog &lt;/code&gt;日志&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;记录方式&lt;/td&gt;
+&lt;td&gt;redo log 采用循环写的方式记录，当写到结尾时，会回到开头循环写日志。&lt;/td&gt;
+&lt;td&gt;binlog通过追加的方式记录，当文件大小大于给定值后，后续的日志会记录到新的文件上&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;适用场景&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;redo log &lt;/code&gt;适用于崩溃恢复(crash-safe)&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;binlog &lt;/code&gt;适用于主从复制和数据恢复&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;由 &lt;code&gt;binlog &lt;/code&gt;和 &lt;code&gt;redo log &lt;/code&gt;的区别可知： &lt;code&gt;binlog &lt;/code&gt;日志只用于归档，只依靠 &lt;code&gt;binlog &lt;/code&gt;是没有 &lt;code&gt;crash-safe &lt;/code&gt;能力的。但只有 &lt;code&gt;redo log &lt;/code&gt;也不行，因为 &lt;code&gt;redo log &lt;/code&gt;是 &lt;code&gt;InnoDB &lt;/code&gt;特有的，且日志上的记录落盘后会被覆盖掉。因此需要 &lt;code&gt;binlog &lt;/code&gt;和 &lt;code&gt;redo log&lt;/code&gt;二者同时记录，才能保证当数据库发生宕机重启时，数据不会丢失。&lt;/p&gt;
+&lt;h4 id=&#34;etcd&#34;&gt;etcd&lt;/h4&gt;
+&lt;h3 id=&#34;references&#34;&gt;references&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Write-ahead_logging&#34;&gt;Write-ahead_logging&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Algorithms_for_Recovery_and_Isolation_Exploiting_Semantics&#34;&gt;ARIES:Algorithms_for_Recovery_and_Isolation_Exploiting_Semantics&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://cs.stanford.edu/people/chrismre/cs345/rl/aries.pdf&#34;&gt;aries.pdf&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=S9nctHdkggk&#34;&gt;ARIES Overview, Types of Log Records, ARIES Helper Structures&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=4VGkRXVM5fk&#34;&gt;ARIES Database Recovery (CMU Databases Systems / Fall 2019)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://dev.mysql.com/doc/internals/en/binary-log.html&#34;&gt;mysql binary-log&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://mysql.taobao.org/monthly/2021/10/01/&#34;&gt;MySQL · 引擎特性 · 庖丁解InnoDB之UNDO LOG&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
 </description>
       
     </item>

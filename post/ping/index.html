@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>技术 · 时间飘过</title>
+  <title>工具盒子-ping - 时间飘过</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -23,7 +23,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="记录工作和生活" />
+  <meta name="description" content="序言 在访问网络是否ok, 通常喜欢用ping 命令来访问ping www.baidu.com 看是否出现超时；ping在不同的操作系统平台实现方式差不多，底层都是用ICMP协议，每次发ICMP ECHO_REQUEST packet (IP地址/Host, ttl，icmp_seq序列号，RTT记录 ), 运行结束后统计每个RTT, 最大RTT, 最小RTT, 平均RTT, 标准偏差RTT, 发送/接受packets总数，丢包率 等数据，ping工具在PING(8)中的定义如下：
+ The ping utility uses the ICMP protocol&amp;rsquo;s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway. ECHO_REQUEST datagrams (&amp;ldquo;pings&#39;&#39;) have an IP and ICMP header, followed by a &amp;ldquo;struct timeval&#39;&#39; and then an arbitrary number of &amp;ldquo;pad&amp;rdquo; bytes used to fill out the packet.
+" />
+
   <meta name="keywords" content="工作, 技术, 生活" />
 
 
@@ -34,8 +37,8 @@
 <meta name="generator" content="Hugo 0.88.1" />
 
 
-<link rel="canonical" href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/" />
-<link href="/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="alternate" type="application/rss+xml" title="时间飘过" />
+<link rel="canonical" href="https://weedge.github.io/post/ping/" />
+
 
 
 
@@ -58,15 +61,32 @@
 
 
 
-<meta property="og:title" content="技术" />
-<meta property="og:description" content="记录工作和生活" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/" />
+<meta property="og:title" content="工具盒子-ping" />
+<meta property="og:description" content="序言
+在访问网络是否ok, 通常喜欢用ping 命令来访问ping www.baidu.com 看是否出现超时；ping在不同的操作系统平台实现方式差不多，底层都是用ICMP协议，每次发ICMP ECHO_REQUEST packet (IP地址/Host, ttl，icmp_seq序列号，RTT记录 ),  运行结束后统计每个RTT, 最大RTT, 最小RTT, 平均RTT, 标准偏差RTT, 发送/接受packets总数，丢包率 等数据，ping工具在PING(8)中的定义如下：
 
-<meta itemprop="name" content="技术">
-<meta itemprop="description" content="记录工作和生活"><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="技术"/>
-<meta name="twitter:description" content="记录工作和生活"/>
+The ping utility uses the ICMP protocol&rsquo;s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.  ECHO_REQUEST datagrams  (&ldquo;pings&#39;&#39;) have an IP and ICMP header, followed by a &ldquo;struct timeval&#39;&#39; and then an arbitrary number of &ldquo;pad&rdquo; bytes used to fill out the packet.
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/ping/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-11-15T14:26:23+08:00" />
+<meta property="article:modified_time" content="2021-11-15T14:26:23+08:00" />
+
+<meta itemprop="name" content="工具盒子-ping">
+<meta itemprop="description" content="序言
+在访问网络是否ok, 通常喜欢用ping 命令来访问ping www.baidu.com 看是否出现超时；ping在不同的操作系统平台实现方式差不多，底层都是用ICMP协议，每次发ICMP ECHO_REQUEST packet (IP地址/Host, ttl，icmp_seq序列号，RTT记录 ),  运行结束后统计每个RTT, 最大RTT, 最小RTT, 平均RTT, 标准偏差RTT, 发送/接受packets总数，丢包率 等数据，ping工具在PING(8)中的定义如下：
+
+The ping utility uses the ICMP protocol&rsquo;s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.  ECHO_REQUEST datagrams  (&ldquo;pings&#39;&#39;) have an IP and ICMP header, followed by a &ldquo;struct timeval&#39;&#39; and then an arbitrary number of &ldquo;pad&rdquo; bytes used to fill out the packet.
+"><meta itemprop="datePublished" content="2021-11-15T14:26:23+08:00" />
+<meta itemprop="dateModified" content="2021-11-15T14:26:23+08:00" />
+<meta itemprop="wordCount" content="967">
+<meta itemprop="keywords" content="ping," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="工具盒子-ping"/>
+<meta name="twitter:description" content="序言
+在访问网络是否ok, 通常喜欢用ping 命令来访问ping www.baidu.com 看是否出现超时；ping在不同的操作系统平台实现方式差不多，底层都是用ICMP协议，每次发ICMP ECHO_REQUEST packet (IP地址/Host, ttl，icmp_seq序列号，RTT记录 ),  运行结束后统计每个RTT, 最大RTT, 最小RTT, 平均RTT, 标准偏差RTT, 发送/接受packets总数，丢包率 等数据，ping工具在PING(8)中的定义如下：
+
+The ping utility uses the ICMP protocol&rsquo;s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.  ECHO_REQUEST datagrams  (&ldquo;pings&#39;&#39;) have an IP and ICMP header, followed by a &ldquo;struct timeval&#39;&#39; and then an arbitrary number of &ldquo;pad&rdquo; bytes used to fill out the packet.
+"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -283,170 +303,166 @@
     <main id="main" class="main bg-llight">
       <div class="content-wrapper">
         <div id="content" class="content container">
-          
-
-<section id="archive" class="archive">
-  
+          <article class="post bg-white">
     
-      <div class="archive-title category">
-        <h2 class="archive-name">分类： 技术</h2>
+    <header class="post-header">
+      <h1 class="post-title">工具盒子-ping</h1>
+      
+      <div class="post-meta">
+        <time datetime="2021-11-15" class="post-time">
+          2021-11-15
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
       </div>
+    </header>
+
     
-  
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
 
-  
-    <div class="archive-post">
-      <time datetime="2021-11-15" class="archive-post-time">
-        2021-11-15
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/ping/" class="archive-post-link">
-          工具盒子-ping
-        </a>
-      </span>
+    
+    <div class="post-content">
+      <h4 id="序言">序言</h4>
+<p>在访问网络是否ok, 通常喜欢用ping 命令来访问<code>ping www.baidu.com</code> 看是否出现超时；ping在不同的操作系统平台实现方式差不多，底层都是用ICMP协议，每次发ICMP ECHO_REQUEST packet (IP地址/Host, ttl，icmp_seq序列号，RTT记录 ),  运行结束后统计每个RTT, 最大RTT, 最小RTT, 平均RTT, <a href="https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford">标准偏差</a>RTT, 发送/接受packets总数，丢包率 等数据，ping工具在PING(8)中的定义如下：</p>
+<blockquote>
+<p>The ping utility uses the ICMP protocol&rsquo;s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.  ECHO_REQUEST datagrams  (&ldquo;pings'') have an IP and ICMP header, followed by a &ldquo;struct timeval'' and then an arbitrary number of &ldquo;pad&rdquo; bytes used to fill out the packet.</p>
+</blockquote>
+<h4 id="ping">PING</h4>
+<p>PING (Packet Internet Grope)，因特网包探索器，用于测试网络连接量的程序。Ping发送一个ICMP回声请求消息给目的地并报告是否收到所希望的ICMP回声应答；具体流程如下：</p>
+<p><img src="https://raw.githubusercontent.com/weedge/lib/main/net/ping-icmp.png" alt="ping-icmp"></p>
+<p><strong>TTl</strong>： 生存时间，指定<!-- raw HTML omitted -->数据包被路由器丢弃之前允许通过的网段数量<!-- raw HTML omitted -->；<!-- raw HTML omitted --><strong>TTL 是由发送主机设置的，当其存活次数为0时，路由器便会取消数据包并发送一个ICMP TTL数据包给原数据包的发出者, 以防止数据包不断在 IP 互联网络上永不终止地循环, 而无法送达及耗尽网络资源</strong><!-- raw HTML omitted -->。转发 IP 数据包时，要求路由器至少将 TTL 减小 1；TTL 字段值不同操作系统类型对应的值不同，可以通过<code>ping 127.0.0.1</code> 本地来查看初始值,或者<code>sysctl -a |grep ttl </code>查看对应指；具体不同系统平台的初始值如下：</p>
+<pre tabindex="0"><code>　　UNIX 及类 UNIX 操作系统 ICMP 回显应答的 TTL 字段值为 255
+　　Compaq Tru64 5.0 ICMP 回显应答的 TTL 字段值为 64
+　　微软 Windows NT/2K操作系统 ICMP 回显应答的 TTL 字段值为 128
+　　微软 Windows 95 操作系统 ICMP 回显应答的 TTL 字段值为 32
+　　当然，返回的TTL值是相同的
+　　但有些情况下有所特殊
+　　LINUX Kernel 2.2.x &amp; 2.4.x ICMP 回显应答的 TTL 字段值为 64
+　　FreeBSD 4.1, 4.0, 3.4;
+　　Sun Solaris 2.5.1, 2.6, 2.7, 2.8;
+　　OpenBSD 2.6, 2.7,
+　　NetBSD
+　　HP UX 10.20
+　　ICMP 回显应答的 TTL 字段值为 255
+　　Windows 95/98/98SE
+　　Windows ME
+　　ICMP 回显应答的 TTL 字段值为 32
+　　Windows NT4 WRKS
+　　Windows NT4 Server
+　　Windows 2000
+　　Windows XP
+　　ICMP 回显应答的 TTL 字段值为 128
+</code></pre><h4 id="轮子">轮子</h4>
+<p>为啥要用golang重新写一个工具呢？ （已有开源的 <a href="https://github.com/go-ping/ping.git">go-ping</a>, 支持icmp, udp (icmp.ListenPacket <a href="https://godoc.org/golang.org/x/net/icmp">x/net/icmp</a>) 直接查看源码吧）</p>
+<ol>
+<li>平时虽然用，但是具体实现想了解下，主要是ICMP协议中的控制信息(<a href="https://en.wikipedia.org/w/index.php?title=Internet_Control_Message_Protocol">Control messages</a>)</li>
+<li>golang是跨系统平台语言，同一份代码运行在不同平台；</li>
+<li>可以做一些扩展，运用在K8S的编排容器中测试网络环境；因为icmp定义在网络层(链路层满足不了和传输层无需端口多了一次解包)，只需ip，无需服务端口，利用icmp协议做一些扩展功能；比如机器是否挂了，目的ip是否不可到达了等;</li>
+</ol>
+<h4 id="reference">reference</h4>
+<ol>
+<li><a href="https://en.wikipedia.org/wiki/Ping_(networking_utility)">PING</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol">ICMP</a></li>
+<li><a href="https://www.techtarget.com/searchnetworking/definition/time-to-live">TTL</a></li>
+<li><a href="https://www.youtube.com/watch?v=IIicPE38O-s">PING Command - Troubleshooting</a></li>
+</ol>
     </div>
-  
-    <div class="archive-post">
-      <time datetime="2021-11-08" class="archive-post-time">
-        2021-11-08
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/lru/" class="archive-post-link">
-          缓存淘汰策略-LRU
-        </a>
-      </span>
-    </div>
-  
-    <div class="archive-post">
-      <time datetime="2021-10-26" class="archive-post-time">
-        2021-10-26
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/servicetransformation/" class="archive-post-link">
-          服务改造简述
-        </a>
-      </span>
-    </div>
-  
-    <div class="archive-post">
-      <time datetime="2021-10-02" class="archive-post-time">
-        2021-10-02
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/rd/" class="archive-post-link">
-          工程师六大意识
-        </a>
-      </span>
-    </div>
-  
-    <div class="archive-post">
-      <time datetime="2021-09-05" class="archive-post-time">
-        2021-09-05
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/zborg/" class="archive-post-link">
-          组织引擎
-        </a>
-      </span>
-    </div>
-  
-    <div class="archive-post">
-      <time datetime="2021-09-02" class="archive-post-time">
-        2021-09-02
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/poller/" class="archive-post-link">
-          网络模型
-        </a>
-      </span>
-    </div>
-  
-    <div class="archive-post">
-      <time datetime="2021-09-01" class="archive-post-time">
-        2021-09-01
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/jxzb/" class="archive-post-link">
-          教学直播概括
-        </a>
-      </span>
-    </div>
-  
-    <div class="archive-post">
-      <time datetime="2020-11-02" class="archive-post-time">
-        2020-11-02
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/jxzbim/" class="archive-post-link">
-          直播系列之消息模块演进
-        </a>
-      </span>
-    </div>
-  
-    <div class="archive-post">
-      <time datetime="2017-12-12" class="archive-post-time">
-        2017-12-12
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/idgen/" class="archive-post-link">
-          id生成
-        </a>
-      </span>
-    </div>
-  
-    <div class="archive-post">
-      <time datetime="2017-11-01" class="archive-post-time">
-        2017-11-01
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/golang/" class="archive-post-link">
-          golang学习笔记
-        </a>
-      </span>
-    </div>
-  
-</section>
 
-
-
-
-
-
-  
-  
-  
-
-  
-  
-
-  
-  
-
-  
-  
-
-  
-  
-  <nav class="pagination">
-    <ul>
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2021-11-15
       
-      <li  class="active" >
-        <a href="/categories/%E6%8A%80%E6%9C%AF/">1</a>
-      </li>
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/ping/">ping</a>
+          
+        </div>
+
       
-      <li >
-        <a href="/categories/%E6%8A%80%E6%9C%AF/page/2/">2</a>
-      </li>
-      
-    </ul>
-  </nav>
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/lru/">
+            <span class="next-text nav-default">缓存淘汰策略-LRU</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
 
   
   
 
+  
+  
 
+  
 
+  
+  
 
+  
+
+  
+
+  
+
+    
+
+  
 
         </div>
       </div>
