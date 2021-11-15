@@ -79,7 +79,7 @@ The ping utility uses the ICMP protocol&rsquo;s mandatory ECHO_REQUEST datagram 
 The ping utility uses the ICMP protocol&rsquo;s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.  ECHO_REQUEST datagrams  (&ldquo;pings&#39;&#39;) have an IP and ICMP header, followed by a &ldquo;struct timeval&#39;&#39; and then an arbitrary number of &ldquo;pad&rdquo; bytes used to fill out the packet.
 "><meta itemprop="datePublished" content="2021-11-15T14:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-11-15T14:26:23+08:00" />
-<meta itemprop="wordCount" content="967">
+<meta itemprop="wordCount" content="971">
 <meta itemprop="keywords" content="ping," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="工具盒子-ping"/>
 <meta name="twitter:description" content="序言
@@ -378,8 +378,8 @@ The ping utility uses the ICMP protocol&rsquo;s mandatory ECHO_REQUEST datagram 
 </code></pre><h4 id="轮子">轮子</h4>
 <p>为啥要用golang重新写一个工具呢？ （已有开源的 <a href="https://github.com/go-ping/ping.git">go-ping</a>, 支持icmp, udp (icmp.ListenPacket <a href="https://godoc.org/golang.org/x/net/icmp">x/net/icmp</a>) 直接查看源码吧）</p>
 <ol>
-<li>平时虽然用，但是具体实现想了解下，主要是ICMP协议中的控制信息(<a href="https://en.wikipedia.org/w/index.php?title=Internet_Control_Message_Protocol">Control messages</a>)</li>
-<li>golang是跨系统平台语言，同一份代码运行在不同平台；</li>
+<li>平时虽然用，但是具体实现想了解下，主要是ICMP协议中的控制信息(<a href="https://en.wikipedia.org/w/index.php?title=Internet_Control_Message_Protocol#Control_messages">Control messages</a>)</li>
+<li>golang是跨系统平台编译语言，同一份代码编译运行在不同平台；</li>
 <li>可以做一些扩展，运用在K8S的编排容器中测试网络环境；因为icmp定义在网络层(链路层满足不了和传输层无需端口多了一次解包)，只需ip，无需服务端口，利用icmp协议做一些扩展功能；比如机器是否挂了，目的ip是否不可到达了等;</li>
 </ol>
 <h4 id="reference">reference</h4>
