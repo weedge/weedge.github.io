@@ -475,6 +475,7 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。&lt;
 &lt;li&gt;/usr/local/opt/mysql/bin/ibd2sdi (utilities/ibd2sdi.cc文件)  查看ibd文件中的字典序列化信息,mysqlbinlog binlog.* 打印binlo g信息&lt;/li&gt;
 &lt;li&gt;客户端命令执行show VARIABLES like &amp;ldquo;%Innodb%&amp;quot;; show status like &amp;ldquo;%Innodb%&amp;quot;; 查看Innodb参数和状态统计；&lt;/li&gt;
 &lt;li&gt;客户端命令执行  SHOW ENGINE INNODB STATUS; 查看整体运行状态监控数据(io,thread, buffer pool memory, SEMAPHORES, TRANSACTIONS,INSERT BUFFER AND ADAPTIVE HASH INDEX,LOG,ROW OPERATIONS)&lt;/li&gt;
+&lt;li&gt;下载源码 &lt;a href=&#34;https://github.com/mysql/mysql-server&#34;&gt;https://github.com/mysql/mysql-server&lt;/a&gt; 8.0 版本分支，download zip文件，编译，运行，gdb debug&lt;/li&gt;
 &lt;/ol&gt;
 &lt;/blockquote&gt;
 &lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
