@@ -9,10 +9,10 @@
     <lastBuildDate>Tue, 16 Nov 2021 11:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/mmap/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>共享内存与内存映射(mmap)</title>
-      <link>https://weedge.github.io/post/mmap/</link>
+      <link>https://weedge.github.io/%E8%BD%AC%E8%BD%BD/mmap/</link>
       <pubDate>Tue, 16 Nov 2021 11:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/mmap/</guid>
+      <guid>https://weedge.github.io/%E8%BD%AC%E8%BD%BD/mmap/</guid>
       <description>&lt;h2 id=&#34;序言&#34;&gt;序言&lt;/h2&gt;
 &lt;blockquote&gt;
 &lt;p&gt;from: &lt;a href=&#34;https://www.cnblogs.com/huangfuyuan/p/9476951.html&#34;&gt;https://www.cnblogs.com/huangfuyuan/p/9476951.html&lt;/a&gt;&lt;/p&gt;
