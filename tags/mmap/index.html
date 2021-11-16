@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>时间飘过</title>
+  <title>mmap · 时间飘过</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -34,8 +34,8 @@
 <meta name="generator" content="Hugo 0.88.1" />
 
 
-<link rel="canonical" href="https://weedge.github.io/" />
-<link href="/index.xml" rel="alternate" type="application/rss+xml" title="时间飘过" />
+<link rel="canonical" href="https://weedge.github.io/tags/mmap/" />
+<link href="/tags/mmap/index.xml" rel="alternate" type="application/rss+xml" title="时间飘过" />
 
 
 
@@ -58,14 +58,14 @@
 
 
 
-<meta property="og:title" content="时间飘过" />
+<meta property="og:title" content="mmap" />
 <meta property="og:description" content="记录工作和生活" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://weedge.github.io/" />
+<meta property="og:url" content="https://weedge.github.io/tags/mmap/" />
 
-<meta itemprop="name" content="时间飘过">
+<meta itemprop="name" content="mmap">
 <meta itemprop="description" content="记录工作和生活"><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="时间飘过"/>
+<meta name="twitter:title" content="mmap"/>
 <meta name="twitter:description" content="记录工作和生活"/>
 
 <!--[if lte IE 9]>
@@ -284,124 +284,27 @@
       <div class="content-wrapper">
         <div id="content" class="content container">
           
-<section id="posts" class="posts">
-  
+
+<section id="archive" class="archive">
   
     
-  
-  
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/mmap/">工具盒子-ping</a>
-    </h1>
+      <div class="archive-title tag">
+        <h2 class="archive-name">标签： mmap</h2>
+      </div>
     
-    <div class="post-meta">
-      <time datetime="2021-11-16" class="post-time">
+  
+
+  
+    <div class="archive-post">
+      <time datetime="2021-11-16" class="archive-post-time">
         2021-11-16
       </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
+      <span class="archive-post-title">
+        <a href="/post/mmap/" class="archive-post-link">
+          工具盒子-ping
+        </a>
+      </span>
     </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h2 id="序言">序言</h2>
-<blockquote>
-<p>from: <a href="https://www.cnblogs.com/huangfuyuan/p/9476951.html">https://www.cnblogs.com/huangfuyuan/p/9476951.html</a></p>
-</blockquote>
-<p>首先关于共享内存的链接：<a href="http://blog.csdn.net/qq_26768741/article/details/56014845">共享内存</a>。<strong>里面包含了创建共享内存区域的函数，以及两个进程怎么挂载共享内存通信，分离、释放共享内存</strong>。</p>
-<p>共享内存的好处就是效率高，不需要太多次的进行数据的copy。可以直接进行读写内存。所以，相对来说在IPC进程间通信三大主题（消息队列，信号量，共享内存）里面，共享内存要比消息队列使用多，而且消息队列只在有血缘关系的进程间通信；但是，共享内存不保证同步，可以使用信号量来保证共享内存同步。<strong>Linux中的两种共享内存</strong>。一种是我们的IPC通信System V版本的共享内存，另外的一种就是我们今天提到的存储映射I/O（mmap函数），当然还有一种POSIX的共享内存，它是在mmap基础之上构建的。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/mmap/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/ping/">工具盒子-ping</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2021-11-15" class="post-time">
-        2021-11-15
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h4 id="序言">序言</h4>
-<p>在访问网络是否ok, 通常喜欢用ping 命令来访问<code>ping www.baidu.com</code> 看是否出现超时；ping在不同的操作系统平台实现方式差不多，底层都是用ICMP协议，每次发ICMP ECHO_REQUEST packet (IP地址/Host, ttl，icmp_seq序列号，RTT记录 ),  运行结束后统计每个RTT, 最大RTT, 最小RTT, 平均RTT, <a href="https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford">标准偏差</a>RTT, 发送/接受packets总数，丢包率 等数据，ping工具在PING(8)中的定义如下：</p>
-<blockquote>
-<p>The ping utility uses the ICMP protocol&rsquo;s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.  ECHO_REQUEST datagrams  (&ldquo;pings'') have an IP and ICMP header, followed by a &ldquo;struct timeval'' and then an arbitrary number of &ldquo;pad&rdquo; bytes used to fill out the packet.</p>
-</blockquote>
-    </div>
-    <div class="read-more">
-      <a href="/post/ping/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/lru/">缓存淘汰策略-LRU</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2021-11-08" class="post-time">
-        2021-11-08
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h2 id="序言">序言</h2>
-<p>​	在计算机硬件中缓/内存设计是用来机器启动的时候加载程序，分配运行空间数据，停机，缓/内存中的数据会丢失；磁盘用来持久化存储，提供数据加载到内存中，内存的读写速度比磁盘快很多，以下是<a href="https://research.google/people/jeff/">Jeff Dean</a>  &ldquo;<a href="http://brenocon.com/dean_perf.html">Numbers Everyone Should Know</a>&rdquo; 中提供的数据(虽然过去10多年了)， 读取1MB数据，从内存中读比从磁盘中读取快100+倍；但是缓/内存的空间比磁盘空间少，为了加快数据的访问，减少缓存/磁盘io，大概分为三种：1. 可以提前将数据从磁盘加载到内/缓存中(page)、2. 内/缓存miss从下层存储获取数据(cache,pool,page)、3. 无需加载，直接内/缓存evict；如果提供给进程的最大内/缓存资源到了最大限制，需要对存储资源进行evict操作，常用的evict策略可以从<a href="https://en.wikipedia.org/wiki/Cache_replacement_policies">Cache_replacement_policies</a>中了解；有关特定于分页的详细算法，请参阅<a href="https://en.wikipedia.org/wiki/Page_replacement_algorithm">页面替换算法</a>；有关特定于 CPU 和 RAM 之间缓存的详细算法，请参阅<a href="https://en.wikipedia.org/wiki/CPU_cache">CPU 缓存</a>。这里主要关注LRU evict相关策略。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/lru/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
   
 </section>
 
@@ -422,42 +325,6 @@
 
   
   
-
-  
-  
-  <nav class="pagination">
-    <ul>
-      
-      <li  class="active" >
-        <a href="/">1</a>
-      </li>
-      
-      <li >
-        <a href="/page/2/">2</a>
-      </li>
-      
-      <li >
-        <a href="/page/3/">3</a>
-      </li>
-      
-      <li >
-        <a href="/page/4/">4</a>
-      </li>
-      
-      <li >
-        <a href="/page/5/">5</a>
-      </li>
-      
-      <li >
-        <a href="/page/6/">6</a>
-      </li>
-      
-      <li >
-        <a href="/page/7/">7</a>
-      </li>
-      
-    </ul>
-  </nav>
 
   
   

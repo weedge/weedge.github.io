@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 15 Nov 2021 14:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 16 Nov 2021 11:26:23 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -20,6 +20,121 @@
       
         <description>&lt;p&gt;简单的木头人，简单，呆木，喜欢自言自语，愚人自扰型。时间飞逝，仅仅记录，留住某人某事，某些好玩的技术，KISS and just do IT.&lt;/p&gt;
 </description>
+      
+    </item>
+    
+    <item>
+      <title>工具盒子-ping</title>
+      <link>https://weedge.github.io/post/mmap/</link>
+      <pubDate>Tue, 16 Nov 2021 11:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/mmap/</guid>
+      
+        <description>&lt;h2 id=&#34;序言&#34;&gt;序言&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;from: &lt;a href=&#34;https://www.cnblogs.com/huangfuyuan/p/9476951.html&#34;&gt;https://www.cnblogs.com/huangfuyuan/p/9476951.html&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;首先关于共享内存的链接：&lt;a href=&#34;http://blog.csdn.net/qq_26768741/article/details/56014845&#34;&gt;共享内存&lt;/a&gt;。&lt;strong&gt;里面包含了创建共享内存区域的函数，以及两个进程怎么挂载共享内存通信，分离、释放共享内存&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;共享内存的好处就是效率高，不需要太多次的进行数据的copy。可以直接进行读写内存。所以，相对来说在IPC进程间通信三大主题（消息队列，信号量，共享内存）里面，共享内存要比消息队列使用多，而且消息队列只在有血缘关系的进程间通信；但是，共享内存不保证同步，可以使用信号量来保证共享内存同步。&lt;strong&gt;Linux中的两种共享内存&lt;/strong&gt;。一种是我们的IPC通信System V版本的共享内存，另外的一种就是我们今天提到的存储映射I/O（mmap函数），当然还有一种POSIX的共享内存，它是在mmap基础之上构建的。&lt;/p&gt;
+&lt;h2 id=&#34;mmap&#34;&gt;mmap&lt;/h2&gt;
+&lt;p&gt;mmap I/O的描述符间接说明内存映射是对文件操作。另外，mmap另外可以在无亲缘的进程之间提供共享内存区。这样，类似的两个进程之间就是可以进行了通信。&lt;/p&gt;
+&lt;p&gt;Linux提供了内存映射函数mmap, 它把文件内容映射到一段内存上(准确说是&lt;strong&gt;虚拟内存&lt;/strong&gt;上，运行着进程), &lt;strong&gt;通过对这段内存的读取和修改, 实现对文件的读取和修改&lt;/strong&gt;。mmap()系统调用使得进程之间可以通过映射一个普通的文件实现共享内存。&lt;strong&gt;普通文件映射到进程地址空间后，进程可以像访问内存的方式对文件进行访问，不需要其他内核态的系统调用(read,write)去操作。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这里是讲设备或者硬盘存储的一块空间映射到物理内存，然后操作这块物理内存就是在操作实际的硬盘空间，不需要经过内核态传递。比如你的硬盘上有一个文件，你可以使用linux系统提供的mmap接口，将这个文件映射到进程一块虚拟地址空间，这块空间会对应一块物理内存，当你读写这块物理空间的时候，就是在读取实际的磁盘文件，就是这么直接高效。&lt;strong&gt;通常诸如共享库的加载都是通过内存映射的方式加载到物理内存的&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;mmap系统调用并不完全是为了共享内存来设计的，它本身提供了不同于一般对&lt;strong&gt;普通文件&lt;/strong&gt;的访问的方式，进程可以像读写内存一样对普通文件进行操作（无需系统调用），IPC的共享内存是纯粹为了共享。&lt;/p&gt;
+&lt;h3 id=&#34;mmap系统调用介绍&#34;&gt;mmap系统调用介绍&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;这就是mmap系统调用的接口，mmap函数成功返回指向内存区域的指针，失败返回MAP_FAILED。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;addr，某个特定的地址作为起始地址，当被设置为NULL，标识系统自动分配地址。实实在在的物理区域。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;length说的是内存段的长度。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;prot是用来设定内存段的访问权限。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;prot参数&lt;/th&gt;
+&lt;th&gt;说明&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;PROT_READ&lt;/td&gt;
+&lt;td&gt;内存段可读&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;PROT_WRITE&lt;/td&gt;
+&lt;td&gt;内存段可写&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;PROT_EXEC&lt;/td&gt;
+&lt;td&gt;内存段可执行&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;PROT_NONE&lt;/td&gt;
+&lt;td&gt;内存段不能被访问&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;fd参数是用来被映射文件对应的文件描述符。通过open系统调用得到。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;flags参数&lt;/th&gt;
+&lt;th&gt;说明&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;MAP_SHARED&lt;/td&gt;
+&lt;td&gt;进程间共享内存，对该内存段修改反映到映射文件中。提供了POSIX共享内存&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;MAP_PRIVATE&lt;/td&gt;
+&lt;td&gt;内存段为调用进程所私有。对该内存段的修改不会反映到映射文件&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;MAP_ANNOYMOUS&lt;/td&gt;
+&lt;td&gt;这段内存不是从文件映射而来的。内容被初始化为全0&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;MAP_FIXED&lt;/td&gt;
+&lt;td&gt;内存段必须位于start参数指定的地址处，start必须是页大小的整数倍（4K整数倍）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;MAP_HUGETLB&lt;/td&gt;
+&lt;td&gt;按照大内存页面来分配内存空间&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;offset设定从何处进行映射。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;mmap用于共享内存的方式&#34;&gt;mmap用于共享内存的方式&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;我们可以使用普通文件进行提供内存映射，例如，open系统调用打开一个文件，然后进行mmap操作，得到共享内存，这种方式适用于任何进程之间。&lt;/li&gt;
+&lt;li&gt;以使用特殊文件进行匿名内存映射，这个相对的是具有血缘关系的进程之间，当父进程调用mmap，然后进行fork，这样父进程创建的子进程会继承父进程匿名映射后的地址空间，这样，父子进程之间就可以进行通信了。相当于是mmap的返回地址此时是父子进程同时来维护。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;另外&lt;a href=&#34;https://www.cnblogs.com/LubinLew/p/POSIX-shared_memory.html&#34;&gt;POSIX版本的共享内存&lt;/a&gt;底层也是使用了mmap。所以，共享内存在在posix上一定程度上就是指的内存映射了&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;mmap和system-v共享内存的比较&#34;&gt;mmap和System V共享内存的比较&lt;/h2&gt;
+&lt;h3 id=&#34;system-v版本的共享内存以下我们统称为shm&#34;&gt;System V版本的共享内存（以下我们统称为shm）&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://gitee.com/lienhui68/picStore/raw/master/null/20200917180539.png&#34; alt=&#34;https://gitee.com/lienhui68/picStore/raw/master/null/20200917180539.png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;mmap版本的共享内存&#34;&gt;mmap版本的共享内存&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://gitee.com/lienhui68/picStore/raw/master/null/20200917180729.png&#34; alt=&#34;https://gitee.com/lienhui68/picStore/raw/master/null/20200917180729.png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;mmap是在磁盘上&lt;strong&gt;建立一个文件&lt;/strong&gt;，每个进程地址空间中开辟出一块空间进行映射。而shm共享内存，每个进程最终会&lt;strong&gt;映射到同一块物理内存&lt;/strong&gt;。shm保存在物理内存，这样读写的速度肯定要比磁盘要快，但是存储量不是特别大。&lt;/li&gt;
+&lt;li&gt;相对于shm来说，mmap更加简单，调用更加方便，所以这也是大家都喜欢用的原因。&lt;/li&gt;
+&lt;li&gt;另外mmap有一个好处是当机器重启，因为mmap把文件保存在磁盘上，这个文件还保存了操作系统同步的映像，所以mmap不会丢失，但是shmget在内存里面就会丢失。&lt;/li&gt;
+&lt;li&gt;总之，shm是在内存中创建空间，每个进程映射到此处。内存映射是创建一个文件，并且映射到每个进程开辟的空间中。&lt;/li&gt;
+&lt;/ol&gt;</description>
       
     </item>
     
@@ -1812,42 +1927,6 @@ Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book
 &lt;li&gt;&lt;a href=&#34;https://github.com/mmcloughlin/geohash&#34;&gt;Geohash-GO&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/weedge/geo&#34;&gt;Geohash-PHP扩展&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>工具盒子-GNU global</title>
-      <link>https://weedge.github.io/post/gnu-global/</link>
-      <pubDate>Sat, 15 Nov 2014 21:04:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/gnu-global/</guid>
-      
-        <description>&lt;h3 id=&#34;gnu-global&#34;&gt;gnu global&lt;/h3&gt;
-&lt;p&gt;源码标记，浏览源码挺好用的工具,轻量级的，简单易用。 gtags类似ctags,但是效率比ctags高，具体比较查看&lt;a href=&#34;https://github.com/OpenGrok/OpenGrok/wiki/Comparison-with-Similar-Tools&#34;&gt;这里&lt;/a&gt;(OpenGrok使用相对比较复杂)，而且未来支持的语言也比较多。对Linux-2.6.32源码390M的文件进行标签产出289MB的标签文件。&lt;/p&gt;
-&lt;p&gt;可以通过源码安装就OK &lt;!-- raw HTML omitted --&gt;wget &lt;a href=&#34;http://tamacom.com/global/global-6.3.2.tar.gz;&#34;&gt;http://tamacom.com/global/global-6.3.2.tar.gz;&lt;/a&gt; tar zxvf global-6.3.2.tar.gz; cd global-6.3.2; ./configure; make &amp;amp;&amp;amp; make install&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
-&lt;p&gt;在需要查找的目录下运行&lt;!-- raw HTML omitted --&gt;gtags&lt;!-- raw HTML omitted --&gt;,会生成三个文件： GTAGS&amp;ndash;定义的函数变量； GRTAGS&amp;ndash;引用的函数变量； GPATH&amp;ndash;函数变量所在文件的路径。&lt;/p&gt;
-&lt;p&gt;有用的命令：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;!-- raw HTML omitted --&gt;global -f DIR/fileC.c &amp;ndash;color&lt;!-- raw HTML omitted --&gt;这个命令看这个文件下有哪些函数，比较有用,加-l在当前目录下查找&lt;/li&gt;
-&lt;li&gt;&lt;!-- raw HTML omitted --&gt;global -r func&lt;!-- raw HTML omitted --&gt;函数在哪些文件中引用&lt;/li&gt;
-&lt;li&gt;&lt;!-- raw HTML omitted --&gt;global -ax func&lt;!-- raw HTML omitted --&gt;函数所在的目录文件具体哪些行&lt;/li&gt;
-&lt;li&gt;&lt;!-- raw HTML omitted --&gt;global -P file&lt;!-- raw HTML omitted --&gt;匹配文件目录文件，类似&lt;!-- raw HTML omitted --&gt;find ./ -type d | grep file&lt;!-- raw HTML omitted --&gt;&lt;/li&gt;
-&lt;li&gt;&lt;!-- raw HTML omitted --&gt;global -g func&lt;!-- raw HTML omitted --&gt;匹配有func字符的文件，和grep功能一样&lt;/li&gt;
-&lt;li&gt;如果代码跟新了，需要更新标签文件，&lt;!-- raw HTML omitted --&gt;global -vu&lt;!-- raw HTML omitted --&gt;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;通过globash进入global命令模式，其中&lt;!-- raw HTML omitted --&gt;show -e/v/l/g Nth&lt;!-- raw HTML omitted --&gt;分别用emacs,vi,less,mozilla 来浏览第N个文件标记所搜得关键词的内容，或者不指定用编辑器，采用环境变量EDITOR定义号的编辑器来查看(在.bashrc中添加&lt;!-- raw HTML omitted --&gt;export EDITOR=vim&lt;!-- raw HTML omitted --&gt;)，个人比较喜欢用vim；使用tags查看已经查看过的tags；使用mark来标记查询过的标签tag,&lt;!-- raw HTML omitted --&gt;mark -l&lt;!-- raw HTML omitted --&gt;列出mark列表，&lt;!-- raw HTML omitted --&gt;mark Nth&lt;!-- raw HTML omitted --&gt;通过默认编辑器浏览mark的第N个文件；&lt;!-- raw HTML omitted --&gt;pop&lt;!-- raw HTML omitted --&gt;对记录过的查找标签命令的结果栈退出栈顶结果，并显示处理后的栈顶结果；&lt;!-- raw HTML omitted --&gt;cookie&lt;!-- raw HTML omitted --&gt;用来记录当前的文件夹，&lt;!-- raw HTML omitted --&gt;cookie -l&lt;!-- raw HTML omitted --&gt;查看cookie记录的文件夹，&lt;!-- raw HTML omitted --&gt;warp Nth&lt;!-- raw HTML omitted --&gt;返回列出的第N个文件夹。&lt;br&gt;
-其他简单的命令可以通过ghelp查看。&lt;/p&gt;
-&lt;p&gt;还有个htags是用来生成超文本文件的，方便在浏览器下查看，如果在命令行的开发坏境下，这个有个毛用哦~&lt;/p&gt;
-&lt;p&gt;使用gtags-cscope进入client模式具体操作按？帮助文档操作，(哈哈，貌似像个搜索引擎，tag的缓存文件采用的b-tree)。具体见&lt;a href=&#34;https://www.gnu.org/software/global/globaldoc_toc.html#Requesting-the-initial-search&#34;&gt;https://www.gnu.org/software/global/globaldoc_toc.html#Requesting-the-initial-search&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;gtags,global其他具体命令，参考帮助文档或者查看&lt;a href=&#34;https://www.gnu.org/software/global/globaldoc_toc.html&#34;&gt;Tutorial&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;gtags可以作为ctags的扩展进行使用，具体参考&lt;a href=&#34;https://www.gnu.org/software/global/globaldoc_toc.html#Plug_002din&#34;&gt;https://www.gnu.org/software/global/globaldoc_toc.html#Plug_002din&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&#34;vim中使用global&#34;&gt;VIM中使用global&lt;/h3&gt;
-&lt;p&gt;可以之间从安装好的global文件间share中将gtags.vim复制到~/.vim/plugin文件夹中：&lt;!-- raw HTML omitted --&gt;cp /usr/local/share/gtags/gtags.vim $HOME/.vim/plugin&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
-&lt;p&gt;或者如果使用vundle来管理的话，BundleSearch gtags 安装；或者直接&lt;!-- raw HTML omitted --&gt;cd $HOME/.vim/bundle &amp;amp;&amp;amp; git clone &lt;a href=&#34;https://github.com/vim-scripts/gtags.vim&#34;&gt;https://github.com/vim-scripts/gtags.vim&lt;/a&gt; gtags&lt;!-- raw HTML omitted --&gt;，或者用git submodule来管理，原理都差不多，自己vim以前用vundle管理过，就直接将自己用的插件全部整合在一起了，去掉vundle插件，采用git submodule管理插件模块，但是vundle整体管理框架还在，&lt;a href=&#34;https://github.com/weedge/Vim-PHP-IDE&#34;&gt;vim配置&lt;/a&gt;。&lt;/p&gt;
-&lt;p&gt;在vim的命令模式下采用Gtags命令，参数和shell命令行一样，查找出来的list列表在quickfix window 中展现，操作的话与grep命令差不多，但是筛选比较细些，用-g参数就和grep一样，后面可以加上grep一样的参数。&lt;/p&gt;
-&lt;p&gt;具体参考&lt;a href=&#34;https://www.gnu.org/software/global/globaldoc_toc.html#Vim-editor&#34;&gt;https://www.gnu.org/software/global/globaldoc_toc.html#Vim-editor&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&#34;总结&#34;&gt;总结&lt;/h3&gt;
-&lt;p&gt;global作为一个轻量级的源码标记，浏览源码挺好用的工具，总体体验了吧，gtags生成的文件进行了细分，tag的检索效率相对提高了，如果源码比较大型的话，采用global -vu 来更新tag文件，要快很多；用vim进行开发，可以使用gtags.vim这个插件，与grep配合使用吧(当所检索的函数/变量tag比较模糊的时候，可以先用grep查询，在使用Gtags定位).好用程度，只有继续体验一段时间吧。。。&lt;/p&gt;</description>
       
     </item>
     

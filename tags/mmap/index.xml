@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>mmap on 时间飘过</title>
+    <link>https://weedge.github.io/tags/mmap/</link>
+    <description>Recent content in mmap on 时间飘过</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Tue, 16 Nov 2021 11:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/mmap/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>工具盒子-ping</title>
+      <link>https://weedge.github.io/post/mmap/</link>
+      <pubDate>Tue, 16 Nov 2021 11:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/mmap/</guid>
+      <description>&lt;h2 id=&#34;序言&#34;&gt;序言&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;from: &lt;a href=&#34;https://www.cnblogs.com/huangfuyuan/p/9476951.html&#34;&gt;https://www.cnblogs.com/huangfuyuan/p/9476951.html&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;首先关于共享内存的链接：&lt;a href=&#34;http://blog.csdn.net/qq_26768741/article/details/56014845&#34;&gt;共享内存&lt;/a&gt;。&lt;strong&gt;里面包含了创建共享内存区域的函数，以及两个进程怎么挂载共享内存通信，分离、释放共享内存&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;共享内存的好处就是效率高，不需要太多次的进行数据的copy。可以直接进行读写内存。所以，相对来说在IPC进程间通信三大主题（消息队列，信号量，共享内存）里面，共享内存要比消息队列使用多，而且消息队列只在有血缘关系的进程间通信；但是，共享内存不保证同步，可以使用信号量来保证共享内存同步。&lt;strong&gt;Linux中的两种共享内存&lt;/strong&gt;。一种是我们的IPC通信System V版本的共享内存，另外的一种就是我们今天提到的存储映射I/O（mmap函数），当然还有一种POSIX的共享内存，它是在mmap基础之上构建的。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>
