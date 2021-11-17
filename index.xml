@@ -171,7 +171,7 @@
 &lt;p&gt;具体使用可以参考&lt;code&gt;man traceroute&lt;/code&gt; 中的介绍，以上说的，在man文档里都有介绍到；&lt;/p&gt;
 &lt;p&gt;可以通过&lt;code&gt;traceroute -P ICMP  www.baidu.com&lt;/code&gt; 使用ICMP协议来追踪每一跳的路由情况；支持ICMP, UDP(默认发送方式), TCP协议，具体见文档；&lt;/p&gt;
 &lt;p&gt;如果想查看ICMP协议包的内容可以通过&lt;a href=&#34;https://gitlab.com/wireshark/wireshark/-/wikis/home&#34;&gt;Wireshark/TShark(命令)&lt;/a&gt;来抓包，主要是通过&lt;strong&gt;协议报文&lt;/strong&gt;，来分析网络问题；你会发现ping 命令程序只用到了IP/ICMP协议(send Type: 8 (Echo (ping) request)；recv Type: 0 (Echo (ping) reply) from dst ip)， 而traceroute 命令程序会用到IP/ICMP(send Type: 8 (Echo (ping) request)；recv Type: 11 (Time-to-live exceeded) code:0 from 每个路由，recv Type: 0 (Echo (ping) reply) from dst ip), IP/UDP协议(如果用UDP发送，send udp 数据报文, recv Type: 11 (Time-to-live exceeded) code:0 from  每个路由， recv Type: 3 (Destination unreachable) code:3 from dst ip)。&lt;/p&gt;
-&lt;p&gt;可以分析出，ping 和 traceroute 都使用IP/ICMP协议时，traceroute 是接收了每一跳路由的响应进行处理，然后展现的每一跳累计的总耗时的。流程如下：&lt;/p&gt;
+&lt;p&gt;可以分析出，ping 和 traceroute 都使用IP/ICMP协议时，traceroute 是接收了每一跳路由的响应进行处理，然后展现的每一跳累计的总耗时。流程如下：&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/lib/main/net/traceroute-icmp.png&#34; alt=&#34;traceroute-icmp&#34;&gt;&lt;/p&gt;
 &lt;h2 id=&#34;轮子&#34;&gt;轮子&lt;/h2&gt;
 &lt;p&gt;为啥要用golang重新写一个工具呢？ （已有开源的 &lt;a href=&#34;https://github.com/go-ping/ping.git&#34;&gt;go-ping&lt;/a&gt;, 支持icmp, udp (icmp.ListenPacket &lt;a href=&#34;https://godoc.org/golang.org/x/net/icmp&#34;&gt;x/net/icmp&lt;/a&gt;) 直接查看源码吧）&lt;/p&gt;

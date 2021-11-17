@@ -79,7 +79,7 @@ The ping utility uses the ICMP protocol&rsquo;s mandatory ECHO_REQUEST datagram 
 The ping utility uses the ICMP protocol&rsquo;s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.  ECHO_REQUEST datagrams  (&ldquo;pings&#39;&#39;) have an IP and ICMP header, followed by a &ldquo;struct timeval&#39;&#39; and then an arbitrary number of &ldquo;pad&rdquo; bytes used to fill out the packet.
 "><meta itemprop="datePublished" content="2021-11-15T14:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-11-15T14:26:23+08:00" />
-<meta itemprop="wordCount" content="2860">
+<meta itemprop="wordCount" content="2859">
 <meta itemprop="keywords" content="ping," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="工具盒子-ping/traceroute"/>
 <meta name="twitter:description" content="序言
@@ -376,7 +376,7 @@ The ping utility uses the ICMP protocol&rsquo;s mandatory ECHO_REQUEST datagram 
 <p>具体使用可以参考<code>man traceroute</code> 中的介绍，以上说的，在man文档里都有介绍到；</p>
 <p>可以通过<code>traceroute -P ICMP  www.baidu.com</code> 使用ICMP协议来追踪每一跳的路由情况；支持ICMP, UDP(默认发送方式), TCP协议，具体见文档；</p>
 <p>如果想查看ICMP协议包的内容可以通过<a href="https://gitlab.com/wireshark/wireshark/-/wikis/home">Wireshark/TShark(命令)</a>来抓包，主要是通过<strong>协议报文</strong>，来分析网络问题；你会发现ping 命令程序只用到了IP/ICMP协议(send Type: 8 (Echo (ping) request)；recv Type: 0 (Echo (ping) reply) from dst ip)， 而traceroute 命令程序会用到IP/ICMP(send Type: 8 (Echo (ping) request)；recv Type: 11 (Time-to-live exceeded) code:0 from 每个路由，recv Type: 0 (Echo (ping) reply) from dst ip), IP/UDP协议(如果用UDP发送，send udp 数据报文, recv Type: 11 (Time-to-live exceeded) code:0 from  每个路由， recv Type: 3 (Destination unreachable) code:3 from dst ip)。</p>
-<p>可以分析出，ping 和 traceroute 都使用IP/ICMP协议时，traceroute 是接收了每一跳路由的响应进行处理，然后展现的每一跳累计的总耗时的。流程如下：</p>
+<p>可以分析出，ping 和 traceroute 都使用IP/ICMP协议时，traceroute 是接收了每一跳路由的响应进行处理，然后展现的每一跳累计的总耗时。流程如下：</p>
 <p><img src="https://raw.githubusercontent.com/weedge/lib/main/net/traceroute-icmp.png" alt="traceroute-icmp"></p>
 <h2 id="轮子">轮子</h2>
 <p>为啥要用golang重新写一个工具呢？ （已有开源的 <a href="https://github.com/go-ping/ping.git">go-ping</a>, 支持icmp, udp (icmp.ListenPacket <a href="https://godoc.org/golang.org/x/net/icmp">x/net/icmp</a>) 直接查看源码吧）</p>
