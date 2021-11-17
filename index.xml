@@ -153,7 +153,7 @@
 &lt;h4 id=&#34;ping&#34;&gt;PING&lt;/h4&gt;
 &lt;p&gt;PING (Packet Internet Grope)，因特网包探索器，用于测试网络连接量的程序。Ping发送一个ICMP回声请求消息给目的地并报告是否收到所希望的ICMP回声应答；具体流程如下：&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/lib/main/net/ping-icmp.png&#34; alt=&#34;ping-icmp&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;TTl&lt;/strong&gt;： 生存时间，指定&lt;!-- raw HTML omitted --&gt;数据包被路由器丢弃之前允许通过的网段数量&lt;!-- raw HTML omitted --&gt;；&lt;!-- raw HTML omitted --&gt;&lt;strong&gt;TTL 是由发送主机设置的，当其存活次数为0时，路由器便会取消数据包并发送一个ICMP TTL数据包给原数据包的发出者, 以防止数据包不断在 IP 互联网络上永不终止地循环, 而无法送达及耗尽网络资源&lt;/strong&gt;&lt;!-- raw HTML omitted --&gt;。转发 IP 数据包时，要求路由器至少将 TTL 减小 1；TTL 字段值不同操作系统类型对应的值不同，可以通过&lt;code&gt;ping 127.0.0.1&lt;/code&gt; 本地来查看初始值,或者&lt;code&gt;sysctl -a |grep ttl &lt;/code&gt;查看对应值。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;TTL&lt;/strong&gt;： 生存时间，指定&lt;!-- raw HTML omitted --&gt;数据包被路由器丢弃之前允许通过的网段数量&lt;!-- raw HTML omitted --&gt;；&lt;!-- raw HTML omitted --&gt;&lt;strong&gt;TTL 是由发送主机设置的，当其存活次数为0时，路由器便会取消数据包并发送一个ICMP TTL数据包给原数据包的发出者, 以防止数据包不断在 IP 互联网络上永不终止地循环, 而无法送达及耗尽网络资源&lt;/strong&gt;&lt;!-- raw HTML omitted --&gt;。转发 IP 数据包时，要求路由器至少将 TTL 减小 1；TTL 字段值不同操作系统类型对应的值不同，可以通过&lt;code&gt;ping 127.0.0.1&lt;/code&gt; 本地来查看初始值,或者&lt;code&gt;sysctl -a |grep ttl &lt;/code&gt;查看对应值。&lt;/p&gt;
 &lt;h4 id=&#34;轮子&#34;&gt;轮子&lt;/h4&gt;
 &lt;p&gt;为啥要用golang重新写一个工具呢？ （已有开源的 &lt;a href=&#34;https://github.com/go-ping/ping.git&#34;&gt;go-ping&lt;/a&gt;, 支持icmp, udp (icmp.ListenPacket &lt;a href=&#34;https://godoc.org/golang.org/x/net/icmp&#34;&gt;x/net/icmp&lt;/a&gt;) 直接查看源码吧）&lt;/p&gt;
 &lt;ol&gt;

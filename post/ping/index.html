@@ -353,7 +353,7 @@ The ping utility uses the ICMP protocol&rsquo;s mandatory ECHO_REQUEST datagram 
 <h4 id="ping">PING</h4>
 <p>PING (Packet Internet Grope)，因特网包探索器，用于测试网络连接量的程序。Ping发送一个ICMP回声请求消息给目的地并报告是否收到所希望的ICMP回声应答；具体流程如下：</p>
 <p><img src="https://raw.githubusercontent.com/weedge/lib/main/net/ping-icmp.png" alt="ping-icmp"></p>
-<p><strong>TTl</strong>： 生存时间，指定<!-- raw HTML omitted -->数据包被路由器丢弃之前允许通过的网段数量<!-- raw HTML omitted -->；<!-- raw HTML omitted --><strong>TTL 是由发送主机设置的，当其存活次数为0时，路由器便会取消数据包并发送一个ICMP TTL数据包给原数据包的发出者, 以防止数据包不断在 IP 互联网络上永不终止地循环, 而无法送达及耗尽网络资源</strong><!-- raw HTML omitted -->。转发 IP 数据包时，要求路由器至少将 TTL 减小 1；TTL 字段值不同操作系统类型对应的值不同，可以通过<code>ping 127.0.0.1</code> 本地来查看初始值,或者<code>sysctl -a |grep ttl </code>查看对应值。</p>
+<p><strong>TTL</strong>： 生存时间，指定<!-- raw HTML omitted -->数据包被路由器丢弃之前允许通过的网段数量<!-- raw HTML omitted -->；<!-- raw HTML omitted --><strong>TTL 是由发送主机设置的，当其存活次数为0时，路由器便会取消数据包并发送一个ICMP TTL数据包给原数据包的发出者, 以防止数据包不断在 IP 互联网络上永不终止地循环, 而无法送达及耗尽网络资源</strong><!-- raw HTML omitted -->。转发 IP 数据包时，要求路由器至少将 TTL 减小 1；TTL 字段值不同操作系统类型对应的值不同，可以通过<code>ping 127.0.0.1</code> 本地来查看初始值,或者<code>sysctl -a |grep ttl </code>查看对应值。</p>
 <h4 id="轮子">轮子</h4>
 <p>为啥要用golang重新写一个工具呢？ （已有开源的 <a href="https://github.com/go-ping/ping.git">go-ping</a>, 支持icmp, udp (icmp.ListenPacket <a href="https://godoc.org/golang.org/x/net/icmp">x/net/icmp</a>) 直接查看源码吧）</p>
 <ol>
