@@ -139,40 +139,48 @@
     </item>
     
     <item>
-      <title>工具盒子-ping</title>
+      <title>工具盒子-ping/traceroute</title>
       <link>https://weedge.github.io/post/ping/</link>
       <pubDate>Mon, 15 Nov 2021 14:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/post/ping/</guid>
       
-        <description>&lt;h4 id=&#34;序言&#34;&gt;序言&lt;/h4&gt;
-&lt;p&gt;在访问网络是否ok, 通常喜欢用ping 命令来访问&lt;code&gt;ping www.baidu.com&lt;/code&gt; 看是否出现超时；ping在不同的操作系统平台实现方式差不多，底层都是用ICMP协议，每次发ICMP ECHO_REQUEST packet (IP地址/Host, ttl，icmp_seq序列号，RTT记录 ),  运行结束后统计每个RTT, 最大RTT, 最小RTT, 平均RTT, &lt;a href=&#34;https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford&#34;&gt;标准偏差&lt;/a&gt;RTT, 发送/接受packets总数，丢包率 等数据，ping工具在PING(8)中的定义如下：&lt;/p&gt;
+        <description>&lt;h2 id=&#34;序言&#34;&gt;序言&lt;/h2&gt;
+&lt;p&gt;在访问网络是否ok, 通常喜欢用ping 命令来访问&lt;code&gt;ping www.baidu.com&lt;/code&gt; 看是否出现超时；ping在不同的操作系统平台实现方式差不多，底层都是用ICMP协议，每次发ICMP ECHO_REQUEST packet (IP地址/Host, ttl，icmp_seq序列号，&lt;a href=&#34;https://en.wikipedia.org/wiki/Round-trip_delay&#34;&gt;RTD/RTT&lt;/a&gt;(往返延时)记录 ),  运行结束后统计每个RTT, 最大RTT, 最小RTT, 平均RTT, &lt;a href=&#34;https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford&#34;&gt;标准偏差&lt;/a&gt;RTT, 发送/接受packets总数，丢包率 等数据，ping工具在PING(8)中的定义如下：&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;The ping utility uses the ICMP protocol&amp;rsquo;s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.  ECHO_REQUEST datagrams  (&amp;ldquo;pings&#39;&#39;) have an IP and ICMP header, followed by a &amp;ldquo;struct timeval&#39;&#39; and then an arbitrary number of &amp;ldquo;pad&amp;rdquo; bytes used to fill out the packet.&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h4 id=&#34;ping&#34;&gt;PING&lt;/h4&gt;
-&lt;p&gt;PING (Packet Internet Grope)，因特网包探索器，用于测试网络连接量的程序。Ping发送一个ICMP回声请求消息给目的地并报告是否收到所希望的ICMP回声应答；具体流程如下：&lt;/p&gt;
+&lt;h2 id=&#34;icmphttpsenwikipediaorgwikiinternet_control_message_protocol&#34;&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol&#34;&gt;ICMP&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;互联网控制消息协议&lt;/strong&gt;（英语：&lt;strong&gt;I&lt;/strong&gt;nternet &lt;strong&gt;C&lt;/strong&gt;ontrol &lt;strong&gt;M&lt;/strong&gt;essage &lt;strong&gt;P&lt;/strong&gt;rotocol，缩写：&lt;strong&gt;ICMP&lt;/strong&gt;）是&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E4%BA%92%E8%81%94%E7%BD%91&#34;&gt;互联网&lt;/a&gt;协议族的核心协议之一。它用于&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E7%BD%91%E9%99%85%E5%8D%8F%E8%AE%AE&#34;&gt;网际协议&lt;/a&gt;（IP）中发送控制消息，提供可能发生在通信环境中的各种问题反馈。通过这些信息，使管理者可以对所发生的问题作出诊断，然后采取适当的措施解决；使用在网络设备上，比如交换机，路由器&lt;/p&gt;
+&lt;h3 id=&#34;为毛icmp设计在网络层呢&#34;&gt;为毛ICMP设计在网络层呢？&lt;/h3&gt;
+&lt;p&gt;因为需要目的地址ip, 链路层无法通过ip socket编程，那为啥不用链路层的MAC地址呢？因为链路层的MAC地址只在局域网唯一，由交换机学习缓存策略决定(会缓存MAC地址，用于跳转)，如果广域网访问不同局域网，MAC地址可以不唯一(网络历史演变原因)，但是公网IP地址是全局唯一，相互转化通过NAT路由器(具体介绍看wiki: &lt;strong&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Network_address_translation&#34;&gt;Network address translation&lt;/a&gt;&lt;/strong&gt;)； 如图所示：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/lib/main/net/NAT.png&#34; alt=&#34;NAT&#34;&gt;&lt;/p&gt;
+&lt;p&gt;如果在传输层的话，无需端口多了一次解包；ICMP与&lt;a href=&#34;https://en.wikipedia.org/wiki/Transmission_Control_Protocol&#34;&gt;TCP&lt;/a&gt;、&lt;a href=&#34;https://en.wikipedia.org/wiki/User_Datagram_Protocol&#34;&gt;UDP&lt;/a&gt;等&lt;a href=&#34;https://en.wikipedia.org/wiki/Transport_protocol&#34;&gt;传输协议&lt;/a&gt;不同因为它通常不用于在系统之间交换数据，也不经常被最终用户网络应用程序使用（除了一些诊断工具，如&lt;a href=&#34;https://en.wikipedia.org/wiki/Ping_(networking_utility)&#34;&gt;ping&lt;/a&gt;和&lt;a href=&#34;https://en.wikipedia.org/wiki/Traceroute&#34;&gt;traceroute&lt;/a&gt;）。&lt;/p&gt;
+&lt;p&gt;ICMP 依靠IP来完成它的任务，它是IP的主要部分。它与传输协议（如&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E4%BC%A0%E8%BE%93%E6%8E%A7%E5%88%B6%E5%8D%8F%E8%AE%AE&#34;&gt;TCP&lt;/a&gt;和&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E7%94%A8%E6%88%B7%E6%95%B0%E6%8D%AE%E6%8A%A5%E5%8D%8F%E8%AE%AE&#34;&gt;UDP&lt;/a&gt;）显著不同：它一般不用于在两点间传输数据。它通常不由网络程序直接使用，除了 &lt;a href=&#34;https://zh.wikipedia.org/wiki/Ping&#34;&gt;ping&lt;/a&gt; 和 &lt;a href=&#34;https://zh.wikipedia.org/wiki/Traceroute&#34;&gt;traceroute&lt;/a&gt; 这两个特别的例子。 &lt;a href=&#34;https://zh.wikipedia.org/wiki/IPv4&#34;&gt;IPv4&lt;/a&gt;中的ICMP被称作ICMPv4，&lt;a href=&#34;https://zh.wikipedia.org/wiki/IPv6&#34;&gt;IPv6&lt;/a&gt;中的ICMP则被称作&lt;a href=&#34;https://zh.wikipedia.org/wiki/ICMPv6&#34;&gt;ICMPv6&lt;/a&gt;。&lt;/p&gt;
+&lt;h2 id=&#34;pinghttpsenwikipediaorgwikiping_networking_utility&#34;&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Ping_(networking_utility)&#34;&gt;ping&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Ping (Packet Internet Grope)，因特网包探索器，用于测试网络连接量的程序。Ping发送一个ICMP回声请求消息给目的地并报告是否收到所希望的ICMP回声应答；具体流程如下：&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/lib/main/net/ping-icmp.png&#34; alt=&#34;ping-icmp&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;TTL&lt;/strong&gt;： 生存时间，指定&lt;!-- raw HTML omitted --&gt;数据包被路由器丢弃之前允许通过的网段数量&lt;!-- raw HTML omitted --&gt;；&lt;!-- raw HTML omitted --&gt;&lt;strong&gt;TTL 是由发送主机设置的，当其存活次数为0时，路由器便会取消数据包并发送一个ICMP TTL数据包给原数据包的发出者, 以防止数据包不断在 IP 互联网络上永不终止地循环, 而无法送达及耗尽网络资源&lt;/strong&gt;&lt;!-- raw HTML omitted --&gt;。转发 IP 数据包时，要求路由器至少将 TTL 减小 1；TTL 字段值不同操作系统类型对应的值不同，可以通过&lt;code&gt;ping 127.0.0.1&lt;/code&gt; 本地来查看初始值,或者&lt;code&gt;sysctl -a |grep ttl &lt;/code&gt;查看对应值。&lt;/p&gt;
-&lt;h4 id=&#34;轮子&#34;&gt;轮子&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;TTL&lt;/strong&gt;： 生存时间，指定&lt;!-- raw HTML omitted --&gt;数据包被路由器丢弃之前允许通过的网段数量&lt;!-- raw HTML omitted --&gt;；&lt;!-- raw HTML omitted --&gt;&lt;strong&gt;TTL 是由发送主机设置的，当其存活次数为0时，路由器便会取消数据包并发送一个ICMP TTL数据包给原数据包的发出者, 以防止数据包不断在 IP 互联网络上永不终止地循环, 而无法送达及耗尽网络资源&lt;/strong&gt;&lt;!-- raw HTML omitted --&gt;。转发 IP 数据包时，要求路由器至少将 TTL 减小 1；TTL 字段值不同操作系统类型对应的值不同，可以通过&lt;code&gt;ping 127.0.0.1&lt;/code&gt; 本地来查看初始值,或者&lt;code&gt;sysctl -a |grep ttl &lt;/code&gt;查看对应值(macOS Darwin下是net.inet.ip.ttl, linux下是net.ipv4.ip_default_ttl)；如果不修改这些值，linux系统一般是64，window系统一般是128。&lt;/p&gt;
+&lt;h2 id=&#34;traceroutehttpsenwikipediaorgwikitraceroute&#34;&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Traceroute&#34;&gt;traceroute&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;traceroute是unix系统中，诊断&lt;a href=&#34;https://en.wikipedia.org/wiki/Computer_network&#34;&gt;计算机网络&lt;/a&gt;的命令程序；用于显示可能的路线（路径）和测量的传送延迟。路由的历史记录为从路由（路径）中每个连续主机（远程节点）接收到的数据包的往返次数；每&lt;a href=&#34;https://en.wikipedia.org/wiki/Hop_(networking)&#34;&gt;跳&lt;/a&gt;平均时间的总和是建立连接所花费的总时间的度量；如果所有（通常是三个）发送的数据包丢失两次以上，连接就会丢失并且无法评估路由，否则 Traceroute 会继续。&lt;/p&gt;
+&lt;p&gt;主叫方首先发出 TTL=1 的数据包，第一个路由器将 TTL 减1得0后就不再继续转发此数据包，而是返回一个 ICMP 超时报文，主叫方从超时报文中即可提取出数据包所经过的第一个网关地址。然后又发出一个 TTL=2 的 ICMP 数据包，可获得第二个网关地址，依次递增 TTL 便获取了沿途所有网关地址。&lt;/p&gt;
+&lt;p&gt;需要注意的是，并不是所有网关都会如实返回 ICMP 超时报文。出于安全性考虑，大多数防火墙以及启用了防火墙功能的路由器缺省配置为不返回各种 ICMP 报文，其余路由器或&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E4%BA%A4%E6%8D%A2%E6%9C%BA&#34;&gt;交换机&lt;/a&gt;也可被管理员主动修改配置变为不返回 ICMP 报文。因此 Traceroute 程序不一定能拿全所有的沿途网关地址。所以，当某个 TTL 值的数据包得不到响应时，并不能停止这一追踪过程，程序仍然会把 TTL 递增而发出下一个数据包。一直达到默认或用参数指定的追踪限制（maximum_hops）才结束追踪。&lt;/p&gt;
+&lt;p&gt;而ping工具只计算从目的地点的最终往返时间。&lt;/p&gt;
+&lt;p&gt;当然ping/traceroute，不一定用网络层的ICMP协议来实现，也可以用传输层的&lt;a href=&#34;https://en.wikipedia.org/wiki/User_Datagram_Protocol&#34;&gt;UDP协议&lt;/a&gt;来实现，甚至traceroute还用TCP协议来实现，这个需要看场景下，需要获取的测试监控数据是哪些。比如一些traceroute 实现使用TCP 数据包，例如&lt;em&gt;tcptraceroute&lt;/em&gt;和&lt;a href=&#34;https://en.wikipedia.org/wiki/Layer_four_traceroute&#34;&gt;第四层traceroute&lt;/a&gt; (lft)。&lt;/p&gt;
+&lt;p&gt;具体使用可以参考&lt;code&gt;man traceroute&lt;/code&gt; 中的介绍&lt;/p&gt;
+&lt;h2 id=&#34;轮子&#34;&gt;轮子&lt;/h2&gt;
 &lt;p&gt;为啥要用golang重新写一个工具呢？ （已有开源的 &lt;a href=&#34;https://github.com/go-ping/ping.git&#34;&gt;go-ping&lt;/a&gt;, 支持icmp, udp (icmp.ListenPacket &lt;a href=&#34;https://godoc.org/golang.org/x/net/icmp&#34;&gt;x/net/icmp&lt;/a&gt;) 直接查看源码吧）&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;平时虽然用，但是具体实现想了解下，主要是ICMP协议中的控制信息(&lt;a href=&#34;https://en.wikipedia.org/w/index.php?title=Internet_Control_Message_Protocol#Control_messages&#34;&gt;Control messages&lt;/a&gt;)&lt;/p&gt;
-&lt;p&gt;那为毛ICMP设计在IP层呢？ 因为需要目的地址ip, 链路层法通过ip socket编程；传输层无需端口多了一次解包；&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;golang是跨系统平台编译语言，同一份代码编译运行在不同平台；&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;可以做一些扩展，运用在K8S的编排容器中测试网络环境；因为icmp定义在网络层，只需ip，无需服务端口，利用icmp协议做一些扩展功能；比如机器是否挂了，目的ip是否不可到达了，以及做一些网络层监控等。&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;平时虽然用，但是具体实现想了解下，主要是&lt;a href=&#34;https://en.wikipedia.org/w/index.php?title=Internet_Control_Message_Protocol&#34;&gt;ICMP协议&lt;/a&gt;中的控制信息(&lt;a href=&#34;https://en.wikipedia.org/w/index.php?title=Internet_Control_Message_Protocol#Control_messages&#34;&gt;Control messages&lt;/a&gt;), 以便在次协议上DIY网络需求；&lt;/li&gt;
+&lt;li&gt;golang是跨系统平台编译语言，同一份代码编译运行在不同平台；&lt;/li&gt;
+&lt;li&gt;可以做一些扩展，运用在K8S的编排容器中测试网络环境；因为icmp定义在网络层，只需ip，无需服务端口，利用icmp协议做一些扩展功能；比如机器是否挂了，目的ip是否不可到达了，以及做一些网络层监控等。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h4 id=&#34;reference&#34;&gt;reference&lt;/h4&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Ping_(networking_utility)&#34;&gt;PING&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol&#34;&gt;ICMP&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.techtarget.com/searchnetworking/definition/time-to-live&#34;&gt;TTL&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Network_address_translation&#34;&gt;NAT&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=IIicPE38O-s&#34;&gt;PING Command - Troubleshooting&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
@@ -966,12 +974,14 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。&lt;
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/im/main/go-epoll.png&#34; alt=&#34;go-epoll.png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;代码实现：&lt;a href=&#34;https://github.com/weedge/lib/tree/main/poller&#34;&gt;https://github.com/weedge/lib/tree/main/poller&lt;/a&gt;  (对一个开源库进行的改造，codec编解码器待完善)&lt;/p&gt;
 &lt;h4 id=&#34;参考&#34;&gt;参考：&lt;/h4&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/panjf2000/gnet&#34;&gt;gnet&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/cloudwego/netpoll&#34;&gt;netpoll&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/tidwall/evio&#34;&gt;evio&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/AlexStocks/getty&#34;&gt;getty&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/netty/netty&#34;&gt;netty&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/xinali/articles/issues/57&#34;&gt;Linux网络编程模型&lt;/a&gt;&lt;/p&gt;</description>
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/panjf2000/gnet&#34;&gt;gnet&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/cloudwego/netpoll&#34;&gt;netpoll&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/tidwall/evio&#34;&gt;evio&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/AlexStocks/getty&#34;&gt;getty&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/netty/netty&#34;&gt;netty&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/xinali/articles/issues/57&#34;&gt;Linux网络编程模型&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;</description>
       
     </item>
     

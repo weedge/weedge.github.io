@@ -8,13 +8,13 @@
     <language>zh-cn</language>
     <lastBuildDate>Mon, 15 Nov 2021 14:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>工具盒子-ping</title>
+      <title>工具盒子-ping/traceroute</title>
       <link>https://weedge.github.io/post/ping/</link>
       <pubDate>Mon, 15 Nov 2021 14:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/post/ping/</guid>
-      <description>&lt;h4 id=&#34;序言&#34;&gt;序言&lt;/h4&gt;
-&lt;p&gt;在访问网络是否ok, 通常喜欢用ping 命令来访问&lt;code&gt;ping www.baidu.com&lt;/code&gt; 看是否出现超时；ping在不同的操作系统平台实现方式差不多，底层都是用ICMP协议，每次发ICMP ECHO_REQUEST packet (IP地址/Host, ttl，icmp_seq序列号，RTT记录 ),  运行结束后统计每个RTT, 最大RTT, 最小RTT, 平均RTT, &lt;a href=&#34;https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford&#34;&gt;标准偏差&lt;/a&gt;RTT, 发送/接受packets总数，丢包率 等数据，ping工具在PING(8)中的定义如下：&lt;/p&gt;
+      <description>&lt;h2 id=&#34;序言&#34;&gt;序言&lt;/h2&gt;
+&lt;p&gt;在访问网络是否ok, 通常喜欢用ping 命令来访问&lt;code&gt;ping www.baidu.com&lt;/code&gt; 看是否出现超时；ping在不同的操作系统平台实现方式差不多，底层都是用ICMP协议，每次发ICMP ECHO_REQUEST packet (IP地址/Host, ttl，icmp_seq序列号，&lt;a href=&#34;https://en.wikipedia.org/wiki/Round-trip_delay&#34;&gt;RTD/RTT&lt;/a&gt;(往返延时)记录 ),  运行结束后统计每个RTT, 最大RTT, 最小RTT, 平均RTT, &lt;a href=&#34;https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford&#34;&gt;标准偏差&lt;/a&gt;RTT, 发送/接受packets总数，丢包率 等数据，ping工具在PING(8)中的定义如下：&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;The ping utility uses the ICMP protocol&amp;rsquo;s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.  ECHO_REQUEST datagrams  (&amp;ldquo;pings&#39;&#39;) have an IP and ICMP header, followed by a &amp;ldquo;struct timeval&#39;&#39; and then an arbitrary number of &amp;ldquo;pad&amp;rdquo; bytes used to fill out the packet.&lt;/p&gt;
 &lt;/blockquote&gt;</description>
@@ -213,6 +213,15 @@
       <guid>https://weedge.github.io/post/happy-new-year/</guid>
       <description>&lt;p&gt;新年开始了，工作了半年，经历一些，懂得一些，认识一些，对自己的未来总是在不断的寻觅中，却迷茫着~，每次家里人问起是否在这个城市待得习惯，不断的问我是否过得好，总是回复家人过得好，放心好了，出门在外，家人总是希望自己能够过得好，而对家人总是报喜不报忧；新年了，有些变化，给自己一些时间，计划似乎永远赶不上变化，改正自己，尽快恢复过来，加油吧~！&lt;/p&gt;
 &lt;p&gt;简单踏实就好，奶奶经常给说的话，一直记着。【step by step, 懂得珍惜】&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://weedge.github.io/post/traceroute/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://weedge.github.io/post/traceroute/</guid>
+      <description></description>
     </item>
     
   </channel>
