@@ -12,7 +12,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/jxzt-live-saas/livedashboard/</guid>
-      <description>介绍 后台管理发布生产环境的dsl配置，包括新增，修改，审核，发布，回滚等功能； 多人发布的时候，检查当前的版本是否已经发布，并进行版本diff</description>
+      <description>介绍 业务服务在启动时加载配置，配置分为静态配置和动态配置，静态配置如服务监听的端口，日志路径，报警等；动态配置包括业务配置，流程管理配置，策</description>
     </item>
     
     <item>

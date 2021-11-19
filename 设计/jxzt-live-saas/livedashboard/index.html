@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="介绍 后台管理发布生产环境的dsl配置，包括新增，修改，审核，发布，回滚等功能； 多人发布的时候，检查当前的版本是否已经发布，并进行版本diff" />
+  <meta name="description" content="介绍 业务服务在启动时加载配置，配置分为静态配置和动态配置，静态配置如服务监听的端口，日志路径，报警等；动态配置包括业务配置，流程管理配置，策" />
 
   <meta name="keywords" content="工作, 技术, 生活" />
 
@@ -60,19 +60,19 @@
 
 
 <meta property="og:title" content="" />
-<meta property="og:description" content="介绍 后台管理发布生产环境的dsl配置，包括新增，修改，审核，发布，回滚等功能； 多人发布的时候，检查当前的版本是否已经发布，并进行版本diff" />
+<meta property="og:description" content="介绍 业务服务在启动时加载配置，配置分为静态配置和动态配置，静态配置如服务监听的端口，日志路径，报警等；动态配置包括业务配置，流程管理配置，策" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://weedge.github.io/%E8%AE%BE%E8%AE%A1/jxzt-live-saas/livedashboard/" /><meta property="article:section" content="设计" />
 
 
 
 <meta itemprop="name" content="">
-<meta itemprop="description" content="介绍 后台管理发布生产环境的dsl配置，包括新增，修改，审核，发布，回滚等功能； 多人发布的时候，检查当前的版本是否已经发布，并进行版本diff">
+<meta itemprop="description" content="介绍 业务服务在启动时加载配置，配置分为静态配置和动态配置，静态配置如服务监听的端口，日志路径，报警等；动态配置包括业务配置，流程管理配置，策">
 
-<meta itemprop="wordCount" content="3327">
+<meta itemprop="wordCount" content="4386">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content=""/>
-<meta name="twitter:description" content="介绍 后台管理发布生产环境的dsl配置，包括新增，修改，审核，发布，回滚等功能； 多人发布的时候，检查当前的版本是否已经发布，并进行版本diff"/>
+<meta name="twitter:description" content="介绍 业务服务在启动时加载配置，配置分为静态配置和动态配置，静态配置如服务监听的端口，日志路径，报警等；动态配置包括业务配置，流程管理配置，策"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -310,7 +310,13 @@
   <ul>
     <li>
       <ul>
-        <li></li>
+        <li><a href="#介绍">介绍</a></li>
+        <li><a href="#目标">目标</a></li>
+        <li><a href="#功能">功能</a></li>
+        <li><a href="#框架">框架</a></li>
+        <li><a href="#数据库核心动态配置表设计">数据库核心动态配置表设计</a></li>
+        <li><a href="#场景模拟">场景模拟</a></li>
+        <li><a href="#接口">接口</a></li>
       </ul>
     </li>
   </ul>
@@ -320,19 +326,77 @@
 
   
   <div class="post-content">
-      <h5 id="介绍">介绍</h5>
+      <h3 id="介绍">介绍</h3>
+<p>业务服务在启动时加载配置，配置分为静态配置和动态配置，静态配置如服务监听的端口，日志路径，报警等；动态配置包括业务配置，流程管理配置，策略配置等；静态配置服务启动之后不会更改，而动态配置在服务启动运行时可以动态热加载；将配置的内容和版本进行分离，关注配置的管理而无需关注配置的内容，配置内容用户可以自定义配置内容，使用json-schema进行校验，提供自定义配置内容json给后台ui前端进行单个整体配置的交互，配置后台只需加载json-schema进行校验提交内容，json-schema由用户上传提供地址即可。</p>
+<h3 id="目标">目标</h3>
+<p>通过配置后台，业务服务流程可控，可配置，可视化，隔离已有业务场景配置，提高人效；</p>
+<h3 id="功能">功能</h3>
+<h4 id="后台基础功能">后台基础功能</h4>
 <ol>
-<li>后台管理发布生产环境的dsl配置，包括新增，修改，审核，发布，回滚等功能；</li>
+<li>后台管理发布生产环境的动态配置，包括新增，修改，审核，发布，回滚等功能；</li>
 <li>多人发布的时候，检查当前的版本是否已经发布，并进行版本diff;</li>
-<li>dsl的配置是服务接口维度进行操作， 以服务粒度进行整体发布；</li>
-<li>提供获取当前已发布的服务dsl配置接口，用于订阅端拉取；</li>
+<li>配置是服务接口维度进行操作管理， 以服务粒度进行整体发布；</li>
+<li>提供获取当前已发布的服务配置接口，用于订阅端拉取；</li>
+<li>提供RBAC权限管理;</li>
 </ol>
-<h5 id="目标">目标</h5>
-<p>通过配置后台，流程可控，可配置，可视化，隔离已有业务场景，提高人效；</p>
-<h5 id="数据库dsl配置表设计">数据库dsl配置表设计</h5>
-<p>当前服务版本和当前dsl版本是1对多的场景，而历史服务快照版本和历史dsl快照版本是多对多的场景；</p>
+<h4 id="动态配置热加载功能">动态配置热加载功能</h4>
+<p><strong>业务服务配置获取方案：</strong></p>
+<ol>
+<li>服务配置修改发布，通过发布/订阅模式(Pub-Sub Pattern)通知业务服务进行加载；可用组件为支持pub/sub命令的redis协议kv服务，或者通过get(mget)/set(mset) 命令进行模拟实现；</li>
+<li>服务配置修改发布，通过观察者模式(Observer Pattern) watch机制通知业务服务进行实时加载；可以使用etcdv3的watch机制实现;</li>
+</ol>
+<p>两种方案都可以，看是否有对应的高可用组件服务支持；如果都有，建议使用etcdv3(client 3.4+)的watch机制，通过长链接来通知变更事件。</p>
+<p><strong>加载方式有两种实现方案：</strong></p>
+<ol>
+<li>
+<p>通过部署单独agent进程来获取配置进行解析写入指定配置路径文件中(重启时)和共享内存中(运行时)，先写文件，成功了，在写共享内存；然后由业务服务读取；</p>
+<p>优点：方便单独维护，无需业务方关心，只需关心加载配置的路径在后台维护，以及共享内存中的配置结构；</p>
+<p>缺点：多了一次进程之间的交互；业务方代码中需要有读取共享内存的逻辑考虑；</p>
+</li>
+<li>
+<p>提供配置加载lib库，由业务方启动逻辑代码中调用；将获取配置进行解析写入指定配置路径文件中，加载到业务进程配置结构中使用即可；</p>
+<p>优点：业务方直接调用lib库中的方法，无需关心加载逻辑；</p>
+<p>缺点：假如业务方是不同的语言编写，需要提供不同语言版本的lib库方法；</p>
+</li>
+</ol>
+<p>总体来说，2种方案都可行，如果统一技术栈，比如使用golang进行开发，可以选用第二种方案；</p>
+<p>但是这样就可以了么？还有业务集群配置一致性需要考虑到，比如业务集群某台机器突然抽风，未加载最新的配置，打到这台机器的请求和其他正常加载配置的机器的请求逻辑会有所不同，导致整体服务接口不是幂等的，会出现不一致的情况；可以借鉴一下 <a href="https://github.com/XiaoMi/Gaea/blob/master/docs/config-reloading.md">gaea配置热加载设计与实现</a></p>
+<h3 id="框架">框架</h3>
+<h3 id="数据库核心动态配置表设计">数据库核心动态配置表设计</h3>
+<p>当前服务版本和当前conf版本是1对多的场景，而历史服务快照版本和历史conf快照版本是多对多的场景；</p>
 <p>如图所示：</p>
 <p><!-- raw HTML omitted --></p>
+<p>服务类型枚举表 service_type</p>
+<table>
+<thead>
+<tr>
+<th>枚举值</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>无</td>
+</tr>
+</tbody>
+</table>
+<p>配置类型枚举表 conf_type</p>
+<table>
+<thead>
+<tr>
+<th>枚举值</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>无</td>
+</tr>
+</tbody>
+</table>
+<p>枚举值有配置平台统一分配管理</p>
 <p>当前服务版本表 tb_service_cur_ver</p>
 <table>
 <thead>
@@ -351,7 +415,7 @@
 <tr>
 <td>service_type</td>
 <td>tinyint</td>
-<td>服务类型:0.无 1.liveme 2.livestation</td>
+<td>服务类型 比如：0.无 1.liveme 2.livestation</td>
 </tr>
 <tr>
 <td>cur_ver</td>
@@ -380,7 +444,7 @@
 </tr>
 </tbody>
 </table>
-<p>当前dsl版本表 tb_dsl_cur_ver</p>
+<p>当前conf版本表 tb_conf_cur_ver</p>
 <table>
 <thead>
 <tr>
@@ -401,14 +465,14 @@
 <td>当前服务版本 id</td>
 </tr>
 <tr>
-<td>dsl_type</td>
+<td>conf_type</td>
 <td>tinyint</td>
-<td>dsl类型: 1.livemeDSL 101.livestationAggrDSL 102.livestationSceneDSL</td>
+<td>conf类型，比如：0.无 1.livemeDSL 101.livestationAggrDSL 102.livestationSceneDSL</td>
 </tr>
 <tr>
 <td>cur_ver</td>
 <td>bigint</td>
-<td>dsl当前版本</td>
+<td>conf当前版本</td>
 </tr>
 <tr>
 <td>max_ver</td>
@@ -416,19 +480,19 @@
 <td>最大版本</td>
 </tr>
 <tr>
-<td>dsl_name</td>
+<td>conf_name</td>
 <td>varchar(128)</td>
-<td>dsl名称</td>
+<td>conf名称</td>
 </tr>
 <tr>
-<td>dsl_target_path</td>
+<td>conf_target_path</td>
 <td>varchar(128)</td>
-<td>dsl生成的目标路径</td>
+<td>conf生成的目标路径</td>
 </tr>
 <tr>
-<td>dsl_val</td>
+<td>conf_val</td>
 <td>varchar(8192)</td>
-<td>dsl当前内容</td>
+<td>conf当前内容</td>
 </tr>
 <tr>
 <td>pub_time</td>
@@ -465,7 +529,7 @@
 <tr>
 <td>service_type</td>
 <td>tinyint</td>
-<td>服务类型:0.无 1.liveme 2.livestation</td>
+<td>服务类型</td>
 </tr>
 <tr>
 <td>check_status</td>
@@ -494,7 +558,7 @@
 </tr>
 </tbody>
 </table>
-<p>dsl版本用户操作记录 tb_dsl_op_record</p>
+<p>conf版本用户操作记录 tb_conf_op_record</p>
 <table>
 <thead>
 <tr>
@@ -515,24 +579,24 @@
 <td>服务版本操作 id</td>
 </tr>
 <tr>
-<td>dsl_type</td>
+<td>conf_type</td>
 <td>tinyint</td>
-<td>dsl类型: 1.livemeDSL 101.livestationAggrDSL 102.livestationSceneDSL</td>
+<td>conf类型</td>
 </tr>
 <tr>
-<td>dsl_name</td>
+<td>conf_name</td>
 <td>varchar(128)</td>
-<td>dsl名称</td>
+<td>conf名称</td>
 </tr>
 <tr>
-<td>dsl_target_path</td>
+<td>conf_target_path</td>
 <td>varchar(128)</td>
-<td>dsl生成的目标路径</td>
+<td>conf生成的目标路径</td>
 </tr>
 <tr>
-<td>dsl_val</td>
+<td>conf_val</td>
 <td>varchar(8192)</td>
-<td>dsl当前内容</td>
+<td>conf当前内容</td>
 </tr>
 <tr>
 <td>is_del</td>
@@ -574,7 +638,7 @@
 <tr>
 <td>service_type</td>
 <td>tinyint</td>
-<td>服务类型:0.无 1.liveme 2.livestation</td>
+<td>服务类型</td>
 </tr>
 <tr>
 <td>history_ver</td>
@@ -598,7 +662,7 @@
 </tr>
 </tbody>
 </table>
-<p>dsl历史版本快照表 tb_dsl_version_snapshot</p>
+<p>conf历史版本快照表 tb_conf_version_snapshot</p>
 <table>
 <thead>
 <tr>
@@ -614,29 +678,29 @@
 <td>主键</td>
 </tr>
 <tr>
-<td>dsl_type</td>
+<td>conf_type</td>
 <td>tinyint</td>
-<td>dsl类型: 1.livemeDSL 101.livestationAggrDSL 102.livestationSceneDSL</td>
+<td>conf类型: 1.livemeDSL 101.livestationAggrDSL 102.livestationSceneDSL</td>
 </tr>
 <tr>
-<td>dsl_name</td>
+<td>conf_name</td>
 <td>varchar(128)</td>
-<td>dsl名称</td>
+<td>conf名称</td>
 </tr>
 <tr>
 <td>history_ver</td>
 <td>bigint</td>
-<td>dsl历史版本</td>
+<td>conf历史版本</td>
 </tr>
 <tr>
-<td>dsl_target_path</td>
+<td>conf_target_path</td>
 <td>varchar(128)</td>
-<td>dsl生成的目标路径</td>
+<td>conf生成的目标路径</td>
 </tr>
 <tr>
-<td>dsl_val</td>
+<td>conf_val</td>
 <td>varchar(8192)</td>
-<td>dsl历史快照内容</td>
+<td>conf历史快照内容</td>
 </tr>
 <tr>
 <td>pub_time</td>
@@ -655,7 +719,7 @@
 </tr>
 </tbody>
 </table>
-<p>服务dsl历史版本关联表 tb_service_dsl_ver_snapshot</p>
+<p>服务conf历史版本关联表 tb_service_conf_ver_snapshot</p>
 <table>
 <thead>
 <tr>
@@ -676,9 +740,9 @@
 <td>服务历史版本快照 id</td>
 </tr>
 <tr>
-<td>dsl_ver_snapshot_id</td>
+<td>conf_ver_snapshot_id</td>
 <td>bigint</td>
-<td>dsl历史版本快照 id</td>
+<td>conf历史版本快照 id</td>
 </tr>
 <tr>
 <td>create_time</td>
@@ -706,34 +770,34 @@
   <span style="color:#66d9ef">UNIQUE</span> <span style="color:#66d9ef">KEY</span> <span style="color:#f92672">`</span>u_service_type<span style="color:#f92672">`</span> (<span style="color:#f92672">`</span>service_type<span style="color:#f92672">`</span>)
 ) ENGINE<span style="color:#f92672">=</span>InnoDB <span style="color:#66d9ef">DEFAULT</span> CHARSET<span style="color:#f92672">=</span>utf8mb4 <span style="color:#66d9ef">COMMENT</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;当前服务版本表&#39;</span>;
 
-<span style="color:#66d9ef">DROP</span> <span style="color:#66d9ef">TABLE</span> <span style="color:#66d9ef">IF</span> <span style="color:#66d9ef">EXISTS</span> <span style="color:#f92672">`</span>tb_dsl_cur_ver<span style="color:#f92672">`</span>;
-<span style="color:#66d9ef">CREATE</span> <span style="color:#66d9ef">TABLE</span> <span style="color:#f92672">`</span>tb_dsl_cur_ver<span style="color:#f92672">`</span> (
+<span style="color:#66d9ef">DROP</span> <span style="color:#66d9ef">TABLE</span> <span style="color:#66d9ef">IF</span> <span style="color:#66d9ef">EXISTS</span> <span style="color:#f92672">`</span>tb_conf_cur_ver<span style="color:#f92672">`</span>;
+<span style="color:#66d9ef">CREATE</span> <span style="color:#66d9ef">TABLE</span> <span style="color:#f92672">`</span>tb_conf_cur_ver<span style="color:#f92672">`</span> (
   <span style="color:#f92672">`</span>id<span style="color:#f92672">`</span> bigint(<span style="color:#ae81ff">20</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> AUTO_INCREMENT <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;主键&#39;</span>,
   <span style="color:#f92672">`</span>cur_service_ver_id<span style="color:#f92672">`</span> bigint(<span style="color:#ae81ff">20</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;当前服务版本 id&#39;</span>,
-  <span style="color:#f92672">`</span>dsl_type<span style="color:#f92672">`</span> tinyint(<span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;dsl类型: 1.livemeDSL 101.livestationAggrDSL 102.livestationSceneDSL&#39;</span>,
-  <span style="color:#f92672">`</span>cur_ver<span style="color:#f92672">`</span> bigint(<span style="color:#ae81ff">20</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;dsl当前版本&#39;</span>,
+  <span style="color:#f92672">`</span>conf_type<span style="color:#f92672">`</span> tinyint(<span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;conf类型: 1.livemeDSL 101.livestationAggrDSL 102.livestationSceneDSL&#39;</span>,
+  <span style="color:#f92672">`</span>cur_ver<span style="color:#f92672">`</span> bigint(<span style="color:#ae81ff">20</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;conf当前版本&#39;</span>,
   <span style="color:#f92672">`</span>max_ver<span style="color:#f92672">`</span> bigint(<span style="color:#ae81ff">20</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;最大版本&#39;</span>,
-  <span style="color:#f92672">`</span>dsl_name<span style="color:#f92672">`</span> varchar(<span style="color:#ae81ff">128</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;dsl名称&#39;</span>, 
-  <span style="color:#f92672">`</span>dsl_target_path<span style="color:#f92672">`</span> varchar(<span style="color:#ae81ff">128</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;dsl生成的目标路径&#39;</span>,
-  <span style="color:#f92672">`</span>dsl_val<span style="color:#f92672">`</span> varchar(<span style="color:#ae81ff">8192</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;dsl当前内容&#39;</span>,
+  <span style="color:#f92672">`</span>conf_name<span style="color:#f92672">`</span> varchar(<span style="color:#ae81ff">128</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;conf名称&#39;</span>, 
+  <span style="color:#f92672">`</span>conf_target_path<span style="color:#f92672">`</span> varchar(<span style="color:#ae81ff">128</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;conf生成的目标路径&#39;</span>,
+  <span style="color:#f92672">`</span>conf_val<span style="color:#f92672">`</span> varchar(<span style="color:#ae81ff">8192</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;conf当前内容&#39;</span>,
   <span style="color:#f92672">`</span>pub_time<span style="color:#f92672">`</span> int(<span style="color:#ae81ff">10</span>) unsigned <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;发布时间&#39;</span>,
   <span style="color:#f92672">`</span>create_time<span style="color:#f92672">`</span> int(<span style="color:#ae81ff">10</span>) unsigned <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;创建时间&#39;</span>,
   <span style="color:#f92672">`</span>update_time<span style="color:#f92672">`</span> int(<span style="color:#ae81ff">10</span>) unsigned <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;更新时间&#39;</span>,
   <span style="color:#66d9ef">PRIMARY</span> <span style="color:#66d9ef">KEY</span> (<span style="color:#f92672">`</span>id<span style="color:#f92672">`</span>),
-  <span style="color:#66d9ef">UNIQUE</span> <span style="color:#66d9ef">KEY</span> <span style="color:#f92672">`</span>u_dsl_type_name<span style="color:#f92672">`</span> (<span style="color:#f92672">`</span>dsl_type<span style="color:#f92672">`</span>,<span style="color:#f92672">`</span>dsl_name<span style="color:#f92672">`</span>)
-) ENGINE<span style="color:#f92672">=</span>InnoDB <span style="color:#66d9ef">DEFAULT</span> CHARSET<span style="color:#f92672">=</span>utf8mb4 <span style="color:#66d9ef">COMMENT</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;当前dsl版本表&#39;</span>;
+  <span style="color:#66d9ef">UNIQUE</span> <span style="color:#66d9ef">KEY</span> <span style="color:#f92672">`</span>u_conf_type_name<span style="color:#f92672">`</span> (<span style="color:#f92672">`</span>conf_type<span style="color:#f92672">`</span>,<span style="color:#f92672">`</span>conf_name<span style="color:#f92672">`</span>)
+) ENGINE<span style="color:#f92672">=</span>InnoDB <span style="color:#66d9ef">DEFAULT</span> CHARSET<span style="color:#f92672">=</span>utf8mb4 <span style="color:#66d9ef">COMMENT</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;当前conf版本表&#39;</span>;
 
 <span style="color:#75715e">/*
-</span><span style="color:#75715e">DROP TABLE IF EXISTS `tb_service_dsl_cur_ver`;
-</span><span style="color:#75715e">CREATE TABLE `tb_service_dsl_cur_ver` (
+</span><span style="color:#75715e">DROP TABLE IF EXISTS `tb_service_conf_cur_ver`;
+</span><span style="color:#75715e">CREATE TABLE `tb_service_conf_cur_ver` (
 </span><span style="color:#75715e">  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT &#39;主键&#39;,
 </span><span style="color:#75715e">  `cur_service_ver_id` bigint(20) NOT NULL COMMENT &#39;服务版本 id&#39;,
-</span><span style="color:#75715e">  `cur_dsl_ver_id` bigint(20) NOT NULL COMMENT &#39;dsl id&#39;,
+</span><span style="color:#75715e">  `cur_conf_ver_id` bigint(20) NOT NULL COMMENT &#39;conf id&#39;,
 </span><span style="color:#75715e">  `create_time` int(10) unsigned NOT NULL DEFAULT &#39;0&#39; COMMENT &#39;创建时间&#39;,
 </span><span style="color:#75715e">  `update_time` int(10) unsigned NOT NULL DEFAULT &#39;0&#39; COMMENT &#39;更新时间&#39;,
 </span><span style="color:#75715e">  PRIMARY KEY (`id`),
-</span><span style="color:#75715e">  UNIQUE KEY `uniq_service_dsl` (`cur_service_ver_id`,`cur_dsl_ver_id`)
-</span><span style="color:#75715e">) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT=&#39;服务dsl关联表&#39;;
+</span><span style="color:#75715e">  UNIQUE KEY `uniq_service_conf` (`cur_service_ver_id`,`cur_conf_ver_id`)
+</span><span style="color:#75715e">) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT=&#39;服务conf关联表&#39;;
 </span><span style="color:#75715e">*/</span>
 
 <span style="color:#66d9ef">DROP</span> <span style="color:#66d9ef">TABLE</span> <span style="color:#66d9ef">IF</span> <span style="color:#66d9ef">EXISTS</span> <span style="color:#f92672">`</span>tb_service_op_record<span style="color:#f92672">`</span>;
@@ -749,22 +813,22 @@
   <span style="color:#66d9ef">KEY</span> <span style="color:#f92672">`</span>u_uid_service_type<span style="color:#f92672">`</span> (<span style="color:#f92672">`</span>op_uid<span style="color:#f92672">`</span>,<span style="color:#f92672">`</span>service_type<span style="color:#f92672">`</span>)
 ) ENGINE<span style="color:#f92672">=</span>InnoDB <span style="color:#66d9ef">DEFAULT</span> CHARSET<span style="color:#f92672">=</span>utf8mb4 <span style="color:#66d9ef">COMMENT</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;服务版本用户操作记录表&#39;</span>;
 
-<span style="color:#66d9ef">DROP</span> <span style="color:#66d9ef">TABLE</span> <span style="color:#66d9ef">IF</span> <span style="color:#66d9ef">EXISTS</span> <span style="color:#f92672">`</span>tb_dsl_op_record<span style="color:#f92672">`</span>;
-<span style="color:#66d9ef">CREATE</span> <span style="color:#66d9ef">TABLE</span> <span style="color:#f92672">`</span>tb_dsl_op_record<span style="color:#f92672">`</span> (
+<span style="color:#66d9ef">DROP</span> <span style="color:#66d9ef">TABLE</span> <span style="color:#66d9ef">IF</span> <span style="color:#66d9ef">EXISTS</span> <span style="color:#f92672">`</span>tb_conf_op_record<span style="color:#f92672">`</span>;
+<span style="color:#66d9ef">CREATE</span> <span style="color:#66d9ef">TABLE</span> <span style="color:#f92672">`</span>tb_conf_op_record<span style="color:#f92672">`</span> (
   <span style="color:#f92672">`</span>id<span style="color:#f92672">`</span> bigint(<span style="color:#ae81ff">20</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> AUTO_INCREMENT <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;主键&#39;</span>,
   <span style="color:#f92672">`</span>service_op_id<span style="color:#f92672">`</span> bigint(<span style="color:#ae81ff">20</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;服务版本操作 id&#39;</span>,
-  <span style="color:#f92672">`</span>dsl_type<span style="color:#f92672">`</span> tinyint(<span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;dsl类型: 1.livemeDSL 101.livestationAggrDSL 102.livestationSceneDSL&#39;</span>,
-  <span style="color:#f92672">`</span>dsl_name<span style="color:#f92672">`</span> varchar(<span style="color:#ae81ff">128</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;dsl名称&#39;</span>, 
-  <span style="color:#f92672">`</span>dsl_target_path<span style="color:#f92672">`</span> varchar(<span style="color:#ae81ff">128</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;dsl生成的目标路径&#39;</span>,
-  <span style="color:#f92672">`</span>dsl_val<span style="color:#f92672">`</span> varchar(<span style="color:#ae81ff">8192</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;dsl当前内容&#39;</span>,
+  <span style="color:#f92672">`</span>conf_type<span style="color:#f92672">`</span> tinyint(<span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;conf类型: 1.livemeDSL 101.livestationAggrDSL 102.livestationSceneDSL&#39;</span>,
+  <span style="color:#f92672">`</span>conf_name<span style="color:#f92672">`</span> varchar(<span style="color:#ae81ff">128</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;conf名称&#39;</span>, 
+  <span style="color:#f92672">`</span>conf_target_path<span style="color:#f92672">`</span> varchar(<span style="color:#ae81ff">128</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;conf生成的目标路径&#39;</span>,
+  <span style="color:#f92672">`</span>conf_val<span style="color:#f92672">`</span> varchar(<span style="color:#ae81ff">8192</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;conf当前内容&#39;</span>,
   <span style="color:#f92672">`</span>is_del<span style="color:#f92672">`</span> tinyint(<span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;是否删除，0.可用，1.不可用&#39;</span>,
   <span style="color:#f92672">`</span>op_uid<span style="color:#f92672">`</span> bigint(<span style="color:#ae81ff">20</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;操作者uid&#39;</span>,
   <span style="color:#f92672">`</span>pub_time<span style="color:#f92672">`</span> int(<span style="color:#ae81ff">10</span>) unsigned <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;发布时间&#39;</span>,
   <span style="color:#f92672">`</span>create_time<span style="color:#f92672">`</span> int(<span style="color:#ae81ff">10</span>) unsigned <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;创建时间&#39;</span>,
   <span style="color:#f92672">`</span>update_time<span style="color:#f92672">`</span> int(<span style="color:#ae81ff">10</span>) unsigned <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;更新时间&#39;</span>,
   <span style="color:#66d9ef">PRIMARY</span> <span style="color:#66d9ef">KEY</span> (<span style="color:#f92672">`</span>id<span style="color:#f92672">`</span>),
-  <span style="color:#66d9ef">KEY</span> <span style="color:#f92672">`</span>u_uid_dsl_name_type<span style="color:#f92672">`</span> (<span style="color:#f92672">`</span>op_uid<span style="color:#f92672">`</span>,<span style="color:#f92672">`</span>dsl_name<span style="color:#f92672">`</span>,<span style="color:#f92672">`</span>dsl_type<span style="color:#f92672">`</span>)
-) ENGINE<span style="color:#f92672">=</span>InnoDB <span style="color:#66d9ef">DEFAULT</span> CHARSET<span style="color:#f92672">=</span>utf8mb4 <span style="color:#66d9ef">COMMENT</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;dsl版本用户操作记录&#39;</span>;
+  <span style="color:#66d9ef">KEY</span> <span style="color:#f92672">`</span>u_uid_conf_name_type<span style="color:#f92672">`</span> (<span style="color:#f92672">`</span>op_uid<span style="color:#f92672">`</span>,<span style="color:#f92672">`</span>conf_name<span style="color:#f92672">`</span>,<span style="color:#f92672">`</span>conf_type<span style="color:#f92672">`</span>)
+) ENGINE<span style="color:#f92672">=</span>InnoDB <span style="color:#66d9ef">DEFAULT</span> CHARSET<span style="color:#f92672">=</span>utf8mb4 <span style="color:#66d9ef">COMMENT</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;conf版本用户操作记录&#39;</span>;
 
 
 
@@ -780,36 +844,36 @@
   <span style="color:#66d9ef">UNIQUE</span> <span style="color:#66d9ef">KEY</span> <span style="color:#f92672">`</span>u_service_type_ver<span style="color:#f92672">`</span> (<span style="color:#f92672">`</span>service_type<span style="color:#f92672">`</span>,<span style="color:#f92672">`</span>history_ver<span style="color:#f92672">`</span>)
 ) ENGINE<span style="color:#f92672">=</span>InnoDB <span style="color:#66d9ef">DEFAULT</span> CHARSET<span style="color:#f92672">=</span>utf8mb4 <span style="color:#66d9ef">COMMENT</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;服务历史版本快照表&#39;</span>;
 
-<span style="color:#66d9ef">DROP</span> <span style="color:#66d9ef">TABLE</span> <span style="color:#66d9ef">IF</span> <span style="color:#66d9ef">EXISTS</span> <span style="color:#f92672">`</span>tb_dsl_version_snapshot<span style="color:#f92672">`</span>;
-<span style="color:#66d9ef">CREATE</span> <span style="color:#66d9ef">TABLE</span> <span style="color:#f92672">`</span>tb_dsl_version_snapshot<span style="color:#f92672">`</span> (
+<span style="color:#66d9ef">DROP</span> <span style="color:#66d9ef">TABLE</span> <span style="color:#66d9ef">IF</span> <span style="color:#66d9ef">EXISTS</span> <span style="color:#f92672">`</span>tb_conf_version_snapshot<span style="color:#f92672">`</span>;
+<span style="color:#66d9ef">CREATE</span> <span style="color:#66d9ef">TABLE</span> <span style="color:#f92672">`</span>tb_conf_version_snapshot<span style="color:#f92672">`</span> (
   <span style="color:#f92672">`</span>id<span style="color:#f92672">`</span> bigint(<span style="color:#ae81ff">20</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> AUTO_INCREMENT <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;主键&#39;</span>,
-  <span style="color:#f92672">`</span>dsl_type<span style="color:#f92672">`</span> tinyint(<span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;dsl类型: 1.livemeDSL 101.livestationAggrDSL 102.livestationSceneDSL&#39;</span>,
-  <span style="color:#f92672">`</span>dsl_name<span style="color:#f92672">`</span> varchar(<span style="color:#ae81ff">128</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;dsl名称&#39;</span>, 
-  <span style="color:#f92672">`</span>history_ver<span style="color:#f92672">`</span> bigint(<span style="color:#ae81ff">20</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;dsl历史版本&#39;</span>,
-  <span style="color:#f92672">`</span>dsl_target_path<span style="color:#f92672">`</span> varchar(<span style="color:#ae81ff">128</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;dsl生成的目标路径&#39;</span>,
-  <span style="color:#f92672">`</span>dsl_val<span style="color:#f92672">`</span> varchar(<span style="color:#ae81ff">8192</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;dsl历史快照内容&#39;</span>,
+  <span style="color:#f92672">`</span>conf_type<span style="color:#f92672">`</span> tinyint(<span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;conf类型: 1.livemeDSL 101.livestationAggrDSL 102.livestationSceneDSL&#39;</span>,
+  <span style="color:#f92672">`</span>conf_name<span style="color:#f92672">`</span> varchar(<span style="color:#ae81ff">128</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;conf名称&#39;</span>, 
+  <span style="color:#f92672">`</span>history_ver<span style="color:#f92672">`</span> bigint(<span style="color:#ae81ff">20</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;conf历史版本&#39;</span>,
+  <span style="color:#f92672">`</span>conf_target_path<span style="color:#f92672">`</span> varchar(<span style="color:#ae81ff">128</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;conf生成的目标路径&#39;</span>,
+  <span style="color:#f92672">`</span>conf_val<span style="color:#f92672">`</span> varchar(<span style="color:#ae81ff">8192</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;conf历史快照内容&#39;</span>,
   <span style="color:#f92672">`</span>pub_time<span style="color:#f92672">`</span> int(<span style="color:#ae81ff">10</span>) unsigned <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;发布时间&#39;</span>,
   <span style="color:#f92672">`</span>create_time<span style="color:#f92672">`</span> int(<span style="color:#ae81ff">10</span>) unsigned <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;创建时间&#39;</span>,
   <span style="color:#f92672">`</span>update_time<span style="color:#f92672">`</span> int(<span style="color:#ae81ff">10</span>) unsigned <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;更新时间&#39;</span>,
   <span style="color:#66d9ef">PRIMARY</span> <span style="color:#66d9ef">KEY</span> (<span style="color:#f92672">`</span>id<span style="color:#f92672">`</span>),
-  <span style="color:#66d9ef">UNIQUE</span> <span style="color:#66d9ef">KEY</span> <span style="color:#f92672">`</span>u_dsl_type_ver_name<span style="color:#f92672">`</span> (<span style="color:#f92672">`</span>dsl_type<span style="color:#f92672">`</span>,<span style="color:#f92672">`</span>history_ver<span style="color:#f92672">`</span>,<span style="color:#f92672">`</span>dsl_name<span style="color:#f92672">`</span>)
-) ENGINE<span style="color:#f92672">=</span>InnoDB <span style="color:#66d9ef">DEFAULT</span> CHARSET<span style="color:#f92672">=</span>utf8mb4 <span style="color:#66d9ef">COMMENT</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;dsl历史版本快照表&#39;</span>;
+  <span style="color:#66d9ef">UNIQUE</span> <span style="color:#66d9ef">KEY</span> <span style="color:#f92672">`</span>u_conf_type_ver_name<span style="color:#f92672">`</span> (<span style="color:#f92672">`</span>conf_type<span style="color:#f92672">`</span>,<span style="color:#f92672">`</span>history_ver<span style="color:#f92672">`</span>,<span style="color:#f92672">`</span>conf_name<span style="color:#f92672">`</span>)
+) ENGINE<span style="color:#f92672">=</span>InnoDB <span style="color:#66d9ef">DEFAULT</span> CHARSET<span style="color:#f92672">=</span>utf8mb4 <span style="color:#66d9ef">COMMENT</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;conf历史版本快照表&#39;</span>;
 
 
-<span style="color:#66d9ef">DROP</span> <span style="color:#66d9ef">TABLE</span> <span style="color:#66d9ef">IF</span> <span style="color:#66d9ef">EXISTS</span> <span style="color:#f92672">`</span>tb_service_dsl_ver_snapshot<span style="color:#f92672">`</span>;
-<span style="color:#66d9ef">CREATE</span> <span style="color:#66d9ef">TABLE</span> <span style="color:#f92672">`</span>tb_service_dsl_ver_snapshot<span style="color:#f92672">`</span> (
+<span style="color:#66d9ef">DROP</span> <span style="color:#66d9ef">TABLE</span> <span style="color:#66d9ef">IF</span> <span style="color:#66d9ef">EXISTS</span> <span style="color:#f92672">`</span>tb_service_conf_ver_snapshot<span style="color:#f92672">`</span>;
+<span style="color:#66d9ef">CREATE</span> <span style="color:#66d9ef">TABLE</span> <span style="color:#f92672">`</span>tb_service_conf_ver_snapshot<span style="color:#f92672">`</span> (
   <span style="color:#f92672">`</span>id<span style="color:#f92672">`</span> bigint(<span style="color:#ae81ff">20</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> AUTO_INCREMENT <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;主键&#39;</span>,
   <span style="color:#f92672">`</span>service_ver_snapshot_id<span style="color:#f92672">`</span> bigint(<span style="color:#ae81ff">20</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;服务历史版本快照 id&#39;</span>,
-  <span style="color:#f92672">`</span>dsl_ver_snapshot_id<span style="color:#f92672">`</span> bigint(<span style="color:#ae81ff">20</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;dsl历史版本快照 id&#39;</span>,
+  <span style="color:#f92672">`</span>conf_ver_snapshot_id<span style="color:#f92672">`</span> bigint(<span style="color:#ae81ff">20</span>) <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;conf历史版本快照 id&#39;</span>,
   <span style="color:#f92672">`</span>create_time<span style="color:#f92672">`</span> int(<span style="color:#ae81ff">10</span>) unsigned <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;创建时间&#39;</span>,
   <span style="color:#f92672">`</span>update_time<span style="color:#f92672">`</span> int(<span style="color:#ae81ff">10</span>) unsigned <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">NULL</span> <span style="color:#66d9ef">DEFAULT</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#66d9ef">COMMENT</span> <span style="color:#e6db74">&#39;更新时间&#39;</span>,
   <span style="color:#66d9ef">PRIMARY</span> <span style="color:#66d9ef">KEY</span> (<span style="color:#f92672">`</span>id<span style="color:#f92672">`</span>),
-  <span style="color:#66d9ef">UNIQUE</span> <span style="color:#66d9ef">KEY</span> <span style="color:#f92672">`</span>u_service_dsl_id<span style="color:#f92672">`</span> (<span style="color:#f92672">`</span>service_ver_snapshot_id<span style="color:#f92672">`</span>,<span style="color:#f92672">`</span>dsl_ver_snapshot_id<span style="color:#f92672">`</span>)
-) ENGINE<span style="color:#f92672">=</span>InnoDB <span style="color:#66d9ef">DEFAULT</span> CHARSET<span style="color:#f92672">=</span>utf8mb4 <span style="color:#66d9ef">COMMENT</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;服务dsl历史版本关联表&#39;</span>;
+  <span style="color:#66d9ef">UNIQUE</span> <span style="color:#66d9ef">KEY</span> <span style="color:#f92672">`</span>u_service_conf_id<span style="color:#f92672">`</span> (<span style="color:#f92672">`</span>service_ver_snapshot_id<span style="color:#f92672">`</span>,<span style="color:#f92672">`</span>conf_ver_snapshot_id<span style="color:#f92672">`</span>)
+) ENGINE<span style="color:#f92672">=</span>InnoDB <span style="color:#66d9ef">DEFAULT</span> CHARSET<span style="color:#f92672">=</span>utf8mb4 <span style="color:#66d9ef">COMMENT</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#39;服务conf历史版本关联表&#39;</span>;
 
  
  
- <span style="color:#75715e">/*场景定义*/</span>
+ <span style="color:#75715e">/*场景模拟sql*/</span>
 
 <span style="color:#75715e">/*新增版本保存更新删除*/</span>
 
@@ -819,9 +883,9 @@
 
 <span style="color:#75715e">/*回滚*/</span>
 
-<span style="color:#75715e">/*获取当前服务dsl版本配置*/</span>
+<span style="color:#75715e">/*获取当前服务conf版本配置*/</span>
 
-</code></pre></div><h5 id="场景模拟">场景模拟</h5>
+</code></pre></div><h3 id="场景模拟">场景模拟</h3>
 <ol>
 <li>
 <p>新增版本保存更新删除</p>
@@ -836,11 +900,11 @@
 <p>回滚</p>
 </li>
 <li>
-<p>获取当前服务dsl版本配置</p>
+<p>获取当前服务conf版本配置</p>
 <p>服务粒度整体版本文件一次拉取下来，这里是接口形式提供， 后续可以提供将可用版本以服务粒度打个包提交；如果后续有多服务一起捆绑打包，需要考虑上线依赖顺序，暂时不提供</p>
 </li>
 </ol>
-<h5 id="接口">接口</h5>
+<h3 id="接口">接口</h3>
 <p>域名访问需要配置router模块中的ngx proxy配置，新增一个location /livedashboard 进行路由跳转；或者指定ip端口访问路径；</p>
 <p>请求方式：http POST</p>
 <p>公共返回参数：</p>
@@ -917,7 +981,7 @@
 </li>
 <li>
 <p>获取当前服务文件配置内容   /livedashboard/v1/getcurserverconf</p>
-<p>(服务粒度整体版本文件一次拉取下来，这里是接口形式给出对应配置数据，后续打个包上传到cdn, pub一个消息，sub去订阅获取接口数据或者打包配置地址，以及兜底定时轮训获取）</p>
+<p>(服务粒度整体版本文件一次拉取下来，这里是接口形式给出对应配置数据，兜底定时轮训获取）</p>
 <p>请求：</p>
 <table>
 <thead>
@@ -1045,7 +1109,7 @@
 <tr>
 <td>confFilePath</td>
 <td>string</td>
-<td>业务配置文件路径（绝对路径）比如：<!-- raw HTML omitted -->/home/homework/livestation/conf/dsl/studentEnterCommonRoom.dsl.json</td>
+<td>业务配置文件路径（绝对路径）比如：<!-- raw HTML omitted -->/home/homework/livestation/conf/conf/studentEnterCommonRoom.conf.json</td>
 </tr>
 <tr>
 <td>md5sum</td>

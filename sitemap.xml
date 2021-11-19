@@ -10,7 +10,56 @@
   
   <url>
     <loc>https://weedge.github.io/categories/</loc>
-    <lastmod>2021-11-16T11:26:23+08:00</lastmod>
+    <lastmod>2021-11-18T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/conf/</loc>
+    <lastmod>2021-11-18T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/design/</loc>
+    <lastmod>2021-11-18T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/</loc>
+    <lastmod>2021-11-18T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/</loc>
+    <lastmod>2021-11-18T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/</loc>
+    <lastmod>2021-11-18T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/</loc>
+    <lastmod>2021-11-18T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/conf/</loc>
+    <lastmod>2021-11-18T10:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -23,28 +72,7 @@
   </url>
   
   <url>
-    <loc>https://weedge.github.io/tags/</loc>
-    <lastmod>2021-11-16T11:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
     <loc>https://weedge.github.io/%E8%BD%AC%E8%BD%BD/mmap/</loc>
-    <lastmod>2021-11-16T11:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/</loc>
-    <lastmod>2021-11-16T11:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/</loc>
     <lastmod>2021-11-16T11:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
@@ -59,13 +87,6 @@
   
   <url>
     <loc>https://weedge.github.io/tags/ping/</loc>
-    <lastmod>2021-11-15T14:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/post/</loc>
     <lastmod>2021-11-15T14:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>

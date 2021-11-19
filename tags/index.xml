@@ -6,7 +6,25 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 16 Nov 2021 11:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 18 Nov 2021 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>conf</title>
+      <link>https://weedge.github.io/tags/conf/</link>
+      <pubDate>Thu, 18 Nov 2021 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/conf/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>design</title>
+      <link>https://weedge.github.io/tags/design/</link>
+      <pubDate>Thu, 18 Nov 2021 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/design/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>mmap</title>
       <link>https://weedge.github.io/tags/mmap/</link>
@@ -166,24 +184,6 @@
       <pubDate>Sat, 15 Nov 2014 21:04:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/tools/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>旅游</title>
-      <link>https://weedge.github.io/tags/%E6%97%85%E6%B8%B8/</link>
-      <pubDate>Sun, 21 Sep 2014 22:04:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/%E6%97%85%E6%B8%B8/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>octopress</title>
-      <link>https://weedge.github.io/tags/octopress/</link>
-      <pubDate>Tue, 01 Jan 2013 20:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/octopress/</guid>
       <description></description>
     </item>
     

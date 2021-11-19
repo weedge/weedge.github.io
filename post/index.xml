@@ -6,7 +6,16 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 15 Nov 2021 14:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 18 Nov 2021 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>设计-配置平台</title>
+      <link>https://weedge.github.io/post/conf/</link>
+      <pubDate>Thu, 18 Nov 2021 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/conf/</guid>
+      <description>介绍 业务服务在启动时加载配置，配置分为静态配置和动态配置，静态配置如服务监听的端口，日志路径，报警等；动态配置包括业务配置，流程管理配置，策</description>
+    </item>
+    
     <item>
       <title>工具盒子-ping/traceroute</title>
       <link>https://weedge.github.io/post/ping/</link>
@@ -213,15 +222,6 @@
       <guid>https://weedge.github.io/post/happy-new-year/</guid>
       <description>&lt;p&gt;新年开始了，工作了半年，经历一些，懂得一些，认识一些，对自己的未来总是在不断的寻觅中，却迷茫着~，每次家里人问起是否在这个城市待得习惯，不断的问我是否过得好，总是回复家人过得好，放心好了，出门在外，家人总是希望自己能够过得好，而对家人总是报喜不报忧；新年了，有些变化，给自己一些时间，计划似乎永远赶不上变化，改正自己，尽快恢复过来，加油吧~！&lt;/p&gt;
 &lt;p&gt;简单踏实就好，奶奶经常给说的话，一直记着。【step by step, 懂得珍惜】&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title></title>
-      <link>https://weedge.github.io/post/traceroute/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://weedge.github.io/post/traceroute/</guid>
-      <description></description>
     </item>
     
   </channel>

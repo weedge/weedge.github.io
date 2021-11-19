@@ -6,7 +6,16 @@
     <description>Recent content in 技术 on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 16 Nov 2021 11:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 18 Nov 2021 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>设计-配置平台</title>
+      <link>https://weedge.github.io/post/conf/</link>
+      <pubDate>Thu, 18 Nov 2021 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/conf/</guid>
+      <description>介绍 业务服务在启动时加载配置，配置分为静态配置和动态配置，静态配置如服务监听的端口，日志路径，报警等；动态配置包括业务配置，流程管理配置，策</description>
+    </item>
+    
     <item>
       <title>共享内存与内存映射(mmap)</title>
       <link>https://weedge.github.io/%E8%BD%AC%E8%BD%BD/mmap/</link>
