@@ -69,7 +69,7 @@
 &lt;h3 id=&#34;数据库核心动态配置表设计&#34;&gt;数据库核心动态配置表设计&lt;/h3&gt;
 &lt;p&gt;当前服务版本和当前conf版本是1对多的场景，而历史服务快照版本和历史conf快照版本是多对多的场景；&lt;/p&gt;
 &lt;p&gt;如图所示：&lt;/p&gt;
-&lt;p&gt;&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/config-version.png&#34; alt=&#34;config-version&#34;&gt;&lt;/p&gt;
 &lt;p&gt;服务类型枚举表 service_type&lt;/p&gt;
 &lt;table&gt;
 &lt;thead&gt;
