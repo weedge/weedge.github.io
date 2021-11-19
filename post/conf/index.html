@@ -72,7 +72,7 @@
 <meta itemprop="description" content="介绍
 业务服务在启动时加载配置，配置分为静态配置和动态配置，静态配置如服务监听的端口，日志路径，报警等；动态配置包括业务配置，流程管理配置，策略配置等；静态配置服务启动之后不会更改，而动态配置在服务启动运行时可以动态热加载；将配置的内容和版本进行分离，关注配置的管理而无需关注配置的内容，配置内容用户可以自定义配置内容，使用json-schema进行校验，提供自定义配置内容json给后台ui前端进行单个整体配置的交互，配置后台只需加载json-schema进行校验提交内容，json-schema由用户上传提供地址即可。"><meta itemprop="datePublished" content="2021-11-18T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-11-18T10:26:23+08:00" />
-<meta itemprop="wordCount" content="2455">
+<meta itemprop="wordCount" content="3699">
 <meta itemprop="keywords" content="design,conf," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="设计-配置平台"/>
 <meta name="twitter:description" content="介绍
@@ -332,6 +332,8 @@
         <li><a href="#数据库核心动态配置表设计">数据库核心动态配置表设计</a></li>
         <li><a href="#场景模拟">场景模拟</a></li>
         <li><a href="#接口">接口</a></li>
+        <li><a href="#总结">总结</a></li>
+        <li><a href="#qa">Q&amp;A</a></li>
       </ul>
     </li>
   </ul>
@@ -375,7 +377,13 @@
 </li>
 </ol>
 <p>总体来说，2种方案都可行，如果统一技术栈，比如使用golang进行开发，可以选用第二种方案；</p>
-<p>但是这样就可以了么？还有业务集群配置一致性需要考虑到，比如业务集群某台机器突然抽风，未加载最新的配置，打到这台机器的请求和其他正常加载配置的机器的请求逻辑会有所不同，导致整体服务接口不是幂等的，会出现不一致的情况；可以借鉴一下 <a href="https://github.com/XiaoMi/Gaea/blob/master/docs/config-reloading.md">gaea配置热加载设计与实现</a></p>
+<p>但是这样就可以了么？还有业务集群配置一致性需要考虑到，比如业务集群某台机器突然抽风，未加载最新的配置，打到这台机器的请求和其他正常加载配置的机器的请求逻辑会有所不同，导致整体服务接口不是幂等的，会出现不一致的情况；可以借鉴一下 <a href="https://github.com/XiaoMi/Gaea/blob/master/docs/config-reloading.md">gaea配置热加载设计与实现</a>；</p>
+<p><strong>配置一致性方案：</strong></p>
+<p>通过两阶段提交的方式，由业务服务侧提供prepare接口和commit接口；</p>
+<p>准备阶段：conf-dashboard模块发布的时候获取业务服务的ip列表并发调用每个业务服务ip的prepare接口，开始触发业务服务本地配置的更新流程，首先通过conf-dashboard模块获取最新版本和当前版本比较，如果相同就无需比较了，否则从获取配置接口获取配置进行更新；更新流程不是直接替换线上正在使用的文件，而是生成一个准备文件进行提交时替换；每个prepare接口同步调用返回结果都ok了，进入下一步提交阶段，如果其中一个返回失败，发布失败，展现失败详情；</p>
+<p>提交阶段：prepare成功后；conf-dashboard模块继续并发调用的commit接口，开始文件替换，加载至缓存配置结构中；这个操作比较快，都提交成功之后，发布成功，否则发布失败，展现失败详情；</p>
+<p>失败处理：如果某台机器发布失败，可以排查下具体原因之后(原因应尽量在prepare和commit接口中详细给出)，看是否继续发布，重复发布不影响，有版本比较；</p>
+<p>tips: 如果发布机器很多，并发力度根据conf-dashboard模块部署机器接口负载，可以自适应调整降低；</p>
 <h3 id="框架">框架</h3>
 <h3 id="数据库核心动态配置表设计">数据库核心动态配置表设计</h3>
 <p>当前服务版本和当前conf版本是1对多的场景，而历史服务快照版本和历史conf快照版本是多对多的场景；</p>
@@ -411,7 +419,7 @@
 </tr>
 </tbody>
 </table>
-<p>枚举值有配置平台统一分配管理</p>
+<p>枚举值由配置平台统一分配管理</p>
 <p>当前服务版本表 tb_service_cur_ver</p>
 <table>
 <thead>
@@ -791,7 +799,10 @@
 </li>
 </ol>
 <h3 id="接口">接口</h3>
-<p>域名访问需要配置router模块中的ngx proxy配置，新增一个location /livedashboard 进行路由跳转；或者指定ip端口访问路径；</p>
+<p>线下内网域名访问需要配置router模块中的ngx proxy配置，新增一个location /confdashboard 进行路由跳转；或者指定ip端口访问路径；</p>
+<p>线上通过通过服务发现模块来获取confdashboard服务单元ip列表负载均衡进行访问；可以多机房部署，根据业务服务部署场景定；</p>
+<h4 id="conf-dashboard-接口">conf-dashboard 接口</h4>
+<p>提供给后台前端的CRUD接口不在这里描述，通过<a href="https://github.com/smallnest/gen">smallnest/gen</a>生成RESTful接口提供给前端使用就行，修改操作，根据不同的conf_type加载不同的json_schema进行校验；主要是提供给业务服务调用的接口实现，如下：</p>
 <p>请求方式：http POST</p>
 <p>公共返回参数：</p>
 <table>
@@ -816,13 +827,13 @@
 <tr>
 <td style="text-align:left">data</td>
 <td style="text-align:left">json</td>
-<td style="text-align:left">返回数据</td>
+<td style="text-align:left">返回响应数据</td>
 </tr>
 </tbody>
 </table>
 <ol>
 <li>
-<p>获取当前服务配置文件版本   /livedashboard/v1/getcurversion</p>
+<p>获取当前服务配置文件版本   /confdashboard/v1/getcurversion</p>
 <p>请求：</p>
 <table>
 <thead>
@@ -866,13 +877,13 @@
 </table>
 </li>
 <li>
-<p>获取当前服务文件配置内容   /livedashboard/v1/getcurserverconf</p>
+<p>获取当前服务文件配置内容   /confdashboard/v1/getcurserverconf</p>
 <p>(服务粒度整体版本文件一次拉取下来，这里是接口形式给出对应配置数据，兜底定时轮训获取）</p>
 <p>请求：</p>
 <table>
 <thead>
 <tr>
-<th>字段</th>
+<th style="text-align:left">字段</th>
 <th>参数是否必须</th>
 <th>类型</th>
 <th>描述</th>
@@ -880,19 +891,19 @@
 </thead>
 <tbody>
 <tr>
-<td>serviceType</td>
+<td style="text-align:left">serviceType</td>
 <td>必须</td>
 <td>tinyint</td>
 <td>服务类型:0.无 1.liveme 2.livestation</td>
 </tr>
 <tr>
-<td>confName</td>
+<td style="text-align:left">confName</td>
 <td>可选</td>
 <td>string</td>
 <td>服务本地配置文件名称</td>
 </tr>
 <tr>
-<td>confTargetPath</td>
+<td style="text-align:left">confTargetPath</td>
 <td>可选</td>
 <td>string</td>
 <td>服务本地配置路径</td>
@@ -945,7 +956,7 @@
 </table>
 </li>
 <li>
-<p>业务服务配置更新结果报告 /livedashboard/v1/reportBizServConf</p>
+<p>业务服务配置更新结果报告 /confdashboard/v1/reportBizServConf</p>
 <p>请求：</p>
 <table>
 <thead>
@@ -1019,7 +1030,7 @@
 </tr>
 </tbody>
 </table>
-<p>响应：</p>
+<p>响应data：</p>
 <table>
 <thead>
 <tr>
@@ -1036,6 +1047,25 @@
 </tr>
 </tbody>
 </table>
+</li>
+</ol>
+<h4 id="conf-agentlib-业务服务接口">conf-agent/lib 业务服务接口</h4>
+<p>通过在业务服务机部署agent, 或者使用lib库封装函数的方式，最终都是需要提供获取配置的服务提供对应的接口，来保证整体服务配置的一致性，这里采用lib库封装函数提供给业务服务启动时调用这个函数的方式，是否启动单独启动端口是可选的，如果是在业务服务中启动，就用业务服务的端口，如果是单独agent方式启动，使用单独的端口；接口定义如下：</p>
+<ol>
+<li>
+<p>prepare接口 /{serviceType}/localconf/prepare</p>
+</li>
+<li>
+<p>commit接口 /{serviceType}/localconf/commit</p>
+</li>
+</ol>
+<h3 id="总结">总结</h3>
+<p>前期业务为了满足快速业务迭代，业务动态配置可能都是随着业务服务一起上线，或者通过单独的代码库进行管理分开单独上线；这个可能会因为代码上线了，但是配置忘记上线的情况；后者只需要修改配置，而不需要修改代码；为了满足配置化管理，配置平台需要管理业务动态配置来提高人效，保证业务集群上线配置的整体一致，通过后台页面来管理配置和历史配置，追踪配置的修改情况；需要注意的是，第一次上线的配置，可以先在测试环境配置平台上配置好，测试好之后，在到线上平台配置发布上线，然后在部署业务服务代码。</p>
+<h3 id="qa">Q&amp;A</h3>
+<ol>
+<li>
+<p>为什么不直接用etcd来管理配置呢？去掉mysql, 配置直接存etcd不行么？</p>
+<p>主要是因为mysql用来提供管理配置实体的关系，用于后台页面修改使用；如果是k8s中的场景，可以直接使用etcd来存放；</p>
 </li>
 </ol>
     </div>
