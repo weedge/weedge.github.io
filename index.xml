@@ -171,7 +171,7 @@
 &lt;tr&gt;
 &lt;td&gt;conf_type&lt;/td&gt;
 &lt;td&gt;tinyint&lt;/td&gt;
-&lt;td&gt;conf类型，比如：0.无 1.livemeDSL 101.livestationAggrDSL 102.livestationSceneDSL&lt;/td&gt;
+&lt;td&gt;conf类型，比如：&lt;!-- raw HTML omitted --&gt;0.无 &lt;!-- raw HTML omitted --&gt;1.livemeDSL &lt;!-- raw HTML omitted --&gt;101.livestationAggrDSL 102.livestationSceneDSL&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;cur_ver&lt;/td&gt;
@@ -384,7 +384,7 @@
 &lt;tr&gt;
 &lt;td&gt;conf_type&lt;/td&gt;
 &lt;td&gt;tinyint&lt;/td&gt;
-&lt;td&gt;conf类型: 1.livemeDSL 101.livestationAggrDSL 102.livestationSceneDSL&lt;/td&gt;
+&lt;td&gt;conf类型&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;conf_name&lt;/td&gt;
