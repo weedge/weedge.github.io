@@ -684,7 +684,7 @@
 &lt;tr&gt;
 &lt;td&gt;confFilePath&lt;/td&gt;
 &lt;td&gt;string&lt;/td&gt;
-&lt;td&gt;业务配置文件路径（绝对路径）比如：&lt;!-- raw HTML omitted --&gt;/home/homework/livestation/conf/conf/studentEnterCommonRoom.conf.json&lt;/td&gt;
+&lt;td&gt;业务配置文件路径（绝对路径）&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;md5sum&lt;/td&gt;
