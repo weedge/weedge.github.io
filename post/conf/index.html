@@ -72,7 +72,7 @@
 <meta itemprop="description" content="介绍
 业务服务在启动时加载配置，配置分为静态配置和动态配置，静态配置如服务监听的端口，日志路径，访问依赖服务命名信息等；动态配置包括业务配置，流程管理配置，策略配置等；静态配置服务启动之后不会更改，而动态配置在服务启动运行时可以动态热加载；将配置的内容和版本进行分离，关注配置的管理而无需关注配置的内容，配置内容用户可以自定义配置内容，使用json-schema进行校验，提供自定义配置内容json给后台ui前端进行单个整体配置的交互，配置后台只需加载json-schema进行校验提交内容，json-schema由用户上传提供地址即可。"><meta itemprop="datePublished" content="2021-11-18T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-11-18T10:26:23+08:00" />
-<meta itemprop="wordCount" content="4204">
+<meta itemprop="wordCount" content="4218">
 <meta itemprop="keywords" content="design,conf," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="设计-配置平台"/>
 <meta name="twitter:description" content="介绍
@@ -328,7 +328,7 @@
         <li><a href="#介绍">介绍</a></li>
         <li><a href="#目标">目标</a></li>
         <li><a href="#功能">功能</a></li>
-        <li><a href="#框架">框架</a></li>
+        <li><a href="#整体交互框架">整体交互框架</a></li>
         <li><a href="#数据库核心动态配置表设计">数据库核心动态配置表设计</a></li>
         <li><a href="#场景模拟">场景模拟</a></li>
         <li><a href="#接口">接口</a></li>
@@ -390,7 +390,9 @@
 <p>配置发布成功后，调用业务服务机器的meta接口获取最新更新文件信息，进行兜底检查确认；</p>
 <p>业务服务开启兜底定时任务获取从con-dashboard获取配置版本，配置信息进行兜底更新；</p>
 <p>tips: 请求con-dashboard获取配置信息的接口随机，防止并发流量对conf-dashboard模块的影响；</p>
-<h3 id="框架">框架</h3>
+<p>定时任务流程图如下：</p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/confmg.jpg" alt="cron-confmg"></p>
+<h3 id="整体交互框架">整体交互框架</h3>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/config-arch.drawio.png" alt="config-arch"></p>
 <h3 id="数据库核心动态配置表设计">数据库核心动态配置表设计</h3>
 <p>当前服务版本和当前conf版本是1对多的场景，而历史服务快照版本和历史conf快照版本是多对多的场景；</p>
