@@ -771,6 +771,7 @@
 &lt;h3 id=&#34;references&#34;&gt;references&lt;/h3&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/Qihoo360/QConf/wiki&#34;&gt;QConf&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.apolloconfig.com/#/zh/design/apollo-design&#34;&gt;apollo&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;http://icyfenix.cn/distribution/connect/service-discovery.html&#34;&gt;凤凰架构-service-discovery&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://time.geekbang.org/column/article/341060&#34;&gt;etcd-watch&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://redisbook.readthedocs.io/en/latest/feature/pubsub.html&#34;&gt;redis-pub/sub&lt;/a&gt;&lt;/li&gt;
