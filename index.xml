@@ -76,7 +76,7 @@
 &lt;p&gt;业务服务开启兜底定时任务获取从con-dashboard获取配置版本，配置信息进行兜底更新；&lt;/p&gt;
 &lt;p&gt;tips: 请求con-dashboard获取配置信息的接口随机，防止并发流量对conf-dashboard模块的影响；&lt;/p&gt;
 &lt;p&gt;定时任务流程图如下：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/confmg.jpg&#34; alt=&#34;cron-confmg&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/confmg.drawio.png&#34; alt=&#34;cron-confmg&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;整体交互框架&#34;&gt;整体交互框架&lt;/h3&gt;
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/config-arch.drawio.png&#34; alt=&#34;config-arch&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;数据库核心动态配置表设计&#34;&gt;数据库核心动态配置表设计&lt;/h3&gt;
