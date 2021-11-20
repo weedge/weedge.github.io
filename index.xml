@@ -73,7 +73,7 @@
 &lt;p&gt;tips: 如果发布机器很多，并发力度根据conf-dashboard模块部署机器接口负载，可以自适应调整降低；&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;兜底检查更新方案：&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;配置发布成功后，调用业务服务机器的meta接口获取最新更新文件信息，进行兜底检查确认；&lt;/p&gt;
-&lt;p&gt;业务服务开启兜底定时任务获取从con-dashboard获取配置版本，配置信息进行兜底更新；&lt;/p&gt;
+&lt;p&gt;业务服务开启兜底定时任务获取从con-dashboard获取配置版本，配置信息进行兜底更新, 每隔10～30分钟执行一次；&lt;/p&gt;
 &lt;p&gt;tips: 请求con-dashboard获取配置信息的接口随机，防止并发流量对conf-dashboard模块的影响；&lt;/p&gt;
 &lt;p&gt;定时任务流程图如下：&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/confmg.drawio.png&#34; alt=&#34;cron-confmg&#34;&gt;&lt;/p&gt;
