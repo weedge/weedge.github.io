@@ -113,7 +113,7 @@
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;枚举值由配置平台统一分配管理&lt;/p&gt;
+&lt;p&gt;枚举值由配置平台统一分配收敛管理&lt;/p&gt;
 &lt;p&gt;当前服务版本表 tb_service_cur_ver&lt;/p&gt;
 &lt;table&gt;
 &lt;thead&gt;
