@@ -73,7 +73,7 @@
 &lt;p&gt;tips: 如果发布机器很多，并发力度根据conf-dashboard模块部署机器接口负载，可以自适应调整降低；&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;兜底检查更新方案：&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;配置发布成功后，调用业务服务机器的meta接口获取最新更新文件信息，进行兜底检查确认；&lt;/p&gt;
-&lt;p&gt;业务服务开启兜底定时任务获取从con-dashboard获取配置版本，配置信息进行兜底更新, 每隔10～30分钟执行一次；&lt;/p&gt;
+&lt;p&gt;业务服务开启兜底定时任务获取从conf-dashboard获取配置版本，配置信息进行兜底更新, 每隔10～30分钟执行一次；&lt;/p&gt;
 &lt;p&gt;tips: 请求conf-dashboard获取配置信息的接口随机打散，防止并发流量对conf-dashboard模块的影响；&lt;/p&gt;
 &lt;p&gt;定时任务流程图如下：&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/confmg.drawio.png&#34; alt=&#34;cron-confmg&#34;&gt;&lt;/p&gt;
@@ -784,7 +784,7 @@
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;如果业务服务部署在pod容器中, 怎么更新配置呢？&lt;/p&gt;
-&lt;p&gt;一种方案是 可以采用agent的方式，agent通过DaemonSet容器化部署, agent与业务pod之间通过共享内存的方式进行通信更新配置；&lt;/p&gt;
+&lt;p&gt;一种方案是 可以采用agent的方式，agent通过DaemonSet容器化部署,单独升级, agent与业务pod之间通过共享内存的方式进行通信更新配置；&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;h3 id=&#34;references&#34;&gt;references&lt;/h3&gt;
