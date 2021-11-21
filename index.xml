@@ -784,8 +784,17 @@
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;如果业务服务部署在Pod容器中, 怎么更新配置呢？&lt;/p&gt;
-&lt;p&gt;一种方案，agent通过DaemonSet容器化部署,单独升级, agent与业务Pod之间通过共享内存进行通信更新配置；&lt;/p&gt;
-&lt;p&gt;另外一种方案，以SideCar Container方式将agent与业务Container部署在同一Pod中，利用Pod的共享IPC特性及Memory Medium EmptyDir Volume方式共享内存进行通信更新配置，随业务容器化部署上线；&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;agent通过DaemonSet容器化部署,单独升级, agent与业务Pod之间通过共享内存进行通信更新配置；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;以SideCar Container方式将agent与业务Container部署在同一Pod中，利用Pod的共享IPC特性及Memory Medium EmptyDir Volume方式共享内存进行通信更新配置，随业务容器化部署上线；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;agent通过&lt;a href=&#34;https://github.com/openkruise/kruise&#34;&gt;OpenKruise&lt;/a&gt; SidecarSet部署在SideCar容器中；&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;h3 id=&#34;references&#34;&gt;references&lt;/h3&gt;
@@ -795,6 +804,7 @@
 &lt;li&gt;&lt;a href=&#34;http://icyfenix.cn/distribution/connect/service-discovery.html&#34;&gt;凤凰架构-service-discovery&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://time.geekbang.org/column/article/341060&#34;&gt;etcd-watch&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://redisbook.readthedocs.io/en/latest/feature/pubsub.html&#34;&gt;redis-pub/sub&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.infoq.cn/article/dj8lgm47ugdxy7vwsqyl&#34;&gt;Service Mesh 在超大规模场景下的落地挑战&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>
