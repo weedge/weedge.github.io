@@ -783,8 +783,9 @@
 &lt;p&gt;主要是因为mysql用来提供管理配置实体的关系，用于后台页面修改使用；如果是k8s中的场景，可以直接使用etcd来存放；&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;如果业务服务部署在pod容器中, 怎么更新配置呢？&lt;/p&gt;
-&lt;p&gt;一种方案是 可以采用agent的方式，agent通过DaemonSet容器化部署,单独升级, agent与业务pod之间通过共享内存的方式进行通信更新配置；&lt;/p&gt;
+&lt;p&gt;如果业务服务部署在Pod容器中, 怎么更新配置呢？&lt;/p&gt;
+&lt;p&gt;一种方案，agent通过DaemonSet容器化部署,单独升级, agent与业务Pod之间通过共享内存进行通信更新配置；&lt;/p&gt;
+&lt;p&gt;另外一种方案，以SideCar Container方式将agent与业务Container部署在同一Pod中，利用Pod的共享IPC特性及Memory Medium EmptyDir Volume方式共享内存进行通信更新配置，随业务容器化部署上线；&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;h3 id=&#34;references&#34;&gt;references&lt;/h3&gt;

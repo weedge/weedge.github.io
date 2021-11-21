@@ -72,7 +72,7 @@
 <meta itemprop="description" content="介绍
 业务服务在启动时加载配置，配置分为静态配置和动态配置，静态配置如服务监听的端口，日志路径，访问依赖服务单元不同云(region / zone) 域名地址等；动态配置包括业务配置，流程管理配置，策略配置等；静态配置服务启动之后不会更改，而动态配置在服务启动运行时可以动态热加载；将配置的内容和版本进行分离，关注配置的管理而无需关注配置的内容，配置内容用户可以自定义配置内容，使用json-schema进行校验，提供自定义配置内容json给后台ui前端进行单个整体配置的交互，配置后台只需加载json-schema进行校验提交内容，json-schema由用户上传提供地址即可。"><meta itemprop="datePublished" content="2021-11-18T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-11-18T10:26:23+08:00" />
-<meta itemprop="wordCount" content="4452">
+<meta itemprop="wordCount" content="4544">
 <meta itemprop="keywords" content="design,conf," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="设计-配置平台"/>
 <meta name="twitter:description" content="介绍
@@ -1098,8 +1098,9 @@
 <p>主要是因为mysql用来提供管理配置实体的关系，用于后台页面修改使用；如果是k8s中的场景，可以直接使用etcd来存放；</p>
 </li>
 <li>
-<p>如果业务服务部署在pod容器中, 怎么更新配置呢？</p>
-<p>一种方案是 可以采用agent的方式，agent通过DaemonSet容器化部署,单独升级, agent与业务pod之间通过共享内存的方式进行通信更新配置；</p>
+<p>如果业务服务部署在Pod容器中, 怎么更新配置呢？</p>
+<p>一种方案，agent通过DaemonSet容器化部署,单独升级, agent与业务Pod之间通过共享内存进行通信更新配置；</p>
+<p>另外一种方案，以SideCar Container方式将agent与业务Container部署在同一Pod中，利用Pod的共享IPC特性及Memory Medium EmptyDir Volume方式共享内存进行通信更新配置，随业务容器化部署上线；</p>
 </li>
 </ol>
 <h3 id="references">references</h3>
