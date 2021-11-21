@@ -72,7 +72,7 @@
 <meta itemprop="description" content="介绍
 业务服务在启动时加载配置，配置分为静态配置和动态配置，静态配置如服务监听的端口，日志路径，访问依赖服务单元不同云(region / zone) 域名地址等；动态配置包括业务配置，流程管理配置，策略配置等；静态配置服务启动之后不会更改，而动态配置在服务启动运行时可以动态热加载；将配置的内容和版本进行分离，关注配置的管理而无需关注配置的内容，配置内容用户可以自定义配置内容，使用json-schema进行校验，提供自定义配置内容json给后台ui前端进行单个整体配置的交互，配置后台只需加载json-schema进行校验提交内容，json-schema由用户上传提供地址即可。"><meta itemprop="datePublished" content="2021-11-18T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-11-18T10:26:23+08:00" />
-<meta itemprop="wordCount" content="4271">
+<meta itemprop="wordCount" content="4349">
 <meta itemprop="keywords" content="design,conf," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="设计-配置平台"/>
 <meta name="twitter:description" content="介绍
@@ -389,7 +389,7 @@
 <p><strong>兜底检查更新方案：</strong></p>
 <p>配置发布成功后，调用业务服务机器的meta接口获取最新更新文件信息，进行兜底检查确认；</p>
 <p>业务服务开启兜底定时任务获取从con-dashboard获取配置版本，配置信息进行兜底更新, 每隔10～30分钟执行一次；</p>
-<p>tips: 请求con-dashboard获取配置信息的接口随机，防止并发流量对conf-dashboard模块的影响；</p>
+<p>tips: 请求conf-dashboard获取配置信息的接口随机打散，防止并发流量对conf-dashboard模块的影响；</p>
 <p>定时任务流程图如下：</p>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/confmg.drawio.png" alt="cron-confmg"></p>
 <h3 id="整体交互框架">整体交互框架</h3>
@@ -448,6 +448,11 @@
 <td>service_type</td>
 <td>tinyint</td>
 <td>服务类型 比如：0.无 1.liveme 2.livestation</td>
+</tr>
+<tr>
+<td>clusterName</td>
+<td>string</td>
+<td>服务集群名称</td>
 </tr>
 <tr>
 <td>cur_ver</td>
@@ -564,6 +569,11 @@
 <td>服务类型</td>
 </tr>
 <tr>
+<td>clusterName</td>
+<td>string</td>
+<td>服务集群名称</td>
+</tr>
+<tr>
 <td>check_status</td>
 <td>tinyint</td>
 <td>服务配置审核状态: 0.待审核 1.审核不通过 2.审核通过</td>
@@ -671,6 +681,11 @@
 <td>service_type</td>
 <td>tinyint</td>
 <td>服务类型</td>
+</tr>
+<tr>
+<td>clusterName</td>
+<td>string</td>
+<td>服务集群名称</td>
 </tr>
 <tr>
 <td>history_ver</td>
@@ -990,10 +1005,10 @@
 <td>业务服务配置更新结果报告列表</td>
 </tr>
 <tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>clusterName</td>
+<td>必须</td>
+<td>string</td>
+<td>集群名称</td>
 </tr>
 </tbody>
 </table>
@@ -1073,9 +1088,9 @@
 </ol>
 <h3 id="施工">施工</h3>
 <p>可以进行模块划分，按人力进行分工，可以用Project或者trello这些工具来管理整个项目需求，开发，测试，上线周期；也可以内部整合jira 和 wiki 等平台工具进行管理;</p>
-<p>这个有点像建筑施工队，有了设计稿，剩下的是去实施了，实施的话需要，整体系统架构设计的建筑工程师👷，懂这行工具的专工👷，以及领队包工头👷，大项目可能还有项目监工👷‍♀️，监控进度，以及交互后的质量把控工程师👷；一起配合把事干好，让用户和老板满意。</p>
+<p>这个有点像建筑施工队，有了设计稿，推演几遍，满足整体需求和目标；剩下的是去实施了，实施的话需要，整体系统架构设计的建筑工程师👷，懂这行工具的专工👷，以及领队包工头👷，大项目可能还有项目监工👷‍♀️，监控进度，以及交互后的质量把控工程师👷；一起配合把事干好，让用户和老板满意。</p>
 <h3 id="总结">总结</h3>
-<p>前期业务为了满足快速业务迭代，业务动态配置可能都是随着业务服务一起上线，或者通过单独的代码库进行管理分开单独上线；这个可能会因为代码上线了，但是配置忘记上线的情况；或者只需要修改配置上线，而不需要修改代码，也需要单独部署一次业务服务，如果设计多个服务模块，不能及时响应了，不够KISS；为了满足业务集群配置化管理，配置平台需要管理业务动态配置来提高人效，保证业务集群上线配置的整体一致，通过后台页面来管理配置和历史配置，追踪配置的修改情况；需要注意的是，第一次上线的配置，可以先在测试环境配置平台上配置好，测试好之后，在到线上平台配置发布上线，然后在部署业务服务代码。</p>
+<p>前期业务为了满足快速业务迭代，业务动态配置可能都是随着业务服务一起上线，或者通过单独的代码库进行管理分开单独上线；这个可能会因为代码上线了，但是配置忘记上线的情况；或者只需要修改配置上线，而不需要修改代码，也需要单独部署一次业务服务，如果设计多个服务模块，不能及时响应了，不够KISS；为了满足业务集群配置化管理，配置平台需要管理业务动态配置来提高人效，保证业务集群上线配置的整体一致，通过后台页面来管理配置和历史配置，追踪配置的修改情况；需要注意的是，第一次上线的配置，可以先在测试环境配置平台上配置好，测试好之后，在到线上平台配置发布上线，然后在部署业务服务代码；发布配置也需要在线上未接入流量的机器上，测试之后才能上。</p>
 <h3 id="qa">Q&amp;A</h3>
 <ol>
 <li>
