@@ -6,7 +6,16 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Thu, 18 Nov 2021 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 21 Nov 2021 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>WAL</title>
+      <link>https://weedge.github.io/tags/wal/</link>
+      <pubDate>Sun, 21 Nov 2021 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/wal/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>conf</title>
       <link>https://weedge.github.io/tags/conf/</link>
@@ -175,15 +184,6 @@
       <pubDate>Sat, 15 Nov 2014 21:04:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/linux/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>tools</title>
-      <link>https://weedge.github.io/tags/tools/</link>
-      <pubDate>Sat, 15 Nov 2014 21:04:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/tools/</guid>
       <description></description>
     </item>
     
