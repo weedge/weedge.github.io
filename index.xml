@@ -83,7 +83,7 @@
 &lt;h4 id=&#34;undolog&#34;&gt;undolog&lt;/h4&gt;
 &lt;p&gt;数据库事务四大特性中有一个是 &lt;strong&gt;原子性&lt;/strong&gt; ，具体来说就是 &lt;strong&gt;原子性是指对数据库的一系列操作，要么全部成功，要么全部失败，不可能出现部分成功的情况&lt;/strong&gt;。实际上， &lt;strong&gt;原子性&lt;/strong&gt; 底层就是通过 undo log 实现的。 undo log 主要记录了数据的逻辑变化，比如一条  INSERT 语句，对应一条 DELETE 的 undo log ，对于每个 UPDATE 语句，对应一条相反的 UPDATE 的undo log ，这样在发生错误时，就能回滚到事务之前的数据状态。同时， undo log 也是 MVCC (多版本并发控制)实现的关键；通过 &lt;code&gt;show variables like &#39;%undo%&#39;; &lt;/code&gt;查看参数。&lt;/p&gt;
 &lt;h4 id=&#34;binlog&#34;&gt;binlog&lt;/h4&gt;
-&lt;p&gt;binlog 用于记录数据库执行的写入性操作(不包括查询)信息，以二进制的形式保存在磁盘中。 binlog 是 mysql的逻辑日志，并且由 Server 层进行记录，使用任何存储引擎的 mysql 数据库都会记录 binlog 日志（log_bin 打开的情况下）。&lt;/p&gt;
+&lt;p&gt;binlog 用于记录数据库执行的写入性操作(不包括查询)信息，以二进制的形式保存在磁盘中。 binlog 是 mysql的逻辑日志，并且由 Server 层进行记录，使用任何存储引擎的 mysql 数据库都会记录 binlog 日志（&lt;code&gt;log_bin&lt;/code&gt; 打开的情况下）。&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;逻辑日志&lt;/strong&gt;： 可以简单理解为记录的就是sql语句 。&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;物理日志&lt;/strong&gt;： mysql 数据最终是保存在数据页中的，物理日志记录的就是数据页变更 。&lt;/li&gt;
@@ -125,7 +125,7 @@
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;binlog日志主要是用来主从同步复制数据以及数据恢复，是mysql server层执行器进行操作(主)写入和(从)读入(relaylog)；&lt;/p&gt;
-&lt;p&gt;数据可以按天按周进行备份，顺序写入，没有大小限制(文件大小有限，但是整体没有限制，多个文件可以通过binlog.index定位)；&lt;/p&gt;
+&lt;p&gt;数据可以按天按周进行备份，顺序写入，没有大小限制(文件大小有限，但是整体没有限制，多个文件binlog.**可以通过binlog.index定位)；&lt;/p&gt;
 &lt;h4 id=&#34;redo-log与binlog区别&#34;&gt;redo log与binlog区别&lt;/h4&gt;
 &lt;p&gt;不同于redo log, 虽然两者都可以用来恢复数据，但是在mysql中innodb存储引擎的wal机制下生成的redolog有大小限制， redo log 实际上记录数据页的变更，而这种变更记录是没必要全部保存，因此 redo log实现上采用了大小固定，循环写入的方式，当写到结尾时，会回到开头循环写日志；而binlog主要是用来数据恢复，如果备份时间长，用户在某段时间有误操作，需要回滚操作，就可以同binlog来恢复到某个时间点的日志状态；对于redo log是做不到的；而且binlog 不是存储引擎特有的，所以可以在不同的存储引擎公用来恢复数据场景；区别如下：&lt;/p&gt;
 &lt;table&gt;
@@ -159,8 +159,8 @@
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;由 binlog 和 redo log 的区别可知：因为mysql 早期自带的MyISAM存储引擎设计用 binlog 日志只用于归档，进行数据恢复，只依靠 binlog 是没有 crash-safe 能力的。innnodb存储引擎引入mysql之后，引入redo/undo log文件来支持事务持久性和原子性来保证写入数据的一致性；但只有 redo log 也不行，因为 redo log 是 InnoDB 特有的，循环写入，无法还原不再这个redo log中的记录，比如从服务启动或者记录数据落后很多。因此需要 binlog 和 redo log二者同时记录，才能保证当数据库发生误删或者宕机重启时，数据不会丢失。&lt;/p&gt;
-&lt;p&gt;为了保证写入两份日志redo log, binlog 最终恢复数据是一致的，采用两阶段提交的机制，mysql server 执行器 在调用innodb存储引擎接口进行写操作的时候，起到一个事务协调者的作用；&lt;/p&gt;
+&lt;p&gt;由 binlog 和 redo log 的区别可知：因为mysql 早期自带的MyISAM存储引擎设计用 binlog 日志只用于归档，进行数据恢复，只依靠 binlog 是没有 crash-safe 能力的。innnodb存储引擎引入mysql之后，引入redo/undo log文件来支持事务持久性和原子性来保证写入数据的一致性；但只有 redo log 也不行，因为 redo log 是 InnoDB 特有的，循环写入，无法还原不在这个redo log中的记录，比如从服务启动或者记录数据落后很多；因此需要 binlog 和 redo log二者同时记录，才能保证当数据库发生误删或者宕机重启时，数据不会丢失。&lt;/p&gt;
+&lt;p&gt;为了保证写入两份日志redo log, binlog 最终恢复数据是一致的，采用两阶段提交的机制，mysql server 执行器 在调用innodb存储引擎接口进行写操作的时候，起到一个事务协调者的作用；这里会有各种日志的刷新机制，可以通过&lt;code&gt;show variables like &#39;%innodb%flush%&#39;;show variables like &#39;sync_binlog&#39;;&lt;/code&gt;获取对应的参数，可以去官网&lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/server-option-variable-reference.html&#34;&gt;Server Option, System Variable, and Status Variable Reference&lt;/a&gt; 查找对应的详情进行配置优化；&lt;/p&gt;
 &lt;p&gt;执行器数据获取修改：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;执行器调用innodb存储引擎接口获取满足条件的数据，通过树索引查找/全表查找， 如果数据在buffer pool中查找到，返回数据；否则从磁盘表空间文件中读取page数据到buffer pool clean page中，返回数据；无数据，流程终止返回；&lt;/li&gt;
@@ -169,13 +169,23 @@
 &lt;p&gt;prepare阶段:&lt;/p&gt;
 &lt;ol start=&#34;3&#34;&gt;
 &lt;li&gt;执行器调用innodb存储引擎接口进行修改操作，首先写入数据的旧值至undo log buffer中，通过flush机制写入undo log file中，以便回滚操作；&lt;/li&gt;
-&lt;li&gt;将数据页的修改记录写入redo log buffer中，通过flush机制写入undo log file中, 以便崩溃恢复；&lt;/li&gt;
-&lt;li&gt;更新buffer pool中的数据，修改的clean page 变成 dirty page(更新的数据在缓存中，还未刷盘) ; 为了提高写性能异步线程刷盘;&lt;/li&gt;
-&lt;li&gt;&lt;/li&gt;
+&lt;li&gt;更新buffer pool中的数据，修改的clean page 变成 dirty page(更新的数据页在缓存中，还未刷盘) ; 为了提高写性能异步线程刷盘;&lt;/li&gt;
+&lt;li&gt;同时将数据页的修改记录写入redo log buffer中，准备提交事务，通过flush机制写入redo log file中, 此时 redo log 处于 prepare 状态；然后告知执行器执行完成了，随时可以提交事务。这里会出现redo log file写满的情况，buffer 写入回hang住，MySQL就会停下手头的任务，先把脏页刷到磁盘里，才能继续干活，会导致MySQL的服务器的tps有明显的波动； 默认开启了innodb_adaptive_flushing 算法进行优化，在redo log file还没有满的时候，会根据redo log file生成的速度和刷新频率来将redo log file中的脏页刷入磁盘表空间文件中；&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;commit阶段: 只有binlog写入成功之后，执行器才会调用innodb存储引擎接口，设置redo log 为commit；&lt;/p&gt;
+&lt;p&gt;commit阶段:&lt;/p&gt;
+&lt;ol start=&#34;6&#34;&gt;
+&lt;li&gt;innodb存储引擎告知执行器执行完毕，执行器开始生成这个时间点的逻辑操作日志格式，通过&lt;code&gt;sync_binlog&lt;/code&gt; flush策略写入到磁盘binlog文件binlog.**/binlog.index中;&lt;/li&gt;
+&lt;li&gt;只有binlog写入成功之后，执行器才会调用innodb存储引擎接口，引擎把刚刚写入的 redo log 改成提交（commit）状态，更新完成。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;更新流程中写入redo log的过程拆成了两个步骤prepare和commit 两个阶段；如果不使用两阶段提交，数据库的状态就有可能和用它的日志恢复出来的库的状态不一致。MySQL异常重启后的崩溃恢复规则可以通过redo log中的prepare和commit来判断是否提交/回滚事务:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;binlog无记录，redolog无记录：在redolog写之前crash, 无prepare状态，无undo log 记录，恢复操作：无，无需关心；&lt;/li&gt;
+&lt;li&gt;binlog无记录，redolog无记录：在redolog写之前crash, 无prepare状态，有undo log 记录，恢复操作：通过undo log回滚事务；&lt;/li&gt;
+&lt;li&gt;binlog有记录，redolog有记录：redolog状态prepare， 则判断对应的事务是否存在完整的binlog，恢复操作：如果是, 则提交事务，否则, 通过undo log回滚事务;&lt;/li&gt;
+&lt;li&gt;如果redo log里面的事务是完整的, 也就是有了commit标识, 则直接提交；&lt;/li&gt;
+&lt;/ol&gt;
 &lt;h4 id=&#34;mysql80-innodb存储引擎写操作&#34;&gt;Mysql8.0 InnoDB存储引擎写操作&lt;/h4&gt;
-&lt;p&gt;Mysql8.0 InnoDB存储引擎写操作，对redo log的写操作进行无锁全异步设计优化；&lt;/p&gt;
+&lt;p&gt;Mysql8.0 InnoDB存储引擎写操作，对redo log的写操作进行无锁全异步设计优化；具体详细见官方文档：&lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/optimizing-innodb-logging.html&#34;&gt;优化 InnoDB 重做日志&lt;/a&gt;&lt;/p&gt;
 &lt;h3 id=&#34;etcd&#34;&gt;etcd&lt;/h3&gt;
 &lt;h3 id=&#34;references&#34;&gt;references&lt;/h3&gt;
 &lt;ol&gt;
@@ -189,6 +199,8 @@
 &lt;li&gt;&lt;a href=&#34;https://dev.mysql.com/doc/internals/en/binary-log.html&#34;&gt;mysql binary-log&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;http://mysql.taobao.org/monthly/2021/10/01/&#34;&gt;MySQL · 引擎特性 · 庖丁解InnoDB之UNDO LOG&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;http://catkang.github.io/2020/02/27/mysql-redo.html&#34;&gt;庖丁解InnoDB之REDO LOG&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/server-option-variable-reference.html&#34;&gt;Server Option, System Variable, and Status Variable Reference&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://icyfenix.cn/architect-perspective/general-architecture/transaction/local.html&#34;&gt;凤凰架构-本地事务&lt;/a&gt; 全局看问题&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>
@@ -1406,6 +1418,7 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。&lt;
 &lt;li&gt;/usr/local/opt/mysql/bin/ibd2sdi (utilities/ibd2sdi.cc文件)  查看ibd文件中的字典序列化信息,mysqlbinlog binlog.* 打印binlo g信息&lt;/li&gt;
 &lt;li&gt;客户端命令执行show VARIABLES like &amp;ldquo;%Innodb%&amp;quot;; show status like &amp;ldquo;%Innodb%&amp;quot;; 查看Innodb参数和状态统计；&lt;/li&gt;
 &lt;li&gt;客户端命令执行  SHOW ENGINE INNODB STATUS; 查看整体运行状态监控数据(io,thread, buffer pool memory, SEMAPHORES, TRANSACTIONS,INSERT BUFFER AND ADAPTIVE HASH INDEX,LOG,ROW OPERATIONS)&lt;/li&gt;
+&lt;li&gt;相关的参数可以从官网查看介绍&lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/server-option-variable-reference.html&#34;&gt;Server Option, System Variable, and Status Variable Reference&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;下载源码 &lt;a href=&#34;https://github.com/mysql/mysql-server&#34;&gt;https://github.com/mysql/mysql-server&lt;/a&gt; 8.0 版本分支，download zip文件，解压，编译，运行，gdb debug&lt;/li&gt;
 &lt;/ol&gt;
 &lt;/blockquote&gt;
@@ -1426,6 +1439,7 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。&lt;
 &lt;li&gt;&lt;a href=&#34;http://mysql.taobao.org/monthly/2017/05/01/&#34;&gt;MySQL · 引擎特性 · InnoDB Buffer Pool&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;http://mysql.taobao.org/monthly/2021/01/06/&#34;&gt;MySQL · 源码阅读 · Innodb内存管理解析&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://dev.mysql.com/doc/internals/en/&#34;&gt;MySQL Internals Manual&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/server-option-variable-reference.html&#34;&gt;Server Option, System Variable, and Status Variable Reference&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>
