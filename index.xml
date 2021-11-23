@@ -166,13 +166,13 @@
 &lt;li&gt;执行器调用innodb存储引擎接口获取满足条件的数据，通过树索引查找/全表查找， 如果数据在buffer pool中查找到，返回数据；否则从磁盘表空间文件中读取page数据到buffer pool clean page中，返回数据；无数据，流程终止返回；&lt;/li&gt;
 &lt;li&gt;执行器修改找到的数据，将修改的数据 调用innodb存储引擎接口写入新数据，进行两阶段提交；&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;strong&gt;prepare阶段:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;prepare阶段:&lt;/strong&gt;  具体见代码 &lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/storage/innobase/trx/trx0trx.cc#L2919&#34;&gt;static void trx_prepare(trx_t *trx)&lt;/a&gt;&lt;/p&gt;
 &lt;ol start=&#34;3&#34;&gt;
 &lt;li&gt;执行器调用innodb存储引擎接口进行修改操作，首先写入数据的旧值至undo log buffer中，通过flush机制写入undo log file中，以便回滚操作；&lt;/li&gt;
 &lt;li&gt;更新buffer pool中的数据，修改的clean page 变成 dirty page(更新的数据页在缓存中，还未刷盘) ; 为了提高写性能异步线程刷盘;&lt;/li&gt;
 &lt;li&gt;同时将数据页的修改记录写入redo log buffer中，准备提交事务，通过flush机制写入redo log file中, 此时 redo log 处于 prepare 状态；然后告知执行器执行完成了，随时可以提交事务。这里会出现redo log file写满的情况，buffer 写入回hang住，MySQL就会停下手头的任务，先把脏页刷到磁盘里，才能继续干活，会导致MySQL的服务器的tps有明显的波动； 默认开启了innodb_adaptive_flushing 算法进行优化，在redo log file还没有满的时候，会根据redo log file生成的速度和刷新频率来将redo log file中的脏页刷入磁盘表空间文件中；&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;strong&gt;commit阶段:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;commit阶段:&lt;/strong&gt; 具体见代码 &lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/storage/innobase/trx/trx0trx.cc#L2199&#34;&gt;void trx_commit(trx_t *trx) &lt;/a&gt;&lt;/p&gt;
 &lt;ol start=&#34;6&#34;&gt;
 &lt;li&gt;innodb存储引擎告知执行器执行完毕，执行器开始生成这个时间点的逻辑操作日志格式，通过&lt;code&gt;sync_binlog&lt;/code&gt; flush策略写入到磁盘binlog文件binlog.**/binlog.index中;&lt;/li&gt;
 &lt;li&gt;只有binlog写入成功之后，执行器才会调用innodb存储引擎接口，引擎把刚刚写入的 redo log 改成提交（commit）状态，更新完成。&lt;/li&gt;
@@ -182,7 +182,7 @@
 &lt;li&gt;binlog无记录，redolog无记录：在redolog写之前crash, 无prepare状态，无undo log 记录，恢复操作：无，无需关心；&lt;/li&gt;
 &lt;li&gt;binlog无记录，redolog无记录：在redolog写之前crash, 无prepare状态，有undo log 记录，恢复操作：通过undo log回滚事务；&lt;/li&gt;
 &lt;li&gt;binlog有记录，redolog有记录：redolog状态prepare， 则判断对应的事务是否存在完整的binlog，恢复操作：如果是, 则提交事务，否则, 通过undo log回滚事务;&lt;/li&gt;
-&lt;li&gt;如果redo log里面的事务是完整的, 也就是有了commit标识, 则直接提交；&lt;/li&gt;
+&lt;li&gt;如果redo log里面的事务是完整的, 也就是有了commit标识, 恢复操作：直接提交事务；&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h4 id=&#34;mysql80-innodb存储引擎写操作&#34;&gt;Mysql8.0 InnoDB存储引擎写操作&lt;/h4&gt;
 &lt;p&gt;Mysql8.0 InnoDB存储引擎写操作，对redo log的写操作进行无锁全异步设计优化；具体详细见官方文档：&lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/optimizing-innodb-logging.html&#34;&gt;优化 InnoDB 重做日志&lt;/a&gt;&lt;/p&gt;
