@@ -38,7 +38,7 @@
 &lt;p&gt;在使用 WAL 的系统中，所有修改在应用之前都会写入&lt;a href=&#34;https://en.wikipedia.org/wiki/Database_log&#34;&gt;日志&lt;/a&gt;。通常redo和undo信息都存储在日志中。&lt;/p&gt;
 &lt;p&gt;注意：写不一定是顺序写，一般&lt;a href=&#34;https://en.wikipedia.org/wiki/Computer_data_storage&#34;&gt;计算机存储&lt;/a&gt; 非易失性的硬件结构对顺序写的性能高于随机写的性能，比如常用的磁盘HDD/SSD; 但是最近基于NVM技术(结合磁盘和内存的特性)的存储硬件PC-RAM, STT-RAM,  R-RAM，结合内存中随机访问，磁盘非易失性特性，随机写和顺序写没什么差别，&lt;a href=&#34;http://repository.bilkent.edu.tr/bitstream/handle/11693/37609/Implications%20of%20non-volatile%20memory%20as%20primary%20storage%20for%20database%20management%20systems.pdf&#34;&gt;Implications of Non-Volatile Memory as Primary Storage for Database Management Systems&lt;/a&gt; 这篇论文中提到如果不部署内部的buffer cache，所有写直接写到NVM对应的存储硬件中，可以去掉redo日志，但是undo日志任然需要,在系统错误时复原。硬件结构决定上层软件存储引擎的设计的优化，以下都是以常用的磁盘HDD/SSD的硬件结构来介绍存储引擎来实现WAL。&lt;/p&gt;
 &lt;h3 id=&#34;mysql-innodb存储引擎&#34;&gt;mysql Innodb存储引擎&lt;/h3&gt;
-&lt;p&gt;mysql Innodb存储引擎是通过 redo、undo 日志实现 WAL； 另外，mysql server层执行器会写bin log，主要是用来恢复某个时间的点数据以及主从复制数据使用；&lt;/p&gt;
+&lt;p&gt;mysql Innodb存储引擎是通过 redo、undo 日志实现 WAL,主要用于crash 恢复和回滚，当然innodb引擎为了提高读性能，undo log中加入了MVCC (多版本并发控制)相关信息； 另外，mysql server层执行器会写bin log，主要是用来恢复某个时间的点数据以及主从复制数据使用，bin log文件和存储引擎无关；分别简要介绍redo, undo, bin log 文件在mysql中的作用。&lt;/p&gt;
 &lt;h4 id=&#34;redolog&#34;&gt;redolog&lt;/h4&gt;
 &lt;h5 id=&#34;为什么需要redo-log&#34;&gt;为什么需要redo log？&lt;/h5&gt;
 &lt;p&gt;我们都知道，事务的四大特性里面有一个是 &lt;strong&gt;持久性&lt;/strong&gt; ，具体来说就是&lt;strong&gt;只要事务提交成功，那么对数据库做的修改就被永久保存下来了，不可能因为任何原因再回到原来的状态&lt;/strong&gt; 。那么mysql是如何保证一致性的呢？最简单的做法是在每次事务提交的时候，将该事务涉及修改的数据页全部刷新到磁盘中。但是这么做会有严重的性能问题，主要体现在两个方面：&lt;/p&gt;
@@ -295,7 +295,7 @@ checkpoint 的刷盘过程，且数据页的刷盘进度超过了日志页的刷
 &lt;td&gt;服务类型 比如：0.无 1.liveme 2.livestation&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td&gt;clusterName&lt;/td&gt;
+&lt;td&gt;cluster_name&lt;/td&gt;
 &lt;td&gt;string&lt;/td&gt;
 &lt;td&gt;服务集群名称&lt;/td&gt;
 &lt;/tr&gt;
@@ -414,7 +414,7 @@ checkpoint 的刷盘过程，且数据页的刷盘进度超过了日志页的刷
 &lt;td&gt;服务类型&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td&gt;clusterName&lt;/td&gt;
+&lt;td&gt;cluster_name&lt;/td&gt;
 &lt;td&gt;string&lt;/td&gt;
 &lt;td&gt;服务集群名称&lt;/td&gt;
 &lt;/tr&gt;
@@ -528,7 +528,7 @@ checkpoint 的刷盘过程，且数据页的刷盘进度超过了日志页的刷
 &lt;td&gt;服务类型&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td&gt;clusterName&lt;/td&gt;
+&lt;td&gt;cluster_name&lt;/td&gt;
 &lt;td&gt;string&lt;/td&gt;
 &lt;td&gt;服务集群名称&lt;/td&gt;
 &lt;/tr&gt;
