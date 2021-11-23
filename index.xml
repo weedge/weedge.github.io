@@ -940,7 +940,7 @@ checkpoint 的刷盘过程，且数据页的刷盘进度超过了日志页的刷
 &lt;ol&gt;
 &lt;li&gt;
 &lt;p&gt;为什么不直接用etcd来管理配置呢？去掉mysql, 配置直接存etcd不行么？&lt;/p&gt;
-&lt;p&gt;主要是因为mysql用来提供管理配置实体的关系，用于后台页面修改使用；如果是k8s中的场景，可以直接使用etcd来存放(100G以下的数据)；&lt;/p&gt;
+&lt;p&gt;主要是因为mysql用来提供管理配置实体的关系，用于后台页面修改使用；如果是k8s中的场景，可以直接使用etcd来存放(100G以下的数据, 大厂多机房大集群会魔改etcd)；&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;如果业务服务部署在Pod容器中, 怎么更新配置呢？&lt;/p&gt;
