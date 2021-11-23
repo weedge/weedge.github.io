@@ -72,7 +72,7 @@
 <meta itemprop="description" content="序言
 ​	数据落地之前，如果出现持久化存储引擎实例重启，或者服务当机重启，如何进行故障恢复（Crash Recovery）呢？数据写操作增删改，这些操作状态数据，是如何保证事务中原子性和持久性的呢？ 这些问题数据大拿们提出了Algorithms for Recovery and Isolation Exploiting Semantics ，基于语义的恢复与隔离算法,现代数据库的基础理论；当前主流关系型数据在事务实现上都受到该理论的影响，其中有两种故障恢复的方法： 预写日志(write-ahead logging (WAL) ) 和shadow-page technique；shadow-page 方法简单介绍就是每次事务操作，以page为单位，写时复制的方式，分为Current和Shadow，类似主备的形式，如果commit成功，Current中的page合并到 Shadow中; 如果abort不成功丢弃Current的page; 如果Crash了，从Shadow中的page恢复，对所有未提交事务的回滚操作； 由于shadow-page技术的实现以page为单位，page内无法并发操作，commit/回滚时会有大量垃圾回收操作；本文主要介绍WAL，以及对应持久化存储引擎的实现机制介绍。"><meta itemprop="datePublished" content="2021-11-21T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-11-21T10:26:23+08:00" />
-<meta itemprop="wordCount" content="4625">
+<meta itemprop="wordCount" content="4773">
 <meta itemprop="keywords" content="WAL," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="WAL"/>
 <meta name="twitter:description" content="序言
@@ -347,7 +347,7 @@
 <p>在使用 WAL 的系统中，所有修改在应用之前都会写入<a href="https://en.wikipedia.org/wiki/Database_log">日志</a>。通常redo和undo信息都存储在日志中。</p>
 <p>注意：写不一定是顺序写，一般<a href="https://en.wikipedia.org/wiki/Computer_data_storage">计算机存储</a> 非易失性的硬件结构对顺序写的性能高于随机写的性能，比如常用的磁盘HDD/SSD; 但是最近基于NVM技术(结合磁盘和内存的特性)的存储硬件PC-RAM(Phase Change Random Access Memory), STT-RAM( Spin Transfer Torque Random Access Memory),  R-RAM(Resistive Random Access Memory)，结合内存中随机访问，磁盘非易失性特性，随机写和顺序写没什么差别，<a href="http://repository.bilkent.edu.tr/bitstream/handle/11693/37609/Implications%20of%20non-volatile%20memory%20as%20primary%20storage%20for%20database%20management%20systems.pdf">Implications of Non-Volatile Memory as Primary Storage for Database Management Systems</a> 这篇论文中提到Pg如果不部署内部的buffer cache，所有写直接写到NVM对应的存储硬件中，可以去掉redo日志，但是undo日志任然需要,在系统错误时复原; （顺便想到现在一些k/v存储引擎也在考虑上云，支持云厂商的云盘，可以认为无限容量）。硬件结构决定上层软件存储引擎的设计的优化，以下都是以常用的磁盘HDD/SSD的硬件结构来介绍存储引擎来实现WAL。</p>
 <h3 id="mysql-innodb存储引擎">mysql Innodb存储引擎</h3>
-<p>mysql Innodb存储引擎是通过 redo、undo 日志实现 WAL,主要用于crash 恢复和回滚，当然innodb引擎为了提高读性能，undo log中加入了MVCC (多版本并发控制)相关信息； 另外，mysql server层执行器会写bin log，主要是用来恢复某个时间的点数据以及主从复制数据使用，bin log文件和存储引擎无关；分别简要介绍redo, undo, bin log 文件在mysql中的作用。</p>
+<p>mysql Innodb存储引擎是通过 redo、undo 日志实现 WAL,主要用于crash 恢复和回滚，满足本地事务中的持久性和原子性，来保证数据一致性；当然innodb引擎为了提高并发读性能，undo log中加入了MVCC (多版本并发控制)相关信息； 另外，mysql server层执行器会写bin log，主要是用来恢复某个时间的点数据以及主从复制数据使用，bin log文件和存储引擎无关；分别简要介绍redo, undo, bin log 文件在mysql中的作用。</p>
 <h4 id="redolog">redolog</h4>
 <h5 id="为什么需要redo-log">为什么需要redo log？</h5>
 <p>我们都知道，事务的四大特性里面有一个是 <strong>持久性</strong> ，具体来说就是<strong>只要事务提交成功，那么对数据库做的修改就被永久保存下来了，不可能因为任何原因再回到原来的状态</strong> 。那么mysql是如何保证一致性的呢？最简单的做法是在每次事务提交的时候，将该事务涉及修改的数据页全部刷新到磁盘中。但是这么做会有严重的性能问题，主要体现在两个方面：</p>
@@ -357,11 +357,10 @@
 </ol>
 <p>因此 mysql设计了redolog ， <strong>具体来说就是只记录事务对数据页做了哪些修改</strong>，这样就能完美地解决性能问题了(相对而言文件更小并且是顺序IO)。</p>
 <h5 id="redo-log基本概念">redo log基本概念</h5>
-<p>redo log包括两部分：一个是内存中的日志缓冲( redo log buffer )，另一个是磁盘上的日志文件(  redo log file )。 mysql 每执行一条 DML 语句，先将记录写入 redo log buffer ，后续某个时间点再一次性将多个操作记录写到 redo log file 。这种 <strong>先写日志，再写磁盘</strong> 的技术就是 MySQL里经常说到的 WAL(Write-Ahead Logging) 技术。</p>
+<p>redo log包括两部分：一个是内存中的日志缓冲( redo log buffer )，另一个是磁盘上的日志文件(  redo log file )。 mysql 每执行一条 DML 修改写语句，会将记录写入 redo log buffer ，后续某个时间点再一次性将多个操作记录写到 redo log file 。这种 <strong>先写日志，再写磁盘</strong> 的技术就是 MySQL中的 WAL。</p>
 <p>在计算机操作系统中，用户空间( user space )下的缓冲区数据一般情况下是无法直接写入磁盘的，中间必须经过操作系统内核空间(kernel space )缓冲区( OS Buffer )。因此， redo log buffer 写入 redo log file; 实际上是先写入 OS Buffer ，然后再通过系统调用 fsync() 将其刷到 redo log file 中，过程如下：</p>
 <p><img src="https://image-static.segmentfault.com/755/731/755731335-aec527828a1323b6_fix732" alt="img"></p>
-<p>mysql 支持三种将 redo log buffer 写入 redo log file 的时机，可以通过
-innodb_flush_log_at_trx_commit  参数配置，各参数值含义如下：</p>
+<p>mysql 支持三种将 redo log buffer 写入 redo log file 的时机，可以通过 innodb_flush_log_at_trx_commit  参数配置，各参数值含义如下：</p>
 <table>
 <thead>
 <tr>
@@ -386,13 +385,10 @@ innodb_flush_log_at_trx_commit  参数配置，各参数值含义如下：</p>
 </table>
 <p><img src="https://image-static.segmentfault.com/706/634/706634199-04894beff4e7b54f_fix732" alt="img"></p>
 <h5 id="redo-log记录形式">redo log记录形式</h5>
-<p>前面说过， redo log 实际上记录数据页的变更，而这种变更记录是没必要全部保存，因此 redo log
-实现上采用了大小固定，循环写入的方式，当写到结尾时，会回到开头循环写日志。如下图：</p>
+<p>前面说过， redo log 实际上记录数据页的变更，而这种变更记录是没必要全部保存，因此 redo log实现上采用了大小固定，循环写入的方式，当写到结尾时，会回到开头循环写日志。通过<code>show variables like 'innodb_log%'; </code> 查看参数；记录文件形式如下图：</p>
 <p><img src="https://image-static.segmentfault.com/390/444/3904443652-cc3225d69e1d0476_fix732" alt="img"></p>
-<p>同时我们很容易得知， 在innodb中，既有 redo log 需要刷盘，还有 数据页 也需要刷盘， redo log 存在的意义主要就是降低对 数据页 刷盘的要求 <strong>。在上图中， write pos 表示 redo log 当前记录的 LSN (逻辑序列号)位置， check point 表示</strong> 数据页更改记录** 刷盘后对应 redo log 所处的 LSN (逻辑序列号)位置。 write pos 到 check point 之间的部分是 redo log 空着的部分，用于记录新的记录； check point 到 write pos 之间是 redo log 待落盘的数据页更改记录。当 write pos 追上 check point 时，会先推动 check point 向前移动，空出位置再记录新的日志。</p>
-<p>启动 innodb 的时候，不管上次是正常关闭还是异常关闭，总是会进行恢复操作。因为 redo log 记录的是数据页的物理变化，因此恢复的时候速度比逻辑日志(如 binlog )要快很多。 重启 innodb 时，首先会检查磁盘中数据页的 LSN ，如果数据页的 LSN 小于日志中的 LSN ，则会从 checkpoint 开始恢复。 还有一种情况，在宕机前正处于
-checkpoint 的刷盘过程，且数据页的刷盘进度超过了日志页的刷盘进度，此时会出现数据页中记录的 LSN 大于日志中的 LSN
-，这时超出日志进度的部分将不会重做，因为这本身就表示已经做过的事情，无需再重做。</p>
+<p>同时我们很容易得知， 在innodb中，既有 redo log 需要刷盘，还有 数据页 也需要刷盘， redo log 存在的意义主要就是降低对数据页刷盘的要求 。在上图中， write pos 表示 redo log 当前记录的 LSN (逻辑序列号)位置， check point 表示数据页更改记录刷盘后对应 redo log 所处的 LSN (逻辑序列号)位置。 write pos 到 check point 之间的部分是 redo log 空着的部分，用于记录新的记录； check point 到 write pos 之间是 redo log 待落盘的数据页更改记录。当 write pos 追上 check point 时，会先推动 check point 向前移动，空出位置再记录新的日志。</p>
+<p>启动 innodb 的时候，不管上次是正常关闭还是异常关闭，总是会进行恢复操作。因为 redo log 记录的是数据页的物理变化，因此恢复的时候速度比逻辑日志(如 binlog )要快很多。 重启 innodb 时，首先会检查磁盘中数据页的 LSN ，如果数据页的 LSN 小于日志中的 LSN ，则会从 checkpoint 开始恢复。 还有一种情况，在宕机前正处于checkpoint 的刷盘过程，且数据页的刷盘进度超过了日志页的刷盘进度，此时会出现数据页中记录的 LSN 大于日志中的 LSN，这时超出日志进度的部分将不会重做，因为这本身就表示已经做过的事情，无需再重做。</p>
 <h4 id="undolog">undolog</h4>
 <p>数据库事务四大特性中有一个是 <strong>原子性</strong> ，具体来说就是 <strong>原子性是指对数据库的一系列操作，要么全部成功，要么全部失败，不可能出现部分成功的情况</strong>。实际上， <strong>原子性</strong> 底层就是通过 undo log 实现的。 undo log 主要记录了数据的逻辑变化，比如一条  INSERT
 语句，对应一条 DELETE 的 undo log ，对于每个 UPDATE 语句，对应一条相反的 UPDATE 的undo log ，这样在发生错误时，就能回滚到事务之前的数据状态。同时， undo log 也是 MVCC (多版本并发控制)实现的关键</p>
@@ -418,31 +414,31 @@ checkpoint 的刷盘过程，且数据页的刷盘进度超过了日志页的刷
 </ul>
 <p>从上面可以看出， sync_binlog 最安全的是设置是 1 ，这也是 MySQL 5.7.7之后版本的默认值。但是设置一个大一些的值可以提升数据库性能，因此实际情况下也可以将值适当调大，牺牲一定的一致性来获取更好的性能。</p>
 <h5 id="binlog日志格式">binlog日志格式</h5>
-<p>binlog 日志有三种格式，分别为 STATMENT 、 ROW 和 MIXED 。在 MySQL 5.7.7 之前，默认的格式是 STATEMENT ， MySQL 5.7.7 之后，默认值是 ROW 。日志格式通过 binlog-format 指定。</p>
+<p>binlog 日志有三种格式，分别为 STATMENT 、 ROW 和 MIXED 。在 MySQL 5.7.7 之前，默认的格式是 STATEMENT ， MySQL 5.7.7 之后，默认值是 ROW 。日志格式通过 binlog-format 指定; <code>show variables like &quot;%binlog_format%&quot;;</code>查看</p>
 <ul>
 <li>
 <p>STATMENT ： 基于 SQL 语句的复制( statement-based replication, SBR )，每一条会修改数据的sql语句会记录到 binlog 中 。</p>
 <ul>
 <li>优点： 不需要记录每一行的变化，减少了 binlog  日志量，节约了  IO  , 从而提高了性能；</li>
-<li>缺点： 在某些情况下会导致主从数据不一致，比如执行 sysdate(),  等 。</li>
+<li>缺点： 在某些情况下会导致主从数据不一致，比如执行本地时间操作； <code>SELECT NOW(),SYSDATE(),SLEEP(3),NOW(),SYSDATE();</code>。</li>
 </ul>
 </li>
 <li>
 <p>ROW ： 基于行的复制( row-based replication, RBR )，不记录每条sql语句的上下文信息，仅需记录哪条数据被修改了 。</p>
 <ul>
 <li>优点： 不会出现某些特定情况下的存储过程、或function、或trigger的调用和触发无法被正确复制的问题 ；</li>
-<li>缺点： 会产生大量的日志，尤其是 alter table 的时候会让日志暴涨</li>
+<li>缺点： 会产生大量的日志，尤其是 alter table 的时候会让日志暴涨；</li>
 </ul>
 </li>
 <li>
-<p>MIXED ： 基于 STATMENT 和 ROW 两种模式的混合复制( mixed-based replication, MBR )，一般的复制使用 STATEMENT 模式保存 binlog ，对于 STATEMENT 模式无法复制的操作使用 ROW 模式保存 binlog</p>
+<p>MIXED ： 基于 STATMENT 和 ROW 两种模式的混合复制( mixed-based replication, MBR )，一般的复制使用 STATEMENT 模式保存 binlog ，对于 STATEMENT 模式无法复制的操作使用 ROW 模式保存 binlog；</p>
 </li>
 </ul>
 <p>binlog日志主要是用来主从同步复制数据以及数据恢复，是mysql server层执行器进行操作(主)写入和(从)读入(relaylog)；</p>
 <p>数据可以按天按周进行备份，顺序写入，没有大小限制(文件大小有限，但是整体没有限制，多个文件可以通过binlog.index定位)；</p>
 <p>binlog 日志有三种格式，分别为 STATMENT 、 ROW 和 MIXED ；</p>
-<p>不同于redolog, 虽然两者都可以用来恢复数据，但是mysql中的wal机制下生成的redolog有大小限制， redolog 实际上记录数据页的变更，而这种变更记录是没必要全部保存，因此 redolog实现上采用了大小固定，循环写入的方式，当写到结尾时，会回到开头循环写日志；而binlog主要是用来数据恢复，如果备份时间长，用户在某段时间有误操作，需要回滚操作，就可以同binlog来恢复到某个时间点的日志状态；对于redolog是做不到的；而且binlog 不是存储引擎特有的，所以可以在不同的存储引擎公用来恢复数据场景。</p>
 <h4 id="redo-log与binlog区别">redo log与binlog区别</h4>
+<p>不同于redolog, 虽然两者都可以用来恢复数据，但是mysql中的wal机制下生成的redolog有大小限制， redolog 实际上记录数据页的变更，而这种变更记录是没必要全部保存，因此 redolog实现上采用了大小固定，循环写入的方式，当写到结尾时，会回到开头循环写日志；而binlog主要是用来数据恢复，如果备份时间长，用户在某段时间有误操作，需要回滚操作，就可以同binlog来恢复到某个时间点的日志状态；对于redolog是做不到的；而且binlog 不是存储引擎特有的，所以可以在不同的存储引擎公用来恢复数据场景；区别如下：</p>
 <table>
 <thead>
 <tr>
