@@ -161,7 +161,7 @@
 &lt;/table&gt;
 &lt;p&gt;由 binlog 和 redo log 的区别可知： binlog 日志只用于归档，只依靠 binlog 是没有 crash-safe 能力的。但只有 redo log 也不行，因为 redo log 是 InnoDB 特有的，且日志上的记录落盘后会被覆盖掉。因此需要 binlog 和 redo log二者同时记录，才能保证当数据库发生误删或者宕机重启时，数据不会丢失。&lt;/p&gt;
 &lt;h4 id=&#34;mysql80-innodb存储引擎写操作&#34;&gt;Mysql8.0 InnoDB存储引擎写操作&lt;/h4&gt;
-&lt;p&gt;Mysql8.0 InnoDB存储引擎写操作，对redo log 日志进行了优化，对redo log的写操作进行无锁全异步设计；&lt;/p&gt;
+&lt;p&gt;Mysql8.0 InnoDB存储引擎写操作，对redo log的写操作进行无锁全异步设计优化；&lt;/p&gt;
 &lt;h3 id=&#34;etcd&#34;&gt;etcd&lt;/h3&gt;
 &lt;h3 id=&#34;references&#34;&gt;references&lt;/h3&gt;
 &lt;ol&gt;
