@@ -72,7 +72,7 @@
 <meta itemprop="description" content="序言
 ​	数据落地之前，如果出现持久化存储引擎实例重启，或者服务当机重启，如何进行故障恢复（Crash Recovery）呢？数据写操作增删改，这些操作状态数据，是如何保证事务中原子性和持久性的呢？ 这些问题数据大拿们提出了Algorithms for Recovery and Isolation Exploiting Semantics ，基于语义的恢复与隔离算法,现代数据库的基础理论；当前主流关系型数据在事务实现上都受到该理论的影响，其中有两种故障恢复的方法： 预写日志(write-ahead logging (WAL) ) 和shadow-page technique；shadow-page 方法简单介绍就是每次事务操作，以page为单位，写时复制的方式，分为Current和Shadow，类似主备的形式，如果commit成功，Current中的page合并到 Shadow中; 如果abort不成功丢弃Current的page; 如果Crash了，从Shadow中的page恢复，对所有未提交事务的回滚操作； 由于shadow-page技术的实现以page为单位，page内无法并发操作，commit/回滚时会有大量垃圾回收操作；本文主要介绍WAL，以及对应持久化存储引擎的实现机制介绍。"><meta itemprop="datePublished" content="2021-11-21T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-11-21T10:26:23+08:00" />
-<meta itemprop="wordCount" content="4561">
+<meta itemprop="wordCount" content="4605">
 <meta itemprop="keywords" content="WAL," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="WAL"/>
 <meta name="twitter:description" content="序言
@@ -345,7 +345,7 @@
 <p><strong>预写日志</strong>( <strong>WAL</strong> ) 是一系列技术，用于在<a href="https://en.wikipedia.org/wiki/Database_system">数据库系统中</a>提供<a href="https://en.wikipedia.org/wiki/Atomicity_(database_systems)">原子性</a>和<a href="https://en.wikipedia.org/wiki/Durability_(database_systems)">持久性</a>（两个<a href="https://en.wikipedia.org/wiki/ACID">ACID</a>属性）。在将更改写入数据库之前，更改首先记录在日志中，日志必须写入<a href="https://en.wikipedia.org/wiki/Stable_storage">稳定存储</a>（保证任何给定写入操作的原子性，并允许编写对某些硬件和电源故障具有<a href="https://en.wikipedia.org/wiki/Robustness_(computer_science)">鲁棒性的</a>软件）。</p>
 <p>这样做的目的可以通过一个例子来说明。想象一下，当运行它的机器断电时，它正在执行某些操作。重新启动时，该程序可能需要知道它正在执行的操作是成功、部分成功还是失败。如果使用预写日志，程序可以检查此日志并将意外断电时应该执行的操作与实际执行的操作进行比较。在此比较的基础上，程序可以决定撤消已开始的内容、完成已开始的内容或保持原样。</p>
 <p>在使用 WAL 的系统中，所有修改在应用之前都会写入<a href="https://en.wikipedia.org/wiki/Database_log">日志</a>。通常redo和undo信息都存储在日志中。</p>
-<p>注意：写不一定是顺序写，一般<a href="https://en.wikipedia.org/wiki/Computer_data_storage">计算机存储</a> 非易失性的硬件结构对顺序写的性能高于随机写的性能，比如常用的磁盘HDD/SSD; 但是最近基于NVM技术(结合磁盘和内存的特性)的存储硬件PC-RAM, STT-RAM,  R-RAM，结合内存中随机访问，磁盘非易失性特性，随机写和顺序写没什么差别，<a href="http://repository.bilkent.edu.tr/bitstream/handle/11693/37609/Implications%20of%20non-volatile%20memory%20as%20primary%20storage%20for%20database%20management%20systems.pdf">Implications of Non-Volatile Memory as Primary Storage for Database Management Systems</a> 这篇论文中提到如果不部署内部的buffer cache，所有写直接写到NVM对应的存储硬件中，可以去掉redo日志，但是undo日志任然需要,在系统错误时复原。硬件结构决定上层软件存储引擎的设计的优化，以下都是以常用的磁盘HDD/SSD的硬件结构来介绍存储引擎来实现WAL。</p>
+<p>注意：写不一定是顺序写，一般<a href="https://en.wikipedia.org/wiki/Computer_data_storage">计算机存储</a> 非易失性的硬件结构对顺序写的性能高于随机写的性能，比如常用的磁盘HDD/SSD; 但是最近基于NVM技术(结合磁盘和内存的特性)的存储硬件PC-RAM, STT-RAM,  R-RAM，结合内存中随机访问，磁盘非易失性特性，随机写和顺序写没什么差别，<a href="http://repository.bilkent.edu.tr/bitstream/handle/11693/37609/Implications%20of%20non-volatile%20memory%20as%20primary%20storage%20for%20database%20management%20systems.pdf">Implications of Non-Volatile Memory as Primary Storage for Database Management Systems</a> 这篇论文中提到Pg如果不部署内部的buffer cache，所有写直接写到NVM对应的存储硬件中，可以去掉redo日志，但是undo日志任然需要,在系统错误时复原; （顺便想到现在一些k/v存储引擎也在考虑上云，支持云厂商的云盘，可以任务无限容量）。硬件结构决定上层软件存储引擎的设计的优化，以下都是以常用的磁盘HDD/SSD的硬件结构来介绍存储引擎来实现WAL。</p>
 <h3 id="mysql-innodb存储引擎">mysql Innodb存储引擎</h3>
 <p>mysql Innodb存储引擎是通过 redo、undo 日志实现 WAL,主要用于crash 恢复和回滚，当然innodb引擎为了提高读性能，undo log中加入了MVCC (多版本并发控制)相关信息； 另外，mysql server层执行器会写bin log，主要是用来恢复某个时间的点数据以及主从复制数据使用，bin log文件和存储引擎无关；分别简要介绍redo, undo, bin log 文件在mysql中的作用。</p>
 <h4 id="redolog">redolog</h4>
