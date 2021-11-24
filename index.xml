@@ -200,7 +200,7 @@
 &lt;li&gt;&lt;a href=&#34;http://mysql.taobao.org/monthly/2021/10/01/&#34;&gt;MySQL · 引擎特性 · 庖丁解InnoDB之UNDO LOG&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;http://catkang.github.io/2020/02/27/mysql-redo.html&#34;&gt;庖丁解InnoDB之REDO LOG&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/server-option-variable-reference.html&#34;&gt;Server Option, System Variable, and Status Variable Reference&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://icyfenix.cn/architect-perspective/general-architecture/transaction/local.html&#34;&gt;凤凰架构-本地事务&lt;/a&gt; 全局看问题&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://icyfenix.cn/architect-perspective/general-architecture/transaction/local.html&#34;&gt;凤凰架构-本地事务&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>
