@@ -223,7 +223,8 @@ struct Binlog_storage_observer /* Observe binlog logging storage */
 &lt;li&gt;&lt;strong&gt;after_sync&lt;/strong&gt; 主库先不提交事务，等待某一个从库返回了结果之后，再提交事务，在返回结构通知客户端。这样一来，如果从库在没有任何返回的情况下宕机了，master这边也无法提交事务。主从仍然是一致的，mysql5.7之后默认值。&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;after_commit&lt;/strong&gt; 主库先提交事务，等待从库返回结果再通知客户端。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;组复制：基于原生复制及 paxos 协议，提供一致数据安全保证，一种可用于实现容错系统的技术；MySQL 5.7.17版本中引入了MySQL Group Replication组复制，同样也是以插件的形式支持; 对应的代码在&lt;a href=&#34;https://github.com/mysql/mysql-server/tree/8.0/plugin/group_replication&#34;&gt;plugin/group_replication&lt;/a&gt;文件夹中。主从都是&lt;code&gt;INSTALL PLUGIN group_replication SONAME &#39;group_replication.so&#39;;&lt;/code&gt; 具体实际操作见：&lt;a href=&#34;https://www.cnblogs.com/kevingrace/p/10260685.html&#34;&gt;MySQL 5.7 基于组复制(MySQL Group Replication)&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;组复制：基于原生复制及 paxos 协议，提供一致数据安全保证，一种可用于实现容错系统的技术；MySQL 5.7.17版本中引入了MySQL&lt;/p&gt;
+&lt;p&gt;组复制，同样也是以插件的形式支持; 对应的代码在&lt;a href=&#34;https://github.com/mysql/mysql-server/tree/8.0/plugin/group_replication&#34;&gt;plugin/group_replication&lt;/a&gt;文件夹中。主从都是&lt;code&gt;INSTALL PLUGIN group_replication SONAME &#39;group_replication.so&#39;;&lt;/code&gt; 具体见官方文档：&lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/group-replication.html&#34;&gt;MySQL8.0 Group Replication&lt;/a&gt;&lt;/p&gt;
 &lt;ol start=&#34;8&#34;&gt;
 &lt;li&gt;如果开启的主从复制(默认异步)1:n，主库会等待从库I/O线程建立连接之后，创建binlog dump线程，通知slave有数据更新，当I/O线程请求日志内容时，会将此时的binlog名称和当前更新的位置pos同时传给slave的I/O线程, 把binlog event发送给从库I/O线程，从库I/O线程获取到binlog event之后将其写入到自己的Relay Log中，然后从库启动SQL线程，将Relay中的数据进行重放，完成从库的数据更新；为了保证不重复更新，binlog/relaylog 中记录了GTID（mysql5.6加入）, 全局唯一, 如果relaylog中已有GTID, 则执行GTID自动跳过，意味着在源上提交的事务只能在副本上应用一次，这有助于保证一致性;&lt;/li&gt;
 &lt;/ol&gt;
