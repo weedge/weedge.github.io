@@ -244,7 +244,7 @@ struct Binlog_storage_observer /* Observe binlog logging storage */
 &lt;h3 id=&#34;mysql80-innodb存储引擎写操作&#34;&gt;Mysql8.0 InnoDB存储引擎写操作&lt;/h3&gt;
 &lt;p&gt;Mysql8.0 InnoDB存储引擎写操作，对redo log的写操作进行无锁全异步设计优化；具体详细见官方文档：&lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/optimizing-innodb-logging.html&#34;&gt;优化 InnoDB 重做日志&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&#34;etcd&#34;&gt;etcd&lt;/h2&gt;
-&lt;h3 id=&#34;references&#34;&gt;references&lt;/h3&gt;
+&lt;h2 id=&#34;references&#34;&gt;references&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Write-ahead_logging&#34;&gt;Write-ahead_logging&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Algorithms_for_Recovery_and_Isolation_Exploiting_Semantics&#34;&gt;ARIES:Algorithms_for_Recovery_and_Isolation_Exploiting_Semantics&lt;/a&gt;&lt;/li&gt;
