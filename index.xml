@@ -162,9 +162,9 @@
 &lt;p&gt;由 binlog 和 redo log 的区别可知：因为mysql 早期自带的MyISAM存储引擎设计用 binlog 日志只用于归档，进行数据恢复，只依靠 binlog 是没有 crash-safe 能力的。innnodb存储引擎引入mysql之后，引入redo/undo log文件来支持事务持久性和原子性来保证写入数据的一致性；但只有 redo log 也不行，因为 redo log 是 InnoDB 特有的，循环写入，无法还原不在这个redo log中的记录，比如从服务启动或者记录数据落后很多；因此需要 binlog 和 redo log二者同时记录，才能保证当数据库发生误删或者宕机重启时，数据不会丢失。&lt;/p&gt;
 &lt;h4 id=&#34;两阶段提交&#34;&gt;两阶段提交&lt;/h4&gt;
 &lt;p&gt;为了保证写入两份日志redo log, binlog 最终恢复数据是一致的，采用两阶段提交的机制(XA,内部/全局事务 innodb提供一样的操作)，mysql server 执行器 在调用innodb存储引擎接口进行写操作的时候，起到一个事务协调者的作用,通过TC_LOG(Transaction Coordinator Log)基类定义了事务日志需要实现的接口: open, prepare, commit, rollback, close；实现这些接口的类：TC_LOG_DUMMY(disable the logging), TC_LOG_MMAP(mmap logging), MYSQL_BIN_LOG(binlog)；主要是是查看MYSQL_BIN_LOG类中&lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/binlog.cc#L7881&#34;&gt;prepare&lt;/a&gt; 和 &lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/binlog.cc#L7934&#34;&gt;commit&lt;/a&gt; 的实现；prepare 和 commit最终会调用存储引擎初始化时指向的handlerton对象对应函数；（这种接口隔离的常用设计，将调用方和实现方进行解耦，根据参数配置来绑定实现方，运行时动态调用）&lt;/p&gt;
-&lt;p&gt;mysql是以plugin的方式管理存储引擎和replication(主从副本同步)插件等（通过&lt;code&gt;SHOW PLUGINS;&lt;/code&gt;查看)；&lt;/p&gt;
+&lt;p&gt;mysql是以plugin的方式管理存储引擎，replication(主从副本同步)插件和其他插件（通过&lt;code&gt;SHOW PLUGINS;&lt;/code&gt;查看)；具体的插件代码在&lt;a href=&#34;https://github.com/mysql/mysql-server/tree/8.0/plugin&#34;&gt;plugin&lt;/a&gt;文件中，简单的插件示例&lt;a href=&#34;https://github.com/mysql/mysql-server/tree/8.0/plugin/rewrite_example&#34;&gt;rewrite_example&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;mysqld 启动时通过配置初始的存储引擎(默认innodb)，调用&lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/mysqld.cc#L5815&#34;&gt;init_server_components&lt;/a&gt; 调用innodb存储引擎的接口进行初始化ha_handler, 在&lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/storage/innobase/handler/ha_innodb.cc#L4935&#34;&gt;innodb_init&lt;/a&gt;中进行初始化, 比如刷盘操作 innobase_hton-&amp;gt;flush_logs = innobase_flush_logs; 然后在sql/handler中定义的相关接口调用, 比如&lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/handler.cc#L2459&#34;&gt;ha_flush_logs&lt;/a&gt;。&lt;/p&gt;
-&lt;p&gt;安装replication插件时会注册插件中相应的方法加入observer 列表中，运行触发的时候以AOP的方式RUN_HOOK 扫描observer列表Observer_info-&amp;gt;observer调用对应插件函数；具体的插件代码在&lt;a href=&#34;https://github.com/mysql/mysql-server/tree/8.0/plugin&#34;&gt;plugin&lt;/a&gt;文件中，replication插件需要实现以下&lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/replication.h&#34;&gt;replication文件中&lt;/a&gt;相关结构体的方法(接口) 才能加载：&lt;/p&gt;
+&lt;p&gt;安装replication插件时会注册插件中相应的方法加入observer 列表中，运行触发的时候以AOP的方式RUN_HOOK 扫描observer列表Observer_info-&amp;gt;observer调用对应插件函数；replication插件需要实现以下&lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/replication.h&#34;&gt;replication文件中&lt;/a&gt;相关结构体的方法(接口) 才能加载：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; Trans_observer &lt;span style=&#34;color:#75715e&#34;&gt;/* Observes and extends transaction execution */&lt;/span&gt;
 &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; Server_state_observer &lt;span style=&#34;color:#75715e&#34;&gt;/* Observer server state */&lt;/span&gt;
 &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; Binlog_transmit_observer &lt;span style=&#34;color:#75715e&#34;&gt;/* Observe and extends the binlog dumping thread. */&lt;/span&gt;
@@ -191,14 +191,14 @@
 &lt;p&gt;&lt;strong&gt;组提交&lt;/strong&gt; (ordered_commit) &lt;code&gt;binlog_order_commits&lt;/code&gt;参数控制，保证innodb commit顺序和binlog写入顺序一致，&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;flush阶段：&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;调用流程：TC_LOG::enum_result MYSQL_BIN_LOG::commit(THD *thd, bool all) →&lt;a href=&#34;&#34;&gt;int MYSQL_BIN_LOG::ordered_commit(THD *thd, bool all, bool skip_commit)&lt;/a&gt;  →  &lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/binlog.cc#L8301&#34;&gt;int MYSQL_BIN_LOG::process_flush_stage_queue&lt;/a&gt; ;&lt;/p&gt;
-&lt;p&gt;RUN_HOOK 去获取加载的插件，rpl handler Binlog_storage_delegate::after_flush FOREACH_OBSERVER宏添加插件到 thd-&amp;gt;lex list 中执行；&lt;/p&gt;
+&lt;p&gt;RUN_HOOK 去获取加载的插件，rpl handler Binlog_storage_delegate::after_flush FOREACH_OBSERVER宏 遍历observer列表Observer_info-&amp;gt;observer调用对应replication插件函数&lt;/p&gt;
 &lt;p&gt;此时process_flush_stage_queue处理会形成一组队列，由leader依次为别的线程写binlog文件 在准备写binlog前，会先调用ha_flush_logs -&amp;gt; innobase_flush_logs接口，将存储的日志写到最新的LSN；然后再写binlog到文件; 这样做的目的是为了提升组提交的效率。&lt;/p&gt;
 &lt;ol start=&#34;6&#34;&gt;
 &lt;li&gt;执行器 调用innodb存储引擎innobase_flush_logs 接口 将 redo/undo log buffer中的数据写入redo log file 磁盘中；&lt;/li&gt;
 &lt;li&gt;执行器 调用 MYSQL_BIN_LOG::flush_thread_caches 将 thread caches  写入 bin log中(还未刷盘), 并且设置好事务的写入位置m_trans_end_pos，当事务提交commit阶段的时候，直接获取位置提交；&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;&lt;strong&gt;sync_binlog阶段：&lt;/strong&gt; &lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/binlog.cc#L8506&#34;&gt;std::pair&amp;lt;bool, bool&amp;gt; MYSQL_BIN_LOG::sync_binlog_file(bool force)&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;RUN_HOOK 去获取加载的插件，rpl handler Binlog_storage_delegate::after_sync FOREACH_OBSERVER宏添加插件对应函数到 thd-&amp;gt;lex list 中执行；&lt;/p&gt;
+&lt;p&gt;RUN_HOOK 去获取加载的插件，rpl handler Binlog_storage_delegate::after_sync FOREACH_OBSERVER宏遍历observer列表Observer_info-&amp;gt;observer调用对应replication插件函数；&lt;/p&gt;
 &lt;p&gt;最终调用 &lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/mysys/my_sync.cc#L84&#34;&gt;int my_sync(File fd, myf my_flags)&lt;/a&gt; ,根据不同的操作系统来调用，unix操作系统调用fsync/fdatasync函数刷盘, fsync会确保OS cache中的数据直到写磁盘操作结束才会返回，并且写入元数据，而fdatasync不会; 如果想不走OS cache直接写磁盘，对打开/创建的文件句柄加上O_DIRECT属性，一般用于写系统表空间数据落盘；&lt;/p&gt;
 &lt;p&gt;如果&lt;code&gt;sync_binlog&lt;/code&gt;计数超过配置值，则进行一次文件fsync，参数&lt;code&gt;sync_binlog&lt;/code&gt;的含义不是指的这么多个事务之后做一次fsync，而是这么多组事务队列后做一次fsync;&lt;/p&gt;
 &lt;ol start=&#34;8&#34;&gt;
@@ -222,7 +222,7 @@
 &lt;p&gt;另外如果主从复制过程突然中断了，或者主从切换了，重启之后发现SQL线程实际执行到位置和数据库记录的不一致；mysql5.6之后将复制的进度放在系统的&lt;code&gt;mysql.slave_relay_log_info&lt;/code&gt;innodb表里，并且把更新进度、SQL线程执行用户事务绑定成一个事务执行。即使宕机了，可以通过MySQL内建的崩溃恢复机制来使实际执行的位置和数据库保存的进度恢复到一致。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;commit阶段:&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;调用流程：int MYSQL_BIN_LOG::finish_commit(THD *thd) -&amp;gt; ha_commit_low -&amp;gt; innobase_commit -&amp;gt; &lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/storage/innobase/trx/trx0trx.cc#L2199&#34;&gt;void trx_commit(trx_t *trx)&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;RUN_HOOK 去获取加载的插件，rpl handler Trans_delegate::after_commit  FOREACH_OBSERVER宏添加插件到 thd-&amp;gt;lex list 中执行&lt;/p&gt;
+&lt;p&gt;RUN_HOOK 去获取加载的插件，rpl handler Trans_delegate::after_commit  FOREACH_OBSERVER宏遍历observer列表Observer_info-&amp;gt;observer调用对应replication插件函数；&lt;/p&gt;
 &lt;ol start=&#34;9&#34;&gt;
 &lt;li&gt;只有binlog写入磁盘成功之后，执行器才会调用innodb存储引擎接口，队列中的事务依次进行innodb commit，将undo头的状态修改为&lt;code&gt;TRX_UNDO_CACHED&lt;/code&gt; / &lt;code&gt;TRX_UNDO_TO_FREE&lt;/code&gt; / &lt;code&gt;TRX_UNDO_TO_PURGE&lt;/code&gt;任意一种；并释放事务锁，清理读写事务链表、readview等一系列操作。每个事务在commit阶段也会去更新事务页的binlog位点。 最后调用MYSQL_BIN_LOG::rotate 是否切割binlog文件，如果切割了， 调用MYSQL_BIN_LOG::purge()刷盘; 结束ordered_commit 组提交流程。&lt;/li&gt;
 &lt;/ol&gt;
