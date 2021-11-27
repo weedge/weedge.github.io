@@ -212,7 +212,7 @@ struct Binlog_storage_observer /* Observe binlog logging storage */
 &lt;p&gt;&lt;strong&gt;Sync_binlog阶段：&lt;/strong&gt; &lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/binlog.cc#L8506&#34;&gt;std::pair&amp;lt;bool, bool&amp;gt; MYSQL_BIN_LOG::sync_binlog_file(bool force)&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;RUN_HOOK 去获取加载的插件，rpl handler Binlog_storage_delegate::after_sync FOREACH_OBSERVER宏遍历observer列表Observer_info-&amp;gt;observer调用对应replication插件函数；&lt;/p&gt;
 &lt;p&gt;最终调用 &lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/mysys/my_sync.cc#L84&#34;&gt;int my_sync(File fd, myf my_flags)&lt;/a&gt;  Sync binlog data in file to disk&lt;/p&gt;
-&lt;p&gt;如果&lt;code&gt;sync_binlog&lt;/code&gt;计数超过配置值，则进行一次文件fsync，n&amp;gt;1 开启组提交，参数&lt;code&gt;sync_binlog&lt;/code&gt;的含义不是指的这么多个事务之后做一次fsync，而是这么多组事务之后做一次fsync，&lt;code&gt;binlog_group_commit_sync_delay&lt;/code&gt;,&lt;code&gt;binlog_group_commit_sync_no_delay_count&lt;/code&gt; 这些参数见官网文档；&lt;/p&gt;
+&lt;p&gt;如果&lt;code&gt;sync_binlog&lt;/code&gt;计数超过配置值，则进行一次文件fsync，n&amp;gt;1 开启组提交，参数&lt;code&gt;sync_binlog&lt;/code&gt;的含义不是指的这么多个事务之后做一次fsync，而是多个事务一组之后做一次fsync，&lt;code&gt;binlog_group_commit_sync_delay&lt;/code&gt;,&lt;code&gt;binlog_group_commit_sync_no_delay_count&lt;/code&gt; 这些参数见官网文档；&lt;/p&gt;
 &lt;ol start=&#34;8&#34;&gt;
 &lt;li&gt;开始生成这个时间点的逻辑操作日志格式，通过&lt;code&gt;sync_binlog&lt;/code&gt; flush策略异步将thead caches中的数据批量写入到磁盘binlog文件binlog.**/binlog.index中； 通过 &lt;code&gt;show binlog events;&lt;/code&gt;来查看binlog文件相关的信息，也可以对单个文件查看；&lt;/li&gt;
 &lt;/ol&gt;
@@ -246,7 +246,7 @@ struct Binlog_storage_observer /* Observe binlog logging storage */
 &lt;p&gt;Tips: Commit阶段不用刷盘，Flush阶段中的redo log刷盘已经足够保证数据库崩溃时的数据安全了; Commit阶段队列的作用是承接Sync阶段的事务，完成最后的引擎提交，使得Sync可以尽早的处理下一组事务，最大化组提交的效率。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;h4 id=&#34;整体流程&#34;&gt;整体流程：&lt;/h4&gt;
+&lt;h4 id=&#34;整体更新流程&#34;&gt;整体更新流程：&lt;/h4&gt;
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/mysql-innodb-w.drawio.png&#34; alt=&#34;mysql-innodb-w&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;崩溃恢复&#34;&gt;崩溃恢复&lt;/h3&gt;
 &lt;p&gt;更新流程中写入redo log的过程拆成了两个步骤prepare和commit 两个阶段；如果不使用两阶段提交，数据库的状态就有可能和用它的日志恢复出来的库的状态不一致。在崩溃恢复中，&lt;!-- raw HTML omitted --&gt;是以 binlog 中的 xid 和 redolog 中的 xid 进行比较，xid 在 binlog 里存在则提交，不存在则回滚，以及判断redo log中是否有commit标识&lt;!-- raw HTML omitted --&gt;；崩溃恢复时具体的情况:&lt;/p&gt;
