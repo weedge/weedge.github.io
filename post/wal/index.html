@@ -531,7 +531,7 @@ struct Binlog_storage_observer /* Observe binlog logging storage */
 <li>开始生成这个时间点的逻辑操作日志格式，通过<code>sync_binlog</code> flush策略异步将thead caches中的数据批量写入到磁盘binlog文件binlog.**/binlog.index中； 通过 <code>show binlog events;</code>来查看binlog文件相关的信息，也可以对单个文件查看；</li>
 </ol>
 <p><strong>Async/Semisync/Group 异步/半同步/组复制阶段：</strong> (写操作都在主上)</p>
-<p><strong>异步复制</strong>：主库在执行完自己的事务、记录完binlog之后就会直接返回，mysql主从模式默认是异步复制；异步复制流程如下图：</p>
+<p><strong>异步复制</strong>：主库在记录完binlog，执行完自己的事务之后就会直接返回，mysql主从模式默认是异步复制；异步复制流程如下图：</p>
 <p><img src="https://dev.mysql.com/doc/refman/8.0/en/images/async-replication-diagram.png" alt="async-replication-diagram"></p>
 <p><strong>半同步复制</strong>：主的事务需要等一台从同步binlog日志提交到Relay Log中(sync_relay=1)，返回ack，主库提交事务；半同步流程如下图：</p>
 <p><img src="https://dev.mysql.com/doc/refman/8.0/en/images/semisync-replication-diagram.png" alt="semisync-replication-diagram"></p>
