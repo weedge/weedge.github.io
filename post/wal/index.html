@@ -72,7 +72,7 @@
 <meta itemprop="description" content="序言
 ​	数据落地之前，如果出现持久化存储引擎实例重启，或者服务当机重启，如何进行故障恢复（Crash Recovery）呢？数据写操作增删改，这些操作状态数据，是如何保证事务中原子性和持久性的呢？ 这些问题数据大拿们提出了Algorithms for Recovery and Isolation Exploiting Semantics ，基于语义的恢复与隔离算法,现代数据库的基础理论；当前主流关系型数据在事务实现上都受到该理论的影响，其中有两种故障恢复的方法： 预写日志(write-ahead logging (WAL) ) 和shadow-page technique；shadow-page 方法简单介绍就是每次事务操作，以page为单位，写时复制的方式，分为Current和Shadow，类似主备的形式，如果commit成功，Current中的page合并到 Shadow中; 如果abort不成功丢弃Current的page; 如果Crash了，从Shadow中的page恢复，对所有未提交事务的回滚操作； 由于shadow-page技术的实现以page为单位，page内无法并发操作，commit/回滚时会有大量垃圾回收操作；本文主要介绍WAL，以及对应持久化存储引擎的实现机制介绍。"><meta itemprop="datePublished" content="2021-11-21T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-11-21T10:26:23+08:00" />
-<meta itemprop="wordCount" content="11694">
+<meta itemprop="wordCount" content="11695">
 <meta itemprop="keywords" content="WAL," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="WAL"/>
 <meta name="twitter:description" content="序言
@@ -333,7 +333,6 @@
         <li><a href="#redo-log与binlog区别">redo log与binlog区别</a></li>
         <li><a href="#两阶段提交">两阶段提交</a></li>
         <li><a href="#崩溃恢复">崩溃恢复</a></li>
-        <li><a href="#heading"></a></li>
       </ul>
     </li>
     <li><a href="#etcd">etcd</a></li>
@@ -557,7 +556,7 @@ struct Binlog_storage_observer /* Observe binlog logging storage */
 <p>RUN_HOOK 去获取加载的插件，rpl handler Trans_delegate::after_commit  FOREACH_OBSERVER宏遍历observer列表Observer_info-&gt;observer调用对应replication插件函数；</p>
 <ol start="9">
 <li>
-<p>只有binlog写入磁盘成功之后，执行器才会调用innodb存储引擎接口，从队列中获取事务组依次进行innodb commit，将redo log中已经prepare的事务提交写入commit标记，并且写入binlog位点；最后调用MYSQL_BIN_LOG::rotate 是否切换binlog文件(在切换文件期间，使用一个防止新的提交组执行刷新阶段的锁，并等待直到准备好的事务的计数器变为0，然后才创建新文件)，如果切成新文件， 调用MYSQL_BIN_LOG::purge()刷盘；结束ordered_commit 组提交流程,返回提交；</p>
+<p>只有binlog写入磁盘成功之后，执行器才会调用innodb存储引擎接口，从队列中获取事务组依次进行innodb commit 提交释放事务，将redo log中已经prepare的事务提交写入commit标记，并且写入binlog位点；最后调用MYSQL_BIN_LOG::rotate 是否切换binlog文件(在切换文件期间，使用一个防止新的提交组执行刷新阶段的锁，并等待直到准备好的事务的计数器变为0，然后才创建新文件)，如果切成新文件， 调用MYSQL_BIN_LOG::purge()刷盘；结束ordered_commit 组提交流程,返回提交；</p>
 <p>Tips: Commit阶段不用刷盘，Flush阶段中的redo log刷盘已经足够保证数据库崩溃时的数据安全了; Commit阶段队列的作用是承接Sync阶段的事务，完成最后的引擎提交，使得Sync可以尽早的处理下一组事务，最大化组提交的效率。</p>
 </li>
 </ol>
@@ -571,7 +570,6 @@ struct Binlog_storage_observer /* Observe binlog logging storage */
 <li>binlog有记录，redolog有记录：redolog状态prepare， 则判断对应的事务是否存在完整的binlog，恢复操作：如果是, 则提交事务，否则, 通过undo log回滚事务;</li>
 <li>如果redo log里面的事务是完整的, 也就是有了commit标识, 恢复操作：直接提交事务；</li>
 </ol>
-<h3 id="heading"></h3>
 <h2 id="etcd">etcd</h2>
 <h2 id="references">references</h2>
 <ol>

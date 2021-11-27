@@ -242,7 +242,7 @@ struct Binlog_storage_observer /* Observe binlog logging storage */
 &lt;p&gt;RUN_HOOK 去获取加载的插件，rpl handler Trans_delegate::after_commit  FOREACH_OBSERVER宏遍历observer列表Observer_info-&amp;gt;observer调用对应replication插件函数；&lt;/p&gt;
 &lt;ol start=&#34;9&#34;&gt;
 &lt;li&gt;
-&lt;p&gt;只有binlog写入磁盘成功之后，执行器才会调用innodb存储引擎接口，从队列中获取事务组依次进行innodb commit，将redo log中已经prepare的事务提交写入commit标记，并且写入binlog位点；最后调用MYSQL_BIN_LOG::rotate 是否切换binlog文件(在切换文件期间，使用一个防止新的提交组执行刷新阶段的锁，并等待直到准备好的事务的计数器变为0，然后才创建新文件)，如果切成新文件， 调用MYSQL_BIN_LOG::purge()刷盘；结束ordered_commit 组提交流程,返回提交；&lt;/p&gt;
+&lt;p&gt;只有binlog写入磁盘成功之后，执行器才会调用innodb存储引擎接口，从队列中获取事务组依次进行innodb commit 提交释放事务，将redo log中已经prepare的事务提交写入commit标记，并且写入binlog位点；最后调用MYSQL_BIN_LOG::rotate 是否切换binlog文件(在切换文件期间，使用一个防止新的提交组执行刷新阶段的锁，并等待直到准备好的事务的计数器变为0，然后才创建新文件)，如果切成新文件， 调用MYSQL_BIN_LOG::purge()刷盘；结束ordered_commit 组提交流程,返回提交；&lt;/p&gt;
 &lt;p&gt;Tips: Commit阶段不用刷盘，Flush阶段中的redo log刷盘已经足够保证数据库崩溃时的数据安全了; Commit阶段队列的作用是承接Sync阶段的事务，完成最后的引擎提交，使得Sync可以尽早的处理下一组事务，最大化组提交的效率。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
@@ -256,7 +256,6 @@ struct Binlog_storage_observer /* Observe binlog logging storage */
 &lt;li&gt;binlog有记录，redolog有记录：redolog状态prepare， 则判断对应的事务是否存在完整的binlog，恢复操作：如果是, 则提交事务，否则, 通过undo log回滚事务;&lt;/li&gt;
 &lt;li&gt;如果redo log里面的事务是完整的, 也就是有了commit标识, 恢复操作：直接提交事务；&lt;/li&gt;
 &lt;/ol&gt;
-&lt;h3 id=&#34;heading&#34;&gt;&lt;/h3&gt;
 &lt;h2 id=&#34;etcd&#34;&gt;etcd&lt;/h2&gt;
 &lt;h2 id=&#34;references&#34;&gt;references&lt;/h2&gt;
 &lt;ol&gt;
