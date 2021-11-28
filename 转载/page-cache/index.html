@@ -335,7 +335,7 @@
       <h2 id="1page-cache">1、Page Cache</h2>
 <h3 id="11-page-cache-是什么">1.1 Page Cache 是什么？</h3>
 <p>为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示：</p>
-<p><img src="https://s5.51cto.com/oss/202108/31/cf22d87ed4d023c0731440b9b09bffb5.png" alt=""></p>
+<p><img src="https://s5.51cto.com/oss/202108/31/cf22d87ed4d023c0731440b9b09bffb5.png" alt="linuxio"></p>
 <p>上图中，红色部分为 Page Cache。可见 Page Cache 的本质是由 Linux 内核管理的内存区域。我们通过 mmap 以及 buffered I/O 将文件读取到内存空间实际上都是读取到 Page Cache 中。</p>
 <h3 id="12-如何查看系统的-page-cache">1.2 如何查看系统的 Page Cache？</h3>
 <p>通过读取 /proc/meminfo 文件，能够实时获取系统内存情况：</p>

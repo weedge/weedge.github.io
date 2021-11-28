@@ -33,7 +33,7 @@
         <description>&lt;h2 id=&#34;1page-cache&#34;&gt;1、Page Cache&lt;/h2&gt;
 &lt;h3 id=&#34;11-page-cache-是什么&#34;&gt;1.1 Page Cache 是什么？&lt;/h3&gt;
 &lt;p&gt;为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://s5.51cto.com/oss/202108/31/cf22d87ed4d023c0731440b9b09bffb5.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://s5.51cto.com/oss/202108/31/cf22d87ed4d023c0731440b9b09bffb5.png&#34; alt=&#34;linuxio&#34;&gt;&lt;/p&gt;
 &lt;p&gt;上图中，红色部分为 Page Cache。可见 Page Cache 的本质是由 Linux 内核管理的内存区域。我们通过 mmap 以及 buffered I/O 将文件读取到内存空间实际上都是读取到 Page Cache 中。&lt;/p&gt;
 &lt;h3 id=&#34;12-如何查看系统的-page-cache&#34;&gt;1.2 如何查看系统的 Page Cache？&lt;/h3&gt;
 &lt;p&gt;通过读取 /proc/meminfo 文件，能够实时获取系统内存情况：&lt;/p&gt;
@@ -1700,9 +1700,9 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。&lt;
       
       <guid>https://weedge.github.io/post/servicetransformation/</guid>
       
-        <description>&lt;h4 id=&#34;背景&#34;&gt;背景&lt;/h4&gt;
+        <description>&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
 &lt;p&gt;随着前期业务迭代不断增多，会留下一些技术债务；用户不断累计增加，整体DAU,MAU,PV/UV的不断上升，为了符合根据组织结构和业务需求更加稳定健康的发展，需要对业务服务进行改造/重构；采用团队适合的语言开发，将服务进行分层，抽象底层模型，分离出不变/易变业务逻辑；业务改造和基础建设服务升级（整体系统认知的改变）&lt;/p&gt;
-&lt;h4 id=&#34;过程&#34;&gt;过程&lt;/h4&gt;
+&lt;h2 id=&#34;过程&#34;&gt;过程&lt;/h2&gt;
 &lt;p&gt;整体服务分为4个阶段进行简述：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
@@ -1759,7 +1759,9 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。&lt;
 &lt;/ol&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;h4 id=&#34;总结&#34;&gt;总结&lt;/h4&gt;
+&lt;h2 id=&#34;整体流程&#34;&gt;整体流程&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/cicd.png&#34; alt=&#34;cicd&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
 &lt;p&gt;随着业务的发展，服务不断迭代改造，涉及到业务层面抽象改造，以及基础平台服务的升级；最终目的都是为了满足日益增长的需求，缩短需求发布到上线的周期，复用，减少迭代对服务整体稳定性的影响。&lt;/p&gt;
 &lt;h4 id=&#34;references&#34;&gt;References&lt;/h4&gt;
 &lt;ol&gt;
