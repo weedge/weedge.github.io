@@ -429,7 +429,7 @@ struct Binlog_storage_observer /* Observe binlog logging storage */
 &lt;li&gt;如果redo log里面的事务是完整的, 也就是有了commit标识, 恢复操作：直接提交事务；&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
-&lt;p&gt;对于需要持久化的数据库系统，避免不了事务在处理过程中，突然中断的情况；WAL通过预写日志的方式在事务提交之前，需要把修改重放记录和撤销详细记录写入日志文件中，以便在故障后恢复数据；事务开始后，所有对数据库的修改在发送到缓冲池之前都被记录在内存中的WAL缓冲区中；事务提交之前，必须把WAL缓冲区刷新到磁盘。mysql innodb存储引擎引入redo/undo log文件来支持事务持久性和原子性，由于mysql binlog用来归档数据记录恢复和复制，为了保证写入两份日志redo log, binlog 最终恢复数据是一致的，采用两阶段提交机制，通过源码了解了些整体WAL的实现；以及崩溃时候需要用日志进行恢复。(有时间整理下其他持久化存储系统的WAL实现，待续)&lt;/p&gt;
+&lt;p&gt;对于需要持久化的数据库系统，避免不了事务在处理过程中，突然中断的情况；WAL通过预写日志的方式在事务提交之前，需要把修改重放记录和撤销详细记录写入日志文件中，以便在故障后恢复数据；事务开始后，所有对数据库的修改在发送到缓冲池之前都被记录在内存中的WAL缓冲区中；事务提交之前，必须把WAL缓冲区刷新到磁盘。mysql innodb存储引擎引入redo/undo log文件来支持事务持久性和原子性，由于mysql binlog用来归档数据记录恢复和复制，为了保证写入两份日志redo log, binlog 最终恢复数据是一致的，采用两阶段提交机制，通过源码了解了些整体WAL的实现；以及崩溃时候需要用日志进行恢复。(其他持久化存储系统的WAL实现，待续)&lt;/p&gt;
 &lt;h2 id=&#34;references&#34;&gt;references&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Write-ahead_logging&#34;&gt;Write-ahead_logging&lt;/a&gt;&lt;/li&gt;
