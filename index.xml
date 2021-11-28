@@ -332,7 +332,7 @@ Swap:        16002          0      16001
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;由 binlog 和 redo log 的区别可知：因为mysql 早期自带的MyISAM存储引擎设计用 binlog 日志只用于归档，进行数据恢复，只依靠 binlog 是没有 crash-safe 能力的。innnodb存储引擎引入mysql之后，引入redo/undo log文件来支持事务持久性和原子性来保证写入数据的一致性；但只有 redo log 也不行，因为 redo log 是 InnoDB 特有的，循环写入，无法还原不在这个redo log中的记录，比如从服务启动或者记录数据落后很多；因此需要 binlog 和 redo log二者同时记录，才能保证当数据库发生误删或者宕机重启时，数据不会丢失。&lt;/p&gt;
+&lt;p&gt;由 binlog 和 redo log 的区别可知：因为mysql 早期自带的MyISAM存储引擎设计用 binlog 日志只用于归档，进行数据恢复，只依靠 binlog 是没有 crash-safe 能力的。innodb存储引擎引入mysql之后，引入redo/undo log文件来支持事务持久性和原子性来保证写入数据的一致性；但只有 redo log 也不行，因为 redo log 是 InnoDB 特有的，循环写入，无法还原不在这个redo log中的记录，比如从服务启动或者记录数据落后很多；因此需要 binlog 和 redo log二者同时记录，才能保证当数据库发生误删或者宕机重启时，数据不会丢失。&lt;/p&gt;
 &lt;h3 id=&#34;两阶段提交&#34;&gt;两阶段提交&lt;/h3&gt;
 &lt;p&gt;为了保证写入两份日志redo log, binlog 最终恢复数据是一致的，采用两阶段提交的机制(XA,内部/全局事务 innodb提供一样的操作)，mysql server 执行器 在调用innodb存储引擎接口进行写操作的时候，起到一个事务协调者的作用,通过TC_LOG(Transaction Coordinator Log)基类定义了事务日志需要实现的接口: open, prepare, commit, rollback, close；实现这些接口的类：TC_LOG_DUMMY(disable the logging), TC_LOG_MMAP(mmap logging), MYSQL_BIN_LOG(binlog)；主要是是查看MYSQL_BIN_LOG类中&lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/binlog.cc#L7881&#34;&gt;prepare&lt;/a&gt; 和 &lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/binlog.cc#L7934&#34;&gt;commit&lt;/a&gt; 的实现；prepare 和 commit最终会调用存储引擎初始化时指向的handlerton对象对应函数；（这种接口隔离的常用设计，将调用方和实现方进行解耦，根据参数配置来绑定实现方，运行时动态调用）&lt;/p&gt;
 &lt;p&gt;mysql是以plugin的方式管理存储引擎，replication(主从副本同步)插件和其他插件（通过&lt;code&gt;SHOW PLUGINS;&lt;/code&gt;查看)；具体的插件代码在&lt;a href=&#34;https://github.com/mysql/mysql-server/tree/8.0/plugin&#34;&gt;plugin&lt;/a&gt;文件中，简单的插件示例&lt;a href=&#34;https://github.com/mysql/mysql-server/tree/8.0/plugin/rewrite_example&#34;&gt;rewrite_example&lt;/a&gt;&lt;/p&gt;
@@ -428,12 +428,14 @@ struct Binlog_storage_observer /* Observe binlog logging storage */
 &lt;li&gt;binlog有记录，redolog有记录：redolog状态prepare， 则判断对应的事务是否存在完整的binlog，恢复操作：如果是, 则提交事务，否则, 通过undo log回滚事务;&lt;/li&gt;
 &lt;li&gt;如果redo log里面的事务是完整的, 也就是有了commit标识, 恢复操作：直接提交事务；&lt;/li&gt;
 &lt;/ol&gt;
-&lt;h2 id=&#34;etcd&#34;&gt;etcd&lt;/h2&gt;
+&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
+&lt;p&gt;对于需要持久化的数据库系统，避免不了事务在处理过程中，突然中断的情况；WAL通过预写日志的方式在事务提交之前，需要把修改重放记录和撤销详细记录写入日志文件中，以便在故障后恢复数据；事务开始后，所有对数据库的修改在发送到缓冲池之前都被记录在内存中的WAL缓冲区中；事务提交之前，必须把WAL缓冲区刷新到磁盘。mysql innodb存储引擎引入redo/undo log文件来支持事务持久性和原子性，由于mysql binlog用来归档数据记录恢复和复制，为了保证写入两份日志redo log, binlog 最终恢复数据是一致的，采用两阶段提交机制，通过源码了解了些整体WAL的实现；以及崩溃时候需要用日志进行恢复。(有时间整理下其他持久化存储系统的WAL实现，待续)&lt;/p&gt;
 &lt;h2 id=&#34;references&#34;&gt;references&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Write-ahead_logging&#34;&gt;Write-ahead_logging&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Algorithms_for_Recovery_and_Isolation_Exploiting_Semantics&#34;&gt;ARIES:Algorithms_for_Recovery_and_Isolation_Exploiting_Semantics&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://cs.stanford.edu/people/chrismre/cs345/rl/aries.pdf&#34;&gt;aries.pdf&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/OceanBase-Partner/lectures-on-dbms-implementation/blob/main/lecture-6.md#642-%E7%BC%93%E5%86%B2%E6%B1%A0%E7%AE%A1%E7%90%86%E7%AD%96%E7%95%A5&#34;&gt;缓冲池管理策略&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;http://mesl.ucsd.edu/pubs/SOSP2013-MARS.pdf&#34;&gt;From ARIES to MARS: Transaction Support for Next-Generation, Solid-State Drives.pdf&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;http://repository.bilkent.edu.tr/bitstream/handle/11693/37609/Implications%20of%20non-volatile%20memory%20as%20primary%20storage%20for%20database%20management%20systems.pdf&#34;&gt;Implications of Non-Volatile Memory as Primary Storage for Database Management Systems.pdf&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://infoscience.epfl.ch/record/170505/files/aether-smpfulltext.pdf&#34;&gt;Scalability of write-ahead logging on multicore and multisocket hardware.pdf&lt;/a&gt;&lt;/li&gt;
