@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh-cn" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>深入理解Linux的Page Cache - 时间飘过</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="weedge" />
+  <meta name="description" content="1、Page Cache 1.1 Page Cache 是什么？ 为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示： 上图中，红色部分为 Page Cache。可见 Page Cache 的本质" />
+
+  <meta name="keywords" content="工作, 技术, 生活" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.88.1" />
+
+
+<link rel="canonical" href="https://weedge.github.io/%E8%BD%AC%E8%BD%BD/page-cache/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css" integrity="sha256-&#43;ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media="screen" crossorigin="anonymous">
+
+
+
+
+
+<meta property="og:title" content="深入理解Linux的Page Cache" />
+<meta property="og:description" content="1、Page Cache 1.1 Page Cache 是什么？ 为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示： 上图中，红色部分为 Page Cache。可见 Page Cache 的本质" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/%E8%BD%AC%E8%BD%BD/page-cache/" /><meta property="article:section" content="转载" />
+<meta property="article:published_time" content="2021-11-26T11:26:23+08:00" />
+<meta property="article:modified_time" content="2021-11-26T11:26:23+08:00" />
+
+<meta itemprop="name" content="深入理解Linux的Page Cache">
+<meta itemprop="description" content="1、Page Cache 1.1 Page Cache 是什么？ 为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示： 上图中，红色部分为 Page Cache。可见 Page Cache 的本质"><meta itemprop="datePublished" content="2021-11-26T11:26:23+08:00" />
+<meta itemprop="dateModified" content="2021-11-26T11:26:23+08:00" />
+<meta itemprop="wordCount" content="4984">
+<meta itemprop="keywords" content="page cache," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="深入理解Linux的Page Cache"/>
+<meta name="twitter:description" content="1、Page Cache 1.1 Page Cache 是什么？ 为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示： 上图中，红色部分为 Page Cache。可见 Page Cache 的本质"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">时间飘过</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      时间飘过
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+  
+  <header class="post-header">
+    <h1 class="post-title">深入理解Linux的Page Cache</h1>
+    
+    <div class="post-meta">
+      <time datetime="2021-11-26" class="post-time">
+        2021-11-26
+      </time>
+    </div>
+  </header>
+
+  
+  
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#1page-cache">1、Page Cache</a>
+      <ul>
+        <li><a href="#11-page-cache-是什么">1.1 Page Cache 是什么？</a></li>
+        <li><a href="#12-如何查看系统的-page-cache">1.2 如何查看系统的 Page Cache？</a></li>
+        <li><a href="#13-page-与-page-cache">1.3 page 与 Page Cache</a></li>
+        <li><a href="#14-swap-与缺页中断">1.4 Swap 与缺页中断</a></li>
+        <li><a href="#15-page-cache-与-buffer-cache">1.5 Page Cache 与 buffer cache</a></li>
+        <li><a href="#16-page-cache-与预读">1.6 Page Cache 与预读</a></li>
+      </ul>
+    </li>
+    <li><a href="#2page-cache-与文件持久化的一致性可靠性">2、Page Cache 与文件持久化的一致性&amp;可靠性</a></li>
+    <li><a href="#3为什么使用-page-cache-与为什么不使用-page-cache">3、为什么使用 Page Cache 与为什么不使用 Page Cache?</a>
+      <ul>
+        <li><a href="#31-page-cache-的优势">3.1 Page Cache 的优势</a></li>
+        <li><a href="#32-page-cache-的劣势">3.2 Page Cache 的劣势</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+  
+  <div class="post-content">
+      <h2 id="1page-cache">1、Page Cache</h2>
+<h3 id="11-page-cache-是什么">1.1 Page Cache 是什么？</h3>
+<p>为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示：</p>
+<p><img src="https://s5.51cto.com/oss/202108/31/cf22d87ed4d023c0731440b9b09bffb5.png" alt=""></p>
+<p>上图中，红色部分为 Page Cache。可见 Page Cache 的本质是由 Linux 内核管理的内存区域。我们通过 mmap 以及 buffered I/O 将文件读取到内存空间实际上都是读取到 Page Cache 中。</p>
+<h3 id="12-如何查看系统的-page-cache">1.2 如何查看系统的 Page Cache？</h3>
+<p>通过读取 /proc/meminfo 文件，能够实时获取系统内存情况：</p>
+<pre tabindex="0"><code>$ cat /proc/meminfo  
+...  
+Buffers:            1224 kB  
+Cached:           111472 kB  
+SwapCached:        36364 kB  
+Active:          6224232 kB  
+Inactive:         979432 kB  
+Active(anon):    6173036 kB  
+Inactive(anon):   927932 kB  
+Active(file):      51196 kB  
+Inactive(file):    51500 kB  
+...  
+Shmem:             10000 kB  
+... 
+SReclaimable:      43532 kB  
+... 
+</code></pre><p>根据上面的数据，你可以简单得出这样的公式（等式两边之和都是 112696 KB）：</p>
+<pre tabindex="0"><code>Buffers + Cached + SwapCached = Active(file) + Inactive(file) + Shmem + SwapCached 
+</code></pre><p>两边等式都是 Page Cache，即：</p>
+<pre tabindex="0"><code>Page Cache = Buffers + Cached + SwapCached 
+</code></pre><p>通过阅读 1.4 以及 1.5 小节，就能够理解为什么 SwapCached 与 Buffers 也是 Page Cache 的一部分。</p>
+<p>题外话，小伙伴答案：</p>
+<p>内核计算源码（linux 2.6.19）：</p>
+<p><img src="https://s4.51cto.com/oss/202108/31/c0840b8c0ab6bfb486035be1f2713632.png" alt=""></p>
+<p>内核算法：Cached = files - SwapCached - Buffers；</p>
+<p>Buffers + Cached + SwapCached = Active(file) + Inactive(file) + Shmem + SwapCached</p>
+<p>公式推出来的</p>
+<p>Cached = Active(file) + Inactive(file) + Shmem - Buffers ；</p>
+<p>由此可见，这个Cached 并不等于Active(file) + Inactive(file) ；</p>
+<p>这个cache包含很多 ：</p>
+<ol>
+<li>含有普通文件数据的页‘；</li>
+<li>含有目录的页；</li>
+<li>含有直接从块设备文件(跳过文件系统)读出的数据的页；</li>
+<li>含有用户态进程数据的页；</li>
+<li>属于特殊文件系统文件的页，如shm；</li>
+</ol>
+<h3 id="13-page-与-page-cache">1.3 page 与 Page Cache</h3>
+<p>page 是内存管理分配的基本单位， Page Cache 由多个 page 构成。page 在操作系统中通常为 4KB 大小（32bits/64bits），而 Page Cache 的大小则为 4KB 的整数倍。</p>
+<p>另一方面，并不是所有 page 都被组织为 Page Cache。</p>
+<p>Linux 系统上供用户可访问的内存分为两个类型[2]，即：</p>
+<ul>
+<li>File-backed pages：文件备份页也就是 Page Cache 中的 page，对应于磁盘上的若干数据块；对于这些页最大的问题是脏页回盘；</li>
+<li>Anonymous pages：匿名页不对应磁盘上的任何磁盘数据块，它们是进程的运行是内存空间（例如方法栈、局部变量表等属性）；</li>
+</ul>
+<p>为什么 Linux 不把 Page Cache 称为 block cache，这不是更好吗？</p>
+<p>这是因为从磁盘中加载到内存的数据不仅仅放在 Page Cache 中，还放在 buffer cache 中。例如通过 Direct I/O 技术的磁盘文件就不会进入 Page Cache 中。当然，这个问题也有 Linux 历史设计的原因，毕竟这只是一个称呼，含义随着 Linux 系统的演进也逐渐不同。</p>
+<p>下面比较一下 File-backed pages 与 Anonymous pages 在 Swap 机制下的性能。</p>
+<p>内存是一种珍惜资源，当内存不够用时，内存管理单元（Memory Mangament Unit）需要提供调度算法来回收相关内存空间。内存空间回收的方式通常就是 swap，即交换到持久化存储设备上。</p>
+<p>File-backed pages（Page Cache）的内存回收代价较低。Page Cache 通常对应于一个文件上的若干顺序块，因此可以通过顺序 I/O 的方式落盘。另一方面，如果 Page Cache 上没有进行写操作（所谓的没有脏页），甚至不会将 Page Cache 回盘，因为数据的内容完全可以通过再次读取磁盘文件得到。</p>
+<p>Page Cache 的主要难点在于脏页回盘，这个内容会在第二节进行详细说明。</p>
+<p>Anonymous pages 的内存回收代价较高。这是因为 Anonymous pages 通常随机地写入持久化交换设备。另一方面，无论是否有更操作，为了确保数据不丢失，Anonymous pages 在 swap 时必须持久化到磁盘。</p>
+<h3 id="14-swap-与缺页中断">1.4 Swap 与缺页中断</h3>
+<p>Swap 机制指的是当物理内存不够用，内存管理单元（Memory Mangament Unit）需要提供调度算法来回收相关内存空间，然后将清理出来的内存空间给当前内存申请方。</p>
+<p>Swap 机制存在的本质原因是 Linux 系统提供了虚拟内存管理机制，每一个进程认为其独占内存空间，因此所有进程的内存空间之和远远大于物理内存。所有进程的内存空间之和超过物理内存的部分就需要交换到磁盘上。</p>
+<p>操作系统以 page 为单位管理内存，当进程发现需要访问的数据不在内存时，操作系统可能会将数据以页的方式加载到内存中。上述过程被称为缺页中断，当操作系统发生缺页中断时，就会通过系统调用将 page 再次读到内存中。</p>
+<p>但主内存的空间是有限的，当主内存中不包含可以使用的空间时，操作系统会从选择合适的物理内存页驱逐回磁盘，为新的内存页让出位置，选择待驱逐页的过程在操作系统中叫做页面替换（Page Replacement），替换操作又会触发 swap 机制。</p>
+<p>如果物理内存足够大，那么可能不需要 Swap 机制，但是 Swap 在这种情况下还是有一定优势：对于有发生内存泄漏几率的应用程序（进程），Swap 交换分区更是重要，这可以确保内存泄露不至于导致物理内存不够用，最终导致系统崩溃。但内存泄露会引起频繁的 swap，此时非常影响操作系统的性能。</p>
+<p>Linux 通过一个 swappiness 参数来控制 Swap 机制[2]：这个参数值可为 0-100，控制系统 swap 的优先级：</p>
+<ul>
+<li>高数值：较高频率的 swap，进程不活跃时主动将其转换出物理内存。</li>
+<li>低数值：较低频率的 swap，这可以确保交互式不因为内存空间频繁地交换到磁盘而提高响应延迟。</li>
+</ul>
+<p>最后，为什么 Buffers 也是 Page Cache 的一部分？</p>
+<p>这是因为当匿名页（Inactive(anon) 以及 Active(anon)）先被交换（swap out）到磁盘上后，然后再加载回（swap in）内存中，由于读入到内存后原来的 Swap File 还在，所以 SwapCached 也可以认为是 File-backed page，即属于 Page Cache。这个过程如图所示：(匿名页的被交换后也是 Page Cache)</p>
+<p><img src="https://s4.51cto.com/oss/202108/31/f5fae1b983c2fba4556b8ac32d05feb4.jpeg" alt=""></p>
+<h3 id="15-page-cache-与-buffer-cache">1.5 Page Cache 与 buffer cache</h3>
+<p>执行 free 命令，注意到会有两列名为 buffers 和 cached，也有一行名为 “-/+ buffers/cache”。</p>
+<pre tabindex="0"><code>~ free -m  
+             total       used       free     shared    buffers     cached  
+Mem:        128956      96440      32515          0       5368      39900  
+-/+ buffers/cache:      51172      77784  
+Swap:        16002          0      16001 
+</code></pre><p>其中，cached 列表示当前的页缓存（Page Cache）占用量，buffers 列表示当前的块缓存（buffer cache）占用量。用一句话来解释：Page Cache 用于缓存文件的页数据，buffer cache 用于缓存块设备（如磁盘）的块数据。页是逻辑上的概念，因此 Page Cache 是与文件系统同级的；块是物理上的概念，因此 buffer cache 是与块设备驱动程序同级的。</p>
+<p>Page Cache）占用量，buffers 列表示当前的块缓存（buffer cache）占用量。用一句话来解释：Page Cache 用于缓存文件的页数据，buffer cache 用于缓存块设备（如磁盘）的块数据。页是逻辑上的概念，因此 Page Cache 是与文件系统同级的；块是物理上的概念，因此 buffer cache 是与块设备驱动程序同级的。</p>
+<p>Page Cache 与 buffer cache 的共同目的都是加速数据 I/O：写数据时首先写到缓存，将写入的页标记为 dirty，然后向外部存储 flush，也就是缓存写机制中的 write-back（另一种是 write-through，Linux 默认情况下不采用）；读数据时首先读取缓存，如果未命中，再去外部存储读取，并且将读取来的数据也加入缓存。操作系统总是积极地将所有空闲内存都用作 Page Cache 和 buffer cache，当内存不够用时也会用 LRU 等算法淘汰缓存页。</p>
+<p>在 Linux 2.4 版本的内核之前，Page Cache 与 buffer cache 是完全分离的。但是，块设备大多是磁盘，磁盘上的数据又大多通过文件系统来组织，这种设计导致很多数据被缓存了两次，浪费内存。所以在 2.4 版本内核之后，两块缓存近似融合在了一起：如果一个文件的页加载到了 Page Cache，那么同时 buffer cache 只需要维护块指向页的指针就可以了。只有那些没有文件表示的块，或者绕过了文件系统直接操作（如dd命令）的块，才会真正放到 buffer cache 里。因此，我们现在提起 Page Cache，基本上都同时指 Page Cache 和 buffer cache 两者，本文之后也不再区分，直接统称为 Page Cache。</p>
+<p>下图近似地示出 32-bit Linux 系统中可能的一种 Page Cache 结构，其中 block size 大小为 1KB，page size 大小为 4KB。</p>
+<p><img src="https://s3.51cto.com/oss/202108/31/1e5686130ed2ffd482b472b070dfc871.png" alt=""></p>
+<p>Page Cache 中的每个文件都是一棵基数树（radix tree，本质上是多叉搜索树），树的每个节点都是一个页。根据文件内的偏移量就可以快速定位到所在的页，如下图所示。关于基数树的原理可以参见英文维基，这里就不细说了。</p>
+<p><img src="https://s2.51cto.com/oss/202108/31/e9a629e17339733ed4a077ae13af7abd.png" alt=""></p>
+<h3 id="16-page-cache-与预读">1.6 Page Cache 与预读</h3>
+<p>操作系统为基于 Page Cache 的读缓存机制提供预读机制（PAGE_READAHEAD），一个例子是：</p>
+<ul>
+<li>用户线程仅仅请求读取磁盘上文件 A 的 offset 为 0-3KB 范围内的数据，由于磁盘的基本读写单位为 block（4KB），于是操作系统至少会读 0-4KB 的内容，这恰好可以在一个 page 中装下。</li>
+<li>但是操作系统出于局部性原理会选择将磁盘块 offset [4KB,8KB)、[8KB,12KB) 以及 [12KB,16KB) 都加载到内存，于是额外在内存中申请了 3 个 page；</li>
+</ul>
+<p>下图代表了操作系统的预读机制：</p>
+<p><img src="https://s2.51cto.com/oss/202108/31/e340a344b14242c206f9804cbc1eebc2.jpeg" alt=""></p>
+<p>上图中，应用程序利用 read 系统调动读取 4KB 数据，实际上内核使用 readahead 机制完成了 16KB 数据的读取。</p>
+<h2 id="2page-cache-与文件持久化的一致性可靠性">2、Page Cache 与文件持久化的一致性&amp;可靠性</h2>
+<p>现代 Linux 的 Page Cache 正如其名，是对磁盘上 page（页）的内存缓存，同时可以用于读/写操作。一切内存缓存都存在一致性问题：内存中的数据与磁盘中的数据不一致，例如用作分布式中间件缓存的 Redis 就与 MySQL 等数据库中的数据存在不一致。</p>
+<p>Linux 提供多种机制来保证数据一致性，但无论是单机上的内存与磁盘一致性，还是分布式组件中节点 1 与节点 2 、节点 3 的数据一致性问题，理解的关键是 trade-off：吞吐量与数据一致性保证是一对矛盾。</p>
+<p>首先，需要我们理解一下文件的数据。文件 = 数据 + 元数据。元数据用来描述文件的各种属性，也必须存储在磁盘上。因此，我们说保证文件一致性其实包含了两个方面：数据一致+元数据一致。</p>
+<p>文件的元数据包括：文件大小、创建时间、访问时间、属主属组等信息。</p>
+<p>我们考虑如下一致性问题：如果发生写操作并且对应的数据在 Page Cache 中，那么写操作就会直接作用于 Page Cache 中，此时如果数据还没刷新到磁盘，那么内存中的数据就领先于磁盘，此时对应 page 就被称为 Dirty page。</p>
+<p>当前 Linux 下以两种方式实现文件一致性：</p>
+<ol>
+<li>Write Through（写穿）：向用户层提供特定接口，应用程序可主动调用接口来保证文件一致性；</li>
+<li>Write back（写回）：系统中存在定期任务（表现形式为内核线程），周期性地同步文件系统中文件脏数据块，这是默认的 Linux 一致性方案；</li>
+</ol>
+<p>上述两种方式最终都依赖于系统调用，主要分为如下三种系统调用：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">方法</th>
+<th style="text-align:left">含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>fsync(intfd)</strong></td>
+<td style="text-align:left">fsync(fd)：将 fd 代表的文件的脏数据和脏元数据全部刷新至磁盘中。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>fdatasync (int fd)</strong></td>
+<td style="text-align:left">fdatasync(fd)：将 fd 代表的文件的脏数据刷新至磁盘，同时对必要的元数据刷新至磁盘中，这里所说的必要的概念是指：对接下来访问文件有关键作用的信息，如文件大小，而文件修改时间等不属于必要信息</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>sync()</strong></td>
+<td style="text-align:left">sync()：则是对系统中所有的脏的文件数据元数据刷新至磁盘中</td>
+</tr>
+</tbody>
+</table>
+<p>上述三种系统调用可以分别由用户进程与内核进程发起。下面我们研究一下内核线程的相关特性。</p>
+<ol>
+<li>
+<p>创建的针对回写任务的内核线程数由系统中持久存储设备决定，为每个存储设备创建单独的刷新线程；</p>
+</li>
+<li>
+<p>关于多线程的架构问题，Linux 内核采取了 Lighthttp 的做法，即系统中存在一个管理线程和多个刷新线程（每个持久存储设备对应一个刷新线程）。管理线程监控设备上的脏页面情况，若设备一段时间内没有产生脏页面，就销毁设备上的刷新线程；若监测到设备上有脏页面需要回写且尚未为该设备创建刷新线程，那么创建刷新线程处理脏页面回写。而刷新线程的任务较为单调，只负责将设备中的脏页面回写至持久存储设备中。</p>
+</li>
+<li>
+<p>刷新线程刷新设备上脏页面大致设计如下：</p>
+<p>每个设备保存脏文件链表，保存的是该设备上存储的脏文件的 inode 节点。所谓的回写文件脏页面即回写该 inode 链表上的某些文件的脏页面；</p>
+<p>系统中存在多个回写时机，第一是应用程序主动调用回写接口（fsync，fdatasync 以及 sync 等），第二管理线程周期性地唤醒设备上的回写线程进行回写，第三是某些应用程序/内核任务发现内存不足时要回收部分缓存页面而事先进行脏页面回写，设计一个统一的框架来管理这些回写任务非常有必要。</p>
+</li>
+</ol>
+<p>Write Through 与 Write back 在持久化的可靠性上有所不同：</p>
+<ul>
+<li>Write Through 以牺牲系统 I/O 吞吐量作为代价，向上层应用确保一旦写入，数据就已经落盘，不会丢失；</li>
+<li>Write back 在系统发生宕机的情况下无法确保数据已经落盘，因此存在数据丢失的问题。不过，在程序挂了，例如被 kill -9，Page Cache 中的数据操作系统还是会确保落盘；</li>
+</ul>
+<h2 id="3为什么使用-page-cache-与为什么不使用-page-cache">3、为什么使用 Page Cache 与为什么不使用 Page Cache?</h2>
+<h3 id="31-page-cache-的优势">3.1 Page Cache 的优势</h3>
+<p><strong>1.加快数据访问</strong></p>
+<p>如果数据能够在内存中进行缓存，那么下一次访问就不需要通过磁盘 I/O 了，直接命中内存缓存即可。</p>
+<p>由于内存访问比磁盘访问快很多，因此加快数据访问是 Page Cache 的一大优势。</p>
+<p><strong>2.减少 I/O 次数，提高系统磁盘 I/O 吞吐量</strong></p>
+<p>得益于 Page Cache 的缓存以及预读能力，而程序又往往符合局部性原理，因此通过一次 I/O 将多个 page 装入 Page Cache 能够减少磁盘 I/O 次数， 进而提高系统磁盘 I/O 吞吐量。</p>
+<h3 id="32-page-cache-的劣势">3.2 Page Cache 的劣势</h3>
+<p>page cache 也有其劣势，最直接的缺点是需要占用额外物理内存空间，物理内存在比较紧俏的时候可能会导致频繁的 swap 操作，最终导致系统的磁盘 I/O 负载的上升。</p>
+<p>Page Cache 的另一个缺陷是对于应用层并没有提供很好的管理 API，几乎是透明管理。应用层即使想优化 Page Cache 的使用策略也很难进行。因此一些应用选择在用户空间实现自己的 page 管理，例如 MySQL InnoDB 存储引擎以 16KB 的页进行管理。</p>
+<p>Page Cache 最后一个缺陷是在某些应用场景下比 Direct I/O 多一次磁盘读 I/O 以及磁盘写 I/O。</p>
+
+  </div>
+
+  
+  
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2021-11-26
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+  
+  
+</article>
+
+
+
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:weege007@gmail.com" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/weedge" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://weibo.com/weedge" rel="me noopener" class="iconfont"
+      title="weibo"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M385.714286 733.714286q12-19.428571 6.285714-39.428571t-25.714286-28.571429q-19.428571-8-41.714286-0.571429t-34.285714 26.285714q-12.571429 19.428571-7.428571 39.142857t24.571429 28.857143 42.571429 1.428571 35.714286-27.142857zm53.714286-69.142857q4.571429-7.428571 2-15.142857t-10-10.571429q-8-2.857143-16.285714 2.857143t-12.285714 10.571429q-9.714286 17.714286 7.428571 25.714286 8 2.857143 16.571429 2.857143t12.571429-10.571429zm99.428571 61.142857q-25.714286 58.285714-90.285714 85.714286t-128 6.857143q-61.142857-19.428571-84.285714-72.285714t3.714286-107.142857q26.857143-53.142857 86.571429-79.428571t120.285714-10.857143q63.428571 16.571429 90.571429 68.285714t1.428571 108.857143zm178.285714-91.428571q-5.142857-54.857143-50.857143-97.142857t-119.142857-62.285714-156.857143-12q-127.428571 13.142857-211.142857 80.857143t-75.714286 151.142857q5.142857 54.857143 50.857143 97.142857t119.142857 62.285714 156.857143 12q127.428571-13.142857 211.142857-80.857143t75.714286-151.142857zm176 2.285714q0 38.857143-21.142857 79.714286t-62.285714 78.285714-96.285714 67.142857-129.142857 47.428571-154.571429 17.714286-157.142857-19.142857-137.428571-53.142857-98-86.285714-37.142857-114q0-65.714286 39.714286-140t112.857143-147.428571q96.571429-96.571429 195.142857-134.857143t140.857143 4q37.142857 36.571429 11.428571 119.428571-2.285714 8-0.571429 11.428571t5.714286 4 8.285714 2.857143 7.714286-2l3.428571-1.142857q79.428571-33.714286 140.571429-33.714286t87.428571 34.857143q25.714286 36 0 101.714286-1.142857 7.428571-2.571429 11.428571t2.571429 7.142857 6.857143 4.285714 9.714286 3.428571q32.571429 10.285714 58.857143 26.857143t45.714286 46.571429 19.428571 66.571429zm-42.285714-356.571429q24 26.857143 31.142857 62t-3.714286 67.142857q-4.571429 13.142857-16.857143 19.428571t-25.428571 2.285714q-13.142857-4.571429-19.428571-16.857143t-2.285714-25.428571q11.428571-36-13.714286-63.428571t-61.142857-20q-13.714286 2.857143-25.714286-4.571429t-14.285714-21.142857q-2.857143-13.714286 4.571429-25.428571t21.142857-14.571429q34.285714-7.428571 68 3.142857t57.714286 37.428571zm103.428571-93.142857q49.714286 54.857143 64.285714 127.142857t-7.714286 138q-5.142857 15.428571-19.428571 22.857143t-29.714286 2.285714-22.857143-19.428571-2.857143-29.714286q16-46.857143 5.714286-98.285714t-45.714286-90.285714q-35.428571-39.428571-84.571429-54.571429t-98.857143-4.857143q-16 3.428571-29.714286-5.428571t-17.142857-24.857143 5.428571-29.428571 24.857143-16.857143q70.285714-14.857143 139.428571 6.571429t118.857143 76.857143z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://weedge.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2013 -
+    2021
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        weedge
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

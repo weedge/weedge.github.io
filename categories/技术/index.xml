@@ -6,7 +6,16 @@
     <description>Recent content in 技术 on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sun, 21 Nov 2021 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 26 Nov 2021 11:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>深入理解Linux的Page Cache</title>
+      <link>https://weedge.github.io/%E8%BD%AC%E8%BD%BD/page-cache/</link>
+      <pubDate>Fri, 26 Nov 2021 11:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/%E8%BD%AC%E8%BD%BD/page-cache/</guid>
+      <description>1、Page Cache 1.1 Page Cache 是什么？ 为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示： 上图中，红色部分为 Page Cache。可见 Page Cache 的本质</description>
+    </item>
+    
     <item>
       <title>WAL</title>
       <link>https://weedge.github.io/post/wal/</link>
