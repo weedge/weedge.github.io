@@ -407,7 +407,7 @@ SReclaimable:      43532 kB
 </ul>
 <p>最后，为什么 Buffers 也是 Page Cache 的一部分？</p>
 <p>这是因为当匿名页（Inactive(anon) 以及 Active(anon)）先被交换（swap out）到磁盘上后，然后再加载回（swap in）内存中，由于读入到内存后原来的 Swap File 还在，所以 SwapCached 也可以认为是 File-backed page，即属于 Page Cache。这个过程如图所示：(匿名页的被交换后也是 Page Cache)</p>
-<p>![](<img src="https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F1124%2F3c3bdceej00r32mkz000ac000hs0064g.jpg&amp;thumbnail=650x2147483647&amp;quality=80&amp;type=jpg" alt="img"></p>
+<p><img src="https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F1124%2F3c3bdceej00r32mkz000ac000hs0064g.jpg&amp;thumbnail=650x2147483647&amp;quality=80&amp;type=jpg" alt="img"></p>
 <h3 id="15-page-cache-与-buffer-cache">1.5 Page Cache 与 buffer cache</h3>
 <p>执行 free 命令，注意到会有两列名为 buffers 和 cached，也有一行名为 “-/+ buffers/cache”。</p>
 <pre tabindex="0"><code>~ free -m  
