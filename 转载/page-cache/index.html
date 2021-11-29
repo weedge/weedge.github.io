@@ -338,7 +338,7 @@
 <h2 id="1page-cache">1、Page Cache</h2>
 <h3 id="11-page-cache-是什么">1.1 Page Cache 是什么？</h3>
 <p>为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示：</p>
-<p><img src="https://s5.51cto.com/oss/202108/31/cf22d87ed4d023c0731440b9b09bffb5.png" alt="linuxio"></p>
+<p><img src="https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F1124%2F2654c391j00r32mky000qc000hs00f6g.jpg&amp;thumbnail=650x2147483647&amp;quality=80&amp;type=jpg" alt="linux-io"></p>
 <p>上图中，红色部分为 Page Cache。可见 Page Cache 的本质是由 Linux 内核管理的内存区域。我们通过 mmap 以及 buffered I/O 将文件读取到内存空间实际上都是读取到 Page Cache 中。</p>
 <h3 id="12-如何查看系统的-page-cache">1.2 如何查看系统的 Page Cache？</h3>
 <p>通过读取 /proc/meminfo 文件，能够实时获取系统内存情况：</p>
@@ -365,7 +365,7 @@ SReclaimable:      43532 kB
 </code></pre><p>通过阅读 1.4 以及 1.5 小节，就能够理解为什么 SwapCached 与 Buffers 也是 Page Cache 的一部分。</p>
 <p>题外话，小伙伴答案：</p>
 <p>内核计算源码（linux 2.6.19）：</p>
-<p><img src="https://s4.51cto.com/oss/202108/31/c0840b8c0ab6bfb486035be1f2713632.png" alt=""></p>
+<p><img src="https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F1124%2F419841c3j00r32mky000mc000hs009jg.jpg&amp;thumbnail=650x2147483647&amp;quality=80&amp;type=jpg" alt=""></p>
 <p>内核算法：Cached = files - SwapCached - Buffers；</p>
 <p>Buffers + Cached + SwapCached = Active(file) + Inactive(file) + Shmem + SwapCached</p>
 <p>公式推出来的</p>
@@ -407,7 +407,7 @@ SReclaimable:      43532 kB
 </ul>
 <p>最后，为什么 Buffers 也是 Page Cache 的一部分？</p>
 <p>这是因为当匿名页（Inactive(anon) 以及 Active(anon)）先被交换（swap out）到磁盘上后，然后再加载回（swap in）内存中，由于读入到内存后原来的 Swap File 还在，所以 SwapCached 也可以认为是 File-backed page，即属于 Page Cache。这个过程如图所示：(匿名页的被交换后也是 Page Cache)</p>
-<p><img src="https://s4.51cto.com/oss/202108/31/f5fae1b983c2fba4556b8ac32d05feb4.jpeg" alt=""></p>
+<p>![](<img src="https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F1124%2F3c3bdceej00r32mkz000ac000hs0064g.jpg&amp;thumbnail=650x2147483647&amp;quality=80&amp;type=jpg" alt="img"></p>
 <h3 id="15-page-cache-与-buffer-cache">1.5 Page Cache 与 buffer cache</h3>
 <p>执行 free 命令，注意到会有两列名为 buffers 和 cached，也有一行名为 “-/+ buffers/cache”。</p>
 <pre tabindex="0"><code>~ free -m  
@@ -420,9 +420,9 @@ Swap:        16002          0      16001
 <p>Page Cache 与 buffer cache 的共同目的都是加速数据 I/O：写数据时首先写到缓存，将写入的页标记为 dirty，然后向外部存储 flush，也就是缓存写机制中的 write-back（另一种是 write-through，Linux 默认情况下不采用）；读数据时首先读取缓存，如果未命中，再去外部存储读取，并且将读取来的数据也加入缓存。操作系统总是积极地将所有空闲内存都用作 Page Cache 和 buffer cache，当内存不够用时也会用 LRU 等算法淘汰缓存页。</p>
 <p>在 Linux 2.4 版本的内核之前，Page Cache 与 buffer cache 是完全分离的。但是，块设备大多是磁盘，磁盘上的数据又大多通过文件系统来组织，这种设计导致很多数据被缓存了两次，浪费内存。所以在 2.4 版本内核之后，两块缓存近似融合在了一起：如果一个文件的页加载到了 Page Cache，那么同时 buffer cache 只需要维护块指向页的指针就可以了。只有那些没有文件表示的块，或者绕过了文件系统直接操作（如dd命令）的块，才会真正放到 buffer cache 里。因此，我们现在提起 Page Cache，基本上都同时指 Page Cache 和 buffer cache 两者，本文之后也不再区分，直接统称为 Page Cache。</p>
 <p>下图近似地示出 32-bit Linux 系统中可能的一种 Page Cache 结构，其中 block size 大小为 1KB，page size 大小为 4KB。</p>
-<p><img src="https://s3.51cto.com/oss/202108/31/1e5686130ed2ffd482b472b070dfc871.png" alt=""></p>
+<p><img src="https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F1124%2F49a9a869j00r32mkz000nc000hs00cag.jpg&amp;thumbnail=650x2147483647&amp;quality=80&amp;type=jpg" alt="img"></p>
 <p>Page Cache 中的每个文件都是一棵基数树（radix tree，本质上是多叉搜索树），树的每个节点都是一个页。根据文件内的偏移量就可以快速定位到所在的页，如下图所示。关于基数树的原理可以参见英文维基，这里就不细说了。</p>
-<p><img src="https://s2.51cto.com/oss/202108/31/e9a629e17339733ed4a077ae13af7abd.png" alt=""></p>
+<p><img src="https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F1124%2Fb103f4edj00r32mkz000pc000hs00axg.jpg&amp;thumbnail=650x2147483647&amp;quality=80&amp;type=jpg" alt="img"></p>
 <h3 id="16-page-cache-与预读">1.6 Page Cache 与预读</h3>
 <p>操作系统为基于 Page Cache 的读缓存机制提供预读机制（PAGE_READAHEAD），一个例子是：</p>
 <ul>
@@ -430,7 +430,7 @@ Swap:        16002          0      16001
 <li>但是操作系统出于局部性原理会选择将磁盘块 offset [4KB,8KB)、[8KB,12KB) 以及 [12KB,16KB) 都加载到内存，于是额外在内存中申请了 3 个 page；</li>
 </ul>
 <p>下图代表了操作系统的预读机制：</p>
-<p><img src="https://s2.51cto.com/oss/202108/31/e340a344b14242c206f9804cbc1eebc2.jpeg" alt=""></p>
+<p><img src="https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F1124%2Fb5460636j00r32mkz0013c0010q00ayg.jpg&amp;thumbnail=650x2147483647&amp;quality=80&amp;type=jpg" alt="img"></p>
 <p>上图中，应用程序利用 read 系统调动读取 4KB 数据，实际上内核使用 readahead 机制完成了 16KB 数据的读取。</p>
 <h2 id="2page-cache-与文件持久化的一致性可靠性">2、Page Cache 与文件持久化的一致性&amp;可靠性</h2>
 <p>现代 Linux 的 Page Cache 正如其名，是对磁盘上 page（页）的内存缓存，同时可以用于读/写操作。一切内存缓存都存在一致性问题：内存中的数据与磁盘中的数据不一致，例如用作分布式中间件缓存的 Redis 就与 MySQL 等数据库中的数据存在不一致。</p>
