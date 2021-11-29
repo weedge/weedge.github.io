@@ -8,12 +8,12 @@
     <language>zh-cn</language>
     <lastBuildDate>Fri, 26 Nov 2021 11:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/page-cache/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>深入理解Linux的Page Cache</title>
+      <title>深入理解Linux的Page Cache 「转载的哦」</title>
       <link>https://weedge.github.io/%E8%BD%AC%E8%BD%BD/page-cache/</link>
       <pubDate>Fri, 26 Nov 2021 11:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/%E8%BD%AC%E8%BD%BD/page-cache/</guid>
-      <description>1、Page Cache 1.1 Page Cache 是什么？ 为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示： 上图中，红色部分为 Page Cache。可见 Page Cache 的本质</description>
+      <description>from: 互联网，备个份而已啦～！ 1、Page Cache 1.1 Page Cache 是什么？ 为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示： 上图中，红色部分为 Page</description>
     </item>
     
   </channel>

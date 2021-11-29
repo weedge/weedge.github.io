@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>深入理解Linux的Page Cache - 时间飘过</title>
+  <title>深入理解Linux的Page Cache 「转载的哦」 - 时间飘过</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="1、Page Cache 1.1 Page Cache 是什么？ 为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示： 上图中，红色部分为 Page Cache。可见 Page Cache 的本质" />
+  <meta name="description" content="from: 互联网，备个份而已啦～！ 1、Page Cache 1.1 Page Cache 是什么？ 为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示： 上图中，红色部分为 Page" />
 
   <meta name="keywords" content="工作, 技术, 生活" />
 
@@ -59,20 +59,20 @@
 
 
 
-<meta property="og:title" content="深入理解Linux的Page Cache" />
-<meta property="og:description" content="1、Page Cache 1.1 Page Cache 是什么？ 为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示： 上图中，红色部分为 Page Cache。可见 Page Cache 的本质" />
+<meta property="og:title" content="深入理解Linux的Page Cache 「转载的哦」" />
+<meta property="og:description" content="from: 互联网，备个份而已啦～！ 1、Page Cache 1.1 Page Cache 是什么？ 为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示： 上图中，红色部分为 Page" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://weedge.github.io/%E8%BD%AC%E8%BD%BD/page-cache/" /><meta property="article:section" content="转载" />
 <meta property="article:published_time" content="2021-11-26T11:26:23+08:00" />
 <meta property="article:modified_time" content="2021-11-26T11:26:23+08:00" />
 
-<meta itemprop="name" content="深入理解Linux的Page Cache">
-<meta itemprop="description" content="1、Page Cache 1.1 Page Cache 是什么？ 为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示： 上图中，红色部分为 Page Cache。可见 Page Cache 的本质"><meta itemprop="datePublished" content="2021-11-26T11:26:23+08:00" />
+<meta itemprop="name" content="深入理解Linux的Page Cache 「转载的哦」">
+<meta itemprop="description" content="from: 互联网，备个份而已啦～！ 1、Page Cache 1.1 Page Cache 是什么？ 为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示： 上图中，红色部分为 Page"><meta itemprop="datePublished" content="2021-11-26T11:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-11-26T11:26:23+08:00" />
-<meta itemprop="wordCount" content="4984">
+<meta itemprop="wordCount" content="4997">
 <meta itemprop="keywords" content="page cache," /><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="深入理解Linux的Page Cache"/>
-<meta name="twitter:description" content="1、Page Cache 1.1 Page Cache 是什么？ 为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示： 上图中，红色部分为 Page Cache。可见 Page Cache 的本质"/>
+<meta name="twitter:title" content="深入理解Linux的Page Cache 「转载的哦」"/>
+<meta name="twitter:description" content="from: 互联网，备个份而已啦～！ 1、Page Cache 1.1 Page Cache 是什么？ 为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示： 上图中，红色部分为 Page"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -292,7 +292,7 @@
           <article class="post bg-white">
   
   <header class="post-header">
-    <h1 class="post-title">深入理解Linux的Page Cache</h1>
+    <h1 class="post-title">深入理解Linux的Page Cache 「转载的哦」</h1>
     
     <div class="post-meta">
       <time datetime="2021-11-26" class="post-time">
@@ -332,7 +332,10 @@
 
   
   <div class="post-content">
-      <h2 id="1page-cache">1、Page Cache</h2>
+      <blockquote>
+<p>from: 互联网，备个份而已啦～！</p>
+</blockquote>
+<h2 id="1page-cache">1、Page Cache</h2>
 <h3 id="11-page-cache-是什么">1.1 Page Cache 是什么？</h3>
 <p>为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示：</p>
 <p><img src="https://s5.51cto.com/oss/202108/31/cf22d87ed4d023c0731440b9b09bffb5.png" alt="linuxio"></p>

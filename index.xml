@@ -24,13 +24,16 @@
     </item>
     
     <item>
-      <title>深入理解Linux的Page Cache</title>
+      <title>深入理解Linux的Page Cache 「转载的哦」</title>
       <link>https://weedge.github.io/%E8%BD%AC%E8%BD%BD/page-cache/</link>
       <pubDate>Fri, 26 Nov 2021 11:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/%E8%BD%AC%E8%BD%BD/page-cache/</guid>
       
-        <description>&lt;h2 id=&#34;1page-cache&#34;&gt;1、Page Cache&lt;/h2&gt;
+        <description>&lt;blockquote&gt;
+&lt;p&gt;from: 互联网，备个份而已啦～！&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;1page-cache&#34;&gt;1、Page Cache&lt;/h2&gt;
 &lt;h3 id=&#34;11-page-cache-是什么&#34;&gt;1.1 Page Cache 是什么？&lt;/h3&gt;
 &lt;p&gt;为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示：&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://s5.51cto.com/oss/202108/31/cf22d87ed4d023c0731440b9b09bffb5.png&#34; alt=&#34;linuxio&#34;&gt;&lt;/p&gt;
@@ -1243,7 +1246,7 @@ struct Binlog_storage_observer /* Observe binlog logging storage */
     </item>
     
     <item>
-      <title>共享内存与内存映射(mmap)</title>
+      <title>共享内存与内存映射(mmap)「转载的哦」</title>
       <link>https://weedge.github.io/%E8%BD%AC%E8%BD%BD/mmap/</link>
       <pubDate>Tue, 16 Nov 2021 11:26:23 +0800</pubDate>
       
