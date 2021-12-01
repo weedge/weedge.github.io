@@ -497,6 +497,12 @@
   </url>
   
   <url>
+    <loc>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/%E6%95%99%E5%AD%A6%E7%9B%B4%E6%92%AD%E4%B8%AD%E5%8F%B0%E6%8A%80%E6%9C%AF%E9%9A%BE%E7%82%B9%E6%A2%B3%E7%90%86/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
     <loc>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/%E9%A2%84%E7%83%AD%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>

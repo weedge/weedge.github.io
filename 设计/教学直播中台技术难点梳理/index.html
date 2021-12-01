@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>归档 - 时间飘过</title>
+  <title> - 时间飘过</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -23,7 +23,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="记录工作和生活" />
+  <meta name="description" content="技术难点和收益 组织引擎： 业务数据源梳理，设计通用的模型，通过策略配置将不属于课中直播中台的业务属性进行隔离， 比如售卖平台和辅导侧运营平台 售卖" />
+
   <meta name="keywords" content="工作, 技术, 生活" />
 
 
@@ -34,8 +35,8 @@
 <meta name="generator" content="Hugo 0.88.1" />
 
 
-<link rel="canonical" href="https://weedge.github.io/%E8%AE%BE%E8%AE%A1/" />
-<link href="/%E8%AE%BE%E8%AE%A1/index.xml" rel="alternate" type="application/rss+xml" title="时间飘过" />
+<link rel="canonical" href="https://weedge.github.io/%E8%AE%BE%E8%AE%A1/%E6%95%99%E5%AD%A6%E7%9B%B4%E6%92%AD%E4%B8%AD%E5%8F%B0%E6%8A%80%E6%9C%AF%E9%9A%BE%E7%82%B9%E6%A2%B3%E7%90%86/" />
+
 
 
 
@@ -58,15 +59,20 @@
 
 
 
-<meta property="og:title" content="设计s" />
-<meta property="og:description" content="记录工作和生活" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://weedge.github.io/%E8%AE%BE%E8%AE%A1/" />
+<meta property="og:title" content="" />
+<meta property="og:description" content="技术难点和收益 组织引擎： 业务数据源梳理，设计通用的模型，通过策略配置将不属于课中直播中台的业务属性进行隔离， 比如售卖平台和辅导侧运营平台 售卖" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/%E8%AE%BE%E8%AE%A1/%E6%95%99%E5%AD%A6%E7%9B%B4%E6%92%AD%E4%B8%AD%E5%8F%B0%E6%8A%80%E6%9C%AF%E9%9A%BE%E7%82%B9%E6%A2%B3%E7%90%86/" /><meta property="article:section" content="设计" />
 
-<meta itemprop="name" content="设计s">
-<meta itemprop="description" content="记录工作和生活"><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="设计s"/>
-<meta name="twitter:description" content="记录工作和生活"/>
+
+
+<meta itemprop="name" content="">
+<meta itemprop="description" content="技术难点和收益 组织引擎： 业务数据源梳理，设计通用的模型，通过策略配置将不属于课中直播中台的业务属性进行隔离， 比如售卖平台和辅导侧运营平台 售卖">
+
+<meta itemprop="wordCount" content="2540">
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content=""/>
+<meta name="twitter:description" content="技术难点和收益 组织引擎： 业务数据源梳理，设计通用的模型，通过策略配置将不属于课中直播中台的业务属性进行隔离， 比如售卖平台和辅导侧运营平台 售卖"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -283,38 +289,137 @@
     <main id="main" class="main bg-llight">
       <div class="content-wrapper">
         <div id="content" class="content container">
-          
-<section id="archive" class="archive">
-    <div class="archive-title">
-      <span class="archive-post-counter">
-          共计 10 篇文章
-      </span>
-    </div></section>
+          <article class="post bg-white">
+  
+  <header class="post-header">
+    <h1 class="post-title"></h1>
+    
+    <div class="post-meta">
+      <time datetime="0001-01-01" class="post-time">
+        0001-01-01
+      </time>
+    </div>
+  </header>
+
+  
+  
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#技术难点和收益">技术难点和收益</a>
+      <ul>
+        <li><a href="#组织引擎">组织引擎：</a></li>
+        <li><a href="#建设组织引擎课前预热整体收益">建设组织引擎课前预热整体收益：</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+  
+  <div class="post-content">
+      <h2 id="技术难点和收益">技术难点和收益</h2>
+<h3 id="组织引擎">组织引擎：</h3>
+<ol>
+<li>
+<p><strong>业务数据源梳理，设计通用的模型，通过策略配置将不属于课中直播中台的业务属性进行隔离</strong>，</p>
+<p>比如售卖平台和辅导侧运营平台 售卖的课程产品，分班排管班策略，以及课程中每一节大纲章节业务属性，都通过课前预热的时候进行解耦，生成课中理解的内聚模型，直播间，组织树；主讲，辅导老师和学生在直播间上课，通过组织树进行互动；课中学生老师进入教室获取课前绑定的策略，初始化直播间和组织树属性。这样能够服用已有沉淀下来的稳定功能；而且在支持新业务直播场景下，节省开发人力，加速产品迭代，将业务属性隔离，也有助于服务稳定运行</p>
+</li>
+<li>
+<p><strong>组织树在分布式缓存和数据库中的设计；</strong></p>
+<p>如何在k/v存储中表示一颗组织树，以及在db数据库表中表示一颗组织树和学生，老师之间的关系；</p>
+<p>数据库需要考虑每天的数据容量，以及未来3年的数据容量(按一天2w节课，一节课3w+报名，估算78GB数据量)；</p>
+<p>为了方便课后问题排查，缓存数据过期时间7天（可调整），课中接口是直接和缓存交互，改变的数据状态通过Write behind模式异步刷盘写入db中，后台的接口数据通过Cache aside 课前预读提前加载至缓存中(延迟双删)。</p>
+</li>
+<li>
+<p><strong>半夜0点～6点这段时间需要保证当天预热数据的高效性，准确性，以及可视化监控报警</strong>:</p>
+</li>
+</ol>
+<p>​	1. <strong>预热框架的设计</strong> ，业务数据和课中直播组织模型 策略绑定平台，生产预热任务，负载均衡分发至预热worker节点，记录预热，任务监控(预热和检查)，预热失败的容错，failover，报警；</p>
+<p>​	将业务属性和直播属性通过策略进行绑定，生成任务发送给消息队列，通过消息队列pusher到 预热模块, 利用内部的nmq工具属性，进行任务的负载均衡发布到每台worker协程来预热，考虑到可能会同时发多个相同的任务在不同的worker上执行，需要加锁；预热记录在预热记录表中，进行监控；</p>
+<p>​	每个预热worker会统计本机处理的章节，直播间，组织节点/树，学生数目，预热完之后，通过丁丁通知预热结果，也会同时触发数据检查流程；</p>
+<p>​	为了支持不同的预热场景，加入了极速预热，快速预热策略，满足新建一个课直接上课的场景(这些场景在内部老师的测试课会使用到), 秒级内完成；</p>
+<p>​</p>
+<p>​	2. <strong>预热数据检查</strong></p>
+<p>​	检查预热数据的完整性，通过和数据源的对比，检查绑定的策略属性是否是好的；缓存和db中的直播间，组织数据，以及学生所在组织树，老师所在的直播间等数据的检查</p>
+<p>​	批量数据检查不能影响线上的稳定性，主要是读取线上缓存和db中的数据，也会像预热那样分发到集群机器上去并行处理；如果是业务高峰期进行检查，需要对检查流量进行限流，</p>
+<p>限流方案：对单机进行限流，对整体检查集群进行限流，都是以当前运行的检查任务数进行计数限流控制(redis hincr)；每个检查worker进程会统计当前正在运行的任务数，如果到了单机最大任务数，新的检查请求会直接返回检查容量已超限制错误，pusher会重试到另外一台机器上，</p>
+<p>​	3. <strong>预热数据监控</strong></p>
+<p>​	课前 预热任务和检查任务的监控；</p>
+<p>​	课前 业务数据和课中直播组织模型 绑定策略， 老师直播间，组织树，学生等数据，在缓存，db中的监控；</p>
+<p>​	课中 直播间状态，所在组织树下的学生数据状态的监控；</p>
+<ol start="4">
+<li><strong>需要考虑课前，课中的异动场景</strong>，比如</li>
+</ol>
+<p>​	课前，辅导侧给分好班的学生重新分班，需要订阅辅导测的异动，如果是同一时间批量修改，课中直播中台预热好的组织树需要考虑 并发异动修改学生所在的节点；</p>
+<p>​	课中，并发场景动态扩容，比如学生进入教室之前需要选组，如果初始小组节点不够，到了阈值，发送扩容任务，通过异步动态扩容协程进行扩容；</p>
+<ol start="5">
+<li><strong>课中获取缓存数据的接口优化，分布式缓存中的大key和热key的优化</strong></li>
+</ol>
+<p>​	大key优化 通过分片处理，直播间的在线学生集合 和 报名学生集合，对key 进行partition分片，每个partition 5000个学生， partition的值是在课前预热的时候通过报名人数和课程的库存数量进行加权和预估的值；</p>
+<p>​	热key优化 通过加本地缓存，通过LRU进行evict，比如 一个老师上课时产生的信令列表(直播间维度，按时间顺序)，存放在zset中，提供学生进入教室时拉取，以及数据滞后时候的拉取，如果是一个热门直播间，会同时上万个学生获取这个老师产生的信令列表，会对分布式缓存中的slot带了压力，为了解决这个问题，将以获取的信令列表数据缓存到本地的有序列表中(sortedlist -&gt; skiplist), 这些有序列表通过直播间维度hash分桶， 本地的有序列表数据只需维护 新增的数据，而不需要整段去获取缓存，减少获取热key的网络io； 这里会打点记录每个key的hit命中/miss未命中的数据量，数据日志采集接入基础监控平台，实时查看；</p>
+<ol start="6">
+<li>
+<p><strong>新业务接入，对新策略的增加，以及对老策略的修改，如何保证系统稳定性</strong></p>
+<p>进行预热逻辑升级之后，上线之前都会在线下进行一轮未改策略的预热数据自动化diff，是拉取不同的版本，还未合入master的线上版本和修改了的版本，分布部署在两个容器中；根据不同的直播场景，从线上获取数据，预热写入线下缓存实例k/v和数据库实例表中，然后分别读取两份数据进行对比，比较为修改的策略是否有影响，有数据diff, 并报告diff的数据点，进行线下修复，再次进行自动化diff, 无diff之后，才能合并到master上线分支，上线；</p>
+</li>
+</ol>
+<h3 id="建设组织引擎课前预热整体收益">建设组织引擎课前预热整体收益：</h3>
+<ol>
+<li>节约了人力，加速产品开发迭代周期；以前如果接入新的业务辅导侧数据，以及提供相关的课中接口，从开发，测试上线，大概3～4个人力，需要2～3周的时间， 改造之后，开发，测试上线，大概1-2个人，需要1周的开发时间，节约了一半的成本；</li>
+<li>复用现有直播场景功能，将底层业务和直播属性进行隔离， 直播只关注直播属性，无需关注业务属性；保证直播服务的稳定性，将业务数据提供规范化接入后，可以将业务依赖进行反正，为后续saas化提供保障；</li>
+<li>直播接口性能有所提高，以前是有不同的业务方去把控，现在收敛整体把控，降低资源消耗（cpu, 内存，磁盘空间，网络io)，有些业务当时还是用php开发，php是多进程的方式处理业务请求逻辑，相对于go协程，占用资源更多；</li>
+<li>系统更加稳定，引入自动化工具检查预热数据，监控报警机制，修改策略线下检查机制，能保障系统稳定升级，减少线上出错率；</li>
+</ol>
+
+  </div>
+
+  
+  
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      0001-01-01
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
 
 
+  
+  
+</article>
 
 
 
 
   
-  
-  
 
   
   
 
   
-  
 
   
-  
 
   
+
+    
+
   
-
-
-
-
 
         </div>
       </div>
