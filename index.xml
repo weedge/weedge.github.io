@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 26 Nov 2021 11:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 02 Dec 2021 12:26:23 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -20,6 +20,55 @@
       
         <description>&lt;p&gt;简单的木头人，简单，呆木，喜欢自言自语，愚人自扰型。时间飞逝，仅仅记录，留住某人某事，某些好玩的技术，KISS and just do IT.&lt;/p&gt;
 </description>
+      
+    </item>
+    
+    <item>
+      <title>pool</title>
+      <link>https://weedge.github.io/post/pool/</link>
+      <pubDate>Thu, 02 Dec 2021 12:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/pool/</guid>
+      
+        <description>&lt;h2 id=&#34;介绍&#34;&gt;介绍&lt;/h2&gt;
+&lt;p&gt;平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景下，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用epoll)，而池化可以应用用户使用层面来优化；池化(&lt;a href=&#34;https://en.wikipedia.org/wiki/Pool_(computer_science)&#34;&gt;pool&lt;/a&gt;)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E8%A1%8C%E7%A8%8B&#34;&gt;进程&lt;/a&gt;(process PCB 内核态)、&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E5%9F%B7%E8%A1%8C%E7%B7%92&#34;&gt;线程&lt;/a&gt;(thread TCB 内核态)、&lt;a href=&#34;https://zh.wikipedia.org/zh-hans/%E5%8D%8F%E7%A8%8B&#34;&gt;协程&lt;/a&gt;(coroutine 用户态)为载体的工作任务(work task)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源进行池化技术进行介绍，了解池化对应场景。&lt;/p&gt;
+&lt;h2 id=&#34;工作任务池worker-pool&#34;&gt;工作任务池（worker pool)&lt;/h2&gt;
+&lt;p&gt;程序中的工作任务是一些运行逻辑，通过进程，线程，或者协程为载体获取系统资源来运行；如果运行的资源对象特别多，这些资源对象在内存中分配空间，这就导致资源消耗过多，甚至可能导致OOM，同时处理任务完成之后，这些资源需要回收，也会消耗大量的cpu时间；所以在这些高耗进程/线程，或者协程资源的工作任务场景下(比如大量的请求任务)，需要用池化技术进行复用，提高利用率，减少请求耗时；对此分别介绍进程池，线程池，协程池，以及开源组件服务中的实现。&lt;/p&gt;
+&lt;h3 id=&#34;进程池process-pool&#34;&gt;进程池(process pool)&lt;/h3&gt;
+&lt;p&gt;早期的操作系统是以&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E8%A1%8C%E7%A8%8B&#34;&gt;进程&lt;/a&gt;作为资源分配和调度的基本单位，比如早期linux2.4以及之前的版本，进程是程序的基本执行实体；在面向线程设计的系统（如当代多数操作系统、&lt;a href=&#34;https://zh.wikipedia.org/wiki/Linux&#34;&gt;Linux&lt;/a&gt; 2.6及更新的版本）中，进程本身不是基本执行单位，而是&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E5%9F%B7%E8%A1%8C%E7%B7%92&#34;&gt;线程&lt;/a&gt;的容器，将资源分配和调度运行进行了分离设计；引入线程后，进程中可以有多个线程，并且共享线程资源；这里介绍进程池，一个进程中只有一个线程作为调度运行单位；在使用PHP语言进行web服务端开发的时候，常规操作用LAMP/LNMP组合，其中使用Apache/Nginx作为web服务器将请求路由到对应后端服务模块处理，然后将处理的响应结果返回；后端服务模块通过实现通用网关接口协议(CGI)应用(app)进程来处理请求, 如果仅仅是单个请求处理从路由模块转发的请求，吞吐量是很低的(一个请求一个进程的方式(fork-and-exec模式)，实现简单，甚至可以用shell脚本来作为CGI进程处理，早期90年之前互联网用户不多)；随着互联网的发展，fork-and-exec模式，进程创建和消除开销变大，成了诟病，&lt;a href=&#34;https://en.wikipedia.org/wiki/FastCGI&#34;&gt;FastCGI&lt;/a&gt;接口协议在90年代中期提出来，FastCGI服务器使用持久进程来处理一系列请求，及每个单独的 FastCGI 进程可以在其生命周期内处理许多请求，从而避免每个请求进程创建和终止的开销(另外还有SCGI,WSGI协议,都是定义通用的接口协议，将web服务器和应用服务器进行解耦，比如apache/nginx都有对应的协议模块和应用服务器php-fpm/uWSGI(python)相关接口协议进程进行交互，编写语言大多是解释性语言，进程运行时动态加载解释执行)。&lt;/p&gt;
+&lt;h4 id=&#34;php-fpm-worker-process-pool&#34;&gt;php-fpm worker process pool&lt;/h4&gt;
+&lt;p&gt;php解释性语言作为后端服务模块的开发语言，支持FastCGI，并且对支持FastCGI接口协议的进程进行管理，通过SAPI(Server Application Programme Interface)模块中的FPM(FastCGI Process Manager)实现；在初始启动php-fpm时，通过主进程监听不同服务端口，不同服务端口初始对应的FastCGI工作进程池；运行时，主进程(父进程)和工作进程(子进程)通过双向信号管道(pipe)进行通信，实现主进程对工作进程的控制管理，以及工作进程通过标准输出管道(stdout pipe)和标准错误管道(stderr pipe)，将结果和错误返回给主进程；主进程和工作进程通过共享内存的方式(内部记分板结构scoreboard)，实现工作进程运行时的监控(工作进程状态), 主进程会定时轮训检查工作进程数目，根据进程池管理策略来处理是否扩缩容，检查工作进程处理请求是否超时，整体流程如下图：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/fpm-worker-pool.drawio.png&#34; alt=&#34;fpm-worker-pool&#34;&gt;&lt;/p&gt;
+&lt;p&gt;具体代码见&lt;a href=&#34;https://github.com/php/php-src/tree/master/sapi/fpm&#34;&gt;php-fpm&lt;/a&gt;；php语言是线程安全的，使用 &lt;code&gt;TSRM&lt;/code&gt; 机制分配和使用变量时会有额外的损耗，所以一般不需要多线程的 PHP 环境；而且工作进程处理请求时加载php脚本解析成opcode, 然后通过ZendVM解释器调用opcode对应的机器指令，最终完成php脚本的运行，由于每次处理请求都需要解析成opcode,会有性能损耗，所以引入opcache来缓存解析后的opcode；php-fpm的运行机制是采用多进程方式来处理请求，每个woker进程处理请求时所占内存大小在10M+，可以通过&lt;code&gt;ps aux | grep php | grep -v grep | grep -v master | awk &#39;{sum+=$6; cn+=1} END {print sum/cn}&#39;&lt;/code&gt;获取worker进程消耗内存平均值，所以fpm引入工作进程池来防止过度消耗内存，而且可以服用工作进程来处理请求，内存资源紧的场景开启动态扩缩worker进程池，反之采用静态方式池中一次初始pm.max_children 这么多worker进程，减少扩缩管理开销。&lt;/p&gt;
+&lt;p&gt;php多进程(进程单个线程)编程相对多线程(进程多个线程)编程要简单些，多线程需要考虑共享所在进程资源同步的问题，处于安全隔离考虑，进程多线程中如果某个线程出错，整个进程就挂了，而多进程资源相互隔离，如果一个进程挂了，不影响其他进程处理任务；而且解释语言相对c/c++编译成机器码执行语言开发效率要高很多，运行时加载，无需重启服务(当然c/c++编译型语言也支持动态库加载至内存提供相关接口调用，进行热加载而无需重启服务，但是不可能每次新开发一个功能都以*.so动态库的形式提供吧，所以需求更新迭代快的场景，像游戏领域的服务器，网关服务器，甚至大数据任务算子，大多都是通过引入解释型脚本语言(lua/js/python/php)编写业务逻辑，进行热加载)；&lt;/p&gt;
+&lt;p&gt;但是多进程毕竟比多线程要消耗更多的系统资源；而且如果存在多进程单线程的&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%A4%AE%E5%A4%84%E7%90%86%E5%99%A8&#34;&gt;cpu&lt;/a&gt;切换，是从一个进程到另一个进程，而单进程多线程的&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%A4%AE%E5%A4%84%E7%90%86%E5%99%A8&#34;&gt;cpu&lt;/a&gt;切换则只在一个进程内，每个进程/线程都有自己的上下文堆栈保存，进程间的cpu切换消耗更大一些；多线程上下文的切换涉及程序计数器、堆栈指针和程序状态字等一系列的寄存器置换、程序堆栈重置甚至是 CPU 高速缓存、TLB 快表的汰换；进程间的上线文切换还涉及整个进程地址空间。&lt;/p&gt;
+&lt;h3 id=&#34;线程池thread-poolhttpsenwikipediaorgwikithread_pool&#34;&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Thread_pool&#34;&gt;线程池(thread pool)&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;线程是操作系统调度运行的最小单元，随着计算机&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%A4%AE%E5%A4%84%E7%90%86%E5%99%A8&#34;&gt;cpu&lt;/a&gt;核数的增加，多线程技术可以充分利用多个cpu核进行并行处理，提高吞吐；对于在单cpu单核的计算机上，使用多线程技术，也可以把进程中负责I/O处理、人机交互而常被阻塞的部分，与密集计算的部分分开来执行，编写专门的workhorse线程执行密集计算，虽然多任务比不上多核，但因为具备多线程的能力，从而提高了程序的执行效率。&lt;/p&gt;
+&lt;h4 id=&#34;nginx-thread-pool&#34;&gt;nginx thread pool&lt;/h4&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.nginx.com/blog/inside-nginx-how-we-designed-for-performance-scale/&#34;&gt;nginx是多工作进程(cpu核数)+事件模型&lt;/a&gt;（如果是IO密集型 worker进程数在1.5-2倍cpu核数），通过工作进程单线程的事件模型(比喻成grandmaster😄)能够很快处理用户的请求(epoll事件机制)，但是为了解决重阻塞型IO密集型的工作任务问题，nginx 1.7.12引入了&lt;a href=&#34;https://www.nginx.com/blog/thread-pools-boost-performance-9x/&#34;&gt;thread pool 线程池技术&lt;/a&gt;，主要是针对linux系统，解决不支持异步IO的场景(FreeBSD系统的异步IO支持使用内存做为文件缓存)；&lt;/p&gt;
+&lt;p&gt;比如产生磁盘io的系统调用read(),sendfile(),aio_write()(Linux上的在编写一些临时文件,在nginx1.9.13加入)这些阻塞操作场景，工作进程处理这些操作的时候，将其放入线程池中来处理，常见的直播/点播回放场景中，会有拉流操作，从最近CDN服务节点上获取视频流进行播放；像视频流文件，或者其他大文件，这些请求资源是没法放入系统内存&lt;a href=&#34;https://zhuanlan.zhihu.com/p/35448479&#34;&gt;页面缓存&lt;/a&gt;中，导致事件模型被文件操作卡住，没法正常的响应链接，引入 thread pool 来缓解这个问题；流程如下：&lt;/p&gt;
+&lt;p&gt;工作进程中的主线程决定要发起文件系统操作时，将会建立一个特殊的任务，并将该任务丢到任务队列中；而线程池中的空闲线程会不断的执行该队列的文件任务，而后将执行好的结果放入返回队列，主线程就会继续后续操作。经过这个优化，主线程不会再被阻塞住，如图：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.nginx.com/wp-content/uploads/2016/07/thread-pools-worker-process-event-cycle.png&#34; alt=&#34;thread-pools-worker-process-event-cycle&#34;&gt;&lt;/p&gt;
+&lt;h4 id=&#34;redis-thread-pool&#34;&gt;redis thread pool&lt;/h4&gt;
+&lt;p&gt;redis处理命令核心逻辑是单进程单线程模式，redis关注的是网络IO，以及内存操作，如果是单进程多线程处理必然会有同一个内存结构会有多个线程处理，加锁处理，线程等待以及多线程上下文切换开销的问题，执行效率不如单线程高效；网络IO事件直接通过IO多路复用事件模型(AE)来解决, 而且逻辑简单可维护；为了提高处理性能，Redis v4.0 将磁盘io和内存释放工作采用几个线程异步处理(3个)，fsync内存异步持久落盘操作和close异步关闭文件操作，evict异步释放内存操作；为了提高处理IO能力，Redis v6.0 正式在网络模型中实现 I/O 多线程；尽量保持less is more的原则；&lt;/p&gt;
+&lt;h3 id=&#34;协程池coroutine-pool&#34;&gt;协程池(coroutine pool)&lt;/h3&gt;
+&lt;p&gt;待续。。&lt;/p&gt;
+&lt;h2 id=&#34;内存池memory-poolhttpsenwikipediaorgwikimemory_pool&#34;&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Memory_pool&#34;&gt;内存池(memory pool)&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;待续。。&lt;/p&gt;
+&lt;h2 id=&#34;连接池connection-poolhttpsenwikipediaorgwikiconnection_pool&#34;&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Connection_pool&#34;&gt;连接池(connection pool)&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;待续。。&lt;/p&gt;
+&lt;h3 id=&#34;envoy-connectionpool&#34;&gt;envoy ConnectionPool&lt;/h3&gt;
+&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
+&lt;h2 id=&#34;references&#34;&gt;references&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.nginx.com/blog/thread-pools-boost-performance-9x/&#34;&gt;nginx-thread-pools-boost-performance-9x&lt;/a&gt; &lt;a href=&#34;https://segmentfault.com/a/1190000010008012&#34;&gt;翻译&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.nginx.com/blog/inside-nginx-how-we-designed-for-performance-scale/&#34;&gt;inside-nginx-how-we-designed-for-performance-scale&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.aosabook.org/en/nginx.html&#34;&gt;AOSA-nginx&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://strikefreedom.top/multiple-threaded-network-model-in-redis&#34;&gt;Redis 多线程网络模型全面揭秘&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://antirez.com/news/93&#34;&gt;Lazy Redis is better Redis&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://redis.io/topics/benchmarks&#34;&gt;How fast is Redis?&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.bilibili.com/video/BV1Bq4y1q7Pi&#34;&gt;Golang操作系统调度原理&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;</description>
       
     </item>
     
@@ -1672,6 +1721,7 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。&lt;
 &lt;li&gt;/usr/local/opt/mysql/bin/ibd2sdi (utilities/ibd2sdi.cc文件)  查看ibd文件中的字典序列化信息,mysqlbinlog binlog.* 打印binlo g信息&lt;/li&gt;
 &lt;li&gt;客户端命令执行show VARIABLES like &amp;ldquo;%Innodb%&amp;quot;; show status like &amp;ldquo;%Innodb%&amp;quot;; 查看Innodb参数和状态统计；&lt;/li&gt;
 &lt;li&gt;客户端命令执行  SHOW ENGINE INNODB STATUS; 查看整体运行状态监控数据(io,thread, buffer pool memory, SEMAPHORES, TRANSACTIONS,INSERT BUFFER AND ADAPTIVE HASH INDEX,LOG,ROW OPERATIONS)&lt;/li&gt;
+&lt;li&gt;客户端执行命令，通过dtruss -p  查看mysqld进程对应的系统调用&lt;/li&gt;
 &lt;li&gt;相关的参数可以从官网查看介绍&lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/server-option-variable-reference.html&#34;&gt;Server Option, System Variable, and Status Variable Reference&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;下载源码 &lt;a href=&#34;https://github.com/mysql/mysql-server&#34;&gt;https://github.com/mysql/mysql-server&lt;/a&gt; 8.0 版本分支，download zip文件，解压，编译，运行，gdb debug&lt;/li&gt;
 &lt;/ol&gt;
@@ -2207,45 +2257,45 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。&lt;
       <guid>https://weedge.github.io/todo/policyworker/</guid>
       
         <description>&lt;h4 id=&#34;策略模型&#34;&gt;策略模型&lt;/h4&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;package&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;main&lt;/span&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;color:#00a&#34;&gt;package&lt;/span&gt; main
 
-&lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; (
-  &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;sync/atomic&amp;#34;&lt;/span&gt;
-  &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;time&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#00a&#34;&gt;import&lt;/span&gt; (
+  &lt;span style=&#34;color:#a50&#34;&gt;&amp;#34;sync/atomic&amp;#34;&lt;/span&gt;
+  &lt;span style=&#34;color:#a50&#34;&gt;&amp;#34;time&amp;#34;&lt;/span&gt;
 )
 
-&lt;span style=&#34;color:#66d9ef&#34;&gt;func&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;loadConfig&lt;/span&gt;() &lt;span style=&#34;color:#66d9ef&#34;&gt;map&lt;/span&gt;[&lt;span style=&#34;color:#66d9ef&#34;&gt;string&lt;/span&gt;]&lt;span style=&#34;color:#66d9ef&#34;&gt;string&lt;/span&gt; {
-  &lt;span style=&#34;color:#75715e&#34;&gt;// 从数据库或者文件系统中读取配置信息，然后以map的形式存放在内存里
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; make(&lt;span style=&#34;color:#66d9ef&#34;&gt;map&lt;/span&gt;[&lt;span style=&#34;color:#66d9ef&#34;&gt;string&lt;/span&gt;]&lt;span style=&#34;color:#66d9ef&#34;&gt;string&lt;/span&gt;)
+&lt;span style=&#34;color:#00a&#34;&gt;func&lt;/span&gt; &lt;span style=&#34;color:#0a0&#34;&gt;loadConfig&lt;/span&gt;() &lt;span style=&#34;color:#00a&#34;&gt;map&lt;/span&gt;[&lt;span style=&#34;color:#0aa&#34;&gt;string&lt;/span&gt;]&lt;span style=&#34;color:#0aa&#34;&gt;string&lt;/span&gt; {
+  &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;// 从数据库或者文件系统中读取配置信息，然后以map的形式存放在内存里
+&lt;/span&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#00a&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#0aa&#34;&gt;make&lt;/span&gt;(&lt;span style=&#34;color:#00a&#34;&gt;map&lt;/span&gt;[&lt;span style=&#34;color:#0aa&#34;&gt;string&lt;/span&gt;]&lt;span style=&#34;color:#0aa&#34;&gt;string&lt;/span&gt;)
 }
 
-&lt;span style=&#34;color:#66d9ef&#34;&gt;func&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;requests&lt;/span&gt;() &lt;span style=&#34;color:#66d9ef&#34;&gt;chan&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; {
-  &lt;span style=&#34;color:#75715e&#34;&gt;// 将从外界中接受到的请求放入到channel里
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; make(&lt;span style=&#34;color:#66d9ef&#34;&gt;chan&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt;)
+&lt;span style=&#34;color:#00a&#34;&gt;func&lt;/span&gt; &lt;span style=&#34;color:#0a0&#34;&gt;requests&lt;/span&gt;() &lt;span style=&#34;color:#00a&#34;&gt;chan&lt;/span&gt; &lt;span style=&#34;color:#0aa&#34;&gt;int&lt;/span&gt; {
+  &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;// 将从外界中接受到的请求放入到channel里
+&lt;/span&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#00a&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#0aa&#34;&gt;make&lt;/span&gt;(&lt;span style=&#34;color:#00a&#34;&gt;chan&lt;/span&gt; &lt;span style=&#34;color:#0aa&#34;&gt;int&lt;/span&gt;)
 }
 
-&lt;span style=&#34;color:#66d9ef&#34;&gt;func&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;main&lt;/span&gt;() {
-  &lt;span style=&#34;color:#75715e&#34;&gt;// config变量用来存放该服务的配置信息
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;var&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;config&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;atomic&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;Value&lt;/span&gt;
-  &lt;span style=&#34;color:#75715e&#34;&gt;// 初始化时从别的地方加载配置文件，并存到config变量里
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#a6e22e&#34;&gt;config&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;Store&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;loadConfig&lt;/span&gt;())
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;go&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;func&lt;/span&gt;() {
-    &lt;span style=&#34;color:#75715e&#34;&gt;// 每10秒钟定时的拉取最新的配置信息，并且更新到config变量里
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; {
-      &lt;span style=&#34;color:#a6e22e&#34;&gt;time&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;Sleep&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;time&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;Second&lt;/span&gt;)
-      &lt;span style=&#34;color:#75715e&#34;&gt;// 对应于赋值操作 config = loadConfig()
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;      &lt;span style=&#34;color:#a6e22e&#34;&gt;config&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;Store&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;loadConfig&lt;/span&gt;())
+&lt;span style=&#34;color:#00a&#34;&gt;func&lt;/span&gt; &lt;span style=&#34;color:#0a0&#34;&gt;main&lt;/span&gt;() {
+  &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;// config变量用来存放该服务的配置信息
+&lt;/span&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#00a&#34;&gt;var&lt;/span&gt; config atomic.Value
+  &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;// 初始化时从别的地方加载配置文件，并存到config变量里
+&lt;/span&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;&lt;/span&gt;  config.&lt;span style=&#34;color:#0a0&#34;&gt;Store&lt;/span&gt;(&lt;span style=&#34;color:#0a0&#34;&gt;loadConfig&lt;/span&gt;())
+  &lt;span style=&#34;color:#00a&#34;&gt;go&lt;/span&gt; &lt;span style=&#34;color:#00a&#34;&gt;func&lt;/span&gt;() {
+    &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;// 每10秒钟定时的拉取最新的配置信息，并且更新到config变量里
+&lt;/span&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#00a&#34;&gt;for&lt;/span&gt; {
+      time.&lt;span style=&#34;color:#0a0&#34;&gt;Sleep&lt;/span&gt;(&lt;span style=&#34;color:#099&#34;&gt;10&lt;/span&gt; * time.Second)
+      &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;// 对应于赋值操作 config = loadConfig()
+&lt;/span&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;&lt;/span&gt;      config.&lt;span style=&#34;color:#0a0&#34;&gt;Store&lt;/span&gt;(&lt;span style=&#34;color:#0a0&#34;&gt;loadConfig&lt;/span&gt;())
     }
   }()
-  &lt;span style=&#34;color:#75715e&#34;&gt;// 创建工作线程，每个工作线程都会根据它所读取到的最新的配置信息来处理请求
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;:=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;; &lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt; &amp;lt; &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;; &lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;++&lt;/span&gt; {
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;go&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;func&lt;/span&gt;() {
-      &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;r&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;:=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;range&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;requests&lt;/span&gt;() {
-        &lt;span style=&#34;color:#75715e&#34;&gt;// 对应于取值操作 c := config
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;// 由于Load()返回的是一个interface{}类型，所以我们要先强制转换一下
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;:=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;config&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;Load&lt;/span&gt;().(&lt;span style=&#34;color:#66d9ef&#34;&gt;map&lt;/span&gt;[&lt;span style=&#34;color:#66d9ef&#34;&gt;string&lt;/span&gt;]&lt;span style=&#34;color:#66d9ef&#34;&gt;string&lt;/span&gt;)
-        &lt;span style=&#34;color:#75715e&#34;&gt;// 这里是根据配置信息处理请求的逻辑...
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#a6e22e&#34;&gt;_&lt;/span&gt;, &lt;span style=&#34;color:#a6e22e&#34;&gt;_&lt;/span&gt; = &lt;span style=&#34;color:#a6e22e&#34;&gt;r&lt;/span&gt;, &lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;
+  &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;// 创建工作线程，每个工作线程都会根据它所读取到的最新的配置信息来处理请求
+&lt;/span&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#00a&#34;&gt;for&lt;/span&gt; i := &lt;span style=&#34;color:#099&#34;&gt;0&lt;/span&gt;; i &amp;lt; &lt;span style=&#34;color:#099&#34;&gt;10&lt;/span&gt;; i++ {
+    &lt;span style=&#34;color:#00a&#34;&gt;go&lt;/span&gt; &lt;span style=&#34;color:#00a&#34;&gt;func&lt;/span&gt;() {
+      &lt;span style=&#34;color:#00a&#34;&gt;for&lt;/span&gt; r := &lt;span style=&#34;color:#00a&#34;&gt;range&lt;/span&gt; &lt;span style=&#34;color:#0a0&#34;&gt;requests&lt;/span&gt;() {
+        &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;// 对应于取值操作 c := config
+&lt;/span&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;// 由于Load()返回的是一个interface{}类型，所以我们要先强制转换一下
+&lt;/span&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;&lt;/span&gt;        c := config.&lt;span style=&#34;color:#0a0&#34;&gt;Load&lt;/span&gt;().(&lt;span style=&#34;color:#00a&#34;&gt;map&lt;/span&gt;[&lt;span style=&#34;color:#0aa&#34;&gt;string&lt;/span&gt;]&lt;span style=&#34;color:#0aa&#34;&gt;string&lt;/span&gt;)
+        &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;// 这里是根据配置信息处理请求的逻辑...
+&lt;/span&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;&lt;/span&gt;        _, _ = r, c
       }
     }()
   }
@@ -2468,309 +2518,6 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。&lt;
 &lt;h3 id=&#34;nsq&#34;&gt;NSQ&lt;/h3&gt;
 &lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
 </description>
-      
-    </item>
-    
-    <item>
-      <title>golang学习笔记</title>
-      <link>https://weedge.github.io/post/golang/</link>
-      <pubDate>Wed, 01 Nov 2017 01:16:30 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/golang/</guid>
-      
-        <description>&lt;p&gt;刚开始接触golang的时候是在大学时候，当时大概是2010年左右，对这门新语言比较好奇，但是没有深入去了解，只是道听途说这门语言在并发处理上很方便，对于协程这个东西也是第一次听说。自从工作之后，就一直没有接触过这门语言,最近公司想往golang上转，开发新的项目平台，毕竟golang运行效率和开发效率都要比其他语言要简单方便很多(听说c++都快20了)。&lt;/p&gt;
-&lt;p&gt;吉祥物：（憨厚小地鼠 move~move~move~ Bui~~~~    go~go~go~ ）&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/go-mascot.png&#34; alt=&#34;地鼠&#34;&gt;&lt;/p&gt;
-&lt;p&gt;（萌萌の勤劳小地鼠~）并发协作：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/go-concurrence.png&#34; alt=&#34;并发协作&#34;&gt;&lt;/p&gt;
-&lt;h2 id=&#34;语言&#34;&gt;语言&lt;/h2&gt;
-&lt;p&gt;看七周七语言中提到的，语言各有特色，用于不同的开发场景，对应团队的工具栈；经常用自己熟悉的编程语言，思维模式也会有所不同；总的来说，支持KISS原则，方便高效开发/测试/部署/运行，并发运行解决问题，流出更多时间关注业务或者&lt;code&gt;kick ass &amp;amp;&amp;amp; Chew bubblegum (just a joke~)&lt;/code&gt;&lt;/p&gt;
-&lt;h3 id=&#34;发展历史&#34;&gt;发展历史：&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;发明这个语言的初衷，「不忘初心，方得始终」&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;ul&gt;
-&lt;li&gt;为毛需要这个语言：https://www.oschina.net/translate/go-at-google-language-design-in-the-service-of-software-engineering&lt;/li&gt;
-&lt;li&gt;初心：简单,开发简洁，方便快速开发编译发布(开发语言的作者来自c和java, 作者Rob Pike实现并发思想,布道者，他相关的视频和文章需要多看，精髓哦，This guy is a genius~ )&lt;/li&gt;
-&lt;li&gt;源码：https://github.com/golang/go&lt;/li&gt;
-&lt;li&gt;特殊节点：2008 6.6 ~1.5版本去除了c代码实现自举(1.5+直接用go来编译安装即可)， now 10年+ golang2.0 版  &lt;a href=&#34;https://github.com/golang/go/wiki/Go2&#34;&gt;https://github.com/golang/go/wiki/Go2&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Hello,Gopher（golang作者之一Rob Pike 讲的golang发展史，及众家语言之所长，发明这个语言的初衷）:https://www.youtube.com/watch?v=VoS7DsT1rdM&amp;amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd &lt;a href=&#34;https://talks.golang.org/2014/hellogophers.slide##12&#34;&gt;slide&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Go Concurrency Patterns(一些并发模式case, goroutine通过channel组合传递共享数据, no race like DAG): &lt;a href=&#34;https://www.youtube.com/watch?v=f6kdp27TYZs&amp;amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd&#34;&gt;https://www.youtube.com/watch?v=f6kdp27TYZs&amp;amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd&lt;/a&gt;  &lt;a href=&#34;https://talks.golang.org/2012/concurrency.slide&#34;&gt;slide&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Concurrency Is Not Parallelism: &lt;a href=&#34;https://blog.golang.org/concurrency-is-not-parallelism&#34;&gt;https://blog.golang.org/concurrency-is-not-parallelism&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Simplicity is Complicated: &lt;a href=&#34;https://www.youtube.com/watch?v=rFejpH_tAHM&amp;amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd&#34;&gt;https://www.youtube.com/watch?v=rFejpH_tAHM&amp;amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd&lt;/a&gt; &lt;a href=&#34;https://talks.golang.org/2015/simplicity-is-complicated.slide#1&#34;&gt;slide&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;The Design of the Go Assembler：https://www.youtube.com/watch?v=KINIAgRpkDA&amp;amp;list=PL3NQHgGj2vtsJkK6ZyTzogNUTqe4nFSWd &lt;a href=&#34;https://talks.golang.org/2016/asm.slide#1&#34;&gt;slide&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&#34;特征&#34;&gt;特征：&lt;/h4&gt;
-&lt;ul&gt;
-&lt;li&gt;KISS；简单朴实 （做工程的人最喜欢的就是简单实用的东西）；&lt;/li&gt;
-&lt;li&gt;运行占用资源低(可运行在嵌入式平台linux arm)，跨平台&lt;/li&gt;
-&lt;li&gt;((内存)数据结构+算法+抽象定义接口)；&lt;/li&gt;
-&lt;li&gt;语法简单，25个关键字；&lt;/li&gt;
-&lt;li&gt;c语言结构体形式模拟继承方法重写机制；&lt;/li&gt;
-&lt;li&gt;基础数据结构类型：byte,string, array; slice, map,chanel 引用类型；(其他数据结构heap(优先队列),list,ring(circular list)这些在官方提供的公共库中)&lt;/li&gt;
-&lt;li&gt;强类型语言，interface{} 表示通用类型(相当于stl中的模板)；&lt;/li&gt;
-&lt;li&gt;异常处理: defer, panic, recover 抛出一个panic的异常（异常指的是意料之外的情况，比如引用了空指针，下标越界，除数为0，不应该出现的分支，比如default），然后在defer中通过recover捕获这个异常，最后正常处理；注意如果没有recover去捕获异常，程序就会退出；&lt;/li&gt;
-&lt;li&gt;错误机制: error，错误指的是意料之中的情况，比如文件可能会打开失败，网络连接可能断开导致连接失败等等，错误是业务过程的一部分，而异常不是 (业务需定义常见的错误码标识对应错误信息)&lt;/li&gt;
-&lt;li&gt;变量对象内存分配通过tcmalloc来申请一块span, 分成多个page提供使用，充分利用内存空间，通过gc回收runtime对象(随着版本迭代，对gc的效率逐渐提高，有专门的runtime团队支持)&lt;/li&gt;
-&lt;li&gt;并发程序通过channel共享内存(share memory by communicating)；&lt;/li&gt;
-&lt;li&gt;适合web后端开发(官方golang.org已提供的基础库 &lt;a href=&#34;https://golang.org/pkg/&#34;&gt;https://golang.org/pkg/&lt;/a&gt; ，net/http(请求，响应，client，server), http/template, 数据库客户端驱动接口定义database/sql(三方根据接口标准可以自定义实现，也可以自己单独定义一套标准实现)，数据加密crypto）；&lt;/li&gt;
-&lt;li&gt;通过goroutine(协程，用户级别轻量级线程)支持并发， 协程通过channel通信( &amp;lt;-chan interface{} 接收chan；chan&amp;lt;-interface{} 发送chan；同步通过sync机制(lock(锁接口) mutex(某个goroutine加互斥锁) rwlock(对读写操作加锁) WaitGroup(pv操作,对goroutine组) ，Cond(条件变量，信号量))；&lt;/li&gt;
-&lt;li&gt;Golang实现了 CSP(Communicating Sequential Process &lt;a href=&#34;http://www.usingcsp.com/cspbook.pdf&#34;&gt;http://www.usingcsp.com/cspbook.pdf&lt;/a&gt; )并发模型做为并发基础，底层使用goroutine做为并发实体，goroutine非常轻量级可以创建几十万个实体；实体间通过 channel 继续匿名消息传递使之解耦，在语言层面实现了自动调度，这样屏蔽了很多内部细节，对外提供简单的语法关键字(go,select,channel)，大大简化了并发编程的思维转换和管理线程的复杂性；&lt;/li&gt;
-&lt;li&gt;SO OPEN，import 三方库源(大部分git的方式来自github/gitlib，还支持hg)，源码直接可以修改编译(取之于源用之源)；&lt;/li&gt;
-&lt;li&gt;Go 命令工具方便开发自测调试： &lt;a href=&#34;https://golang.org/cmd/go/&#34;&gt;https://golang.org/cmd/go/&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;通过go test来单元测试，覆盖测试，性能测试(cpu,pprof)，直接可以测试用例先行，&lt;/li&gt;
-&lt;li&gt;go tool,  pprof (进行性能分析 &lt;a href=&#34;http://cizixs.com/2017/09/11/profiling-golang-program&#34;&gt;http://cizixs.com/2017/09/11/profiling-golang-program&lt;/a&gt; ）objdump(dump出汇编代码）&lt;/li&gt;
-&lt;li&gt;go get -u ~=  download to go build and install , go run 单独运行&lt;/li&gt;
-&lt;li&gt;go fmt 代码格式化，统一编码风格，方便协同编程&lt;/li&gt;
-&lt;li&gt;go mod: &lt;a href=&#34;https://github.com/golang/go/wiki/Modules&#34;&gt;https://github.com/golang/go/wiki/Modules&lt;/a&gt; 1.11新引入的功能，方便package依赖管理，类似nodejs中的npm&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;Go 2.0正待发布，10年+发展，会有一些优化和新特性  &lt;a href=&#34;https://www.youtube.com/watch?v=RIvL2ONhFBI&#34;&gt;https://www.youtube.com/watch?v=RIvL2ONhFBI&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;More…..&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&#34;工作上使用语言进化&#34;&gt;工作上使用语言进化&lt;/h4&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/coder.jpg&#34; alt=&#34;coder&#34;&gt;&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;C/C++ -&amp;gt; *.so -&amp;gt; php/python  |   java -&amp;gt; *.jar  ==&amp;raquo;  go -&amp;gt; *.a -import-&amp;gt; pkg -compile-&amp;gt;  binary program&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;编写运行：复杂  -&amp;gt;  简单&lt;/p&gt;
-&lt;p&gt;Go 相当于兼顾了c的执行效率，python的开发效率，择中方案，适合服务端开发(业务开发，基础组件开发(网关，db，AI)，自动化运维工具开发devops);
-如果用go来调用.so动态链接库，需要用cgo机制&lt;/p&gt;
-&lt;p&gt;语法对比参考：http://hyperpolyglot.org/c&lt;/p&gt;
-&lt;h2 id=&#34;学习&#34;&gt;学习&lt;/h2&gt;
-&lt;ol start=&#34;0&#34;&gt;
-&lt;li&gt;开始入门：https://golang.org/doc/code.html&lt;/li&gt;
-&lt;li&gt;golang的基本语法知识，可以通过gotour来进行简单的学习入门，godoc查看具体基础文档和get到本地的三方库接口文档，
-Gotour简单入门 ——&amp;gt; &lt;a href=&#34;https://github.com/qyuhen/book/blob/master/Go%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%20%E7%AC%AC%E5%9B%9B%E7%89%88.pdf&#34;&gt;语法快速入门&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;练习习题：&lt;/li&gt;
-&lt;/ol&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://goquiz.github.io/&#34;&gt;Go语言经典笔试题&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://gobyexample.com&#34;&gt;Go实例&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ol start=&#34;3&#34;&gt;
-&lt;li&gt;最佳实践：(这个会根据实践场景逐渐完善，最终可能会形成一个标准规范)&lt;/li&gt;
-&lt;/ol&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://talks.golang.org/2013/bestpractices.slide&#34;&gt;12条最佳实践&lt;/a&gt; &lt;a href=&#34;http://maiyang.me/2017/10/21/twelve-best-practices-in-golang/&#34;&gt;中文解释&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ol start=&#34;4&#34;&gt;
-&lt;li&gt;面向对象设计SOLID：&lt;/li&gt;
-&lt;/ol&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://blog.gokit.info/post/go-solid-design/&#34;&gt;SOLID&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ol start=&#34;5&#34;&gt;
-&lt;li&gt;业务常用依赖阶级开发：(掌握一些三方库，方便快速集成开发)&lt;/li&gt;
-&lt;/ol&gt;
-&lt;ul&gt;
-&lt;li&gt;Web开发框架：
-&lt;ul&gt;
-&lt;li&gt;beego &lt;a href=&#34;https://github.com/astaxie/beego&#34;&gt;https://github.com/astaxie/beego&lt;/a&gt;  支持mvc, orm; 适用于cms，mis管理后台开始开发 （重量点，开发框架已经搭好，基础web开发组件已有，RBAC规范后台权限）
-&lt;ul&gt;
-&lt;li&gt;gin &lt;a href=&#34;https://github.com/gin-gonic/gin&#34;&gt;https://github.com/gin-gonic/gin&lt;/a&gt; 利用httprouter实现高性能路由 (轻量点，适合diy)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;数据库 （client driver）
-&lt;ul&gt;
-&lt;li&gt;msyql: &lt;a href=&#34;https://github.com/go-sql-driver/mysql&#34;&gt;https://github.com/go-sql-driver/mysql&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;Redis: &lt;a href=&#34;https://github.com/garyburd/redigo&#34;&gt;https://github.com/garyburd/redigo&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Mongo: &lt;a href=&#34;https://github.com/go-mgo/mgo&#34;&gt;https://github.com/go-mgo/mgo&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;ZK client: &lt;a href=&#34;https://github.com/samuel/go-zookeeper/zk&#34;&gt;https://github.com/samuel/go-zookeeper/zk&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Grpc: &lt;a href=&#34;https://github.com/grpc/grpc-go&#34;&gt;https://github.com/grpc/grpc-go&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Log: &lt;a href=&#34;https://github.com/sirupsen/logrus&#34;&gt;https://github.com/sirupsen/logrus&lt;/a&gt; (以hook机制添加自定的日志，lograte:https://github.com/sirupsen/logrus##rotation，或者https://github.com/natefinch/lumberjack)&lt;/li&gt;
-&lt;li&gt;队列: &lt;a href=&#34;https://github.com/nsqio/nsq&#34;&gt;https://github.com/nsqio/nsq&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ol start=&#34;6&#34;&gt;
-&lt;li&gt;订阅资源blog:&lt;/li&gt;
-&lt;/ol&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://blog.golang.org&#34;&gt;https://blog.golang.org&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.goinggo.net&#34;&gt;https://www.goinggo.net&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://gocn.io/&#34;&gt;https://gocn.io/&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ol start=&#34;7&#34;&gt;
-&lt;li&gt;实践踩的坑：&lt;/li&gt;
-&lt;/ol&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://zhuanlan.zhihu.com/p/29545675&#34;&gt;https://zhuanlan.zhihu.com/p/29545675&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://zhuanlan.zhihu.com/p/31395716&#34;&gt;https://zhuanlan.zhihu.com/p/31395716&lt;/a&gt; (channel,引发的死锁）&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ol start=&#34;8&#34;&gt;
-&lt;li&gt;应用场景：&lt;/li&gt;
-&lt;/ol&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://zhuanlan.zhihu.com/p/26777189&#34;&gt;新闻实时推送&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;More:  DIY （u can do it）&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ol start=&#34;9&#34;&gt;
-&lt;li&gt;好的开源项目：&lt;/li&gt;
-&lt;/ol&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/hackstoic/golang-open-source-projects&#34;&gt;golang-open-source-projects&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/avelino/awesome-go&#34;&gt;awesome-go&lt;/a&gt; (full-stack dev for venture company )&lt;/li&gt;
-&lt;li&gt;Web server服务：
-&lt;ul&gt;
-&lt;li&gt;Caddy：类似nginx,apache,middleware chain(责任链模式) 管理方式，独立的mw也可拆分单独运行，比如负载均衡模块，反向代理，fastcgi代理 &lt;a href=&#34;https://github.com/mholt/caddy&#34;&gt;https://github.com/mholt/caddy&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;网关：
-&lt;ul&gt;
-&lt;li&gt;krakend: &lt;a href=&#34;https://github.com/devopsfaith/krakend&#34;&gt;https://github.com/devopsfaith/krakend&lt;/a&gt;  （高性能，相比kong&amp;hellip;)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;微服务：
-&lt;ul&gt;
-&lt;li&gt;go-micro (&lt;a href=&#34;https://github.com/micro/go-micro&#34;&gt;https://github.com/micro/go-micro&lt;/a&gt;  +  plugins: &lt;a href=&#34;https://github.com/micro/go-plugins&#34;&gt;https://github.com/micro/go-plugins&lt;/a&gt;  )
-&lt;ul&gt;
-&lt;li&gt;Go-kit (&lt;a href=&#34;https://github.com/go-kit/kit&#34;&gt;https://github.com/go-kit/kit&lt;/a&gt;  very nice micro-service lib framework) diy 借鉴 相关介绍：https://www.youtube.com/watch?v=NX0sHF8ZZgw&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;服务发现：
-&lt;ul&gt;
-&lt;li&gt;etcd: &lt;a href=&#34;https://github.com/coreos/etcd&#34;&gt;https://github.com/coreos/etcd&lt;/a&gt; (功能介绍: &lt;a href=&#34;http://www.infoq.com/cn/articles/etcd-interpretation-application-scenario-implement-principle&#34;&gt;http://www.infoq.com/cn/articles/etcd-interpretation-application-scenario-implement-principle&lt;/a&gt;)&lt;/li&gt;
-&lt;li&gt;Consul: &lt;a href=&#34;https://github.com/hashicorp/consul&#34;&gt;https://github.com/hashicorp/consul&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;Rpc：
-&lt;ul&gt;
-&lt;li&gt;grpc: &lt;a href=&#34;https://github.com/grpc/grpc-go&#34;&gt;https://github.com/grpc/grpc-go&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;thrift: &lt;a href=&#34;https://github.com/apache/thrift/tree/master/lib/go&#34;&gt;https://github.com/apache/thrift/tree/master/lib/go&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;Web开发框架：
-&lt;ul&gt;
-&lt;li&gt;beego(支持mvc模式开发,https://github.com/astaxie/beego)，&lt;/li&gt;
-&lt;li&gt;gin(高性能路由请求处理,https://github.com/gin-gonic/gin )&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;数据库服务：
-&lt;ul&gt;
-&lt;li&gt;Tidb (NewSQL 数据库，水平扩展，强一致，分布式事务，多种数据引擎选择，mysql协议通信 &lt;a href=&#34;https://github.com/pingcap/tidb&#34;&gt;https://github.com/pingcap/tidb&lt;/a&gt; 国内公司用的比较多）&lt;/li&gt;
-&lt;li&gt;Cockroachdb  (NewSQL 数据库，有百度的同学提交维护 &lt;a href=&#34;https://github.com/cockroachdb/cockroach&#34;&gt;https://github.com/cockroachdb/cockroach&lt;/a&gt; ）&lt;/li&gt;
-&lt;li&gt;Influxdb (时序数据库，应用于监控日志数据存储，提供实时数据展现，https://github.com/influxdata/influxdb）&lt;/li&gt;
-&lt;li&gt;Bboltdb (本地嵌入式数据库 , LMDB的go实现版本,https://github.com/coreos/bbolt)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;推送：
-&lt;ul&gt;
-&lt;li&gt;Gorush: &lt;a href=&#34;https://github.com/appleboy/gorush&#34;&gt;https://github.com/appleboy/gorush&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;爬虫：
-&lt;ul&gt;
-&lt;li&gt;Gocolly: &lt;a href=&#34;https://github.com/gocolly/colly&#34;&gt;https://github.com/gocolly/colly&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Gocrawl: &lt;a href=&#34;https://github.com/PuerkitoBio/gocrawl&#34;&gt;https://github.com/PuerkitoBio/gocrawl&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;文件：
-&lt;ul&gt;
-&lt;li&gt;Upspin: &lt;a href=&#34;https://github.com/upspin/upspin&#34;&gt;https://github.com/upspin/upspin&lt;/a&gt; (Rob Pike 主导的一个实验项目，https://www.youtube.com/watch?v=ENLWEfi0Tkg)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;链路跟踪：
-&lt;ul&gt;
-&lt;li&gt;Opentracing: &lt;a href=&#34;https://github.com/opentracing/opentracing-go&#34;&gt;https://github.com/opentracing/opentracing-go&lt;/a&gt;  结合zipkin&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;实时消息队列平台：
-&lt;ul&gt;
-&lt;li&gt;NSQ: &lt;a href=&#34;https://github.com/nsqio/nsq&#34;&gt;https://github.com/nsqio/nsq&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;监控:
-&lt;ul&gt;
-&lt;li&gt;grafana：https://github.com/grafana/grafana&lt;/li&gt;
-&lt;li&gt;prometheus: &lt;a href=&#34;https://github.com/prometheus/prometheus&#34;&gt;https://github.com/prometheus/prometheus&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;容器管理：
-&lt;ul&gt;
-&lt;li&gt;Kubernetes(K8S): &lt;a href=&#34;https://github.com/kubernetes/kubernetes&#34;&gt;https://github.com/kubernetes/kubernetes&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Kubernetes Handbook: &lt;a href=&#34;https://jimmysong.io/kubernetes-handbook/&#34;&gt;https://jimmysong.io/kubernetes-handbook/&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;代码仓库服务：
-&lt;ul&gt;
-&lt;li&gt;gogs (轻量级的代码工具，可以运行在pi上, 界面和github相似, &lt;a href=&#34;https://github.com/gogits/gogs&#34;&gt;https://github.com/gogits/gogs&lt;/a&gt; ）&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;CI/CD(Continuous Delivery):
-&lt;ul&gt;
-&lt;li&gt;Drone: &lt;a href=&#34;https://github.com/drone/drone&#34;&gt;https://github.com/drone/drone&lt;/a&gt; （可配套自研上线运维平台）&lt;/li&gt;
-&lt;li&gt;jenkins-x: &lt;a href=&#34;https://github.com/jenkins-x/jx&#34;&gt;https://github.com/jenkins-x/jx&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;工具：
-&lt;ul&gt;
-&lt;li&gt;Gotty: &lt;a href=&#34;https://github.com/yudai/gotty&#34;&gt;https://github.com/yudai/gotty&lt;/a&gt; （webshell)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;静态网页生成器：
-&lt;ul&gt;
-&lt;li&gt;hugo: &lt;a href=&#34;https://github.com/gohugoio/hugo&#34;&gt;https://github.com/gohugoio/hugo&lt;/a&gt; (可以用来写个人技术博客)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;数据科学(cheat sheet)： &lt;a href=&#34;https://www.cheatography.com/chewxy/cheat-sheets/data-science-in-go-a/pdf/&#34;&gt;https://www.cheatography.com/chewxy/cheat-sheets/data-science-in-go-a/pdf/&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;深入理解&#34;&gt;深入理解&lt;/h2&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/goroutine.jpg&#34; alt=&#34;goroutine实现机制&#34;&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;goroutine实现机制：https://www.zhihu.com/question/20862617 （M:内核OS线程；G:goroutine用户态轻量级线程，自己的栈，正在等待的channel等；P: 调度的上下文，是调度协调的处理器，P的数量代表了真正的并发度)
-（tips：相对于java中并发库实现是不是要简洁高效些呢，https://golang.org/doc/faq##goroutines  这个解释了golang为什么用协成代替线程）&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;同步机制：sync lock(锁接口) mutex(某个goroutine加互斥锁) rwlock(对读写操作加锁) WaitGroup(pv操作,对goroutine组) ，Cond(条件变量，信号量) 用法参考：https://deepzz.com/post/golang-sync-package-usage.html  (其实就是OS中的同步机制实现)   锁的话是一个原子操作，要么锁住，要么不做，通过atomic操作底层的cpu指令(CHANGE*, SWAP* &amp;hellip;.etc指令根据不同的cpu/gpu厂商定义，intel/amd)&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;内存管理： &lt;a href=&#34;http://legendtkl.com/2017/04/02/golang-alloc/&#34;&gt;http://legendtkl.com/2017/04/02/golang-alloc/&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;GC机制：http://legendtkl.com/2017/04/28/golang-gc/&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;深入了解golang的执行原理，https://github.com/qyuhen/book/blob/master/Go%201.5%20%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90.pdf (底层的运行时逻辑有点像php的执行过程, php7底层运行结构也借鉴了golang的设计思想，比如内存的申请)&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;faq&#34;&gt;FAQ:&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&#34;https://golang.org/doc/faq&#34;&gt;https://golang.org/doc/faq&lt;/a&gt;  相当有用值得一读&lt;/p&gt;
-&lt;p&gt;热更新方案： &lt;a href=&#34;https://studygolang.com/topics/1194&#34;&gt;https://studygolang.com/topics/1194&lt;/a&gt;  (监控一个当前版本文件是否变动了，如果变动然后将老的执行文件软连指向新的执行文件(rm 软连,ln 创建新的软连，然后通过hup信号优雅的重启由endless启动的服务)&lt;/p&gt;
-&lt;h2 id=&#34;开发工具&#34;&gt;开发工具&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;vim-go: &lt;a href=&#34;https://github.com/fatih/vim-go&#34;&gt;https://github.com/fatih/vim-go&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;vscode-go: &lt;a href=&#34;https://github.com/Microsoft/vscode-go&#34;&gt;https://github.com/Microsoft/vscode-go&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;goland: &lt;a href=&#34;https://www.jetbrains.com/go/&#34;&gt;https://www.jetbrains.com/go/&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;diy&#34;&gt;DIY&lt;/h2&gt;
-&lt;p&gt;(熟悉三方源码，基础库，自行diy服务)&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; 网关服务&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; 网关后台&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; abtest&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; abtest后台&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; 微服务
-&lt;ul&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; passport&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; activity&lt;/li&gt;
-&lt;li&gt;More…&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; 资源管理(K8S)&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; 监控&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; ci/cd构建发布上线&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; 队列&lt;/li&gt;
-&lt;/ul&gt;</description>
       
     </item>
     

@@ -321,45 +321,45 @@
   
   <div class="post-content">
       <h4 id="策略模型">策略模型</h4>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#00a">package</span> main
 
-<span style="color:#f92672">import</span> (
-  <span style="color:#e6db74">&#34;sync/atomic&#34;</span>
-  <span style="color:#e6db74">&#34;time&#34;</span>
+<span style="color:#00a">import</span> (
+  <span style="color:#a50">&#34;sync/atomic&#34;</span>
+  <span style="color:#a50">&#34;time&#34;</span>
 )
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">loadConfig</span>() <span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#66d9ef">string</span> {
-  <span style="color:#75715e">// 从数据库或者文件系统中读取配置信息，然后以map的形式存放在内存里
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">return</span> make(<span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#66d9ef">string</span>)
+<span style="color:#00a">func</span> <span style="color:#0a0">loadConfig</span>() <span style="color:#00a">map</span>[<span style="color:#0aa">string</span>]<span style="color:#0aa">string</span> {
+  <span style="color:#aaa;font-style:italic">// 从数据库或者文件系统中读取配置信息，然后以map的形式存放在内存里
+</span><span style="color:#aaa;font-style:italic"></span>  <span style="color:#00a">return</span> <span style="color:#0aa">make</span>(<span style="color:#00a">map</span>[<span style="color:#0aa">string</span>]<span style="color:#0aa">string</span>)
 }
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">requests</span>() <span style="color:#66d9ef">chan</span> <span style="color:#66d9ef">int</span> {
-  <span style="color:#75715e">// 将从外界中接受到的请求放入到channel里
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">return</span> make(<span style="color:#66d9ef">chan</span> <span style="color:#66d9ef">int</span>)
+<span style="color:#00a">func</span> <span style="color:#0a0">requests</span>() <span style="color:#00a">chan</span> <span style="color:#0aa">int</span> {
+  <span style="color:#aaa;font-style:italic">// 将从外界中接受到的请求放入到channel里
+</span><span style="color:#aaa;font-style:italic"></span>  <span style="color:#00a">return</span> <span style="color:#0aa">make</span>(<span style="color:#00a">chan</span> <span style="color:#0aa">int</span>)
 }
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-  <span style="color:#75715e">// config变量用来存放该服务的配置信息
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">config</span> <span style="color:#a6e22e">atomic</span>.<span style="color:#a6e22e">Value</span>
-  <span style="color:#75715e">// 初始化时从别的地方加载配置文件，并存到config变量里
-</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">Store</span>(<span style="color:#a6e22e">loadConfig</span>())
-  <span style="color:#66d9ef">go</span> <span style="color:#66d9ef">func</span>() {
-    <span style="color:#75715e">// 每10秒钟定时的拉取最新的配置信息，并且更新到config变量里
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> {
-      <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#ae81ff">10</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>)
-      <span style="color:#75715e">// 对应于赋值操作 config = loadConfig()
-</span><span style="color:#75715e"></span>      <span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">Store</span>(<span style="color:#a6e22e">loadConfig</span>())
+<span style="color:#00a">func</span> <span style="color:#0a0">main</span>() {
+  <span style="color:#aaa;font-style:italic">// config变量用来存放该服务的配置信息
+</span><span style="color:#aaa;font-style:italic"></span>  <span style="color:#00a">var</span> config atomic.Value
+  <span style="color:#aaa;font-style:italic">// 初始化时从别的地方加载配置文件，并存到config变量里
+</span><span style="color:#aaa;font-style:italic"></span>  config.<span style="color:#0a0">Store</span>(<span style="color:#0a0">loadConfig</span>())
+  <span style="color:#00a">go</span> <span style="color:#00a">func</span>() {
+    <span style="color:#aaa;font-style:italic">// 每10秒钟定时的拉取最新的配置信息，并且更新到config变量里
+</span><span style="color:#aaa;font-style:italic"></span>    <span style="color:#00a">for</span> {
+      time.<span style="color:#0a0">Sleep</span>(<span style="color:#099">10</span> * time.Second)
+      <span style="color:#aaa;font-style:italic">// 对应于赋值操作 config = loadConfig()
+</span><span style="color:#aaa;font-style:italic"></span>      config.<span style="color:#0a0">Store</span>(<span style="color:#0a0">loadConfig</span>())
     }
   }()
-  <span style="color:#75715e">// 创建工作线程，每个工作线程都会根据它所读取到的最新的配置信息来处理请求
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> &lt; <span style="color:#ae81ff">10</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span> {
-    <span style="color:#66d9ef">go</span> <span style="color:#66d9ef">func</span>() {
-      <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">r</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">requests</span>() {
-        <span style="color:#75715e">// 对应于取值操作 c := config
-</span><span style="color:#75715e"></span>        <span style="color:#75715e">// 由于Load()返回的是一个interface{}类型，所以我们要先强制转换一下
-</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">c</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">Load</span>().(<span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#66d9ef">string</span>)
-        <span style="color:#75715e">// 这里是根据配置信息处理请求的逻辑...
-</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">_</span> = <span style="color:#a6e22e">r</span>, <span style="color:#a6e22e">c</span>
+  <span style="color:#aaa;font-style:italic">// 创建工作线程，每个工作线程都会根据它所读取到的最新的配置信息来处理请求
+</span><span style="color:#aaa;font-style:italic"></span>  <span style="color:#00a">for</span> i := <span style="color:#099">0</span>; i &lt; <span style="color:#099">10</span>; i++ {
+    <span style="color:#00a">go</span> <span style="color:#00a">func</span>() {
+      <span style="color:#00a">for</span> r := <span style="color:#00a">range</span> <span style="color:#0a0">requests</span>() {
+        <span style="color:#aaa;font-style:italic">// 对应于取值操作 c := config
+</span><span style="color:#aaa;font-style:italic"></span>        <span style="color:#aaa;font-style:italic">// 由于Load()返回的是一个interface{}类型，所以我们要先强制转换一下
+</span><span style="color:#aaa;font-style:italic"></span>        c := config.<span style="color:#0a0">Load</span>().(<span style="color:#00a">map</span>[<span style="color:#0aa">string</span>]<span style="color:#0aa">string</span>)
+        <span style="color:#aaa;font-style:italic">// 这里是根据配置信息处理请求的逻辑...
+</span><span style="color:#aaa;font-style:italic"></span>        _, _ = r, c
       }
     }()
   }

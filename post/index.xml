@@ -6,7 +6,17 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sun, 21 Nov 2021 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 02 Dec 2021 12:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>pool</title>
+      <link>https://weedge.github.io/post/pool/</link>
+      <pubDate>Thu, 02 Dec 2021 12:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/pool/</guid>
+      <description>&lt;h2 id=&#34;介绍&#34;&gt;介绍&lt;/h2&gt;
+&lt;p&gt;平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景下，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用epoll)，而池化可以应用用户使用层面来优化；池化(&lt;a href=&#34;https://en.wikipedia.org/wiki/Pool_(computer_science)&#34;&gt;pool&lt;/a&gt;)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E8%A1%8C%E7%A8%8B&#34;&gt;进程&lt;/a&gt;(process PCB 内核态)、&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E5%9F%B7%E8%A1%8C%E7%B7%92&#34;&gt;线程&lt;/a&gt;(thread TCB 内核态)、&lt;a href=&#34;https://zh.wikipedia.org/zh-hans/%E5%8D%8F%E7%A8%8B&#34;&gt;协程&lt;/a&gt;(coroutine 用户态)为载体的工作任务(work task)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源进行池化技术进行介绍，了解池化对应场景。&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>WAL</title>
       <link>https://weedge.github.io/post/wal/</link>
@@ -213,16 +223,6 @@
       <guid>https://weedge.github.io/post/chengdu/</guid>
       <description>&lt;!-- raw HTML omitted --&gt;
 &lt;p&gt;由于入职时间的改变，有几天的时间空闲下来了，本来就没有准备的行程，以前没有想过的户外运动，本来是想体验一把的，趁这段时间，和老宋说好过去玩后，当天晚上啥都没有准备，直接就A过去了。这一趟还是挺有意思的，写这篇的时候，此刻正在老宋住的地方，准备着回北京的路上，写完后，收拾心情，准备好好工作。人生也许有很多的第一次，才能使生活变得更加的有意义吧。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>像黑客一样写博客</title>
-      <link>https://weedge.github.io/post/hello/</link>
-      <pubDate>Tue, 01 Jan 2013 20:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/hello/</guid>
-      <description>&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
-&lt;p&gt;最近一段时间想整个博客，来记录一些事情，感觉记忆力不如从前了，想起以前有位老程序员，身边总是挂一个小挎包，装了一些小便条(todo list)；我想人的精力是有限的，当做完一件事， 过段时间，可能忘了曾今做过的事，说的话；本来想用worldpress，但是貌似需要申请空间，不同以往了，现在都是收费的了，无意间发现了&lt;a href=&#34;http://octopress.org/docs/&#34;&gt;octopress&lt;/a&gt;,这是个好东东啊，轻量级的，不像worldpress臃肿，不需要使用mysql,通过git直接可以部署到github pages上搭建一个副本。也可以部署到&lt;a href=&#34;http://www.heroku.com/&#34;&gt;heroku&lt;/a&gt;；国内好像也有对octopress的部署支持。&lt;/p&gt;</description>
     </item>
     
   </channel>

@@ -6,7 +6,16 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 26 Nov 2021 11:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 02 Dec 2021 12:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>pool</title>
+      <link>https://weedge.github.io/tags/pool/</link>
+      <pubDate>Thu, 02 Dec 2021 12:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/pool/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>page cache</title>
       <link>https://weedge.github.io/tags/page-cache/</link>
@@ -175,15 +184,6 @@
       <pubDate>Wed, 03 Jun 2015 00:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/geo/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>geohash</title>
-      <link>https://weedge.github.io/tags/geohash/</link>
-      <pubDate>Wed, 03 Jun 2015 00:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/geohash/</guid>
       <description></description>
     </item>
     
