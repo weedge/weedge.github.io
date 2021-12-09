@@ -72,7 +72,7 @@
 <meta itemprop="description" content="介绍
 平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(pool)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，进程(process PCB 内核态)、线程(thread TCB 内核态)、协程(coroutine 用户态)为载体的工作任务(work task)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。"><meta itemprop="datePublished" content="2021-12-02T12:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-12-08T17:26:23+08:00" />
-<meta itemprop="wordCount" content="4660">
+<meta itemprop="wordCount" content="4706">
 <meta itemprop="keywords" content="pool," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="pool"/>
 <meta name="twitter:description" content="介绍
@@ -372,7 +372,7 @@
 <p>thread pool整体实现代码见<a href="https://github.com/nginx/nginx/commit/305fc021db799c87d751f0f1f5e99afee7bb2b3b">commit 305fc02</a> ；最近有个<a href="https://github.com/nginx/nginx/commit/83e92a2edd6bf7c6867b653284ac44962c4e33c9">commit 83e92a2</a> 解决http2 等待 sendfile 完成 请求hang住的情况，就是利用线程池的异步方式(aio)来处理的。</p>
 <h4 id="redis-thread-pool">redis thread pool</h4>
 <p>redis处理命令核心逻辑是单进程单线程模式，redis关注的是网络IO，以及内存操作，如果是单进程多线程处理必然会有同一个内存结构会有多个线程处理，加锁处理，线程等待以及多线程上下文切换开销的问题，执行效率不如单线程高效；网络IO事件直接通过IO多路复用事件模型(AE)来解决, 而且逻辑简单可维护；</p>
-<p>为了提高处理性能，Redis v4.0 将磁盘io和内存释放free工作采用几个线程异步处理bio(3个)，fsync内存异步持久落盘操作和close异步关闭文件操作；由于内存中大ke同步删除会耗时高从而阻塞核心逻辑，所以将这些内存释放采用lazyfree机制优化，包括两类：一类是主动释放<code>unlink</code> <code>flushall async</code> ；一类是被动释放, 分为4中场景，按需求场景进行打开优化(默认是关闭的)：</p>
+<p>为了提高处理性能，Redis v4.0 将磁盘io和内存释放free工作采用几个线程异步处理bio(3个)，fsync内存异步持久落盘操作和close异步关闭文件操作；由于内存中大ke同步删除会耗时高从而阻塞核心逻辑，所以将这些内存释放采用lazyfree机制优化，包括两类：一类是主动释放<code>unlink</code> <code>flushall async</code> ；一类是被动释放, 分为4种场景，按需求场景进行打开优化(默认是关闭的)：</p>
 <div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">lazyfree-lazy-eviction no
 lazyfree-lazy-expire no
 lazyfree-lazy-server-del no
@@ -381,6 +381,7 @@ slave-lazy-flush no
 <p>lazyfree-lazy-expire：针对设置有TTL的键，达到过期后，被redis清理删除时是否采用lazy free机制；可开启</p>
 <p>lazyfree-lazy-server-del：针对有些指令在处理已存在的键时，会带有一个隐式的DEL键的操作，比如<code>rename</code>操作，如果key存在会先删除这个key/value, 如果是大key场景会阻塞；可开启</p>
 <p>slave-lazy-flush：针对slave进行全量数据同步，slave在加载master的RDB文件前，会运行flushall来清理自己的数据场景，开启可减少全量同步耗时，从而减少主库因输出缓冲区爆涨引起的内存使用增长；可开启</p>
+<p>还有一个配置 <code>lazyfree-lazy-user-del no</code>， 针对老用户/代码使用<code>del</code>主动删除是否异步处理，开启和<code>unlink</code>一样；</p>
 <p>为了提高处理IO能力，Redis v6.0 正式在网络模型中实现 I/O 多线程(reactor模型,请求由多线程处理，解析命令之后，再交给主线程处理执行命令核心逻辑，并不是多线程来处理)；尽量保持 <strong>less is more</strong> 原则；</p>
 <p>以上通过引入多线程来改善redis中处理性能，这些优化都可以根据需求场景进行配置，也有具体说明 见: <a href="https://github.com/redis/redis/blob/unstable/redis.conf">redis.conf</a> (LAZY FREEING, THREADED I/O)；功能按需配置，<strong>可配置化功能说明</strong> 原则(开源软件配置文件一般都会有详细说明可了解)；</p>
 <h3 id="协程池coroutine-pool">协程池(coroutine pool)</h3>

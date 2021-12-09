@@ -524,7 +524,7 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。</p>
 <p>如果开启惰性淘汰策略，则使用dbAsyncDelete 异步回收只释放key, 不会对主线程造成过大的负担，否则使用dbSyncDelete同步回收；
 异步回收如果释放对象数目&gt;64, 将对象创建job加入lazy free list；通知<code>signal type: bio_lazy_free</code>回收处理线程进行回收；
 这两种操作都是会将key从数据库的键空间中移除，唯一的区别就在于，对value数据的释放，是同步操作还是异步操作。</p>
-<p><a href="https://github.com/redis/redis/blob/79ac57561f268814babe212c9216efe45cfdf937/src/server.c#L5330">触发代码在server.c中</a>：activeExpireCycle performEvictions 函数 在 <a href="https://github.com/redis/redis/blob/b71c5849e3e5c040b029c6e25cec2069d70760c1/README.md#serverc">server.c</a> readme中有介绍什么时候触发，</p>
+<p><a href="https://github.com/redis/redis/blob/79ac57561f268814babe212c9216efe45cfdf937/src/server.c#L5330">触发代码在server.c中</a>：activeExpireCycle performEvictions 函数 在 <a href="https://github.com/redis/redis/blob/b71c5849e3e5c040b029c6e25cec2069d70760c1/README.md#serverc">server.c</a> readme中有介绍什么时候触发。</p>
 <h3 id="mysql80-innodb-page-buffer-pool-lru-evict策略">Mysql8.0 InnoDB page buffer pool LRU evict策略</h3>
 <h4 id="页page">页Page</h4>
 <p>数据库的数据是放在磁盘空间以表空间存放的，加载的时候以页page为单位进行加载，页是InnoDB存储引擎磁盘管理的最小单位，每个页默认16KB；可以通过参数innodb_page_size设置(一个页内必须存储2行记录，否则就不是B+tree，而是链表了)，页面类型：</p>

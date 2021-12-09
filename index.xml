@@ -52,7 +52,7 @@
 &lt;p&gt;thread pool整体实现代码见&lt;a href=&#34;https://github.com/nginx/nginx/commit/305fc021db799c87d751f0f1f5e99afee7bb2b3b&#34;&gt;commit 305fc02&lt;/a&gt; ；最近有个&lt;a href=&#34;https://github.com/nginx/nginx/commit/83e92a2edd6bf7c6867b653284ac44962c4e33c9&#34;&gt;commit 83e92a2&lt;/a&gt; 解决http2 等待 sendfile 完成 请求hang住的情况，就是利用线程池的异步方式(aio)来处理的。&lt;/p&gt;
 &lt;h4 id=&#34;redis-thread-pool&#34;&gt;redis thread pool&lt;/h4&gt;
 &lt;p&gt;redis处理命令核心逻辑是单进程单线程模式，redis关注的是网络IO，以及内存操作，如果是单进程多线程处理必然会有同一个内存结构会有多个线程处理，加锁处理，线程等待以及多线程上下文切换开销的问题，执行效率不如单线程高效；网络IO事件直接通过IO多路复用事件模型(AE)来解决, 而且逻辑简单可维护；&lt;/p&gt;
-&lt;p&gt;为了提高处理性能，Redis v4.0 将磁盘io和内存释放free工作采用几个线程异步处理bio(3个)，fsync内存异步持久落盘操作和close异步关闭文件操作；由于内存中大ke同步删除会耗时高从而阻塞核心逻辑，所以将这些内存释放采用lazyfree机制优化，包括两类：一类是主动释放&lt;code&gt;unlink&lt;/code&gt; &lt;code&gt;flushall async&lt;/code&gt; ；一类是被动释放, 分为4中场景，按需求场景进行打开优化(默认是关闭的)：&lt;/p&gt;
+&lt;p&gt;为了提高处理性能，Redis v4.0 将磁盘io和内存释放free工作采用几个线程异步处理bio(3个)，fsync内存异步持久落盘操作和close异步关闭文件操作；由于内存中大ke同步删除会耗时高从而阻塞核心逻辑，所以将这些内存释放采用lazyfree机制优化，包括两类：一类是主动释放&lt;code&gt;unlink&lt;/code&gt; &lt;code&gt;flushall async&lt;/code&gt; ；一类是被动释放, 分为4种场景，按需求场景进行打开优化(默认是关闭的)：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;lazyfree-lazy-eviction no
 lazyfree-lazy-expire no
 lazyfree-lazy-server-del no
@@ -61,6 +61,7 @@ slave-lazy-flush no
 &lt;p&gt;lazyfree-lazy-expire：针对设置有TTL的键，达到过期后，被redis清理删除时是否采用lazy free机制；可开启&lt;/p&gt;
 &lt;p&gt;lazyfree-lazy-server-del：针对有些指令在处理已存在的键时，会带有一个隐式的DEL键的操作，比如&lt;code&gt;rename&lt;/code&gt;操作，如果key存在会先删除这个key/value, 如果是大key场景会阻塞；可开启&lt;/p&gt;
 &lt;p&gt;slave-lazy-flush：针对slave进行全量数据同步，slave在加载master的RDB文件前，会运行flushall来清理自己的数据场景，开启可减少全量同步耗时，从而减少主库因输出缓冲区爆涨引起的内存使用增长；可开启&lt;/p&gt;
+&lt;p&gt;还有一个配置 &lt;code&gt;lazyfree-lazy-user-del no&lt;/code&gt;， 针对老用户/代码使用&lt;code&gt;del&lt;/code&gt;主动删除是否异步处理，开启和&lt;code&gt;unlink&lt;/code&gt;一样；&lt;/p&gt;
 &lt;p&gt;为了提高处理IO能力，Redis v6.0 正式在网络模型中实现 I/O 多线程(reactor模型,请求由多线程处理，解析命令之后，再交给主线程处理执行命令核心逻辑，并不是多线程来处理)；尽量保持 &lt;strong&gt;less is more&lt;/strong&gt; 原则；&lt;/p&gt;
 &lt;p&gt;以上通过引入多线程来改善redis中处理性能，这些优化都可以根据需求场景进行配置，也有具体说明 见: &lt;a href=&#34;https://github.com/redis/redis/blob/unstable/redis.conf&#34;&gt;redis.conf&lt;/a&gt; (LAZY FREEING, THREADED I/O)；功能按需配置，&lt;strong&gt;可配置化功能说明&lt;/strong&gt; 原则(开源软件配置文件一般都会有详细说明可了解)；&lt;/p&gt;
 &lt;h3 id=&#34;协程池coroutine-pool&#34;&gt;协程池(coroutine pool)&lt;/h3&gt;
@@ -1662,7 +1663,7 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。&lt;
 &lt;p&gt;如果开启惰性淘汰策略，则使用dbAsyncDelete 异步回收只释放key, 不会对主线程造成过大的负担，否则使用dbSyncDelete同步回收；
 异步回收如果释放对象数目&amp;gt;64, 将对象创建job加入lazy free list；通知&lt;code&gt;signal type: bio_lazy_free&lt;/code&gt;回收处理线程进行回收；
 这两种操作都是会将key从数据库的键空间中移除，唯一的区别就在于，对value数据的释放，是同步操作还是异步操作。&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/redis/redis/blob/79ac57561f268814babe212c9216efe45cfdf937/src/server.c#L5330&#34;&gt;触发代码在server.c中&lt;/a&gt;：activeExpireCycle performEvictions 函数 在 &lt;a href=&#34;https://github.com/redis/redis/blob/b71c5849e3e5c040b029c6e25cec2069d70760c1/README.md#serverc&#34;&gt;server.c&lt;/a&gt; readme中有介绍什么时候触发，&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/redis/redis/blob/79ac57561f268814babe212c9216efe45cfdf937/src/server.c#L5330&#34;&gt;触发代码在server.c中&lt;/a&gt;：activeExpireCycle performEvictions 函数 在 &lt;a href=&#34;https://github.com/redis/redis/blob/b71c5849e3e5c040b029c6e25cec2069d70760c1/README.md#serverc&#34;&gt;server.c&lt;/a&gt; readme中有介绍什么时候触发。&lt;/p&gt;
 &lt;h3 id=&#34;mysql80-innodb-page-buffer-pool-lru-evict策略&#34;&gt;Mysql8.0 InnoDB page buffer pool LRU evict策略&lt;/h3&gt;
 &lt;h4 id=&#34;页page&#34;&gt;页Page&lt;/h4&gt;
 &lt;p&gt;数据库的数据是放在磁盘空间以表空间存放的，加载的时候以页page为单位进行加载，页是InnoDB存储引擎磁盘管理的最小单位，每个页默认16KB；可以通过参数innodb_page_size设置(一个页内必须存储2行记录，否则就不是B+tree，而是链表了)，页面类型：&lt;/p&gt;
