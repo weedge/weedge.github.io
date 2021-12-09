@@ -72,7 +72,7 @@
 <meta itemprop="description" content="介绍
 平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(pool)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，进程(process PCB 内核态)、线程(thread TCB 内核态)、协程(coroutine 用户态)为载体的工作任务(work task)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。"><meta itemprop="datePublished" content="2021-12-02T12:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-12-08T17:26:23+08:00" />
-<meta itemprop="wordCount" content="3991">
+<meta itemprop="wordCount" content="4015">
 <meta itemprop="keywords" content="pool," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="pool"/>
 <meta name="twitter:description" content="介绍
@@ -351,7 +351,7 @@
     
     <div class="post-content">
       <h2 id="介绍">介绍</h2>
-<p>平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(<a href="https://en.wikipedia.org/wiki/Pool_(computer_science)">pool</a>)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，<a href="https://zh.wikipedia.org/wiki/%E8%A1%8C%E7%A8%8B">进程</a>(process PCB 内核态)、<a href="https://zh.wikipedia.org/wiki/%E5%9F%B7%E8%A1%8C%E7%B7%92">线程</a>(thread TCB 内核态)、<a href="https://zh.wikipedia.org/zh-hans/%E5%8D%8F%E7%A8%8B">协程</a>(coroutine 用户态)为载体的工作任务(work task)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。</p>
+<p>平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(<a href="https://en.wikipedia.org/wiki/Pool_(computer_science)">pool</a>)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，<a href="https://zh.wikipedia.org/wiki/%E8%A1%8C%E7%A8%8B">进程</a>(process <a href="https://en.wikipedia.org/wiki/Process_control_block">PCB</a> 内核态)、<a href="https://zh.wikipedia.org/wiki/%E5%9F%B7%E8%A1%8C%E7%B7%92">线程</a>(thread <a href="https://en.wikipedia.org/wiki/Thread_control_block">TCB</a> 内核态)、<a href="https://zh.wikipedia.org/zh-hans/%E5%8D%8F%E7%A8%8B">协程</a>(coroutine 用户态)为载体的工作任务(work task)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。</p>
 <h2 id="工作任务池worker-pool">工作任务池（worker pool)</h2>
 <p>程序中的工作任务是一些运行逻辑，通过进程，线程，或者协程为载体获取系统资源来运行；如果运行的资源对象特别多，这些资源对象在内存中分配空间，这就导致资源消耗过多，甚至可能导致OOM，同时处理任务完成之后，这些资源需要回收，也会消耗大量的cpu时间；所以在这些高耗进程/线程，或者协程资源的工作任务场景下(比如大量的请求任务)，需要用池化技术进行复用管理，提高利用率，减少请求耗时；对此分别介绍进程池，线程池，协程池，以及开源组件服务中的实现。</p>
 <h3 id="进程池process-pool">进程池(process pool)</h3>
@@ -369,7 +369,7 @@
 <p>比如产生磁盘io的系统调用read(),sendfile(),aio_write()(Linux上的在编写一些临时文件,在nginx1.9.13加入)这些阻塞操作场景，工作进程处理这些操作的时候，将其放入线程池中来处理，常见的直播/点播回放场景中，会有拉流操作，从最近CDN服务节点上获取视频流进行播放；像视频流文件，或者其他大文件，这些请求资源是没法放入系统内存<a href="https://zhuanlan.zhihu.com/p/35448479">页面缓存</a>中，导致事件模型被文件操作卡住，没法正常的响应链接，引入 thread pool 来缓解这个问题；流程如下：</p>
 <p>工作进程中的主线程决定要发起文件系统操作时，将会建立一个特殊的任务，并将该任务丢到任务队列中；而线程池中的空闲线程会不断的执行该队列的文件任务，而后将执行好的结果返回，主线程循环处理结果，继续后续操作。经过这个优化，主线程不会再被阻塞住，如图：</p>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/nginx-thread-pool.drawio.png" alt="thread-pools-worker-process-event-cycle"></p>
-<p>最近有个<a href="https://github.com/nginx/nginx/commit/83e92a2edd6bf7c6867b653284ac44962c4e33c9">commit 83e92a2</a> 解决http2 等待 sendfile 完成 请求hang住的情况，就是利用线程池的异步aio来处理的。</p>
+<p>thread pool整体实现代码见<a href="https://github.com/nginx/nginx/commit/305fc021db799c87d751f0f1f5e99afee7bb2b3b">commit 305fc02</a> ；最近有个<a href="https://github.com/nginx/nginx/commit/83e92a2edd6bf7c6867b653284ac44962c4e33c9">commit 83e92a2</a> 解决http2 等待 sendfile 完成 请求hang住的情况，就是利用线程池的异步方式(aio)来处理的。</p>
 <h4 id="redis-thread-pool">redis thread pool</h4>
 <p>redis处理命令核心逻辑是单进程单线程模式，redis关注的是网络IO，以及内存操作，如果是单进程多线程处理必然会有同一个内存结构会有多个线程处理，加锁处理，线程等待以及多线程上下文切换开销的问题，执行效率不如单线程高效；网络IO事件直接通过IO多路复用事件模型(AE)来解决, 而且逻辑简单可维护；为了提高处理性能，Redis v4.0 将磁盘io和内存释放工作采用几个线程异步处理(3个)，fsync内存异步持久落盘操作和close异步关闭文件操作，evict异步释放内存操作；为了提高处理IO能力，Redis v6.0 正式在网络模型中实现 I/O 多线程(reactor模型)；尽量保持less is more的原则；</p>
 <h3 id="协程池coroutine-pool">协程池(coroutine pool)</h3>
