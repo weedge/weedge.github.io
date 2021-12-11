@@ -66,13 +66,13 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://weedge.github.io/post/pool/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-12-02T12:26:23+08:00" />
-<meta property="article:modified_time" content="2021-12-08T17:26:23+08:00" />
+<meta property="article:modified_time" content="2021-12-11T17:26:23+08:00" />
 
 <meta itemprop="name" content="pool">
 <meta itemprop="description" content="介绍
 平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(pool)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，进程(process PCB 内核态)、线程(thread TCB 内核态)、协程(coroutine 用户态)为载体的工作任务(work task)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。"><meta itemprop="datePublished" content="2021-12-02T12:26:23+08:00" />
-<meta itemprop="dateModified" content="2021-12-08T17:26:23+08:00" />
-<meta itemprop="wordCount" content="4738">
+<meta itemprop="dateModified" content="2021-12-11T17:26:23+08:00" />
+<meta itemprop="wordCount" content="6147">
 <meta itemprop="keywords" content="pool," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="pool"/>
 <meta name="twitter:description" content="介绍
@@ -363,7 +363,7 @@
 <p>php多进程(进程单个线程)编程相对多线程(进程多个线程)编程要简单些，多线程需要考虑共享所在进程资源同步的问题，处于安全隔离考虑，进程多线程中如果某个线程出错，整个进程就挂了，而多进程资源相互隔离，如果一个进程挂了，不影响其他进程处理任务；而且解释语言相对c/c++编译成机器码执行语言开发效率要高很多，运行时加载，无需重启服务(当然c/c++编译型语言也支持动态库加载至内存提供相关接口调用，进行热加载而无需重启服务，但是不可能每次新开发一个功能都以*.so动态库的形式提供吧，所以需求更新迭代快的场景，像游戏领域的服务器，网关服务器，甚至大数据任务算子，大多都是通过引入解释型脚本语言(lua/js/perl/python/php)编写业务逻辑，进行热加载)；</p>
 <p>但是多进程毕竟比多线程要消耗更多的系统资源；而且如果存在多进程单线程的<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%A4%AE%E5%A4%84%E7%90%86%E5%99%A8">cpu</a>切换，是从一个进程到另一个进程，而单进程多线程的<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%A4%AE%E5%A4%84%E7%90%86%E5%99%A8">cpu</a>切换则只在一个进程内，每个进程/线程都有自己的上下文堆栈保存，进程间的cpu切换消耗更大一些；多线程上下文的切换涉及程序计数器、堆栈指针和程序状态字等一系列的寄存器置换、程序堆栈重置甚至是 CPU 高速缓存、TLB 快表的汰换；进程间的上线文切换还涉及整个进程地址空间。</p>
 <h3 id="线程池thread-poolhttpsenwikipediaorgwikithread_pool"><a href="https://en.wikipedia.org/wiki/Thread_pool">线程池(thread pool)</a></h3>
-<p>线程是操作系统调度运行的最小单元，随着计算机<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%A4%AE%E5%A4%84%E7%90%86%E5%99%A8">cpu</a>核数的增加，多线程技术可以充分利用多个cpu核进行并行处理，提高吞吐；对于在单cpu单核的计算机上，使用多线程技术，也可以把进程中负责I/O处理、人机交互而常被阻塞的部分，与密集计算的部分分开来执行，编写专门的workhorse线程执行密集计算，虽然多任务比不上多核，但因为具备多线程的能力，从而提高了程序的执行效率。</p>
+<p>线程是操作系统调度运行的最小单元，随着计算机<a href="https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%A4%AE%E5%A4%84%E7%90%86%E5%99%A8">cpu</a>核数的增加，多线程技术可以充分利用多个cpu核进行并行处理，提高吞吐；对于在单cpu单核的计算机上，使用多线程技术，也可以把进程中负责I/O处理、人机交互而常被阻塞的部分，与密集计算的部分分开来执行，编写专门的workhorse线程执行密集计算，虽然多任务比不上多核，但因为具备多线程的能力，从而提高了程序的执行效率。而多线程的频繁建立和销毁，以及多线程上下文的切换，会导致整体执行的延迟，对于高性能的服务组件，针对io密集型场景，引入线程池来进行优化；而业务场景，为了提高业务的接口吞吐量，也引入了线程池进行优化；</p>
 <h4 id="nginx-thread-pool">nginx thread pool</h4>
 <p><a href="https://www.nginx.com/blog/inside-nginx-how-we-designed-for-performance-scale/">nginx是多工作进程(cpu核数)+事件模型</a>（如果是IO密集型 worker进程数在1.5-2倍cpu核数），通过工作进程单线程的事件模型(比喻成grandmaster😄)能够很快处理用户的请求(epoll事件机制)，但是为了解决重阻塞型IO密集型的工作任务问题，nginx 1.7.12引入了<a href="https://www.nginx.com/blog/thread-pools-boost-performance-9x/">thread pool 线程池技术</a>，主要是针对linux系统，解决不支持异步IO的场景(FreeBSD系统的异步IO支持使用内存做为文件缓存)；</p>
 <p>比如产生磁盘io的系统调用read(),sendfile(),aio_write()(Linux上的在编写一些临时文件,在nginx1.9.13加入<a href="https://github.com/nginx/nginx/commit/348f705c000bdbfbee74d6f0111a03697f8ffa4f">commit 348f705</a>)这些阻塞操作场景，工作进程处理这些操作的时候，将其放入线程池中来处理，常见的直播/点播回放场景中，会有拉流操作，从最近CDN服务节点上获取视频流进行播放；像视频流文件，或者其他大文件，这些请求资源是没法放入系统内存<a href="https://zhuanlan.zhihu.com/p/35448479">页面缓存</a>中，导致事件模型被文件操作卡住，没法正常的响应链接，引入 thread pool 来缓解这个问题；流程如下：</p>
@@ -383,8 +383,22 @@ slave-lazy-flush no
 <p>slave-lazy-flush：针对slave进行全量数据同步，slave在加载master的RDB文件前，会运行flushall来清理自己的数据场景，开启可减少全量同步耗时，从而减少主库因输出缓冲区爆涨引起的内存使用增长；可开启</p>
 <p>还有一个配置 <code>lazyfree-lazy-user-del no</code>， 针对老用户/代码使用<code>del</code>主动删除是否异步处理，开启和<code>unlink</code>一样；</p>
 <p>为了提高处理IO能力，Redis v6.0 正式在网络模型中实现 I/O 多线程(reactor模型,请求由多线程处理，解析命令之后，再交给主线程处理执行命令核心逻辑，并不是多线程来处理)；尽量保持 <strong>less is more</strong> 原则；</p>
-<p>以上通过引入多线程来改善redis中处理性能，这些优化都可以根据需求场景进行配置，也有具体说明 见: <a href="https://github.com/redis/redis/blob/unstable/redis.conf">redis.conf</a> (LAZY FREEING, THREADED I/O)；功能按需配置，可配置功能说明 (开源软件配置文件一般都会有详细说明可了解)；</p>
+<p>以上通过引入多线程来改善redis中处理性能，这些优化都可以根据需求场景进行配置，也有具体说明 见: <a href="https://github.com/redis/redis/blob/unstable/redis.conf">redis.conf</a> (LAZY FREEING, THREADED I/O)；功能按需配置，<strong>可配置功能说明</strong> 配置文档原则 (开源软件配置文件一般都会有详细说明可了解)；</p>
+<h4 id="java-thread-pool">java thread pool</h4>
+<p>java多线程编程，也有相关的线程池(ThreadPoolExecutor，子类ScheduledThreadPoolExecutor-利用延迟工作队列(最小堆)实现定时任务线程池)提供使用；使用ThreadPoolExecutor可以满足两种场景：</p>
+<ol>
+<li>并行执行子任务，提高响应速度。这种情况下，应该使用同步队列，没有什么任务应该被缓存下来，而是应该立即执行;</li>
+<li>并行执行大批次任务，提升吞吐量。这种情况下，应该使用有界队列，使用队列去缓冲大批量的任务，队列容量必须声明，防止任务无限制堆积；</li>
+</ol>
+<p><img src="https://p0.meituan.net/travelcube/77441586f6b312a54264e3fcf5eebe2663494.png" alt="ThreadPoolExecutor运行流程"></p>
+<p>ThreadPoolExecutor具体的使用介绍可以参考美团的这片文章：<a href="https://tech.meituan.com/2020/04/02/java-pooling-pratice-in-meituan.html">Java线程池实现原理及其在美团业务中的实践</a>，引用 ThreadPoolExecutor 运行流程如上图；文中有有实际的案例和参数配置解决方案，可以借鉴；在使用java线程池对接口吞吐量进行优化时，如果参数使用不当，线程池最大线程数过小会触发接口服务降级；或者消费线程过小任务队列过长，积压任务，导致请求超时的情况；针对这些场景，提出解决方案：增加线程池监控，通过配置中心，手动来调整java线程池参数, 进行动态配置化管理，这个思路其实也是服务基础稳定性的常用思路，做好监控报警，配置化及时人工响应。(美团的<a href="https://mp.weixin.qq.com/s/C81f0_arbs23KGcaIwi56w">复盘机制</a>值得学习)</p>
+<h4 id="thread-pool-小结">thread pool 小结</h4>
+<p>引入线程池其实本质上还是对多线程的有效管理，充分利用多核进行并行处理，减少线程间的上下文切换开销；以上实现的线程池本质上都是通过多线程异步优化IO任务，通过线程池来管理线程，通过参数进行调优，充分利用多核cpu硬件资源，并行处理，吞吐最大化。 但是用户应用层使用线程池需要对线程数目进行调整，那可否从用户应用层面来封装一层进行调度管理呢？ 答案是有的，像GO语言，现在的内部运行时runtime 通过G-P-M调度模型来有效管理，Go 语言的调度模型通过使用与 CPU 数量相等的线程减少线程频繁切换的内存开销，同时在每一个线程上执行额外开销更低的 Goroutine 协程来降低操作系统和硬件的负载，用户应用层面不需要考虑多线程编程的情况，只需要关注Goroutine 协程的操作管理。</p>
 <h3 id="协程池coroutine-pool">协程池(coroutine pool)</h3>
+<p>协程是运行在用户态的轻量线程，可以认为是用户应用层面的线程， 比线程分配的虚拟内存栈空间要小， 创建一个线程所占虚拟内存栈空间大小，在linux下通过<code>pmap </code>+pid 查看stack大小， 在macOS下通过<code>vmmap -interleaved</code>+pid 查看stack大小，大小由<code>ulimit -s</code> 控制，线程栈空间一般在8M~10M左右，如果使用不当会栈溢出；而协程分配空间是由实现协程语言来决定，像GO实现的协程初始创建大小是2k(go 1.4+ 采用连续堆栈策略，以前是分段栈策略)，由GO运行时库<code>runtime/stack.go</code> 中的<code>newstack</code>实现，可以栈空间动态分配,</p>
+<p>GO中管理协程池的开发方案还是比较多的，大都是和线程池任务工作模型差不多，任务队列用的是GO中的runtime/channel,  池化管理用的是GO中的sync/pool；相对线程池thread pool的实现要简单些，因为底层GO runtime的调度模型已经做了大部分的优化了。主要选择如下开源库：</p>
+<p><a href="https://github.com/panjf2000/ants">ants</a></p>
+<p><a href="https://github.com/bytedance/gopkg/tree/develop/util/gopool">gopool</a></p>
 <h2 id="内存池memory-poolhttpsenwikipediaorgwikimemory_pool"><a href="https://en.wikipedia.org/wiki/Memory_pool">内存池(memory pool)</a></h2>
 <h3 id="nginx-pool">nginx pool</h3>
 <h2 id="连接池connection-poolhttpsenwikipediaorgwikiconnection_pool"><a href="https://en.wikipedia.org/wiki/Connection_pool">连接池(connection pool)</a></h2>
@@ -402,8 +416,11 @@ slave-lazy-flush no
 <li><a href="https://strikefreedom.top/multiple-threaded-network-model-in-redis">Redis 多线程网络模型全面揭秘</a></li>
 <li><a href="http://antirez.com/news/93">Lazy Redis is better Redis</a></li>
 <li><a href="https://redis.io/topics/benchmarks">How fast is Redis?</a></li>
+<li><a href="https://tech.meituan.com/2020/04/02/java-pooling-pratice-in-meituan.html">Java线程池实现原理及其在美团业务中的实践</a></li>
 <li><a href="https://www.bilibili.com/video/BV1Bq4y1q7Pi">Golang操作系统调度原理</a></li>
+<li><a href="https://draveness.me/golang/docs/part3-runtime/ch06-concurrency/golang-goroutine/">golang-goroutine</a> <a href="https://draveness.me/golang/docs/part3-runtime/ch06-concurrency/golang-channel/">golang-channel</a> 延伸阅读</li>
 <li><a href="https://tonybai.com/2017/06/27/an-intro-about-go-portability/">也谈Go的可移植性</a></li>
+<li><a href="https://time.geekbang.org/column/article/301716">Pool：性能提升大杀器</a></li>
 </ol>
     </div>
 
@@ -417,7 +434,7 @@ slave-lazy-flush no
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
     <span class="item-content">
-      2021-12-08
+      2021-12-11
       
     </span>
   </p>
