@@ -72,7 +72,7 @@
 <meta itemprop="description" content="介绍
 平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(pool)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，进程(process PCB 内核态)、线程(thread TCB 内核态)、协程(coroutine 用户态)为载体的工作任务(work task)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。"><meta itemprop="datePublished" content="2021-12-02T12:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-12-11T17:26:23+08:00" />
-<meta itemprop="wordCount" content="7449">
+<meta itemprop="wordCount" content="8039">
 <meta itemprop="keywords" content="pool," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="pool"/>
 <meta name="twitter:description" content="介绍
@@ -424,12 +424,20 @@ list *io_threads_list[IO_THREADS_MAX_NUM];
 <p><img src="https://p0.meituan.net/travelcube/77441586f6b312a54264e3fcf5eebe2663494.png" alt="ThreadPoolExecutor运行流程"></p>
 <p>ThreadPoolExecutor具体的使用介绍可以参考美团的这片文章：<a href="https://tech.meituan.com/2020/04/02/java-pooling-pratice-in-meituan.html">Java线程池实现原理及其在美团业务中的实践</a>，引用 ThreadPoolExecutor 运行流程如上图；文中有有实际的案例和参数配置解决方案，可以借鉴；在使用java线程池对接口吞吐量进行优化时，如果参数使用不当，线程池最大线程数过小，可能导致接口服务降级；消费线程过小任务队列过长，积压任务，可能导致请求超时的情况；针对这些场景，提出解决方案：增加线程池监控，通过配置中心，手动来调整java线程池参数, 进行动态配置化管理，这个思路其实也是服务基础稳定性的常用思路，做好监控报警，配置化及时人工响应。(美团的<a href="https://mp.weixin.qq.com/s/C81f0_arbs23KGcaIwi56w">复盘机制</a>值得学习)</p>
 <h4 id="thread-pool-小结">thread pool 小结</h4>
-<p>引入线程池其实本质上还是对多线程的有效管理，充分利用多核进行并行处理，减少线程间的上下文切换开销；以上实现的线程池本质上都是通过多线程异步优化IO任务，通过线程池来管理线程，通过参数进行调优，充分利用多核cpu硬件资源，并行处理，吞吐最大化(ps: redis和nginx的源码值得一撸)。 但是用户应用层使用线程池需要对线程数目进行调整，那可否从用户应用层面来封装一层进行调度管理呢？ 答案是有的，像GO语言，现在的内部运行时runtime 通过G-P-M调度模型来有效管理，Go 语言的调度模型通过使用与 CPU 数量相等的线程减少线程频繁切换的内存开销，同时在每一个线程上执行额外开销更低的 Goroutine 协程来降低操作系统和硬件的负载，用户应用层面不需要考虑多线程编程的细节，只需要关注Goroutine 协程的使用调优化，了解G-P-M模型，调度机制。(享受一波语言,工具福利,race检查等)</p>
+<p>引入线程池其实本质上还是对多线程的有效管理，充分利用多核进行并行处理，减少线程间的上下文切换开销；以上实现的线程池本质上都是通过多线程异步优化IO任务，通过线程池来管理线程，通过参数进行调优，充分利用多核cpu硬件资源，并行处理，吞吐最大化(ps: redis和nginx的源码值得一撸)。 但是用户应用层使用线程池需要对线程数目进行调整，那可否从用户应用层面来封装一层进行调度管理呢？ 答案是有的，像GO语言，现在的内部运行时runtime 通过G-P-M调度模型来有效管理，Go 语言的调度模型通过使用与 CPU 数量相等的线程减少线程频繁切换的内存开销，同时在每一个线程上执行额外开销更低的 Goroutine 协程来降低操作系统和硬件的负载，用户应用层面不需要考虑多线程编程的细节，只需要关注Goroutine 协程的使用调优化，了解G-P-M模型，调度机制。(享受一波语言,工具福利，race检查,性能测试,分析trace,逃逸分析,GC等)</p>
 <h3 id="协程池coroutine-pool">协程池(coroutine pool)</h3>
-<p>协程是运行在用户态的轻量线程，可以认为是用户应用层面的线程， 比线程分配的虚拟内存栈空间要小；创建一个线程所占虚拟内存栈空间大小，在linux下通过<code>pmap </code>+pid 查看stack大小， 在macOS下通过<code>vmmap -interleaved</code>+pid 查看stack大小，大小由<code>ulimit -s</code> 控制，线程栈空间一般在8M~10M左右，如果使用不当会栈溢出；而协程分配空间是由实现协程语言来决定，像GO实现的协程初始创建大小是2k(go 1.4+ 采用连续堆栈策略，以前是分段栈策略)，由GO运行时库<code>runtime/stack.go</code> 中的<code>newstack</code>实现，可以栈空间动态分配,</p>
-<p>GO中管理协程池的开发方案还是比较多的，大都是和线程池任务工作模型差不多，任务队列用的是GO中的runtime/channel,  池化管理用的是GO中的sync/pool；相对线程池thread pool的实现要简单些，因为底层GO runtime的调度模型已经做了大部分的优化了。主要选择如下开源库：</p>
-<p><a href="https://github.com/panjf2000/ants">ants</a></p>
-<p><a href="https://github.com/bytedance/gopkg/tree/develop/util/gopool">gopool</a></p>
+<p>协程是运行在用户态的轻量线程，可以认为是用户应用层面的线程， 比线程分配的虚拟内存栈空间要小；创建一个线程所占虚拟内存栈空间大小，在linux下通过<code>pmap </code>+pid 查看stack大小， 在macOS下通过<code>vmmap -interleaved</code>+pid 查看stack大小，大小由<code>ulimit -s</code> 控制，线程栈空间一般在8M~10M左右，如果使用不当会栈溢出；而协程分配空间是由实现协程语言来决定，像GO实现的goroutine协程初始创建栈空间大小是2k(go 1.4+ 采用连续堆栈策略，以前是分段栈策略)，最大限制的默认值在64位系统上是1GB（具体的内容你可以课下看看代码中的配置：<a href="https://github.com/golang/go/blob/f296b7a6f045325a230f77e9bda1470b1270f817/src/runtime/proc.go#L120">不同的架构最大数会不同</a>）；编译期间插入检查，调用时如果满足了扩容条件(根据被调用函数栈帧的大小来判断是否需要扩容，通过 stackguard0 来判断是否要进行栈增长)，扩容两倍空间，如果协程所使用的栈空间小于1/4时，缩容成一半空间；(具体细节见：<a href="https://draveness.me/golang/docs/part3-runtime/ch07-memory/golang-stack-management/">栈空间管理</a> <a href="https://kirk91.github.io/posts/2d571d09/">推送场景: 聊一聊goroutine stack</a>)</p>
+<p>尽管goroutine协程比线程分配栈空间小，但是 大量的 goroutine 还是很耗资源的，而且大量的 goroutine 对于调度和垃圾回收的耗时还是会有影响的，因此，goroutine 并不是越多越好，所以使用协程池来优化，</p>
+<p>GO中管理协程池的开发方案还是比较多的，大都是和线程池任务工作模型差不多，任务队列用的是GO中的runtime/channel,  池化管理用的是GO中的sync.Pool；相对线程池thread pool的实现要简单些，因为底层GO runtime的调度模型已经做了大部分的优化。<a href="https://time.geekbang.org/column/article/301716">Pool：性能提升大杀器</a> 中介绍了GO中sync.Pool的实现，以及协程池的三方开源方案实现，worker的作用，引用如下：</p>
+<blockquote>
+<p>有些是在后台默默执行的，不需要等待返回结果；</p>
+<p>有些需要等待一批任务执行完；</p>
+<p>有些 Worker Pool 的生命周期和程序一样长；</p>
+<p>有些只是临时使用，执行完毕后，Pool 就销毁了。</p>
+<p>大部分的 Worker Pool 都是通过 Channel 来缓存任务的，因为 Channel 能够比较方便地实现并发的保护，有的是多个 Worker 共享同一个任务 Channel，有些是每个 Worker 都有一个独立的 Channel。</p>
+</blockquote>
+<p>这里介绍自己实现的 <a href="https://github.com/weedge/lib/tree/main/pool/workerpool">workerpool</a>   通过channel 存放任务，多个 Worker 共享同一个任务 Channel，通过多个协程来消费池中的任务执行，协程根据提交的任务数动态扩缩协程；任务可以定义输入，输出，超时时间；通过channel 返回是否超时; 可用于批量任务场景</p>
+<p><img src="https://raw.githubusercontent.com/weedge/lib/main/pool/workerpool/workerpool.png" alt="workerpool"></p>
 <h2 id="内存池memory-poolhttpsenwikipediaorgwikimemory_pool"><a href="https://en.wikipedia.org/wiki/Memory_pool">内存池(memory pool)</a></h2>
 <h3 id="nginx-pool">nginx pool</h3>
 <h2 id="连接池connection-poolhttpsenwikipediaorgwikiconnection_pool"><a href="https://en.wikipedia.org/wiki/Connection_pool">连接池(connection pool)</a></h2>
@@ -451,6 +459,7 @@ list *io_threads_list[IO_THREADS_MAX_NUM];
 <li><a href="https://www.bilibili.com/video/BV1Bq4y1q7Pi">Golang操作系统调度原理</a></li>
 <li><a href="https://draveness.me/golang/docs/part3-runtime/ch06-concurrency/golang-goroutine/">golang-goroutine</a> <a href="https://draveness.me/golang/docs/part3-runtime/ch06-concurrency/golang-channel/">golang-channel</a> 延伸阅读</li>
 <li><a href="https://tonybai.com/2017/06/27/an-intro-about-go-portability/">也谈Go的可移植性</a></li>
+<li><a href="https://9p.io/sys/doc/asm.html">A Manual for the Plan 9 assembler</a> <a href="https://github.com/cch123/golang-notes/blob/master/assembly.md">plan9 assembly 完全解析</a></li>
 <li><a href="https://time.geekbang.org/column/article/301716">Pool：性能提升大杀器</a></li>
 </ol>
     </div>
