@@ -72,7 +72,7 @@
 <meta itemprop="description" content="介绍
 平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(pool)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，进程(process PCB 内核态)、线程(thread TCB 内核态)、协程(coroutine 用户态)为载体的工作任务(work task)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。"><meta itemprop="datePublished" content="2021-12-02T12:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-12-11T17:26:23+08:00" />
-<meta itemprop="wordCount" content="8039">
+<meta itemprop="wordCount" content="8051">
 <meta itemprop="keywords" content="pool," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="pool"/>
 <meta name="twitter:description" content="介绍
@@ -436,7 +436,7 @@ list *io_threads_list[IO_THREADS_MAX_NUM];
 <p>有些只是临时使用，执行完毕后，Pool 就销毁了。</p>
 <p>大部分的 Worker Pool 都是通过 Channel 来缓存任务的，因为 Channel 能够比较方便地实现并发的保护，有的是多个 Worker 共享同一个任务 Channel，有些是每个 Worker 都有一个独立的 Channel。</p>
 </blockquote>
-<p>这里介绍自己实现的 <a href="https://github.com/weedge/lib/tree/main/pool/workerpool">workerpool</a>   通过channel 存放任务，多个 Worker 共享同一个任务 Channel，通过多个协程来消费池中的任务执行，协程根据提交的任务数动态扩缩协程；任务可以定义输入，输出，超时时间；通过channel 返回是否超时; 可用于批量任务场景</p>
+<p>这里介绍自己实现的 <a href="https://github.com/weedge/lib/tree/main/pool/workerpool">workerpool</a>   通过channel 存放任务，多个 Worker 共享同一个任务 Channel，通过多个协程来消费池中的任务执行，协程根据提交的任务数动态扩缩协程；任务可以定义输入，输出，超时时间；通过channel 返回是否超时; 可用于批量任务并发执行场景，执行流程如下：</p>
 <p><img src="https://raw.githubusercontent.com/weedge/lib/main/pool/workerpool/workerpool.png" alt="workerpool"></p>
 <h2 id="内存池memory-poolhttpsenwikipediaorgwikimemory_pool"><a href="https://en.wikipedia.org/wiki/Memory_pool">内存池(memory pool)</a></h2>
 <h3 id="nginx-pool">nginx pool</h3>

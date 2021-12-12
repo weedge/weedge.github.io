@@ -116,7 +116,7 @@ list *io_threads_list[IO_THREADS_MAX_NUM];
 &lt;p&gt;有些只是临时使用，执行完毕后，Pool 就销毁了。&lt;/p&gt;
 &lt;p&gt;大部分的 Worker Pool 都是通过 Channel 来缓存任务的，因为 Channel 能够比较方便地实现并发的保护，有的是多个 Worker 共享同一个任务 Channel，有些是每个 Worker 都有一个独立的 Channel。&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;这里介绍自己实现的 &lt;a href=&#34;https://github.com/weedge/lib/tree/main/pool/workerpool&#34;&gt;workerpool&lt;/a&gt;   通过channel 存放任务，多个 Worker 共享同一个任务 Channel，通过多个协程来消费池中的任务执行，协程根据提交的任务数动态扩缩协程；任务可以定义输入，输出，超时时间；通过channel 返回是否超时; 可用于批量任务场景&lt;/p&gt;
+&lt;p&gt;这里介绍自己实现的 &lt;a href=&#34;https://github.com/weedge/lib/tree/main/pool/workerpool&#34;&gt;workerpool&lt;/a&gt;   通过channel 存放任务，多个 Worker 共享同一个任务 Channel，通过多个协程来消费池中的任务执行，协程根据提交的任务数动态扩缩协程；任务可以定义输入，输出，超时时间；通过channel 返回是否超时; 可用于批量任务并发执行场景，执行流程如下：&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/lib/main/pool/workerpool/workerpool.png&#34; alt=&#34;workerpool&#34;&gt;&lt;/p&gt;
 &lt;h2 id=&#34;内存池memory-poolhttpsenwikipediaorgwikimemory_pool&#34;&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Memory_pool&#34;&gt;内存池(memory pool)&lt;/a&gt;&lt;/h2&gt;
 &lt;h3 id=&#34;nginx-pool&#34;&gt;nginx pool&lt;/h3&gt;
