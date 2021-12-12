@@ -52,18 +52,49 @@
 &lt;p&gt;thread pool整体实现代码见&lt;a href=&#34;https://github.com/nginx/nginx/commit/305fc021db799c87d751f0f1f5e99afee7bb2b3b&#34;&gt;commit 305fc02&lt;/a&gt; ；最近有个&lt;a href=&#34;https://github.com/nginx/nginx/commit/83e92a2edd6bf7c6867b653284ac44962c4e33c9&#34;&gt;commit 83e92a2&lt;/a&gt; 解决http2 等待 sendfile 完成 请求hang住的情况，就是利用线程池的异步方式(aio)来处理的。&lt;/p&gt;
 &lt;h4 id=&#34;redis-thread-pool&#34;&gt;redis thread pool&lt;/h4&gt;
 &lt;p&gt;redis处理命令核心逻辑是单进程单线程模式，redis关注的是网络IO，以及内存操作，如果是单进程多线程处理必然会有同一个内存结构会有多个线程处理，加锁处理，线程等待以及多线程上下文切换开销的问题，执行效率不如单线程高效；网络IO事件直接通过IO多路复用事件模型(AE)来解决, 而且逻辑简单可维护；&lt;/p&gt;
-&lt;p&gt;为了提高处理性能，Redis v4.0 将磁盘io和内存释放free工作采用几个线程异步处理bio(3个)，fsync内存异步持久落盘操作和close异步关闭文件操作；由于内存中大ke同步删除会耗时高从而阻塞核心逻辑，所以将这些内存释放采用lazyfree机制优化，包括两类：一类是主动释放&lt;code&gt;unlink&lt;/code&gt; &lt;code&gt;flushall async&lt;/code&gt; ；一类是被动释放, 分为4种场景，按需求场景进行打开优化(默认是关闭的)：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;为了提高处理性能，Redis v4.0 将磁盘io和内存释放free工作采用几个线程异步处理bio(3个)；&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;fsync内存异步持久落盘操作和close异步关闭文件操作；&lt;/p&gt;
+&lt;p&gt;由于内存中大ke同步删除会耗时高从而阻塞核心逻辑，所以将这些内存释放采用lazyfree机制优化异步化处理，包括两类：一类是主动释放&lt;code&gt;unlink&lt;/code&gt; &lt;code&gt;flushall async&lt;/code&gt; ；一类是被动释放, 分为4种场景，按需求场景进行打开优化(默认是关闭的)：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;lazyfree-lazy-eviction no
 lazyfree-lazy-expire no
 lazyfree-lazy-server-del no
 slave-lazy-flush no
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;lazyfree-lazy-eviction：针对redis内存使用达到maxmeory，并设置有淘汰策略时；在被动淘汰键时，是否采用lazy free机制； 具体流程见&lt;a href=&#34;https://weedge.github.io/post/lru/#%E8%BF%91%E4%BC%BClru%E7%AE%97%E6%B3%95&#34;&gt;redis 近似lru算法&lt;/a&gt;；&lt;/p&gt;
-&lt;p&gt;lazyfree-lazy-expire：针对设置有TTL的键，达到过期后，被redis清理删除时是否采用lazy free机制；可开启&lt;/p&gt;
-&lt;p&gt;lazyfree-lazy-server-del：针对有些指令在处理已存在的键时，会带有一个隐式的DEL键的操作，比如&lt;code&gt;rename&lt;/code&gt;操作，如果key存在会先删除这个key/value, 如果是大key场景会阻塞；可开启&lt;/p&gt;
-&lt;p&gt;slave-lazy-flush：针对slave进行全量数据同步，slave在加载master的RDB文件前，会运行flushall来清理自己的数据场景，开启可减少全量同步耗时，从而减少主库因输出缓冲区爆涨引起的内存使用增长；可开启&lt;/p&gt;
-&lt;p&gt;还有一个配置 &lt;code&gt;lazyfree-lazy-user-del no&lt;/code&gt;， 针对老用户/代码使用&lt;code&gt;del&lt;/code&gt;主动删除是否异步处理，开启和&lt;code&gt;unlink&lt;/code&gt;一样；&lt;/p&gt;
-&lt;p&gt;为了提高处理IO能力，Redis v6.0 正式在网络模型中实现 I/O 多线程(reactor模型,请求由多线程处理，解析命令之后，再交给主线程处理执行命令核心逻辑，并不是多线程来处理)；尽量保持 &lt;strong&gt;less is more&lt;/strong&gt; 原则；&lt;/p&gt;
-&lt;p&gt;以上通过引入多线程来改善redis中处理性能，这些优化都可以根据需求场景进行配置，也有具体说明 见: &lt;a href=&#34;https://github.com/redis/redis/blob/unstable/redis.conf&#34;&gt;redis.conf&lt;/a&gt; (LAZY FREEING, THREADED I/O)；功能按需配置，&lt;strong&gt;可配置功能说明&lt;/strong&gt; 配置文档原则 (开源软件配置文件一般都会有详细说明可了解)；&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;​	lazyfree-lazy-eviction：针对redis内存使用达到maxmeory，并设置有淘汰策略时；在被动淘汰键时，是否采用lazy free机制； 具体流程见&lt;a href=&#34;https://weedge.github.io/post/lru/#%E8%BF%91%E4%BC%BClru%E7%AE%97%E6%B3%95&#34;&gt;redis 近似lru算法&lt;/a&gt;；&lt;/p&gt;
+&lt;p&gt;​	lazyfree-lazy-expire：针对设置有TTL的键，达到过期后，被redis清理删除时是否采用lazy free机制；可开启&lt;/p&gt;
+&lt;p&gt;​	lazyfree-lazy-server-del：针对有些指令在处理已存在的键时，会带有一个隐式的DEL键的操作，比如&lt;code&gt;rename&lt;/code&gt;操作，如果key存在会先删除这个key/value, 如果是大key场景会阻塞；可开启&lt;/p&gt;
+&lt;p&gt;​	slave-lazy-flush：针对slave进行全量数据同步，slave在加载master的RDB文件前，会运行flushall来清理自己的数据场景，开启可减少全量同步耗时，从而减少主库因输出缓冲区爆涨引起的内存使用增长；可开启&lt;/p&gt;
+&lt;p&gt;​	还有一个配置 &lt;code&gt;lazyfree-lazy-user-del no&lt;/code&gt;， 针对老用户/代码使用&lt;code&gt;del&lt;/code&gt;主动删除是否异步处理，开启和&lt;code&gt;unlink&lt;/code&gt;一样；&lt;/p&gt;
+&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;为了提高处理IO能力，Redis v6.0 正式在网络模型中实现 I/O 多线程，流程如下：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;​	客户端和主线程建立连接，主线程将请求封装成client结构放入LIFO读入队列(clients_pending_read)，主线程然后把LIFO读入队列中的client数据RR均匀分配给主线程和I/O多线程的本地队列(io_threads_list[id])；&lt;/p&gt;
+&lt;p&gt;​	主线程和I/O多线程解析命令，写入查询缓存区(querybuf)；&lt;/p&gt;
+&lt;p&gt;​	主线程忙轮训等待I/O多线程全部解析处理完之后，遍历LIFO读入队列(clients_pending_read)中的client, 处理执行命令核心逻辑(processCommand)，注意这里并不是I/O多线程来处理；主线程处理完命令后，将响应数据写入client写出缓存区(buf/reply)，然后把client放入LIFO 写出队列(clients_pending_write)，同样主线程然后把LIFO写出队列(clients_pending_write)中的client数据RR均匀分配给主线程和I/O多线程的本地队列(io_threads_list[id])；&lt;/p&gt;
+&lt;p&gt;​	主线程和I/O多线程回写响应数据给客户端；&lt;/p&gt;
+&lt;p&gt;​	主线程忙轮训等待I/O多线程全部回写响应数据给客户端 处理完之后，最后在遍历LIFO写出队列(clients_pending_write)，检查是否还有 client 的写出缓冲区(buf/reply)中有残留数据，如果有，为 client 注册一个命令回复器 sendReplyToClient，等待client可写之后在事件循环中继续回写残余的响应数据。&lt;/p&gt;
+&lt;p&gt;处理流程和以前的单线程reactor模式差不多，主要区别是对读写IO优化(异步多线程处理)； 读入请求命令读取解析和写出响应数据给客户端，增加了I/O多线程来处理，以前的主线程处理的核心逻辑没有变，增加了和I/O多线程交互的读写LIFO队列(clients_pending_read / clients_pending_write)，有点像扇入扇出模式；尽量保持 &lt;strong&gt;less is more&lt;/strong&gt; 原则；&lt;/p&gt;
+&lt;p&gt;而且redis v6.0为了高性能，网络IO多线程场景，和nginx一样也对多核CPU NUMA架构进行了亲和性处理(见setcpuaffinity.c中逻辑，&lt;a href=&#34;https://github.com/redis/redis/commit/1a0deab2a548fa306171f03439e858c00836fe69&#34;&gt;commit 1a0deab2&lt;/a&gt;)，充分与利用CPU本地缓存，并行处理；另外redis v6.0还有一些性能优化骚操作，无锁化处理，看代码时可能会发现用到了，通过 pthread_mutex_lock 给 io_threads_mutex[i] (0&amp;lt;=i&amp;lt;=128) 上锁，其实目的是主线程用来通知I/O线程使用的，最终还是通过io_threads_pending[i] 原子化操作(atomic_load_explicit)获取判读是否等待；每个处理I/O线程都有自己的本地队列io_threads_list[i] 用于处理封装的client结构，I/O线程之间互不干涉；而且主线程和I/O子线程处理本地队列 io_threads_list[i] 以及io_threads_op 通过控制主线程和 I/O 线程交错访问来规避共享数据竞争(data race)问题&lt;/p&gt;
+&lt;p&gt;THREADED I/O 核心操作变量如下：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;/* ==========================================================================
+&lt;/span&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt; * Threaded I/O
+&lt;/span&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt; * ========================================================================== */&lt;/span&gt;
+
+&lt;span style=&#34;color:#4c8317&#34;&gt;#define IO_THREADS_MAX_NUM 128
+&lt;/span&gt;&lt;span style=&#34;color:#4c8317&#34;&gt;#define IO_THREADS_OP_READ 0
+&lt;/span&gt;&lt;span style=&#34;color:#4c8317&#34;&gt;#define IO_THREADS_OP_WRITE 1
+&lt;/span&gt;&lt;span style=&#34;color:#4c8317&#34;&gt;&lt;/span&gt;
+pthread_t io_threads[IO_THREADS_MAX_NUM];
+pthread_mutex_t io_threads_mutex[IO_THREADS_MAX_NUM];
+redisAtomic &lt;span style=&#34;color:#0aa&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;color:#0aa&#34;&gt;long&lt;/span&gt; io_threads_pending[IO_THREADS_MAX_NUM];
+&lt;span style=&#34;color:#0aa&#34;&gt;int&lt;/span&gt; io_threads_op;      &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;/* IO_THREADS_OP_WRITE or IO_THREADS_OP_READ. */&lt;/span&gt;
+
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;/* This is the list of clients each thread will serve when threaded I/O is
+&lt;/span&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt; * used. We spawn io_threads_num-1 threads, since one is the main thread
+&lt;/span&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt; * itself. */&lt;/span&gt;
+list *io_threads_list[IO_THREADS_MAX_NUM];
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;以上通过引入多线程来改善redis中I/O处理性能，这些优化都可以根据需求场景进行配置，也有具体说明 见: &lt;a href=&#34;https://github.com/redis/redis/blob/unstable/redis.conf&#34;&gt;redis.conf&lt;/a&gt; (LAZY FREEING, THREADED I/O)；功能按需配置，&lt;strong&gt;可配置功能说明&lt;/strong&gt; 配置文档原则 (开源软件配置文件一般都会有详细说明可了解)；&lt;/p&gt;
 &lt;h4 id=&#34;java-thread-pool&#34;&gt;java thread pool&lt;/h4&gt;
 &lt;p&gt;java多线程编程，也有相关的线程池(ThreadPoolExecutor，子类ScheduledThreadPoolExecutor-利用延迟工作队列(最小堆)实现定时任务线程池)提供使用；使用ThreadPoolExecutor可以满足两种场景：&lt;/p&gt;
 &lt;ol&gt;
@@ -71,11 +102,11 @@ slave-lazy-flush no
 &lt;li&gt;并行执行大批次任务，提升吞吐量。这种情况下，应该使用有界队列，使用队列去缓冲大批量的任务，队列容量必须声明，防止任务无限制堆积；&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;&lt;img src=&#34;https://p0.meituan.net/travelcube/77441586f6b312a54264e3fcf5eebe2663494.png&#34; alt=&#34;ThreadPoolExecutor运行流程&#34;&gt;&lt;/p&gt;
-&lt;p&gt;ThreadPoolExecutor具体的使用介绍可以参考美团的这片文章：&lt;a href=&#34;https://tech.meituan.com/2020/04/02/java-pooling-pratice-in-meituan.html&#34;&gt;Java线程池实现原理及其在美团业务中的实践&lt;/a&gt;，引用 ThreadPoolExecutor 运行流程如上图；文中有有实际的案例和参数配置解决方案，可以借鉴；在使用java线程池对接口吞吐量进行优化时，如果参数使用不当，线程池最大线程数过小会触发接口服务降级；或者消费线程过小任务队列过长，积压任务，导致请求超时的情况；针对这些场景，提出解决方案：增加线程池监控，通过配置中心，手动来调整java线程池参数, 进行动态配置化管理，这个思路其实也是服务基础稳定性的常用思路，做好监控报警，配置化及时人工响应。(美团的&lt;a href=&#34;https://mp.weixin.qq.com/s/C81f0_arbs23KGcaIwi56w&#34;&gt;复盘机制&lt;/a&gt;值得学习)&lt;/p&gt;
+&lt;p&gt;ThreadPoolExecutor具体的使用介绍可以参考美团的这片文章：&lt;a href=&#34;https://tech.meituan.com/2020/04/02/java-pooling-pratice-in-meituan.html&#34;&gt;Java线程池实现原理及其在美团业务中的实践&lt;/a&gt;，引用 ThreadPoolExecutor 运行流程如上图；文中有有实际的案例和参数配置解决方案，可以借鉴；在使用java线程池对接口吞吐量进行优化时，如果参数使用不当，线程池最大线程数过小，可能导致接口服务降级；消费线程过小任务队列过长，积压任务，可能导致请求超时的情况；针对这些场景，提出解决方案：增加线程池监控，通过配置中心，手动来调整java线程池参数, 进行动态配置化管理，这个思路其实也是服务基础稳定性的常用思路，做好监控报警，配置化及时人工响应。(美团的&lt;a href=&#34;https://mp.weixin.qq.com/s/C81f0_arbs23KGcaIwi56w&#34;&gt;复盘机制&lt;/a&gt;值得学习)&lt;/p&gt;
 &lt;h4 id=&#34;thread-pool-小结&#34;&gt;thread pool 小结&lt;/h4&gt;
-&lt;p&gt;引入线程池其实本质上还是对多线程的有效管理，充分利用多核进行并行处理，减少线程间的上下文切换开销；以上实现的线程池本质上都是通过多线程异步优化IO任务，通过线程池来管理线程，通过参数进行调优，充分利用多核cpu硬件资源，并行处理，吞吐最大化。 但是用户应用层使用线程池需要对线程数目进行调整，那可否从用户应用层面来封装一层进行调度管理呢？ 答案是有的，像GO语言，现在的内部运行时runtime 通过G-P-M调度模型来有效管理，Go 语言的调度模型通过使用与 CPU 数量相等的线程减少线程频繁切换的内存开销，同时在每一个线程上执行额外开销更低的 Goroutine 协程来降低操作系统和硬件的负载，用户应用层面不需要考虑多线程编程的情况，只需要关注Goroutine 协程的操作管理。&lt;/p&gt;
+&lt;p&gt;引入线程池其实本质上还是对多线程的有效管理，充分利用多核进行并行处理，减少线程间的上下文切换开销；以上实现的线程池本质上都是通过多线程异步优化IO任务，通过线程池来管理线程，通过参数进行调优，充分利用多核cpu硬件资源，并行处理，吞吐最大化(ps: redis和nginx的源码值得一撸)。 但是用户应用层使用线程池需要对线程数目进行调整，那可否从用户应用层面来封装一层进行调度管理呢？ 答案是有的，像GO语言，现在的内部运行时runtime 通过G-P-M调度模型来有效管理，Go 语言的调度模型通过使用与 CPU 数量相等的线程减少线程频繁切换的内存开销，同时在每一个线程上执行额外开销更低的 Goroutine 协程来降低操作系统和硬件的负载，用户应用层面不需要考虑多线程编程的细节，只需要关注Goroutine 协程的使用（享受一波语言福利）。&lt;/p&gt;
 &lt;h3 id=&#34;协程池coroutine-pool&#34;&gt;协程池(coroutine pool)&lt;/h3&gt;
-&lt;p&gt;协程是运行在用户态的轻量线程，可以认为是用户应用层面的线程， 比线程分配的虚拟内存栈空间要小， 创建一个线程所占虚拟内存栈空间大小，在linux下通过&lt;code&gt;pmap &lt;/code&gt;+pid 查看stack大小， 在macOS下通过&lt;code&gt;vmmap -interleaved&lt;/code&gt;+pid 查看stack大小，大小由&lt;code&gt;ulimit -s&lt;/code&gt; 控制，线程栈空间一般在8M~10M左右，如果使用不当会栈溢出；而协程分配空间是由实现协程语言来决定，像GO实现的协程初始创建大小是2k(go 1.4+ 采用连续堆栈策略，以前是分段栈策略)，由GO运行时库&lt;code&gt;runtime/stack.go&lt;/code&gt; 中的&lt;code&gt;newstack&lt;/code&gt;实现，可以栈空间动态分配,&lt;/p&gt;
+&lt;p&gt;协程是运行在用户态的轻量线程，可以认为是用户应用层面的线程， 比线程分配的虚拟内存栈空间要小；创建一个线程所占虚拟内存栈空间大小，在linux下通过&lt;code&gt;pmap &lt;/code&gt;+pid 查看stack大小， 在macOS下通过&lt;code&gt;vmmap -interleaved&lt;/code&gt;+pid 查看stack大小，大小由&lt;code&gt;ulimit -s&lt;/code&gt; 控制，线程栈空间一般在8M~10M左右，如果使用不当会栈溢出；而协程分配空间是由实现协程语言来决定，像GO实现的协程初始创建大小是2k(go 1.4+ 采用连续堆栈策略，以前是分段栈策略)，由GO运行时库&lt;code&gt;runtime/stack.go&lt;/code&gt; 中的&lt;code&gt;newstack&lt;/code&gt;实现，可以栈空间动态分配,&lt;/p&gt;
 &lt;p&gt;GO中管理协程池的开发方案还是比较多的，大都是和线程池任务工作模型差不多，任务队列用的是GO中的runtime/channel,  池化管理用的是GO中的sync/pool；相对线程池thread pool的实现要简单些，因为底层GO runtime的调度模型已经做了大部分的优化了。主要选择如下开源库：&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/panjf2000/ants&#34;&gt;ants&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/bytedance/gopkg/tree/develop/util/gopool&#34;&gt;gopool&lt;/a&gt;&lt;/p&gt;
@@ -489,7 +520,7 @@ struct Binlog_storage_observer /* Observe binlog logging storage */
 &lt;/ul&gt;
 &lt;p&gt;&lt;strong&gt;组复制&lt;/strong&gt;：基于原生复制及 paxos 协议，提供一致数据安全保证，一种可用于实现容错系统的技术；具体详情见官方文档：&lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/group-replication.html&#34;&gt;MySQL8.0 Group Replication&lt;/a&gt;；组复制流程如下图：&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://dev.mysql.com/doc/refman/8.0/en/images/gr-replication-diagram.png&#34; alt=&#34;gr-replication-diagram&#34;&gt;&lt;/p&gt;
-&lt;p&gt;MySQL 5.7.17版本中引入MySQL 组复制，同样也是以插件的形式支持; 对应的代码在&lt;a href=&#34;https://github.com/mysql/mysql-server/tree/8.0/plugin/group_replication&#34;&gt;plugin/group_replication&lt;/a&gt;文件夹中。主从都是&lt;code&gt;INSTALL PLUGIN group_replication SONAME &#39;group_replication.so&#39;;&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;MySQL 5.7.17版本中引入MySQL 组复制，同样也是以插件的形式支持; 对应的代码在&lt;a href=&#34;https://github.com/mysql/mysql-server/tree/8.0/plugin/group_replication&#34;&gt;plugin/group_replication&lt;/a&gt;文件夹中。一组副本机器安装插件都是&lt;code&gt;INSTALL PLUGIN group_replication SONAME &#39;group_replication.so&#39;;&lt;/code&gt;&lt;/p&gt;
 &lt;ol start=&#34;8&#34;&gt;
 &lt;li&gt;如果开启的主从复制(默认异步)1:n，主库会等待从库I/O线程建立连接之后，创建binlog dump线程，通知slave有数据更新，当I/O线程请求日志内容时，会将此时的binlog名称和当前更新的位置pos同时传给slave的I/O线程, 把binlog event发送给从库I/O线程，从库I/O线程获取到binlog event之后将其写入到自己的Relay Log中，然后从库启动SQL线程，将Relay中的数据进行重放，完成从库的数据更新；为了保证不重复更新，binlog/relaylog 中记录了GTID（mysql5.6加入）, 全局唯一, 如果relaylog中已有GTID, 则执行GTID自动跳过，意味着在源上提交的事务只能在副本上应用一次，这有助于保证一致性;&lt;/li&gt;
 &lt;/ol&gt;
