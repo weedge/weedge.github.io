@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="介绍 平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(pool)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，进程(process PCB 内核态)、线程(thread TCB 内核态)、协程(coroutine 用户态)为载体的工作任务(work task)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。
+  <meta name="description" content="介绍 平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(pool)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，进程(process PCB 内核态)、线程(thread TCB 内核态)、协程(coroutine 用户态)为载体的工作任务(work task 在用户态分配栈空间)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。
 " />
 
   <meta name="keywords" content="工作, 技术, 生活" />
@@ -62,7 +62,7 @@
 
 <meta property="og:title" content="pool" />
 <meta property="og:description" content="介绍
-平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(pool)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，进程(process PCB 内核态)、线程(thread TCB 内核态)、协程(coroutine 用户态)为载体的工作任务(work task)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。" />
+平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(pool)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，进程(process PCB 内核态)、线程(thread TCB 内核态)、协程(coroutine 用户态)为载体的工作任务(work task 在用户态分配栈空间)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://weedge.github.io/post/pool/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-12-02T12:26:23+08:00" />
@@ -70,13 +70,13 @@
 
 <meta itemprop="name" content="pool">
 <meta itemprop="description" content="介绍
-平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(pool)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，进程(process PCB 内核态)、线程(thread TCB 内核态)、协程(coroutine 用户态)为载体的工作任务(work task)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。"><meta itemprop="datePublished" content="2021-12-02T12:26:23+08:00" />
+平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(pool)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，进程(process PCB 内核态)、线程(thread TCB 内核态)、协程(coroutine 用户态)为载体的工作任务(work task 在用户态分配栈空间)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。"><meta itemprop="datePublished" content="2021-12-02T12:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-12-11T17:26:23+08:00" />
-<meta itemprop="wordCount" content="8046">
+<meta itemprop="wordCount" content="9259">
 <meta itemprop="keywords" content="pool," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="pool"/>
 <meta name="twitter:description" content="介绍
-平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(pool)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，进程(process PCB 内核态)、线程(thread TCB 内核态)、协程(coroutine 用户态)为载体的工作任务(work task)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。"/>
+平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(pool)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，进程(process PCB 内核态)、线程(thread TCB 内核态)、协程(coroutine 用户态)为载体的工作任务(work task 在用户态分配栈空间)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -329,6 +329,7 @@
         <li><a href="#进程池process-pool">进程池(process pool)</a></li>
         <li><a href="#线程池thread-poolhttpsenwikipediaorgwikithread_pool"><a href="https://en.wikipedia.org/wiki/Thread_pool">线程池(thread pool)</a></a></li>
         <li><a href="#协程池coroutine-pool">协程池(coroutine pool)</a></li>
+        <li><a href="#小结">小结</a></li>
       </ul>
     </li>
     <li><a href="#内存池memory-poolhttpsenwikipediaorgwikimemory_pool"><a href="https://en.wikipedia.org/wiki/Memory_pool">内存池(memory pool)</a></a>
@@ -351,7 +352,7 @@
     
     <div class="post-content">
       <h2 id="介绍">介绍</h2>
-<p>平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(<a href="https://en.wikipedia.org/wiki/Pool_(computer_science)">pool</a>)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，<a href="https://zh.wikipedia.org/wiki/%E8%A1%8C%E7%A8%8B">进程</a>(process <a href="https://en.wikipedia.org/wiki/Process_control_block">PCB</a> 内核态)、<a href="https://zh.wikipedia.org/wiki/%E5%9F%B7%E8%A1%8C%E7%B7%92">线程</a>(thread <a href="https://en.wikipedia.org/wiki/Thread_control_block">TCB</a> 内核态)、<a href="https://zh.wikipedia.org/zh-hans/%E5%8D%8F%E7%A8%8B">协程</a>(coroutine 用户态)为载体的工作任务(work task)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。</p>
+<p>平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(<a href="https://en.wikipedia.org/wiki/Pool_(computer_science)">pool</a>)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，<a href="https://zh.wikipedia.org/wiki/%E8%A1%8C%E7%A8%8B">进程</a>(process <a href="https://en.wikipedia.org/wiki/Process_control_block">PCB</a> 内核态)、<a href="https://zh.wikipedia.org/wiki/%E5%9F%B7%E8%A1%8C%E7%B7%92">线程</a>(thread <a href="https://en.wikipedia.org/wiki/Thread_control_block">TCB</a> 内核态)、<a href="https://zh.wikipedia.org/zh-hans/%E5%8D%8F%E7%A8%8B">协程</a>(coroutine 用户态)为载体的工作任务(work task 在用户态分配栈空间)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。</p>
 <h2 id="工作任务池worker-pool">工作任务池（worker pool)</h2>
 <p>程序中的工作任务是一些运行逻辑，通过进程，线程，或者协程为载体获取系统资源来运行；如果运行的资源对象特别多，这些资源对象在内存中分配空间，这就导致资源消耗过多，甚至可能导致OOM，同时处理任务完成之后，这些资源需要回收，也会消耗大量的cpu时间；所以在这些高耗进程/线程，或者协程资源的工作任务场景下(比如大量的请求任务)，需要用池化技术进行复用管理，提高利用率，减少请求耗时；对此分别介绍进程池，线程池，协程池，以及开源组件服务中的实现。</p>
 <h3 id="进程池process-pool">进程池(process pool)</h3>
@@ -424,7 +425,7 @@ list *io_threads_list[IO_THREADS_MAX_NUM];
 <p><img src="https://p0.meituan.net/travelcube/77441586f6b312a54264e3fcf5eebe2663494.png" alt="ThreadPoolExecutor运行流程"></p>
 <p>ThreadPoolExecutor具体的使用介绍可以参考美团的这片文章：<a href="https://tech.meituan.com/2020/04/02/java-pooling-pratice-in-meituan.html">Java线程池实现原理及其在美团业务中的实践</a>，引用 ThreadPoolExecutor 运行流程如上图；文中有有实际的案例和参数配置解决方案，可以借鉴；在使用java线程池对接口吞吐量进行优化时，如果参数使用不当，线程池最大线程数过小，可能导致接口服务降级；消费线程过小任务队列过长，积压任务，可能导致请求超时的情况；针对这些场景，提出解决方案：增加线程池监控，通过配置中心，手动来调整java线程池参数, 进行动态配置化管理，这个思路其实也是服务基础稳定性的常用思路，做好监控报警，配置化及时人工响应。(美团的<a href="https://mp.weixin.qq.com/s/C81f0_arbs23KGcaIwi56w">复盘机制</a>值得学习)</p>
 <h4 id="thread-pool-小结">thread pool 小结</h4>
-<p>引入线程池其实本质上还是对多线程的有效管理，充分利用多核进行并行处理，减少线程间的上下文切换开销；以上实现的线程池本质上都是通过多线程异步优化IO任务，通过线程池来管理线程，通过参数进行调优，充分利用多核cpu硬件资源，并行处理，吞吐最大化(ps: redis和nginx的源码值得一撸)。 但是用户应用层使用线程池需要对线程数目进行调整，那可否从用户应用层面来封装一层进行调度管理呢？ 答案是有的，像GO语言，现在的内部运行时runtime 通过G-P-M调度模型来有效管理，Go 语言的调度模型通过使用与 CPU 数量相等的线程减少线程频繁切换的内存开销，同时在每一个线程上执行额外开销更低的 Goroutine 协程来降低操作系统和硬件的负载，用户应用层面不需要考虑多线程编程的细节，重点关注Goroutine 协程的使用优化，了解G-P-M模型，运行时调度机制。(享受一波语言,工具福利，注意系统阻塞调用时的线程泄露, race检查,性能测试,trace分析,逃逸分析,GC等)</p>
+<p>引入线程池其实本质上还是对多线程的有效管理，充分利用多核进行并行处理，减少线程间的上下文切换开销；以上实现的线程池本质上都是通过多线程异步优化IO任务，通过线程池来管理线程，通过参数进行调优，充分利用多核cpu硬件资源，并行处理，吞吐最大化(ps: redis和nginx的源码值得一撸)。 但是用户应用层使用线程池需要对线程数目进行调整，那可否从用户应用层面来封装一层进行调度管理呢？ 答案是有的，像GO语言，现在的内部运行时runtime 通过G-P-M调度模型来有效管理，Go 语言的调度模型通过使用与 CPU 数量相等的线程减少线程频繁切换的内存开销，同时在每一个线程上执行额外开销更低的 Goroutine 协程来降低操作系统和硬件的负载，用户应用层面不需要考虑多线程编程的细节，重点关注Goroutine 协程的使用优化，了解G-P-M模型，运行时<a href="http://www1.cs.columbia.edu/~aho/cs6998/reports/12-12-11_DeshpandeSponslerWeiss_GO.pdf">调度机制</a>。(享受一波语言,工具福利时，<strong>注意系统阻塞调用时的线程泄露,以及异步阻塞时的协程泄漏, race检查,性能测试,pprof/trace分析,逃逸分析,GC</strong>等)</p>
 <h3 id="协程池coroutine-pool">协程池(coroutine pool)</h3>
 <p>协程是运行在用户态的轻量线程，可以认为是用户应用层面的线程， 比线程分配的虚拟内存栈空间要小；创建一个线程所占虚拟内存栈空间大小，在linux下通过<code>pmap </code>+pid 查看stack大小， 在macOS下通过<code>vmmap -interleaved</code>+pid 查看stack大小，大小由<code>ulimit -s</code> 控制，线程栈空间一般在8M~10M左右，如果使用不当会栈溢出；而协程分配空间是由实现协程语言来决定，像GO实现的goroutine协程初始创建栈空间大小是2k(go 1.4+ 采用连续堆栈策略，以前是分段栈策略)，最大限制的默认值在64位系统上是1GB（<a href="https://github.com/golang/go/blob/f296b7a6f045325a230f77e9bda1470b1270f817/src/runtime/proc.go#L120">不同的架构最大数会不同</a>）；编译期间插入检查，调用时如果满足了扩容条件(根据被调用函数栈帧的大小来判断是否需要扩容，通过 stackguard0 来判断是否要进行栈增长)，扩容两倍空间，如果协程所使用的栈空间小于1/4时，缩容成一半空间；(具体细节见：<a href="https://draveness.me/golang/docs/part3-runtime/ch07-memory/golang-stack-management/">栈空间管理</a> <a href="https://kirk91.github.io/posts/2d571d09/">推送场景: 聊一聊goroutine stack</a>)</p>
 <p>尽管goroutine协程比线程分配栈空间小，但是 大量的 goroutine 还是很耗资源的，而且大量的 goroutine 对于调度和垃圾回收的耗时还是会有影响的，因此，goroutine 并不是越多越好，所以使用协程池来优化，</p>
@@ -436,8 +437,13 @@ list *io_threads_list[IO_THREADS_MAX_NUM];
 <p>有些只是临时使用，执行完毕后，Pool 就销毁了。</p>
 <p>大部分的 Worker Pool 都是通过 Channel 来缓存任务的，因为 Channel 能够比较方便地实现并发的保护，有的是多个 Worker 共享同一个任务 Channel，有些是每个 Worker 都有一个独立的 Channel。</p>
 </blockquote>
-<p>这里介绍自己实现的 <a href="https://github.com/weedge/lib/tree/main/pool/workerpool">workerpool</a>   通过channel 存放任务，多个 Worker 共享同一个任务 Channel，通过多个协程来消费池中的任务执行，协程根据提交的任务数动态扩缩协程；任务可以定义输入，输出，超时时间；通过channel 返回是否超时; 可用于批量任务并发执行场景，执行流程如下：</p>
+<p>这里介绍自己实现的 <a href="https://github.com/weedge/lib/tree/main/pool/workerpool">workerpool</a>   通过channel 存放任务，多个 Worker 共享同一个任务 Channel，通过多个协程来消费池中的任务执行，协程根据提交的任务数动态扩缩协程；任务可以定义输入，输出，超时时间；通过channel 返回是否超时; 可用于批量任务并发执行场景，适用于大量批量耗时相对比较高的任务；在实际工作中，比如组织引擎中树中组织节点的生成，有些任务超时了，使用方可以重新放入队列中，或者出错报警等操作。扩缩协程实现有点粗糙，待改进， 执行流程如下：</p>
 <p><img src="https://raw.githubusercontent.com/weedge/lib/main/pool/workerpool/workerpool.png" alt="workerpool"></p>
+<p>还有协程池的实现方式，是为了应对突发流量，比如 <a href="https://github.com/gammazero/workerpool.git">gammazero/workerpool</a>  实现用到3个队列，一个用于提交任务的任务队列(buffer channel length 1，发送任务非阻塞)、一个等待队列（buf[] interface{} head,tail，为了应对突发流量设置的buff，无限制，BUFF加成)、 一个工作队列(block channel，用阻塞chan是为了让消费的worker先启动)；未使用sync.Pool，通过dispatch协程来管理工作协程， 定时(idleTimeout)检查工作队列是否有任务(idle), 以及有工作协程(workerCount&gt;1)，发送空任务(nil) 结束工作协程；这个检查是否有空闲工作协程机制比较简单，每到定时时间操作一次，回收频率可以调整，idleTimeout默认2秒, 流程如下：</p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/go-workerpool.drawio.png" alt="go-workerpool"></p>
+<p>以上上线的workerpool 都有缓冲队列，如果服务进程重启，需要平滑停止服务，就是在收到TERM信号时，需要调用workerpool提供的Wait(GroupWait/StopWait)接口来等待剩余的任务执行完成，这种任务如果是用户请求任务，一般都是短任务，处理时间不会很长，像Pod 中的 docker container销毁的时候都会等待一段时间才会回收掉；如果是长时间任务，比如cron job 则需要落库存放，通过任务表来记录了，因为进程本地记录是不可行的，如果容器化部署在Pod中，每次部署的Node会不同；请根据场景选择workerpool 哦～</p>
+<h3 id="小结">小结</h3>
+<p>线程作为cpu执行调度的最小单元，而进程作为资源分配最小单元，进程中有多个线程，共享其进程资源，作为线程的容器，相互隔离不同进程之间的线程，所以nginx/fpm 都是多进程(单线程)+reactor多路复用的方式处理网络IO请求； php-fpm 为了有效控制请求进程所占资源过多消耗内存的情况，引入工作进程池来防止过度消耗内存，而且可以复用工作进程来处理请求；nginx 为了优化系统调用时阻塞io，使用线程池来异步化处理处理阻塞io事件；redis 引入多线程来解决磁盘IO,释放内存空间，以及网络IO读写的性能问题，nginx和re dis 引入多线程都需要编译配置，其中nginx和redis中的网络IO优化细节值得学习的；协程创建分配栈空间比线程更小，Golang中通过可增长栈空间，运行时runtime 通过G-P-M调度模型来将 goroutine 多路复用到线程，如果协程过多，也会影响调度以及GC标记清除效率，所以在消耗大量协程的场景下，引入协程池来复用，因为golang runtime调度机制不错以及channel的实现，协程池实现方案很多，golang社区活跃，玩的花(慢慢就学费了哈哈😄)，最好结合需求场景来分析。</p>
 <h2 id="内存池memory-poolhttpsenwikipediaorgwikimemory_pool"><a href="https://en.wikipedia.org/wiki/Memory_pool">内存池(memory pool)</a></h2>
 <h3 id="nginx-pool">nginx pool</h3>
 <h2 id="连接池connection-poolhttpsenwikipediaorgwikiconnection_pool"><a href="https://en.wikipedia.org/wiki/Connection_pool">连接池(connection pool)</a></h2>
@@ -452,12 +458,12 @@ list *io_threads_list[IO_THREADS_MAX_NUM];
 <li><a href="https://www.nginx.com/blog/thread-pools-boost-performance-9x/">nginx-thread-pools-boost-performance-9x</a> <a href="https://segmentfault.com/a/1190000010008012">翻译</a></li>
 <li><a href="https://www.nginx.com/blog/inside-nginx-how-we-designed-for-performance-scale/">inside-nginx-how-we-designed-for-performance-scale</a></li>
 <li><a href="https://www.aosabook.org/en/nginx.html">AOSA-nginx</a></li>
-<li><a href="https://strikefreedom.top/multiple-threaded-network-model-in-redis">Redis 多线程网络模型全面揭秘</a></li>
 <li><a href="http://antirez.com/news/93">Lazy Redis is better Redis</a></li>
 <li><a href="https://redis.io/topics/benchmarks">How fast is Redis?</a></li>
 <li><a href="https://tech.meituan.com/2020/04/02/java-pooling-pratice-in-meituan.html">Java线程池实现原理及其在美团业务中的实践</a></li>
+<li><a href="http://www1.cs.columbia.edu/~aho/cs6998/reports/12-12-11_DeshpandeSponslerWeiss_GO.pdf">Analysis of the Go runtime scheduler</a></li>
 <li><a href="https://www.bilibili.com/video/BV1Bq4y1q7Pi">Golang操作系统调度原理</a></li>
-<li><a href="https://draveness.me/golang/docs/part3-runtime/ch06-concurrency/golang-goroutine/">golang-goroutine</a> <a href="https://draveness.me/golang/docs/part3-runtime/ch06-concurrency/golang-channel/">golang-channel</a> 延伸阅读</li>
+<li><a href="https://www.youtube.com/watch?v=f6kdp27TYZs">Google I/O 2012 - Go Concurrency Patterns </a> <a href="https://www.youtube.com/watch?v=QDDwwePbDtw">Google I/O 2013 - Advanced Go Concurrency Patterns</a></li>
 <li><a href="https://tonybai.com/2017/06/27/an-intro-about-go-portability/">也谈Go的可移植性</a></li>
 <li><a href="https://9p.io/sys/doc/asm.html">A Manual for the Plan 9 assembler</a> <a href="https://github.com/cch123/golang-notes/blob/master/assembly.md">plan9 assembly 完全解析</a></li>
 <li><a href="https://time.geekbang.org/column/article/301716">Pool：性能提升大杀器</a></li>
