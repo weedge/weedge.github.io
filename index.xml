@@ -149,7 +149,7 @@ list *io_threads_list[IO_THREADS_MAX_NUM];
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;Tips: 1有等待全部任务接受；2，3，4 这些协程池没有等待，因为使用场景大多是多个协程处理完任务之后无需等待结果处理，可以自己的任务中定义；1,2,3都使用了channel, 1是在消费侧启动goroutine，2,3是在生产侧启动goroutine，通过channel单向通信task；4 未使用channel来通信，直接通过FIFO单向task链表，上锁头出尾入task，在生产侧启动goroutine；&lt;/p&gt;
-&lt;p&gt;从1到4，尽量在满足需求功能的前提下，在生产侧task，队列，消费侧worker 上尽量优化结构，结合调度特性，大道至简吧（以旁观者的角度）。&lt;/p&gt;
+&lt;p&gt;从1到4，满足协程复用的前提下，在生产侧task，队列，消费侧worker 上尽量优化结构，结合调度特性，大道至简吧。&lt;/p&gt;
 &lt;p&gt;以上的workerpool 都有缓冲队列，如果服务进程重启，需要平滑停止服务，就是在收到TERM信号时，需要调用workerpool提供的Wait接口, 对于未等待的协程池，使用sync.WaitGroup来等待剩余的任务执行完成，这种任务如果是用户请求任务，一般都是短任务，处理时间不会很长，像Pod 中的 docker container销毁的时候都会等待一段时间才会回收掉；如果是长时间任务，比如cron job 取决于任务的重要程度，则需要落库存放任务状态，在任务提交之前通过任务表来记录，因为进程本地记录是不可行的，如果容器化部署在Pod中，每次部署的Node会不同；请根据需求场景选择合适的workerpool。&lt;/p&gt;
 &lt;h3 id=&#34;小结&#34;&gt;小结&lt;/h3&gt;
 &lt;p&gt;线程作为cpu执行调度的最小单元，而进程作为资源分配最小单元，进程中有多个线程，共享其进程资源，作为线程的容器，相互隔离不同进程之间的线程，所以nginx/fpm 都是多进程(单线程)+reactor多路复用的方式处理网络IO请求； php-fpm 为了有效控制请求进程所占资源过多消耗内存的情况，引入工作进程池来防止过度消耗内存，而且可以复用工作进程来处理请求；nginx 为了优化系统调用时阻塞io，使用线程池来异步化处理处理阻塞io事件；redis 引入多线程来解决磁盘IO,释放内存空间，以及网络IO读写的性能问题，nginx和redis 引入多线程都需要编译配置，其中nginx和redis中的网络IO优化细节值得学习的；协程创建分配栈空间比线程更小，Golang中通过可增长栈空间，运行时runtime 通过G-P-M调度模型来将 goroutine 多路复用到线程，如果协程过多，也会影响调度以及GC标记清除效率，所以在消耗大量协程的场景下，引入协程池来复用，因为golang runtime调度模型以及channel机制，使用&lt;a href=&#34;https://go.dev/blog/pipelines&#34;&gt;Go Concurrency Patterns&lt;/a&gt; 实现协程池方案很多，golang社区活跃，最好结合需求场景来分析。&lt;/p&gt;
