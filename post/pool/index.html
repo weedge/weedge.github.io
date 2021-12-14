@@ -72,7 +72,7 @@
 <meta itemprop="description" content="介绍
 平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(pool)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，进程(process PCB 内核态)、线程(thread TCB 内核态)、协程(coroutine 用户态)为载体的工作任务(work task 在用户态分配栈空间)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。"><meta itemprop="datePublished" content="2021-12-02T12:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-12-11T17:26:23+08:00" />
-<meta itemprop="wordCount" content="9532">
+<meta itemprop="wordCount" content="9736">
 <meta itemprop="keywords" content="pool," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="pool"/>
 <meta name="twitter:description" content="介绍
@@ -432,17 +432,24 @@ list *io_threads_list[IO_THREADS_MAX_NUM];
 <p>GO中管理协程池的开发方案还是比较多的，大都是和线程池任务工作模型差不多，任务队列用的是GO中的runtime/channel,  池化管理用的是GO中的sync.Pool, 比如<a href="https://github.com/valyala/fasthttp/blob/9f11af296864153ee45341d3f2fe0f5178fd6210/workerpool.go#L16">fasthttp workerpool</a> 针对自身场景的多个连接通道池化复用 -&gt; <a href="https://github.com/panjf2000/ants">panjf2000/ants</a> 通用化了多个任务通道池化复用（一次任务G用完生命周期结束） -&gt; <a href="https://github.com/bytedance/gopkg/tree/develop/util/gopool">bytedance/gopool</a> 任务tasker和工作worker池化复用(一次任务G用完生命周期还可以用，减少调度消耗)；相对线程池thread pool的实现要简单些，因为底层GO runtime的调度模型以及sync库已经做了大部分的优化(无锁或最小化锁粒度)。<a href="https://time.geekbang.org/column/article/301716">Pool：性能提升大杀器</a> 中介绍了GO中sync.Pool的实现，以及协程池的三方开源方案实现；</p>
 <p>这里介绍一个实现的 <a href="https://github.com/weedge/lib/tree/main/pool/workerpool">workerpool</a>   通过channel 存放任务，多个 Worker 共享同一个任务 Channel，通过多个协程来消费池中的任务执行，协程根据提交的任务数动态扩缩协程；任务可以定义输入，输出，超时时间；通过channel 返回是否超时; 可用于批量任务并发执行场景，适用于大量批量耗时相对比较高的任务；在实际工作中，比如组织引擎中树中组织节点的生成，有些任务超时了，使用方可以重新放入队列中，或者出错报警等操作。扩缩协程实现有些粗糙，待改进， 执行流程如下：</p>
 <p><img src="https://raw.githubusercontent.com/weedge/lib/main/pool/workerpool/workerpool.png" alt="workerpool"></p>
-<p>还有协程池的实现方式，主要是为了应对突发流量，如下几个：</p>
+<p>还有协程池的实现方式，主要是为了应对突发流量(场景：处理大量连接请求)，如下几个：</p>
 <ol>
-<li><a href="https://github.com/gammazero/workerpool.git">gammazero/workerpool</a>  实现用到3个队列，一个用于提交任务的任务队列(buffer channel length 1，发送任务非阻塞)、一个等待队列（buf[] interface{} head,tail，为了应对突发流量设置的buff，无限制，BUFF加成)、 一个工作队列(block channel，用阻塞chan是为了让消费的worker先启动)；未使用sync.Pool；通过dispatch协程来管理工作协程， 定时(idleTimeout)检查工作队列是否有任务(idle), 以及有工作协程(workerCount&gt;1)，发送空任务(nil) 结束工作协程；这个检查是否有空闲工作协程机制比较简单，每到定时时间操作一次，回收频率可以调整，idleTimeout默认2秒；通过发送暂停任务 (Context/stopSignal) 来暂停worker工作以及整个workerpool，还有提交等待执行完成的任务，通过Pacer提交限速任务，使用方也可以提交超时任务；使用goroutine+channel+sync+context整体实现workerpool就300行左右，这个和ThreadPoolExecutor有些类似，流程如下：</li>
+<li><a href="https://github.com/gammazero/workerpool.git">gammazero/workerpool</a>  实现用到3个队列，一个用于提交任务的任务队列(buffer channel length 1，发送任务非阻塞)、一个等待队列（buf[] interface{} head,tail，为了应对突发流量设置的buff,无限制)、 一个工作队列(block channel，用阻塞chan是为了让消费的worker先启动)；未使用sync.Pool；通过dispatch协程来管理工作协程， 定时(idleTimeout)检查工作队列是否有任务(idle), 以及有工作协程(workerCount&gt;1)，发送空任务(nil) 结束工作协程；这个检查是否有空闲工作协程机制比较简单，每到定时时间操作一次，回收频率可以调整，idleTimeout默认2秒；通过发送暂停任务 (Context/stopSignal) 来暂停worker工作以及整个workerpool，还有提交等待执行完成的任务，通过Pacer提交限速任务，使用方也可以提交超时任务；使用goroutine+channel+sync+context整体实现workerpool就300行左右，这个和ThreadPoolExecutor有些类似，流程如下：</li>
 </ol>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/go-workerpool.drawio.png" alt="go-workerpool"></p>
 <ol start="2">
-<li><a href="https://github.com/valyala/fasthttp/blob/9f11af296864153ee45341d3f2fe0f5178fd6210/workerpool.go#L16">fasthttp workerpool</a> 针对自身场景的多个连接通道池化复用  -&gt;</li>
-<li><a href="https://github.com/panjf2000/ants">panjf2000/ants</a> 通用化了多个任务通道池化复用（一次任务G用完生命周期结束） -&gt;</li>
-<li><a href="https://github.com/bytedance/gopkg/tree/develop/util/gopool">bytedance/gopool</a> 任务tasker和工作worker池化复用(一次任务G用完生命周期还可以用，复用栈空间，尽量减少协程调度消耗) -&gt; (尽量无锁化)</li>
+<li>
+<p><a href="https://github.com/valyala/fasthttp/blob/9f11af296864153ee45341d3f2fe0f5178fd6210/workerpool.go#L16">fasthttp workerpool</a> 针对自身场景的多个连接通道池化复用； -&gt;</p>
+</li>
+<li>
+<p><a href="https://github.com/panjf2000/ants">panjf2000/ants</a> 通用化了多个任务通道池化复用（一次任务G用完生命周期结束） -&gt;</p>
+</li>
+<li>
+<p><a href="https://github.com/bytedance/gopkg/tree/develop/util/gopool">bytedance/gopool</a> 任务task和工作worker池化复用(一次任务G用完生命周期还可以用，复用栈空间，尽量减少协程调度消耗) -&gt; (尽量无锁化队列)</p>
+</li>
 </ol>
-<p>以上的workerpool 都有缓冲队列(一类是缓冲)，如果服务进程重启，需要平滑停止服务，就是在收到TERM信号时，需要调用workerpool提供的Wait(比如GroupWait/StopWait)接口来等待剩余的任务执行完成，这种任务如果是用户请求任务，一般都是短任务，处理时间不会很长，像Pod 中的 docker container销毁的时候都会等待一段时间才会回收掉；如果是长时间任务，比如cron job 取决于任务的重要程度，则需要落库存放任务状态，在任务提交之前通过任务表来记录，因为进程本地记录是不可行的，如果容器化部署在Pod中，每次部署的Node会不同；请根据需求场景选择合适的workerpool。</p>
+<p>tips: 1有等待全部任务接受；2，3，4 这些协程池没有等待，因为使用场景大多是多个协程处理完任务之后无需等待结果处理，可以自己的任务中定义；1,2,3都使用了channel, 1是在消费侧启动goroutine，2,3是在生产侧启动goroutine，通过channel单向通信task；4 未使用channel来通信，直接通过FIFO单向task链表，上锁头出尾入task，在生产侧启动goroutine；</p>
+<p>以上的workerpool 都有缓冲队列，如果服务进程重启，需要平滑停止服务，就是在收到TERM信号时，需要调用workerpool提供的Wait接口, 对于未等待的协程池，使用sync.GroupWait来等待剩余的任务执行完成，这种任务如果是用户请求任务，一般都是短任务，处理时间不会很长，像Pod 中的 docker container销毁的时候都会等待一段时间才会回收掉；如果是长时间任务，比如cron job 取决于任务的重要程度，则需要落库存放任务状态，在任务提交之前通过任务表来记录，因为进程本地记录是不可行的，如果容器化部署在Pod中，每次部署的Node会不同；请根据需求场景选择合适的workerpool。</p>
 <h3 id="小结">小结</h3>
 <p>线程作为cpu执行调度的最小单元，而进程作为资源分配最小单元，进程中有多个线程，共享其进程资源，作为线程的容器，相互隔离不同进程之间的线程，所以nginx/fpm 都是多进程(单线程)+reactor多路复用的方式处理网络IO请求； php-fpm 为了有效控制请求进程所占资源过多消耗内存的情况，引入工作进程池来防止过度消耗内存，而且可以复用工作进程来处理请求；nginx 为了优化系统调用时阻塞io，使用线程池来异步化处理处理阻塞io事件；redis 引入多线程来解决磁盘IO,释放内存空间，以及网络IO读写的性能问题，nginx和redis 引入多线程都需要编译配置，其中nginx和redis中的网络IO优化细节值得学习的；协程创建分配栈空间比线程更小，Golang中通过可增长栈空间，运行时runtime 通过G-P-M调度模型来将 goroutine 多路复用到线程，如果协程过多，也会影响调度以及GC标记清除效率，所以在消耗大量协程的场景下，引入协程池来复用，因为golang runtime调度模型以及channel机制，使用<a href="https://go.dev/blog/pipelines">Go Concurrency Patterns</a> 实现协程池方案很多，golang社区活跃，最好结合需求场景来分析。</p>
 <h2 id="内存池memory-poolhttpsenwikipediaorgwikimemory_pool"><a href="https://en.wikipedia.org/wiki/Memory_pool">内存池(memory pool)</a></h2>
