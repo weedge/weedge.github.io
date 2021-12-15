@@ -142,7 +142,7 @@ list *io_threads_list[IO_THREADS_MAX_NUM];
 &lt;p&gt;&lt;a href=&#34;https://github.com/valyala/fasthttp/blob/9f11af296864153ee45341d3f2fe0f5178fd6210/workerpool.go#L16&#34;&gt;fasthttp workerpool&lt;/a&gt; 针对自身场景的多个连接通道池化复用； -&amp;gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/panjf2000/ants&#34;&gt;panjf2000/ants&lt;/a&gt; 通用化了多个任务通道池化复用（一次任务G用完生命周期还可以复用, 可用worker放入自定义的池中(stack/queue) , 如果工作池没有可用worker, 根据配置是否等待，等待则等有可用worker时通过条件变量(Cond)唤醒,使用自旋锁）&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/panjf2000/ants&#34;&gt;panjf2000/ants&lt;/a&gt; 通用化了多个任务通道池化复用（一次任务G用完生命周期还可以复用(按空闲时间长短回收), 可用worker放入自定义的池中(stack/loopQueue) , 如果工作池没有可用worker, 根据配置是否等待，等待则等有可用worker时通过条件变量(Cond)唤醒,使用自旋锁; 定时从自定义的工作池中获取空闲时间大于配置阈值的worker进行回收）&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/bytedance/gopkg/tree/develop/util/gopool&#34;&gt;bytedance/gopool&lt;/a&gt; 任务task和工作worker池化复用(一次任务G用完生命周期可以复用，复用栈空间，尽量减少协程调度消耗) -&amp;gt; (尽量无锁化队列)&lt;/p&gt;
