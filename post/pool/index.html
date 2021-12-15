@@ -72,7 +72,7 @@
 <meta itemprop="description" content="介绍
 平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(pool)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，进程(process PCB 内核态)、线程(thread TCB 内核态)、协程(coroutine 用户态)为载体的工作任务(work task 在用户态分配栈空间)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。"><meta itemprop="datePublished" content="2021-12-02T12:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-12-11T17:26:23+08:00" />
-<meta itemprop="wordCount" content="9939">
+<meta itemprop="wordCount" content="9957">
 <meta itemprop="keywords" content="pool," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="pool"/>
 <meta name="twitter:description" content="介绍
@@ -460,24 +460,63 @@ list *io_threads_list[IO_THREADS_MAX_NUM];
 <h2 id="总结">总结</h2>
 <h2 id="references">references</h2>
 <ol>
-<li><a href="https://hpc.llnl.gov/training/tutorials/introduction-parallel-computing-tutorial">Introduction to Parallel Computing Tutorial</a></li>
-<li><a href="https://sourceware.org/git/?p=glibc.git;a=blob;f=nptl/pthread_create.c;hb=627f5ede70d70c77bdaf857db07404e8bf7f60af#l619">glibc pthread_create</a></li>
-<li><a href="https://github.com/torvalds/linux/blob/master/kernel/fork.c">linux v2.6.38+ fork.c</a></li>
-<li><a href="https://makelinux.github.io/kernel/map/">Linux 2.6.36 kernel map</a></li>
-<li><a href="https://www.nginx.com/blog/thread-pools-boost-performance-9x/">nginx-thread-pools-boost-performance-9x</a> <a href="https://segmentfault.com/a/1190000010008012">翻译</a></li>
-<li><a href="https://www.nginx.com/blog/inside-nginx-how-we-designed-for-performance-scale/">inside-nginx-how-we-designed-for-performance-scale</a></li>
-<li><a href="https://www.aosabook.org/en/nginx.html">AOSA-nginx</a></li>
-<li><a href="http://antirez.com/news/93">Lazy Redis is better Redis</a></li>
-<li><a href="https://redis.io/topics/benchmarks">How fast is Redis?</a></li>
-<li><a href="https://tech.meituan.com/2020/04/02/java-pooling-pratice-in-meituan.html">Java线程池实现原理及其在美团业务中的实践</a></li>
-<li><a href="http://www1.cs.columbia.edu/~aho/cs6998/reports/12-12-11_DeshpandeSponslerWeiss_GO.pdf">Analysis of the Go runtime scheduler</a></li>
-<li><a href="https://www.bilibili.com/video/BV1Bq4y1q7Pi">Golang操作系统调度原理</a></li>
-<li><a href="https://www.youtube.com/watch?v=f6kdp27TYZs">Google I/O 2012 - Go Concurrency Patterns </a> <a href="https://talks.golang.org/2012/concurrency.slide#1">「slide」</a></li>
-<li><a href="https://www.youtube.com/watch?v=QDDwwePbDtw">Google I/O 2013 - Advanced Go Concurrency Patterns</a>  <a href="https://talks.golang.org/2013/advconc.slide#1">「slide」</a></li>
-<li><a href="https://docs.google.com/document/d/1ETuA2IOmnaQ4j81AtTGT40Y4_Jr6_IDASEKg0t0dBR8/edit">Go Preemptive Scheduler Design Doc</a></li>
-<li><a href="https://tonybai.com/2017/06/27/an-intro-about-go-portability/">也谈Go的可移植性</a></li>
-<li><a href="https://9p.io/sys/doc/asm.html">A Manual for the Plan 9 assembler</a> <a href="https://github.com/cch123/golang-notes/blob/master/assembly.md">plan9 assembly 完全解析</a></li>
-<li><a href="https://time.geekbang.org/column/article/301716">Pool：性能提升大杀器</a></li>
+<li>
+<p><a href="https://hpc.llnl.gov/training/tutorials/introduction-parallel-computing-tutorial">Introduction to Parallel Computing Tutorial</a></p>
+</li>
+<li>
+<p><a href="https://sourceware.org/git/?p=glibc.git;a=blob;f=nptl/pthread_create.c;hb=627f5ede70d70c77bdaf857db07404e8bf7f60af#l619">glibc pthread_create</a></p>
+</li>
+<li>
+<p><a href="https://github.com/torvalds/linux/blob/master/kernel/fork.c">linux v2.6.38+ fork.c</a></p>
+</li>
+<li>
+<p><a href="https://makelinux.github.io/kernel/map/">Linux 2.6.36 kernel map</a></p>
+</li>
+<li>
+<p><a href="https://www.nginx.com/blog/thread-pools-boost-performance-9x/">nginx-thread-pools-boost-performance-9x</a> <a href="https://segmentfault.com/a/1190000010008012">翻译</a></p>
+</li>
+<li>
+<p><a href="https://www.nginx.com/blog/inside-nginx-how-we-designed-for-performance-scale/">inside-nginx-how-we-designed-for-performance-scale</a></p>
+</li>
+<li>
+<p><a href="https://www.aosabook.org/en/nginx.html">AOSA-nginx</a></p>
+</li>
+<li>
+<p><a href="http://antirez.com/news/93">Lazy Redis is better Redis</a></p>
+</li>
+<li>
+<p><a href="https://redis.io/topics/benchmarks">How fast is Redis?</a></p>
+</li>
+<li>
+<p><a href="https://tech.meituan.com/2020/04/02/java-pooling-pratice-in-meituan.html">Java线程池实现原理及其在美团业务中的实践</a></p>
+</li>
+<li>
+<p><a href="http://www1.cs.columbia.edu/~aho/cs6998/reports/12-12-11_DeshpandeSponslerWeiss_GO.pdf">Analysis of the Go runtime scheduler</a></p>
+</li>
+<li>
+<p><a href="https://www.bilibili.com/video/BV1Bq4y1q7Pi">Golang操作系统调度原理</a></p>
+</li>
+<li>
+<p><a href="https://www.ardanlabs.com/blog/2018/08/scheduling-in-go-part1.html">Scheduling In Go : Part I - OS Scheduler</a> <a href="https://www.ardanlabs.com/blog/2018/08/scheduling-in-go-part2.html">Part II - Go Scheduler</a> <a href="https://www.ardanlabs.com/blog/2018/12/scheduling-in-go-part3.html">Part III - Concurrency</a></p>
+</li>
+<li>
+<p><a href="https://www.youtube.com/watch?v=f6kdp27TYZs">Google I/O 2012 - Go Concurrency Patterns </a> <a href="https://talks.golang.org/2012/concurrency.slide#1">「slide」</a></p>
+</li>
+<li>
+<p><a href="https://www.youtube.com/watch?v=QDDwwePbDtw">Google I/O 2013 - Advanced Go Concurrency Patterns</a>  <a href="https://talks.golang.org/2013/advconc.slide#1">「slide」</a></p>
+</li>
+<li>
+<p><a href="https://docs.google.com/document/d/1ETuA2IOmnaQ4j81AtTGT40Y4_Jr6_IDASEKg0t0dBR8/edit">Go Preemptive Scheduler Design Doc</a></p>
+</li>
+<li>
+<p><a href="https://tonybai.com/2017/06/27/an-intro-about-go-portability/">也谈Go的可移植性</a></p>
+</li>
+<li>
+<p><a href="https://9p.io/sys/doc/asm.html">A Manual for the Plan 9 assembler</a> <a href="https://github.com/cch123/golang-notes/blob/master/assembly.md">plan9 assembly 完全解析</a></p>
+</li>
+<li>
+<p><a href="https://time.geekbang.org/column/article/301716">Pool：性能提升大杀器</a></p>
+</li>
 </ol>
     </div>
 
