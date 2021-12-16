@@ -145,7 +145,7 @@ list *io_threads_list[IO_THREADS_MAX_NUM];
 &lt;p&gt;&lt;a href=&#34;https://github.com/panjf2000/ants&#34;&gt;panjf2000/ants&lt;/a&gt; 通用化了多个任务通道池化复用（一次任务G用完生命周期还可以复用(按空闲时间长短回收), 可用worker放入自定义的池中(stack/loopQueue) , 如果工作池没有可用worker, 根据配置是否等待，等待则等有可用worker时通过条件变量(Cond)唤醒,使用自旋锁; 定时从自定义的工作池中获取空闲时间大于配置阈值的worker进行回收）&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/bytedance/gopkg/tree/develop/util/gopool&#34;&gt;bytedance/gopool&lt;/a&gt; 任务task和工作worker池化复用(一次任务G用完生命周期可以复用，复用栈空间，尽量减少协程调度消耗) -&amp;gt; (尽量无锁化队列);针对&lt;strong&gt;优化栈扩张场景&lt;/strong&gt;使用(RPC 服务常见问题)&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/bytedance/gopkg/tree/develop/util/gopool&#34;&gt;bytedance/gopool&lt;/a&gt; 任务task和工作worker池化复用(一次任务G用完生命周期可以复用，复用栈空间，尽量减少协程调度消耗) -&amp;gt; (尽量无锁化队列);针对&lt;strong&gt;优化栈扩张场景&lt;/strong&gt;使用(RPC 服务常见问题,比如：&lt;a href=&#34;https://kirk91.github.io/posts/2d571d09/&#34;&gt;推送场景: 聊一聊goroutine stack&lt;/a&gt;)&lt;/p&gt;
 &lt;p&gt;Tips: 1有等待全部任务结束；2，3，4 这些协程池没有等待，因为使用场景大多是多个协程处理完任务之后无需等待结果处理，可以自己的任务中定义；1,2,3都使用了channel, 1是在消费侧启动goroutine，2,3是在生产侧启动goroutine，通过channel单向通信task；4 未使用channel来通信，直接通过FIFO单向task链表，上锁头出尾入task，在生产侧启动goroutine；&lt;/p&gt;
 &lt;p&gt;满足协程复用的前提下，在生产侧task，队列，消费侧worker 上尽量优化结构，结合调度特性(有无channel的情况可以看下这篇文章)。&lt;/p&gt;
 &lt;/li&gt;
