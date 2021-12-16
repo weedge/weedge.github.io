@@ -72,7 +72,7 @@
 <meta itemprop="description" content="介绍
 平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(pool)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，进程(process PCB 内核态)、线程(thread TCB  内核态)、协程(coroutine 用户态协作式调度,尽量减少内核调度)为载体的工作任务(work task 在用户态分配栈空间)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。"><meta itemprop="datePublished" content="2021-12-02T12:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-12-11T17:26:23+08:00" />
-<meta itemprop="wordCount" content="10104">
+<meta itemprop="wordCount" content="10089">
 <meta itemprop="keywords" content="pool," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="pool"/>
 <meta name="twitter:description" content="介绍
@@ -419,7 +419,7 @@ list *io_threads_list[IO_THREADS_MAX_NUM];
 <p>协程是运行在用户态的轻量线程，可以认为是用户应用层面的线程， 比线程分配的虚拟内存栈空间要小；创建一个线程所占虚拟内存栈空间大小，在linux下通过<code>pmap </code>+pid 查看stack大小， 在macOS下通过<code>vmmap -interleaved</code>+pid 查看stack大小，大小由<code>ulimit -s</code> 控制，线程栈空间一般在8M~10M左右，如果使用不当会栈溢出；而协程分配空间是由实现协程语言来决定，像GO实现的goroutine协程初始创建栈空间大小是2k(go 1.4+ 采用连续堆栈策略，以前是分段栈策略)，最大限制的默认值在64位系统上是1GB（<a href="https://github.com/golang/go/blob/f296b7a6f045325a230f77e9bda1470b1270f817/src/runtime/proc.go#L120">不同的架构最大数会不同</a>）；编译期间插入检查，调用时如果满足了扩容条件(根据被调用函数栈帧的大小来判断是否需要扩容，通过 stackguard0 来判断是否要进行栈增长)，扩容两倍空间，如果协程所使用的栈空间小于1/4时，缩容成一半空间；(具体细节见：<a href="https://draveness.me/golang/docs/part3-runtime/ch07-memory/golang-stack-management/">栈空间管理</a> <a href="https://kirk91.github.io/posts/2d571d09/">推送场景: 聊一聊goroutine stack</a>)</p>
 <p>尽管goroutine协程比线程分配栈空间小，但是 大量的 goroutine 还是很耗资源的，而且大量的 goroutine 对于调度和垃圾回收的耗时还是会有影响的，因此，goroutine 并不是越多越好，所以使用协程池来优化；</p>
 <p>GO中管理协程池的开发方案还是比较多的，大都是和线程池任务工作模型差不多，任务队列用的是GO中的runtime/channel,  池化管理用的是GO中的sync.Pool, 比如<a href="https://github.com/valyala/fasthttp/blob/9f11af296864153ee45341d3f2fe0f5178fd6210/workerpool.go#L16">fasthttp workerpool</a> 针对自身场景的多个连接通道池化复用 -&gt; <a href="https://github.com/panjf2000/ants">panjf2000/ants</a> 通用化了多个任务通道池化复用 -&gt; <a href="https://github.com/bytedance/gopkg/tree/develop/util/gopool">bytedance/gopool</a> 任务tasker和工作worker池化复用；相对线程池thread pool的实现要简单些，因为底层GO runtime的<a href="https://www.ardanlabs.com/blog/2018/08/scheduling-in-go-part2.html">调度器</a>以及sync库已经做了大部分的优化(无锁或最小化锁粒度)。<a href="https://time.geekbang.org/column/article/301716">Pool：性能提升大杀器</a> 中介绍了GO中sync.Pool的实现，以及协程池的三方开源方案实现；</p>
-<p>这里介绍一个实现的 <a href="https://github.com/weedge/lib/tree/main/pool/workerpool">workerpool</a>   通过channel 存放任务，多个 Worker 共享同一个任务 Channel，通过多个协程来消费池中的任务执行，协程根据提交的任务数动态扩缩协程；任务可以定义输入，输出，超时时间；通过channel 返回是否超时; 可用于批量任务并发执行场景，适用于大量批量耗时相对比较高的任务；在实际工作中，比如组织引擎中树中组织节点的生成，有些任务超时了，使用方可以重新放入队列中，或者出错报警等操作。扩缩协程实现有些粗糙，待改进， 执行流程如下：</p>
+<p>这里介绍一个实现的 <a href="https://github.com/weedge/lib/tree/main/pool/workerpool">workerpool</a>   通过channel 存放任务，多个 Worker 共享同一个任务 Channel，通过多个协程来消费池中的任务执行，协程根据提交的任务数动态扩缩协程；任务可以定义输入，输出，超时时间；通过channel 返回是否超时; 可用于批量任务并发执行场景，适用于大量批量耗时相对比较高的任务；在实际工作中，比如组织引擎中树中组织节点的生成，有些任务超时了，使用方可以重新放入队列中，或者出错报警等操作。 执行流程如下：</p>
 <p><img src="https://raw.githubusercontent.com/weedge/lib/main/pool/workerpool/workerpool.png" alt="workerpool"></p>
 <p>还有协程池的实现方式，主要是为了应对突发流量(场景：处理大量连接请求)，如下几个：</p>
 <ol>
