@@ -72,7 +72,7 @@
 <meta itemprop="description" content="介绍
 平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(pool)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，进程(process PCB 内核态)、线程(thread TCB  内核态)、协程(coroutine 用户态协作式调度,尽量减少内核调度)为载体的工作任务(work task 在用户态分配栈空间)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。"><meta itemprop="datePublished" content="2021-12-02T12:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-12-11T17:26:23+08:00" />
-<meta itemprop="wordCount" content="10136">
+<meta itemprop="wordCount" content="10104">
 <meta itemprop="keywords" content="pool," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="pool"/>
 <meta name="twitter:description" content="介绍
@@ -332,17 +332,6 @@
         <li><a href="#小结">小结</a></li>
       </ul>
     </li>
-    <li><a href="#内存池memory-poolhttpsenwikipediaorgwikimemory_pool"><a href="https://en.wikipedia.org/wiki/Memory_pool">内存池(memory pool)</a></a>
-      <ul>
-        <li><a href="#nginx-pool">nginx pool</a></li>
-      </ul>
-    </li>
-    <li><a href="#连接池connection-poolhttpsenwikipediaorgwikiconnection_pool"><a href="https://en.wikipedia.org/wiki/Connection_pool">连接池(connection pool)</a></a>
-      <ul>
-        <li><a href="#envoy-connectionpool">envoy ConnectionPool</a></li>
-      </ul>
-    </li>
-    <li><a href="#总结">总结</a></li>
     <li><a href="#references">references</a></li>
   </ul>
 </nav>
@@ -453,11 +442,6 @@ list *io_threads_list[IO_THREADS_MAX_NUM];
 <p>以上的workerpool 都有缓冲队列，如果服务进程重启，需要平滑停止服务，就是在收到TERM信号时，需要调用workerpool提供的Wait接口, 对于未等待的协程池，使用sync.WaitGroup来等待剩余的任务执行完成，这种任务如果是用户请求任务，一般都是短任务，处理时间不会很长，像Pod 中的 docker container销毁的时候都会等待一段时间才会回收掉；如果是长时间任务，比如cron job 取决于任务的重要程度，则需要落库存放任务状态，在任务提交之前通过任务表来记录，因为进程本地记录是不可行的，如果容器化部署在Pod中，每次部署的Node会不同；请根据需求场景选择合适的workerpool。</p>
 <h3 id="小结">小结</h3>
 <p>线程作为cpu执行调度的最小单元，而进程作为资源分配最小单元，进程中有多个线程，共享其进程资源，作为线程的容器，相互隔离不同进程之间的线程，所以nginx/fpm 都是多进程(单线程)+reactor多路复用的方式处理网络IO请求； php-fpm 为了有效控制请求进程所占资源过多消耗内存的情况，引入工作进程池来防止过度消耗内存，而且可以复用工作进程来处理请求；nginx 为了优化系统调用时阻塞io，使用线程池来异步化处理处理阻塞io事件；redis 引入多线程来解决磁盘IO,释放内存空间，以及网络IO读写的性能问题，nginx和redis 引入多线程都需要编译配置，其中nginx和redis中的网络IO优化细节值得学习的；协程创建分配栈空间比线程更小，Golang中通过可增长栈空间，运行时runtime 通过G-P-M调度模型来将 goroutine 多路复用到线程，如果协程过多，也会影响调度以及GC标记清除效率，所以在消耗大量协程的场景下，引入协程池来复用，因为golang runtime调度模型以及channel机制，使用<a href="https://go.dev/blog/pipelines">Go Concurrency Patterns</a> 实现协程池方案很多，golang社区活跃，最好结合需求场景来分析。</p>
-<h2 id="内存池memory-poolhttpsenwikipediaorgwikimemory_pool"><a href="https://en.wikipedia.org/wiki/Memory_pool">内存池(memory pool)</a></h2>
-<h3 id="nginx-pool">nginx pool</h3>
-<h2 id="连接池connection-poolhttpsenwikipediaorgwikiconnection_pool"><a href="https://en.wikipedia.org/wiki/Connection_pool">连接池(connection pool)</a></h2>
-<h3 id="envoy-connectionpool">envoy ConnectionPool</h3>
-<h2 id="总结">总结</h2>
 <h2 id="references">references</h2>
 <ol>
 <li><a href="https://hpc.llnl.gov/training/tutorials/introduction-parallel-computing-tutorial">Introduction to Parallel Computing Tutorial</a></li>

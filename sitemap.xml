@@ -457,6 +457,12 @@
   </url>
   
   <url>
+    <loc>https://weedge.github.io/todo/pool/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
     <loc>https://weedge.github.io/todo/replication/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>

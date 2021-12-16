@@ -36,11 +36,20 @@
     
     <item>
       <title></title>
+      <link>https://weedge.github.io/todo/pool/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://weedge.github.io/todo/pool/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title></title>
       <link>https://weedge.github.io/todo/replication/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://weedge.github.io/todo/replication/</guid>
-      <description></description>
+      <description>内存池(memory pool) nginx pool 连接池(connection pool) envoy ConnectionPool 总结</description>
     </item>
     
   </channel>
