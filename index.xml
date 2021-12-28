@@ -59,7 +59,7 @@
 &lt;li&gt;在本地设备上存储数据，并且需要将该数据同步到属于同一用户的其他设备（同一用户多端设备同步，例如日历、笔记、联系人或提醒）的移动应用程序；&lt;/li&gt;
 &lt;li&gt;分布式数据库，维护数据的多个副本（在同一数据中心或不同位置,一般是不同数据中心的多活场景），以便在某些副本离线时系统继续正常工作；&lt;/li&gt;
 &lt;li&gt;协作软件，例如 Google Docs、Trello、Figma 或许多其他软件，其中多个用户可以同时更改同一文件或数据；&lt;/li&gt;
-&lt;li&gt;边缘计算场景，比如多个手机/车载app 在无信号的森林中，产生的本地离线协同数据，多个设备同步到云上处理;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://docs.microsoft.com/en-us/shows/tech-exceptions/concordant-always-know-what-to-expect-from-your-data&#34;&gt;边缘计算场景&lt;/a&gt;，比如多个手机/车载app 在无信号的森林中，产生的本地离线协同数据，多个设备同步到云上处理;&lt;/li&gt;
 &lt;li&gt;大规模数据存储和处理系统，复制数据以实现全球可扩展性。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;所有此类系统都需要处理数据可能在不同副本上同时修改的事实。从广义上讲，有两种可能的方法来处理此类数据修改：&lt;/p&gt;
@@ -90,10 +90,11 @@
 &lt;li&gt;&lt;a href=&#34;https://www.isa-afp.org/browser_info/current/AFP/CRDT/document.pdf&#34;&gt;A framework for establishing Strong Eventual Consistency for Conflict-free Replicated Data types.pdf&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://arxiv.org/pdf/1608.03960.pdf&#34;&gt;A Conflict-Free Replicated JSON Datatype.pdf&lt;/a&gt;&lt;/strong&gt; &lt;a href=&#34;https://cs.paperswithcode.com/paper/a-conflict-free-replicated-json-datatype&#34;&gt;code&lt;/a&gt; &lt;a href=&#34;https://www.youtube.com/watch?v=TRvQzwDyVro&#34;&gt;vedio introduce&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=GXJ0D2tfZCM&#34;&gt;Automerge: Making Servers Optional for Real-Time Collaboration&lt;/a&gt;&lt;/strong&gt; &lt;a href=&#34;https://speakerdeck.com/ept/automerge-making-servers-optional-for-real-time-collaboration&#34;&gt;slide&lt;/a&gt; &lt;a href=&#34;https://github.com/automerge&#34;&gt;github.com/automerge&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;&#34;&gt;Near Real-Time Peer-to-Peer Shared Editing on Extensible Data Types.pdf&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.researchgate.net/publication/310212186_Near_Real-Time_Peer-to-Peer_Shared_Editing_on_Extensible_Data_Types&#34;&gt;Near Real-Time Peer-to-Peer Shared Editing on Extensible Data Types.pdf&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://redis.com/redis-enterprise/technology/active-active-geo-distribution/&#34;&gt;redis: active-active-geo-distribution&lt;/a&gt; &lt;a href=&#34;https://docs.redis.com/latest/rs/references/developing-for-active-active/&#34;&gt;redis: Developing applications with Active-Active databases&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://docs.riak.com/riak/kv/2.0.0/developing/data-types/?spm=a2c6h.12873639.0.0.a25177aaoVMJMH&#34;&gt;riak-kv:Data Types&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://developer.aliyun.com/article/635632&#34;&gt;阿里云redis：CRDT——解决最终一致问题的利器&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://ddia.vonng.com/#/ch5?id=%E5%A4%9A%E4%B8%BB%E5%A4%8D%E5%88%B6&#34;&gt;多主复制&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>
