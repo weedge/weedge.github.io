@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>CRDT on 时间飘过</title>
+    <link>https://weedge.github.io/tags/crdt/</link>
+    <description>Recent content in CRDT on 时间飘过</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Tue, 28 Dec 2021 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/crdt/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>CRDT</title>
+      <link>https://weedge.github.io/post/crdt/</link>
+      <pubDate>Tue, 28 Dec 2021 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/crdt/</guid>
+      <description>&lt;h2 id=&#34;介绍&#34;&gt;介绍&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;无冲突复制数据类型&lt;/strong&gt;(CRDT: &lt;strong&gt;conflict-free replicated data type&lt;/strong&gt;) 是一种简化分布式数据存储系统和多用户应用程序的数据结构。&lt;/p&gt;
+&lt;p&gt;在许多系统中，某些数据的副本需要存储在多台计算机上。此类系统的示例包括：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;在本地设备上存储数据，并且需要将该数据同步到属于同一用户的其他设备（同一用户多端设备同步，例如日历、笔记、联系人或提醒）的移动应用程序；&lt;/li&gt;
+&lt;li&gt;分布式数据库，维护数据的多个副本（在同一数据中心或不同位置,一般是不同数据中心的多活场景），以便在某些副本离线时系统继续正常工作；&lt;/li&gt;
+&lt;li&gt;协作软件，例如 Google Docs、Trello、Figma 或许多其他软件，其中多个用户可以同时更改同一文件或数据；&lt;/li&gt;
+&lt;li&gt;边缘计算场景，比如多个手机/车载app 在无信号的森林中，产生的本地离线协同数据，多个设备同步到云上处理;&lt;/li&gt;
+&lt;li&gt;大规模数据存储和处理系统，复制数据以实现全球可扩展性。&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

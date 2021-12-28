@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>时间飘过</title>
+  <title>CRDT - 时间飘过</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -23,7 +23,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="记录工作和生活" />
+  <meta name="description" content="介绍 无冲突复制数据类型(CRDT: conflict-free replicated data type) 是一种简化分布式数据存储系统和多用户应用程序的数据结构。
+在许多系统中，某些数据的副本需要存储在多台计算机上。此类系统的示例包括：
+ 在本地设备上存储数据，并且需要将该数据同步到属于同一用户的其他设备（同一用户多端设备同步，例如日历、笔记、联系人或提醒）的移动应用程序； 分布式数据库，维护数据的多个副本（在同一数据中心或不同位置,一般是不同数据中心的多活场景），以便在某些副本离线时系统继续正常工作； 协作软件，例如 Google Docs、Trello、Figma 或许多其他软件，其中多个用户可以同时更改同一文件或数据； 边缘计算场景，比如多个手机/车载app 在无信号的森林中，产生的本地离线协同数据，多个设备同步到云上处理; 大规模数据存储和处理系统，复制数据以实现全球可扩展性。 " />
+
   <meta name="keywords" content="工作, 技术, 生活" />
 
 
@@ -34,8 +37,8 @@
 <meta name="generator" content="Hugo 0.88.1" />
 
 
-<link rel="canonical" href="https://weedge.github.io/" />
-<link href="/index.xml" rel="alternate" type="application/rss+xml" title="时间飘过" />
+<link rel="canonical" href="https://weedge.github.io/post/crdt/" />
+
 
 
 
@@ -58,15 +61,47 @@
 
 
 
-<meta property="og:title" content="时间飘过" />
-<meta property="og:description" content="记录工作和生活" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://weedge.github.io/" />
+<meta property="og:title" content="CRDT" />
+<meta property="og:description" content="介绍
+无冲突复制数据类型(CRDT: conflict-free replicated data type) 是一种简化分布式数据存储系统和多用户应用程序的数据结构。
+在许多系统中，某些数据的副本需要存储在多台计算机上。此类系统的示例包括：
 
-<meta itemprop="name" content="时间飘过">
-<meta itemprop="description" content="记录工作和生活"><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="时间飘过"/>
-<meta name="twitter:description" content="记录工作和生活"/>
+在本地设备上存储数据，并且需要将该数据同步到属于同一用户的其他设备（同一用户多端设备同步，例如日历、笔记、联系人或提醒）的移动应用程序；
+分布式数据库，维护数据的多个副本（在同一数据中心或不同位置,一般是不同数据中心的多活场景），以便在某些副本离线时系统继续正常工作；
+协作软件，例如 Google Docs、Trello、Figma 或许多其他软件，其中多个用户可以同时更改同一文件或数据；
+边缘计算场景，比如多个手机/车载app 在无信号的森林中，产生的本地离线协同数据，多个设备同步到云上处理;
+大规模数据存储和处理系统，复制数据以实现全球可扩展性。
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/crdt/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-12-28T10:26:23+08:00" />
+<meta property="article:modified_time" content="2021-12-28T10:26:23+08:00" />
+
+<meta itemprop="name" content="CRDT">
+<meta itemprop="description" content="介绍
+无冲突复制数据类型(CRDT: conflict-free replicated data type) 是一种简化分布式数据存储系统和多用户应用程序的数据结构。
+在许多系统中，某些数据的副本需要存储在多台计算机上。此类系统的示例包括：
+
+在本地设备上存储数据，并且需要将该数据同步到属于同一用户的其他设备（同一用户多端设备同步，例如日历、笔记、联系人或提醒）的移动应用程序；
+分布式数据库，维护数据的多个副本（在同一数据中心或不同位置,一般是不同数据中心的多活场景），以便在某些副本离线时系统继续正常工作；
+协作软件，例如 Google Docs、Trello、Figma 或许多其他软件，其中多个用户可以同时更改同一文件或数据；
+边缘计算场景，比如多个手机/车载app 在无信号的森林中，产生的本地离线协同数据，多个设备同步到云上处理;
+大规模数据存储和处理系统，复制数据以实现全球可扩展性。
+"><meta itemprop="datePublished" content="2021-12-28T10:26:23+08:00" />
+<meta itemprop="dateModified" content="2021-12-28T10:26:23+08:00" />
+<meta itemprop="wordCount" content="888">
+<meta itemprop="keywords" content="CRDT," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="CRDT"/>
+<meta name="twitter:description" content="介绍
+无冲突复制数据类型(CRDT: conflict-free replicated data type) 是一种简化分布式数据存储系统和多用户应用程序的数据结构。
+在许多系统中，某些数据的副本需要存储在多台计算机上。此类系统的示例包括：
+
+在本地设备上存储数据，并且需要将该数据同步到属于同一用户的其他设备（同一用户多端设备同步，例如日历、笔记、联系人或提醒）的移动应用程序；
+分布式数据库，维护数据的多个副本（在同一数据中心或不同位置,一般是不同数据中心的多活场景），以便在某些副本离线时系统继续正常工作；
+协作软件，例如 Google Docs、Trello、Figma 或许多其他软件，其中多个用户可以同时更改同一文件或数据；
+边缘计算场景，比如多个手机/车载app 在无信号的森林中，产生的本地离线协同数据，多个设备同步到云上处理;
+大规模数据存储和处理系统，复制数据以实现全球可扩展性。
+"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -283,38 +318,53 @@
     <main id="main" class="main bg-llight">
       <div class="content-wrapper">
         <div id="content" class="content container">
-          
-<section id="posts" class="posts">
-  
-  
+          <article class="post bg-white">
     
-  
-  
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
+    <header class="post-header">
+      <h1 class="post-title">CRDT</h1>
       
-      <a class="post-link" href="/post/crdt/">CRDT</a>
-    </h1>
+      <div class="post-meta">
+        <time datetime="2021-12-28" class="post-time">
+          2021-12-28
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
     
-    <div class="post-meta">
-      <time datetime="2021-12-28" class="post-time">
-        2021-12-28
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
     
-    <div class="post-summary">
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#介绍">介绍</a></li>
+    <li><a href="#原理">原理</a></li>
+    <li><a href="#实现">实现</a>
+      <ul>
+        <li><a href="#automergehttpsgithubcomautomergeautomerge"><a href="https://github.com/automerge/automerge">automerge</a></a></li>
+        <li><a href="#yjshttpsgithubcomyjsyjs"><a href="https://github.com/yjs/yjs">Yjs</a></a></li>
+        <li><a href="#redis-crdbhttpsrediscomredis-enterprisetechnologyactive-active-geo-distribution"><a href="https://redis.com/redis-enterprise/technology/active-active-geo-distribution/">redis (CRDB)</a></a></li>
+      </ul>
+    </li>
+    <li><a href="#references">references</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
       <h2 id="介绍">介绍</h2>
 <p><strong>无冲突复制数据类型</strong>(CRDT: <strong>conflict-free replicated data type</strong>) 是一种简化分布式数据存储系统和多用户应用程序的数据结构。</p>
 <p>在许多系统中，某些数据的副本需要存储在多台计算机上。此类系统的示例包括：</p>
@@ -325,151 +375,113 @@
 <li>边缘计算场景，比如多个手机/车载app 在无信号的森林中，产生的本地离线协同数据，多个设备同步到云上处理;</li>
 <li>大规模数据存储和处理系统，复制数据以实现全球可扩展性。</li>
 </ul>
+<p>所有此类系统都需要处理数据可能在不同副本上同时修改的事实。从广义上讲，有两种可能的方法来处理此类数据修改：</p>
+<ul>
+<li>
+<p>强一致性复制：</p>
+<p>在这个模型中，副本相互协调以决定何时以及如何应用修改。这种方法支持强一致性模型，例如可序列化事务和可线性化。然而，等待这种协调会降低这些系统的性能；此外，CAP 定理告诉我们，当副本与系统的其余部分断开连接时（例如，由于网络分区，或者因为它是具有间歇性连接的移动设备），不可能对副本进行任何数据更改。</p>
+</li>
+<li>
+<p>乐观复制：</p>
+<p>在此模型中，用户可以独立于任何其他副本修改任何副本上的数据，即使该副本离线或与其他副本断开连接。这种方法可实现最大的性能和可用性，但当多个客户端或用户同时修改同一条数据时，它可能会导致冲突。当副本相互通信时，需要解决这些冲突。</p>
+</li>
+</ul>
+<p>无冲突复制数据类型 (CRDT) 用于具有乐观复制的系统，它们负责解决冲突。CRDT 确保，无论在不同的副本上进行什么数据修改，数据始终可以合并到一致的状态。此合并由 CRDT 自动执行，无需任何特殊的冲突解决代码或用户干预。</p>
+<h2 id="原理">原理</h2>
+<h2 id="实现">实现</h2>
+<h3 id="automergehttpsgithubcomautomergeautomerge"><a href="https://github.com/automerge/automerge">automerge</a></h3>
+<h3 id="yjshttpsgithubcomyjsyjs"><a href="https://github.com/yjs/yjs">Yjs</a></h3>
+<h3 id="redis-crdbhttpsrediscomredis-enterprisetechnologyactive-active-geo-distribution"><a href="https://redis.com/redis-enterprise/technology/active-active-geo-distribution/">redis (CRDB)</a></h3>
+<h2 id="references">references</h2>
+<ol>
+<li><a href="https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type">wiki: Conflict-free replicated data type</a></li>
+<li><a href="https://github.com/alangibson/awesome-crdt#know-before-you-go">awesome-crdt#know-before-you-go</a></li>
+<li><strong><a href="https://crdt.tech/resources">crdt.tech-resources</a></strong> <strong><a href="https://crdt.tech/implementations">crdt.tech-implementations</a></strong></li>
+<li><a href="https://hal.inria.fr/hal-00932836/file/CRDTs_SSS-2011.pdf">Conflict-free Replicated Data Types.pdf</a></li>
+<li><strong><a href="https://hal.inria.fr/file/index/docid/555588/filename/techreport.pdf?spm=a2c6h.12873639.0.0.a25177aaoVMJMH&amp;file=techreport.pdf">A comprehensive study of Convergent and Commutative Replicated Data Types.pdf</a></strong></li>
+<li><strong><a href="https://arxiv.org/pdf/1806.10254.pdf">Conflict-free Replicated Data Types: An Overview.pdf</a></strong></li>
+<li><a href="https://www.isa-afp.org/browser_info/current/AFP/CRDT/document.pdf">A framework for establishing Strong Eventual Consistency for Conflict-free Replicated Data types.pdf</a></li>
+<li><strong><a href="https://arxiv.org/pdf/1608.03960.pdf">A Conflict-Free Replicated JSON Datatype.pdf</a></strong> <a href="https://cs.paperswithcode.com/paper/a-conflict-free-replicated-json-datatype">code</a> <a href="https://www.youtube.com/watch?v=TRvQzwDyVro">vedio introduce</a></li>
+<li><strong><a href="https://www.youtube.com/watch?v=GXJ0D2tfZCM">Automerge: Making Servers Optional for Real-Time Collaboration</a></strong> <a href="https://speakerdeck.com/ept/automerge-making-servers-optional-for-real-time-collaboration">slide</a> <a href="https://github.com/automerge">github.com/automerge</a></li>
+<li><a href="">Near Real-Time Peer-to-Peer Shared Editing on Extensible Data Types.pdf</a></li>
+<li><a href="https://redis.com/redis-enterprise/technology/active-active-geo-distribution/">redis: active-active-geo-distribution</a> <a href="https://docs.redis.com/latest/rs/references/developing-for-active-active/">redis: Developing applications with Active-Active databases</a></li>
+<li><a href="https://docs.riak.com/riak/kv/2.0.0/developing/data-types/?spm=a2c6h.12873639.0.0.a25177aaoVMJMH">riak-kv:Data Types</a></li>
+<li><strong><a href="https://developer.aliyun.com/article/635632">阿里云redis：CRDT——解决最终一致问题的利器</a></strong></li>
+</ol>
     </div>
-    <div class="read-more">
-      <a href="/post/crdt/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
 
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/pool/">pool</a>
-    </h1>
     
-    <div class="post-meta">
-      <time datetime="2021-12-02" class="post-time">
-        2021-12-02
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2021-12-28
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/crdt/">CRDT</a>
           
         </div>
+
       
-      
-      
-    </div>
-  </header>
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/pool/">
+            <span class="next-text nav-default">pool</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
   
-  <div class="post-content">
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
     
-    <div class="post-summary">
-      <h2 id="介绍">介绍</h2>
-<p>平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(<a href="https://en.wikipedia.org/wiki/Pool_(computer_science)">pool</a>)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，<a href="https://zh.wikipedia.org/wiki/%E8%A1%8C%E7%A8%8B">进程</a>(process <a href="https://en.wikipedia.org/wiki/Process_control_block">PCB</a> 内核态)、<a href="https://zh.wikipedia.org/wiki/%E5%9F%B7%E8%A1%8C%E7%B7%92">线程</a>(thread <a href="https://en.wikipedia.org/wiki/Thread_control_block">TCB </a> 内核态)、<a href="https://zh.wikipedia.org/zh-hans/%E5%8D%8F%E7%A8%8B">协程</a>(coroutine 用户态协作式调度,尽量减少内核调度)为载体的工作任务(work task 在用户态分配栈空间)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/pool/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
 
   
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/wal/">WAL</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2021-11-21" class="post-time">
-        2021-11-21
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h2 id="序言">序言</h2>
-<p>​	数据落地之前，如果出现持久化存储引擎实例重启，或者服务当机重启，如何进行故障恢复（Crash Recovery）呢？数据写操作增删改，这些操作状态数据，是如何保证事务中原子性和持久性的呢？ 这些问题数据大拿们提出了<a href="https://en.wikipedia.org/wiki/Algorithms_for_Recovery_and_Isolation_Exploiting_Semantics">Algorithms for Recovery and Isolation Exploiting Semantics</a> ，基于语义的恢复与隔离算法,现代数据库的基础理论；当前主流关系型数据在事务实现上都受到该理论的影响，其中有两种故障恢复的方法： 预写日志(write-ahead logging (WAL) ) 和shadow-page technique；shadow-page 方法简单介绍就是每次事务操作，以page为单位，写时复制的方式，分为Current和Shadow，类似主备的形式，如果commit成功，Current中的page合并到 Shadow中; 如果abort不成功丢弃Current的page; 如果Crash了，从Shadow中的page恢复，对所有未提交事务的回滚操作； 由于shadow-page技术的实现以page为单位，page内无法并发操作，commit/回滚时会有大量垃圾回收操作；本文主要介绍WAL，以及对应持久化存储引擎的实现机制介绍。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/wal/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-</section>
-
-
-
-
-
-
-  
-  
-  
-
-  
-  
-
-  
-  
-
-  
-  
-
-  
-  
-  <nav class="pagination">
-    <ul>
-      
-      <li  class="active" >
-        <a href="/">1</a>
-      </li>
-      
-      <li >
-        <a href="/page/2/">2</a>
-      </li>
-      
-      <li >
-        <a href="/page/3/">3</a>
-      </li>
-      
-      <li >
-        <a href="/page/4/">4</a>
-      </li>
-      
-      <li >
-        <a href="/page/5/">5</a>
-      </li>
-      
-      <li >
-        <a href="/page/6/">6</a>
-      </li>
-      
-      <li >
-        <a href="/page/7/">7</a>
-      </li>
-      
-      <li >
-        <a href="/page/8/">8</a>
-      </li>
-      
-    </ul>
-  </nav>
-
-  
-  
-
-
-
-
 
         </div>
       </div>

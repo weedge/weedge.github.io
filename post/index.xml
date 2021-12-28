@@ -6,7 +6,25 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Thu, 02 Dec 2021 12:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 28 Dec 2021 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>CRDT</title>
+      <link>https://weedge.github.io/post/crdt/</link>
+      <pubDate>Tue, 28 Dec 2021 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/crdt/</guid>
+      <description>&lt;h2 id=&#34;介绍&#34;&gt;介绍&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;无冲突复制数据类型&lt;/strong&gt;(CRDT: &lt;strong&gt;conflict-free replicated data type&lt;/strong&gt;) 是一种简化分布式数据存储系统和多用户应用程序的数据结构。&lt;/p&gt;
+&lt;p&gt;在许多系统中，某些数据的副本需要存储在多台计算机上。此类系统的示例包括：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;在本地设备上存储数据，并且需要将该数据同步到属于同一用户的其他设备（同一用户多端设备同步，例如日历、笔记、联系人或提醒）的移动应用程序；&lt;/li&gt;
+&lt;li&gt;分布式数据库，维护数据的多个副本（在同一数据中心或不同位置,一般是不同数据中心的多活场景），以便在某些副本离线时系统继续正常工作；&lt;/li&gt;
+&lt;li&gt;协作软件，例如 Google Docs、Trello、Figma 或许多其他软件，其中多个用户可以同时更改同一文件或数据；&lt;/li&gt;
+&lt;li&gt;边缘计算场景，比如多个手机/车载app 在无信号的森林中，产生的本地离线协同数据，多个设备同步到云上处理;&lt;/li&gt;
+&lt;li&gt;大规模数据存储和处理系统，复制数据以实现全球可扩展性。&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
     <item>
       <title>pool</title>
       <link>https://weedge.github.io/post/pool/</link>
@@ -213,16 +231,6 @@
 &lt;p&gt;登泰山，一次突然做出的决定，木有看攻略，木有做啥子准备，备点衣服和一些吃的就走了。为了赶火车，提前下班打卡就从公司出发啦~（ps:哈哈，恰好周五公司发下午茶，多拿了一盒水果，感谢公司福利，~！~)。在南站与老宋汇合后，在车站吃了点晚餐就走了。&lt;br&gt;
 而且定火车那天木有直达的列车，买了到济南西，然后转泰安的车票。就这么愉快的出发鸟~~~&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/1.jpeg&#34; alt=&#34;出发&#34;&gt;&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>成都行</title>
-      <link>https://weedge.github.io/post/chengdu/</link>
-      <pubDate>Tue, 10 Dec 2013 01:16:30 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/chengdu/</guid>
-      <description>&lt;!-- raw HTML omitted --&gt;
-&lt;p&gt;由于入职时间的改变，有几天的时间空闲下来了，本来就没有准备的行程，以前没有想过的户外运动，本来是想体验一把的，趁这段时间，和老宋说好过去玩后，当天晚上啥都没有准备，直接就A过去了。这一趟还是挺有意思的，写这篇的时候，此刻正在老宋住的地方，准备着回北京的路上，写完后，收拾心情，准备好好工作。人生也许有很多的第一次，才能使生活变得更加的有意义吧。&lt;/p&gt;</description>
     </item>
     
   </channel>

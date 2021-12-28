@@ -10,7 +10,49 @@
   
   <url>
     <loc>https://weedge.github.io/categories/</loc>
-    <lastmod>2021-12-11T17:26:23+08:00</lastmod>
+    <lastmod>2021-12-28T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/crdt/</loc>
+    <lastmod>2021-12-28T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/crdt/</loc>
+    <lastmod>2021-12-28T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/</loc>
+    <lastmod>2021-12-28T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/</loc>
+    <lastmod>2021-12-28T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/</loc>
+    <lastmod>2021-12-28T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/</loc>
+    <lastmod>2021-12-28T10:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -24,34 +66,6 @@
   
   <url>
     <loc>https://weedge.github.io/post/pool/</loc>
-    <lastmod>2021-12-11T17:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/post/</loc>
-    <lastmod>2021-12-11T17:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/tags/</loc>
-    <lastmod>2021-12-11T17:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/</loc>
-    <lastmod>2021-12-11T17:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/</loc>
     <lastmod>2021-12-11T17:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
@@ -464,6 +478,12 @@
   
   <url>
     <loc>https://weedge.github.io/todo/replication/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/todo/%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E7%B3%BB%E7%BB%9F/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>

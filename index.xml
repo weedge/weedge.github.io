@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Thu, 02 Dec 2021 12:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 28 Dec 2021 10:26:23 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -42,6 +42,59 @@
 &lt;li&gt;&amp;ldquo;&lt;strong&gt;万物之始，大道至简，衍化至繁&lt;/strong&gt;&amp;rdquo; &amp;ndash; 老子《&lt;a href=&#34;https://baike.baidu.com/item/%E9%81%93%E5%BE%B7%E7%BB%8F/327138&#34;&gt;道德经&lt;/a&gt;》&lt;/li&gt;
 &lt;/ol&gt;
 </description>
+      
+    </item>
+    
+    <item>
+      <title>CRDT</title>
+      <link>https://weedge.github.io/post/crdt/</link>
+      <pubDate>Tue, 28 Dec 2021 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/crdt/</guid>
+      
+        <description>&lt;h2 id=&#34;介绍&#34;&gt;介绍&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;无冲突复制数据类型&lt;/strong&gt;(CRDT: &lt;strong&gt;conflict-free replicated data type&lt;/strong&gt;) 是一种简化分布式数据存储系统和多用户应用程序的数据结构。&lt;/p&gt;
+&lt;p&gt;在许多系统中，某些数据的副本需要存储在多台计算机上。此类系统的示例包括：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;在本地设备上存储数据，并且需要将该数据同步到属于同一用户的其他设备（同一用户多端设备同步，例如日历、笔记、联系人或提醒）的移动应用程序；&lt;/li&gt;
+&lt;li&gt;分布式数据库，维护数据的多个副本（在同一数据中心或不同位置,一般是不同数据中心的多活场景），以便在某些副本离线时系统继续正常工作；&lt;/li&gt;
+&lt;li&gt;协作软件，例如 Google Docs、Trello、Figma 或许多其他软件，其中多个用户可以同时更改同一文件或数据；&lt;/li&gt;
+&lt;li&gt;边缘计算场景，比如多个手机/车载app 在无信号的森林中，产生的本地离线协同数据，多个设备同步到云上处理;&lt;/li&gt;
+&lt;li&gt;大规模数据存储和处理系统，复制数据以实现全球可扩展性。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;所有此类系统都需要处理数据可能在不同副本上同时修改的事实。从广义上讲，有两种可能的方法来处理此类数据修改：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;强一致性复制：&lt;/p&gt;
+&lt;p&gt;在这个模型中，副本相互协调以决定何时以及如何应用修改。这种方法支持强一致性模型，例如可序列化事务和可线性化。然而，等待这种协调会降低这些系统的性能；此外，CAP 定理告诉我们，当副本与系统的其余部分断开连接时（例如，由于网络分区，或者因为它是具有间歇性连接的移动设备），不可能对副本进行任何数据更改。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;乐观复制：&lt;/p&gt;
+&lt;p&gt;在此模型中，用户可以独立于任何其他副本修改任何副本上的数据，即使该副本离线或与其他副本断开连接。这种方法可实现最大的性能和可用性，但当多个客户端或用户同时修改同一条数据时，它可能会导致冲突。当副本相互通信时，需要解决这些冲突。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;无冲突复制数据类型 (CRDT) 用于具有乐观复制的系统，它们负责解决冲突。CRDT 确保，无论在不同的副本上进行什么数据修改，数据始终可以合并到一致的状态。此合并由 CRDT 自动执行，无需任何特殊的冲突解决代码或用户干预。&lt;/p&gt;
+&lt;h2 id=&#34;原理&#34;&gt;原理&lt;/h2&gt;
+&lt;h2 id=&#34;实现&#34;&gt;实现&lt;/h2&gt;
+&lt;h3 id=&#34;automergehttpsgithubcomautomergeautomerge&#34;&gt;&lt;a href=&#34;https://github.com/automerge/automerge&#34;&gt;automerge&lt;/a&gt;&lt;/h3&gt;
+&lt;h3 id=&#34;yjshttpsgithubcomyjsyjs&#34;&gt;&lt;a href=&#34;https://github.com/yjs/yjs&#34;&gt;Yjs&lt;/a&gt;&lt;/h3&gt;
+&lt;h3 id=&#34;redis-crdbhttpsrediscomredis-enterprisetechnologyactive-active-geo-distribution&#34;&gt;&lt;a href=&#34;https://redis.com/redis-enterprise/technology/active-active-geo-distribution/&#34;&gt;redis (CRDB)&lt;/a&gt;&lt;/h3&gt;
+&lt;h2 id=&#34;references&#34;&gt;references&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type&#34;&gt;wiki: Conflict-free replicated data type&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/alangibson/awesome-crdt#know-before-you-go&#34;&gt;awesome-crdt#know-before-you-go&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://crdt.tech/resources&#34;&gt;crdt.tech-resources&lt;/a&gt;&lt;/strong&gt; &lt;strong&gt;&lt;a href=&#34;https://crdt.tech/implementations&#34;&gt;crdt.tech-implementations&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://hal.inria.fr/hal-00932836/file/CRDTs_SSS-2011.pdf&#34;&gt;Conflict-free Replicated Data Types.pdf&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://hal.inria.fr/file/index/docid/555588/filename/techreport.pdf?spm=a2c6h.12873639.0.0.a25177aaoVMJMH&amp;amp;file=techreport.pdf&#34;&gt;A comprehensive study of Convergent and Commutative Replicated Data Types.pdf&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://arxiv.org/pdf/1806.10254.pdf&#34;&gt;Conflict-free Replicated Data Types: An Overview.pdf&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.isa-afp.org/browser_info/current/AFP/CRDT/document.pdf&#34;&gt;A framework for establishing Strong Eventual Consistency for Conflict-free Replicated Data types.pdf&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://arxiv.org/pdf/1608.03960.pdf&#34;&gt;A Conflict-Free Replicated JSON Datatype.pdf&lt;/a&gt;&lt;/strong&gt; &lt;a href=&#34;https://cs.paperswithcode.com/paper/a-conflict-free-replicated-json-datatype&#34;&gt;code&lt;/a&gt; &lt;a href=&#34;https://www.youtube.com/watch?v=TRvQzwDyVro&#34;&gt;vedio introduce&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=GXJ0D2tfZCM&#34;&gt;Automerge: Making Servers Optional for Real-Time Collaboration&lt;/a&gt;&lt;/strong&gt; &lt;a href=&#34;https://speakerdeck.com/ept/automerge-making-servers-optional-for-real-time-collaboration&#34;&gt;slide&lt;/a&gt; &lt;a href=&#34;https://github.com/automerge&#34;&gt;github.com/automerge&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;&#34;&gt;Near Real-Time Peer-to-Peer Shared Editing on Extensible Data Types.pdf&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://redis.com/redis-enterprise/technology/active-active-geo-distribution/&#34;&gt;redis: active-active-geo-distribution&lt;/a&gt; &lt;a href=&#34;https://docs.redis.com/latest/rs/references/developing-for-active-active/&#34;&gt;redis: Developing applications with Active-Active databases&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://docs.riak.com/riak/kv/2.0.0/developing/data-types/?spm=a2c6h.12873639.0.0.a25177aaoVMJMH&#34;&gt;riak-kv:Data Types&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://developer.aliyun.com/article/635632&#34;&gt;阿里云redis：CRDT——解决最终一致问题的利器&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
+&lt;/ol&gt;</description>
       
     </item>
     
@@ -2590,41 +2643,6 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。&lt;
 &lt;li&gt;&lt;a href=&#34;https://yuerblog.cc/2017/11/21/golang-id-alloc/&#34;&gt;golang分布式id生成服务&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;http://thesecretlivesofdata.com/raft/&#34;&gt;raft&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>消息队列</title>
-      <link>https://weedge.github.io/todo/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/</link>
-      <pubDate>Sun, 12 Nov 2017 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/todo/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/</guid>
-      
-        <description>&lt;h2 id=&#34;消息队列介绍what&#34;&gt;消息队列介绍what&lt;/h2&gt;
-&lt;h3 id=&#34;协议&#34;&gt;协议：&lt;/h3&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;strong&gt;MQTT&lt;/strong&gt;(Message Queuing Telemetry Transport，消息队列遥测传输，基于二进制消息的发布/订阅编程模式的消息协议):&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;http://docs.emqtt.cn/zh_CN/latest/mqtt.html&#34;&gt;http://docs.emqtt.cn/zh_CN/latest/mqtt.html&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://zhuanlan.zhihu.com/p/20888181&#34;&gt;https://zhuanlan.zhihu.com/p/20888181&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;简单的协议:&lt;a href=&#34;http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html&#34;&gt;http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;由于规范协议很简单，非常适合需要低功耗和网络带宽有限的IoT场景。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;strong&gt;AMQP&lt;/strong&gt;(Advanced Message Queuing Protocol,一个提供统一消息服务的应用层标准高级消息队列协议，是应用层协议的一个开发标准，为面向消息的中间件设计)：&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;strong&gt;XMPP&lt;/strong&gt;(可扩展消息处理现场协议，Extensible Messaging and Presence Protocol）是基于可扩展标记语言的协议，多用于即时消息)：&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id=&#34;消息队列原理why&#34;&gt;&lt;strong&gt;消息&lt;/strong&gt;队列原理why&lt;/h2&gt;
-&lt;h2 id=&#34;消息队列使用场景where&#34;&gt;消息队列使用场景where&lt;/h2&gt;
-&lt;h2 id=&#34;如何设计消息队列how&#34;&gt;如何设计消息队列how&lt;/h2&gt;
-&lt;h2 id=&#34;开源消息队列&#34;&gt;开源消息队列&lt;/h2&gt;
-&lt;h3 id=&#34;kafka&#34;&gt;kafka&lt;/h3&gt;
-&lt;h3 id=&#34;nsq&#34;&gt;NSQ&lt;/h3&gt;
-&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
-</description>
       
     </item>
     
