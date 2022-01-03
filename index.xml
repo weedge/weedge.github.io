@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 28 Dec 2021 10:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 02 Jan 2022 10:26:23 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -42,6 +42,432 @@
 &lt;li&gt;&amp;ldquo;&lt;strong&gt;万物之始，大道至简，衍化至繁&lt;/strong&gt;&amp;rdquo; &amp;ndash; 老子《&lt;a href=&#34;https://baike.baidu.com/item/%E9%81%93%E5%BE%B7%E7%BB%8F/327138&#34;&gt;道德经&lt;/a&gt;》&lt;/li&gt;
 &lt;/ol&gt;
 </description>
+      
+    </item>
+    
+    <item>
+      <title>全栈开发</title>
+      <link>https://weedge.github.io/post/shop/</link>
+      <pubDate>Sun, 02 Jan 2022 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/shop/</guid>
+      
+        <description>&lt;h2 id=&#34;介绍&#34;&gt;介绍&lt;/h2&gt;
+&lt;p&gt;以前工作中有过前端的开发经验，使用后端模版Smarty(主要是外部需求，现在新项目中应该很少使用这个了)，前端模版Mustache，页面中使用 js jquery交互逻辑，直接服用一些开源的UI组件Bootstrap，开源的后台UI系统，主要是建设内部后台的时候使用，自动生成CRUD页面；前端的技术栈更新迭代相对后端快些，通过以全栈技术栈为切入点，通过一个简单的系统，学习下最新技术栈工具，主要目的如下：&lt;/p&gt;
+&lt;p&gt;根据需求，实现一个简单功能的购物系统，目的是为了学习ts-&amp;gt;js on node.js全栈开发，了解整体开发构建工具，熟悉下工具开发流程，主要还是了解前端框架工具的使用，以及熟悉通过js运行时环境运行在后端服务上的应用开发工具，以便在后续开发后台系统的时候可以熟练使用这些技术进行开发，这些工具的设计思想可以借鉴到其他后端业务开发语言中。&lt;/p&gt;
+&lt;h2 id=&#34;功能要求&#34;&gt;功能要求&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;⽤户可以浏览商品，提供按商品名字搜索功能。&lt;/li&gt;
+&lt;li&gt;⽤户可以下单购买某样商品（⽀付过程可以省略），购买成功后系统需要异步通知下游系统（如仓库 系统、物流系统等，下游系统可简单实现）。&lt;/li&gt;
+&lt;li&gt;提供后台管理⻚⾯录⼊商品，包括商品名称、商品描述、商品价格、库存等。&lt;/li&gt;
+&lt;li&gt;要求记录⽤户访问⽇志，供审计使⽤。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;实现要求&#34;&gt;实现要求&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;前端使⽤Vue.js + elementUI，后台使⽤ AdonisJS 框架（AdonisJS 版本要求5.0以上）。&lt;/li&gt;
+&lt;li&gt;数据库使⽤ mysql，结合 AdonisJS 的 ORM 能⼒。&lt;/li&gt;
+&lt;li&gt;设计时需要考虑必要的系统安全性。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;设计实现&#34;&gt;设计实现&lt;/h2&gt;
+&lt;h3 id=&#34;需求分析&#34;&gt;需求分析&lt;/h3&gt;
+&lt;p&gt;整体交互主要是实现购买系统，以及用户购买商品的访问日志，以及用户行为日志，给审计系统，进行漏洞分析等，考虑到前期用户比较少，交互使用，5天设计开发时间，先提供v1简单版本，满足商家和买家用户的基本购买功能&lt;/p&gt;
+&lt;p&gt;买家基本需求：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;通过页面查看上架商品列表；查看商品详情页；通过商品名关键字搜索商品；&lt;/li&gt;
+&lt;li&gt;购买商品，查看订单(为了简化需求，无购物车功能，假设用户订单只能购买一件商品，及用户和订单是一对多，订单和商品是多对一)；&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;卖家基本需求：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;后台录入查看修改删除商品(一个用户编辑多个商品项，一个商品项也可以给多个用户编辑，及用户和商品是多对多)；&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;后台需求：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;记录访问日志，审计需求；&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;功能设计&#34;&gt;功能设计&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;Shop-frontend  数据页面展现，满足商品列表展现；通过商品名搜索；详情页查看；&lt;/li&gt;
+&lt;li&gt;Shop-backend  商品后台，提供http RESTful api ，满足页面需求，以及相应auth权限验证，日志记录，购买订单发送；&lt;/li&gt;
+&lt;li&gt;Shop-admin-frontend 商品数据管理页面展现，操作商品增删查改功能页面；&lt;/li&gt;
+&lt;li&gt;Shop-admin-backend 商品数据管理后台，提供http RESTful api， 满足页面CRUD功能；&lt;/li&gt;
+&lt;li&gt;Shop-backend  记录用户访问日志， 适用pb格式记录日志，产生日志实时写入消息队列中，提供给审计系统使用&lt;/li&gt;
+&lt;li&gt;其他服务；&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;整体架构设计如下图所示：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/shop-system.drawio.png&#34; alt=&#34;simple-shop-system&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;数据库设计&#34;&gt;数据库设计&lt;/h3&gt;
+&lt;p&gt;单独数据库实例shop, 简单实现，未根据未来几年的数据量来评估表的容量，分库分表的情况等。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;商品表  tbl_shop_items&lt;/p&gt;
+&lt;p&gt;(Tips: 这里为了简化，没有定义复杂业务实体关系了，比如产品单元(CPU), 商品单元(SKU)，产品容器(Container) 等，不要脱离业务耍流氓)&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;字段&lt;/th&gt;
+&lt;th&gt;类型&lt;/th&gt;
+&lt;th&gt;描述&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;id&lt;/td&gt;
+&lt;td&gt;int64&lt;/td&gt;
+&lt;td&gt;商品id&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;name&lt;/td&gt;
+&lt;td&gt;varchar(32)&lt;/td&gt;
+&lt;td&gt;商品名称&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;desc&lt;/td&gt;
+&lt;td&gt;varchar(1024)&lt;/td&gt;
+&lt;td&gt;商品描述&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;price&lt;/td&gt;
+&lt;td&gt;unsigned int&lt;/td&gt;
+&lt;td&gt;价格（分）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;stock&lt;/td&gt;
+&lt;td&gt;unsigned int&lt;/td&gt;
+&lt;td&gt;库存数目&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;sell_cn&lt;/td&gt;
+&lt;td&gt;unsigned int&lt;/td&gt;
+&lt;td&gt;售卖数目&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;is_released&lt;/td&gt;
+&lt;td&gt;bool&lt;/td&gt;
+&lt;td&gt;是否上架&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;is_soldout&lt;/td&gt;
+&lt;td&gt;bool&lt;/td&gt;
+&lt;td&gt;是否下架&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;is_del&lt;/td&gt;
+&lt;td&gt;bool&lt;/td&gt;
+&lt;td&gt;是否删除&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;create_at&lt;/td&gt;
+&lt;td&gt;timestamp&lt;/td&gt;
+&lt;td&gt;创建时间&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;update_at&lt;/td&gt;
+&lt;td&gt;timestamp&lt;/td&gt;
+&lt;td&gt;修改时间&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;ext&lt;/td&gt;
+&lt;td&gt;varchar&lt;/td&gt;
+&lt;td&gt;扩展字段&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;用户商品操作表 tbl_user_items&lt;/li&gt;
+&lt;/ol&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;字段&lt;/th&gt;
+&lt;th&gt;类型&lt;/th&gt;
+&lt;th&gt;描述&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;id&lt;/td&gt;
+&lt;td&gt;unsigned int64&lt;/td&gt;
+&lt;td&gt;操作id&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;user_id&lt;/td&gt;
+&lt;td&gt;unsigned int64&lt;/td&gt;
+&lt;td&gt;商品管理后台用户id&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;item_id&lt;/td&gt;
+&lt;td&gt;unsigned int64&lt;/td&gt;
+&lt;td&gt;商品id&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;create_at&lt;/td&gt;
+&lt;td&gt;timestamp&lt;/td&gt;
+&lt;td&gt;创建时间&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;update_at&lt;/td&gt;
+&lt;td&gt;timestamp&lt;/td&gt;
+&lt;td&gt;修改时间&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;ext&lt;/td&gt;
+&lt;td&gt;varchar&lt;/td&gt;
+&lt;td&gt;扩展字段&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;ol start=&#34;3&#34;&gt;
+&lt;li&gt;用户订单表  tbl_user_orders （为了简化，一个用户只能选一个商品直接下单购买，无购物车）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;字段&lt;/th&gt;
+&lt;th&gt;类型&lt;/th&gt;
+&lt;th&gt;描述&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;user_id&lt;/td&gt;
+&lt;td&gt;unsigned int64&lt;/td&gt;
+&lt;td&gt;用户id&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;item_id&lt;/td&gt;
+&lt;td&gt;unsigned int64&lt;/td&gt;
+&lt;td&gt;商品id&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;order_id&lt;/td&gt;
+&lt;td&gt;unsigned int64&lt;/td&gt;
+&lt;td&gt;订单id&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;create_at&lt;/td&gt;
+&lt;td&gt;timestamp&lt;/td&gt;
+&lt;td&gt;创建时间&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;update_at&lt;/td&gt;
+&lt;td&gt;timestamp&lt;/td&gt;
+&lt;td&gt;修改时间&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;ext&lt;/td&gt;
+&lt;td&gt;varchar&lt;/td&gt;
+&lt;td&gt;扩展字段&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;ol start=&#34;4&#34;&gt;
+&lt;li&gt;用户表 tbl_users&lt;/li&gt;
+&lt;/ol&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;字段&lt;/th&gt;
+&lt;th&gt;类型&lt;/th&gt;
+&lt;th&gt;描述&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;id&lt;/td&gt;
+&lt;td&gt;unsigned int64&lt;/td&gt;
+&lt;td&gt;用户id&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;name&lt;/td&gt;
+&lt;td&gt;varchar&lt;/td&gt;
+&lt;td&gt;用户名&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;email&lt;/td&gt;
+&lt;td&gt;varchar&lt;/td&gt;
+&lt;td&gt;邮件&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;password&lt;/td&gt;
+&lt;td&gt;varchar&lt;/td&gt;
+&lt;td&gt;加密密码&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;remember_me_token&lt;/td&gt;
+&lt;td&gt;varchar&lt;/td&gt;
+&lt;td&gt;api Opaque Access Token&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;is_admin&lt;/td&gt;
+&lt;td&gt;bool&lt;/td&gt;
+&lt;td&gt;是否是管理员&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;created_at&lt;/td&gt;
+&lt;td&gt;timestamp&lt;/td&gt;
+&lt;td&gt;创建时间&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;updated_at&lt;/td&gt;
+&lt;td&gt;timestamp&lt;/td&gt;
+&lt;td&gt;修改时间&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;ER关系：&lt;/p&gt;
+&lt;p&gt;[tbl_shop_items]    &amp;lt;-N&amp;mdash;&amp;gt;   &amp;lt;tbl_user_items&amp;gt;  &amp;lt;&amp;mdash;-M-&amp;gt; [tbl_users]&lt;/p&gt;
+&lt;p&gt;[tbl_shop_items] &amp;lt;-1&amp;mdash;N-&amp;gt; [tbl_user_orders]  &amp;lt;-M&amp;ndash;1-&amp;gt; [tbl_users]&lt;/p&gt;
+&lt;h3 id=&#34;消息设计&#34;&gt;消息设计&lt;/h3&gt;
+&lt;p&gt;订单生成后，通知下游系统，订阅消息，暂不考虑。&lt;/p&gt;
+&lt;h3 id=&#34;后端接口设计&#34;&gt;后端接口设计&lt;/h3&gt;
+&lt;p&gt;因为逻辑简单，就没有画出接口功能的时序图和流程图。&lt;/p&gt;
+&lt;h4 id=&#34;shop-backend--服务端口2021&#34;&gt;Shop-backend  服务端口：2021&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;GET /shop/api/v1/list  分页显示商品列表&lt;/li&gt;
+&lt;li&gt;GET /shop/api/v1/item/:id 商品详情&lt;/li&gt;
+&lt;li&gt;GET /shop/api/v1/search 更具名称搜索商品&lt;/li&gt;
+&lt;li&gt;POST /shop/api/v1/order/:id  商品下单&lt;/li&gt;
+&lt;li&gt;GET /shop/api/v1/order/list 用户商品订单列表&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&#34;shop-admin-backend-服务端口2022&#34;&gt;Shop-admin-backend 服务端口：2022&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;POST /shopadmin/api/v1/item 添加商品&lt;/li&gt;
+&lt;li&gt;POST /shopadmin/api/v1/item/:id  商品更新&lt;/li&gt;
+&lt;li&gt;POST /shopadmin/api/v1/item/:id/check 商品审核&lt;/li&gt;
+&lt;li&gt;GET /shopadmin/api/v1/item/:id 获取商品详情&lt;/li&gt;
+&lt;li&gt;GET /shopadmin/api/v1/list 分页显示商品列表&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;前端页面交互设计&#34;&gt;前端页面交互设计&lt;/h3&gt;
+&lt;p&gt;前端页面调试，本地起页面服务端口进行本地调试&lt;/p&gt;
+&lt;h4 id=&#34;shop-frontend&#34;&gt;Shop-frontend&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;/     主页面，列表页面 ，展示搜索框&lt;/li&gt;
+&lt;li&gt;/item/:id   详细页面， 展示购买按钮&lt;/li&gt;
+&lt;li&gt;/search  搜索页面，和主页面一样&lt;/li&gt;
+&lt;li&gt;/error  访问不到的页面&lt;/li&gt;
+&lt;li&gt;/order/:id 商品购买页面&lt;/li&gt;
+&lt;li&gt;/order/list 用户商品订单列表页面&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&#34;shop-admin-frontend-curd&#34;&gt;Shop-admin-frontend (CURD)&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;/  后台列表页面&lt;/li&gt;
+&lt;li&gt;/add  添加页面&lt;/li&gt;
+&lt;li&gt;/update 更新页面&lt;/li&gt;
+&lt;li&gt;/item/:id 详细页面，包括 更新，审核，删除按钮&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;开发&#34;&gt;开发&lt;/h2&gt;
+&lt;p&gt;初期整体使用前端js全栈开发技术栈；Typescript 静态语言，通过 tsc 将ts编译成js 减少错误；通过npm管理依赖包(vim vundle/python pipe/php composer/go module)；使用VS Code IDE开发神器编码(All in ONE，可远程ssh连接安装了linux 内核虚拟服务调试学习，查看源码很方便)，安装所需插件。&lt;/p&gt;
+&lt;p&gt;具体开发工具如下：&lt;/p&gt;
+&lt;p&gt;Typescript 编程语言(JavaScript超级 tsc 4.5.4 ts-&amp;gt;js) + Node.js 运行时环境(v17.2 V8 JavaScript 引擎 from Google Chrome 的内核) + Adonis.js MVC后端框架(v5.0+) + Vue.js前端框架(v3.0+)  + Element-plus UI 前端页面UI模版(v1.3)&lt;/p&gt;
+&lt;h3 id=&#34;后端服务开发&#34;&gt;后端服务开发&lt;/h3&gt;
+&lt;p&gt;shop-backend, shop-admin-backend 服务逻辑， 使用ts语言，AdonisJS (MVC+IoC开发框架,适合后台开发框架) 5.0+开发环境：&lt;/p&gt;
+&lt;p&gt;tips：业务模块设计尽量满足SOLID原则，最终满足&lt;strong&gt;高内聚，低耦合&lt;/strong&gt;, 尽量让开发框架来满足。&lt;/p&gt;
+&lt;p&gt;Model: app ER(entity relationship) data model -&amp;gt; table schema by migration -&amp;gt; create table -&amp;gt; make  table model&lt;/p&gt;
+&lt;p&gt;Controller: make controller for api logic&lt;/p&gt;
+&lt;p&gt;Route: http RESTful api router (start preload routes)&lt;/p&gt;
+&lt;p&gt;View: view  edge template reander frontend page&lt;/p&gt;
+&lt;p&gt;Validator: validate data schema&lt;/p&gt;
+&lt;p&gt;Rules: validate rules(common &amp;amp; DIY  start preload rules)&lt;/p&gt;
+&lt;p&gt;Middleware:  Middleware are a series of functions that are executed during an HTTP request before it reaches the route handler. Every function in the chain has the ability to end the request or forward it to the &lt;code&gt;next&lt;/code&gt; function.&lt;/p&gt;
+&lt;p&gt;通过adonis-ts-app demo 初始化一个app:	(as golang web dev tools like &lt;a href=&#34;https://github.com/gin-gonic/gin&#34;&gt;Gin&lt;/a&gt;+&lt;a href=&#34;https://github.com/google/wire&#34;&gt;wire&lt;/a&gt;, php web dev tools like Laravel)&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#new project&lt;/span&gt;
+npm init adonis-ts-app@latest shop-backend
+npm init adonis-ts-app@latest shop-admin-backend
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#install package for mysql &lt;/span&gt;
+npm i @adonisjs/lucid@alpha
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#invoke package to select mysql for ace make:model and migration table&lt;/span&gt;
+node ace configure(invoke) @adonisjs/lucid
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#install mysql2&lt;/span&gt;
+npm install mysql2
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#modify config/database.ts use mysql client: mysql2&lt;/span&gt;
+
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#install auth middleware&lt;/span&gt;
+npm i @adonisjs/auth@alpha
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#install Argon2 password hashing algorithm following the PHC string format&lt;/span&gt;
+npm install phc-argon2
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#invoke package to select lucid and api tokens&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# https://docs.adonisjs.com/guides/auth/introduction&lt;/span&gt;
+node ace invoke @adonisjs/auth
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# rigister auth middleware in start/kernel.js  auth: &amp;#39;App/Middleware/Auth&amp;#39;,&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# add auth middleware for router in start/router.js  &lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# use database-backed opaque access token&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# demo: https://dev.to/tngeene/adonisjs-understanding-user-registration-and-authentication-2ojl&lt;/span&gt;
+
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#change .env modify mysql conf&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#migration table&lt;/span&gt;
+node ace make:migration {table}
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#migration create/rollback table&lt;/span&gt;
+node ace migration:run / node ace migration:rollback
+
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#then u can use ace to make a new model app/Models/***.ts&lt;/span&gt;
+node ace make:model ***
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#then u can use ace to make a new app/Controllers/Http/***Controller.ts&lt;/span&gt;
+node ace make:controller ***
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#if use edge tpl, u can use ace to make a new view to render tpl&lt;/span&gt;
+node ace make:view ***
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#if valide request param, u can use ace to make a new volidator&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#https://docs.adonisjs.com/guides/validator/introduction&lt;/span&gt;
+node ace make:validator ***
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#or diy validate rules&lt;/span&gt;
+node ace make:prldfile validator
+
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#make a middleware like auth middleware;&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#transmit by ctx, ctx-&amp;gt;ctx-&amp;gt;ctx to next()&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#eg: u can make a user action log middleware to analyse or A/B test for recommended system&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#https://docs.adonisjs.com/guides/middleware&lt;/span&gt;
+node ace make:middleware ***
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;前端开发&#34;&gt;前端开发&lt;/h3&gt;
+&lt;p&gt;Shop-frontend, shop-admin-frontend 前端页面逻辑，使用TypeScript+ Vue.js + ElementUI组件 通过vite构建本地开发(CI过程通过webpack打包生成静态资源，通过CD部署到边缘CDN节点)，开发环境具体操作如下：&lt;/p&gt;
+&lt;p&gt;Vue.js 3 + TypeScript + Vite + ElementUI 3&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# install vue cli&lt;/span&gt;
+npm install -g @vue/cli
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# u can use vue create app use vue.js v3&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# vue create vue-app &amp;amp; cd vue-app&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# vue add element-plus&lt;/span&gt;
+
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# or use vite build vue.js v3 project app&lt;/span&gt;
+npm init @vitejs/app shop-frontend 
+npm init @vitejs/app shop-admin-frontend
+
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# eg: shop-frontend&lt;/span&gt;
+&lt;span style=&#34;color:#0aa&#34;&gt;cd&lt;/span&gt; shop-frontend (shop-admin-frontend)
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# chose vue-ts when install&lt;/span&gt;
+npm install
+
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# install vue3-router&lt;/span&gt;
+npm install vue-router@4
+
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#install element-ui3&lt;/span&gt;
+npm install element-plus --save
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#auto import &lt;/span&gt;
+npm install -D unplugin-vue-components unplugin-auto-import
+
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# run local vue dev runtime app service&lt;/span&gt;
+npm run dev
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;整体联调&#34;&gt;整体联调&lt;/h3&gt;
+&lt;p&gt;这里前后端统一技术栈采用js on node  by (AdonisJS 5 + Vue 3 + Element-plus UI)， 如果熟悉node js  很方便调试，开发1人工全栈搞定就行，至于外部需求UI的调整美化由PM和设计师确定好，尽量通过工具自动化， 降低沟通成本；&lt;/p&gt;
+&lt;p&gt;当然当后续系统切成微服务，把1人工全栈的活分成多个人来维护，从公司和组织架构层面来说，虽然增加了开发沟通成本，但是对公司来说是有利的，人员离职对系统影响会降低很多吧(from: 郭老师的架构课,以心理学+认知等方面)；&lt;/p&gt;
+&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
+&lt;p&gt;前端的技术迭代速度是快于后端的，主要是前端有大量的需求开发，不管是外部业务还是内部需求开发，所以需要满足业务场景下的高效迭代速度，衍生出高效的开发框架工具和UI组件复用，同时需要保持工具在项目中的迭代升级，而且在基于前端技术发展触及到后端开发，演变出前后技术栈统一的全栈开发，但是需求增多，需要更多的资源来承载用户请求，对于后端一些基础组件服务和性能优化的场景，还是需要根据&lt;strong&gt;语言特性，人力，组织结构&lt;/strong&gt;等因素考虑；前端技术底层引擎和原理性基础知识是不易变的，可以在关注变化的过程中，深入浅出共性的底层逻辑，以不变应万变；工欲善其事，必先利其器；(不管是前端/后端开发，DevOps, 以及大数据开发，甚至AI，&lt;strong&gt;熟练&lt;/strong&gt;利用好工具，工具是在应用场景下沉淀下来的，&lt;strong&gt;理解&lt;/strong&gt;基础原理和工具设计原理，结合使用场景，输出最大化，技术工具没有银弹，应用在适用场景达到事半功倍效果，学会在巨人的肩膀上考虑问题，搞事情)。&lt;/p&gt;
+&lt;h2 id=&#34;reference&#34;&gt;reference&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;ECMAScript: &lt;a href=&#34;https://tc39.es/ecma262/&#34;&gt;https://tc39.es/ecma262/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;ts: &lt;a href=&#34;https://www.typescriptlang.org/&#34;&gt;https://www.typescriptlang.org/&lt;/a&gt;      &lt;a href=&#34;https://typescript.bootcss.com/&#34;&gt;https://typescript.bootcss.com/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;why-ts: &lt;a href=&#34;https://serokell.io/blog/why-typescript&#34;&gt;https://serokell.io/blog/why-typescript&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Node.js: &lt;a href=&#34;http://nodejs.cn/learn&#34;&gt;http://nodejs.cn/learn&lt;/a&gt;  &lt;strong&gt;&lt;a href=&#34;https://nodejs.org/dist/latest-v17.x/docs/api/&#34;&gt;https://nodejs.org/dist/latest-v17.x/docs/api/&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;V8 JavaScript/&lt;a href=&#34;https://developer.mozilla.org/zh-CN/docs/WebAssembly/Concepts&#34;&gt;WebAssembly&lt;/a&gt; Engine: &lt;strong&gt;&lt;a href=&#34;https://chromium.googlesource.com/v8/v8.git&#34;&gt;https://chromium.googlesource.com/v8/v8.git&lt;/a&gt;&lt;/strong&gt; &lt;strong&gt;&lt;a href=&#34;https://v8.dev/docs&#34;&gt;https://v8.dev/docs&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;Adonis.js5: &lt;a href=&#34;https://adonisjs.com/&#34;&gt;https://adonisjs.com/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Adonis.js5 + Edge template demo: &lt;a href=&#34;https://masteringbackend.com/posts/adonisjs-tutorial-the-ultimate-guide&#34;&gt;https://masteringbackend.com/posts/adonisjs-tutorial-the-ultimate-guide&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Adonis.js5 + Vue.js3 demo: &lt;a href=&#34;https://www.section.io/engineering-education/build-a-ticketing-app-with-adonisjs-and-vuejs/&#34;&gt;https://www.section.io/engineering-education/build-a-ticketing-app-with-adonisjs-and-vuejs/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Vue.js3: &lt;a href=&#34;https://v3.cn.vuejs.org/guide/introduction.html&#34;&gt;https://v3.cn.vuejs.org/guide/introduction.html&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Vite: &lt;a href=&#34;https://cn.vitejs.dev/guide/&#34;&gt;https://cn.vitejs.dev/guide/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Vue CLI: &lt;a href=&#34;https://cli.vuejs.org/zh/guide/&#34;&gt;https://cli.vuejs.org/zh/guide/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;ElementUI3: &lt;a href=&#34;https://element-plus.gitee.io/zh-CN/guide/installation.html&#34;&gt;https://element-plus.gitee.io/zh-CN/guide/installation.html&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;webpack：https://webpack.docschina.org/concepts/&lt;/li&gt;
+&lt;/ol&gt;</description>
       
     </item>
     
@@ -91,10 +517,11 @@
 &lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://arxiv.org/pdf/1608.03960.pdf&#34;&gt;A Conflict-Free Replicated JSON Datatype.pdf&lt;/a&gt;&lt;/strong&gt; &lt;a href=&#34;https://cs.paperswithcode.com/paper/a-conflict-free-replicated-json-datatype&#34;&gt;code&lt;/a&gt; &lt;a href=&#34;https://www.youtube.com/watch?v=TRvQzwDyVro&#34;&gt;vedio introduce&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=GXJ0D2tfZCM&#34;&gt;Automerge: Making Servers Optional for Real-Time Collaboration&lt;/a&gt;&lt;/strong&gt; &lt;a href=&#34;https://speakerdeck.com/ept/automerge-making-servers-optional-for-real-time-collaboration&#34;&gt;slide&lt;/a&gt; &lt;a href=&#34;https://github.com/automerge&#34;&gt;github.com/automerge&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.researchgate.net/publication/310212186_Near_Real-Time_Peer-to-Peer_Shared_Editing_on_Extensible_Data_Types&#34;&gt;Near Real-Time Peer-to-Peer Shared Editing on Extensible Data Types.pdf&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.sciencedirect.com/science/article/pii/S1877050921014101&#34;&gt;Toward Fast and Reliable Active-Active Geo-Replication for a Distributed Data Caching Service in the Mobile Cloud&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://redis.com/redis-enterprise/technology/active-active-geo-distribution/&#34;&gt;redis: active-active-geo-distribution&lt;/a&gt; &lt;a href=&#34;https://docs.redis.com/latest/rs/references/developing-for-active-active/&#34;&gt;redis: Developing applications with Active-Active databases&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://docs.riak.com/riak/kv/2.0.0/developing/data-types/?spm=a2c6h.12873639.0.0.a25177aaoVMJMH&#34;&gt;riak-kv:Data Types&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://developer.aliyun.com/article/635632&#34;&gt;阿里云redis：CRDT——解决最终一致问题的利器&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://developer.aliyun.com/article/781709?utm_content=g_1000239229&#34;&gt;多中心容灾实践：如何实现真正的异地多活？&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://developer.aliyun.com/article/635632&#34;&gt;阿里云redis：CRDT——解决最终一致问题的利器&lt;/a&gt;&lt;/strong&gt;  &lt;a href=&#34;https://developer.aliyun.com/article/781709?utm_content=g_1000239229&#34;&gt;多中心容灾实践：如何实现真正的异地多活？&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://zhuanlan.51cto.com/art/202107/674513.htm&#34;&gt;基于CRDT的数据最终一致性&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;http://ddia.vonng.com/#/ch5?id=%E5%A4%9A%E4%B8%BB%E5%A4%8D%E5%88%B6&#34;&gt;多主复制&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
@@ -2577,74 +3004,6 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。&lt;
       <guid>https://weedge.github.io/todo/abtest/</guid>
       
         <description></description>
-      
-    </item>
-    
-    <item>
-      <title>id生成</title>
-      <link>https://weedge.github.io/post/idgen/</link>
-      <pubDate>Tue, 12 Dec 2017 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/idgen/</guid>
-      
-        <description>&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
-&lt;p&gt;  用户业务数据增长过快，比如文章评论系统，feed流系统，订单系统；数据的存放模型需要从主从的单机单库 演变成 分布式集群数据库； 分库分表的数据查询需用到全局唯一标识的id来查询业务，比如莫个feed的评论数据、推送消息、购物订单、活动优惠劵等等都需要进行唯一ID标识；以便分布式存储(mysql,nosql,newsql)索引(b+tree, LSMtree,inverted index)快速查询；至于数据一致性通过约定规范协议保证(强：类Paxos算法/raft算法，弱: mq) 。&lt;/p&gt;
-&lt;h2 id=&#34;特征&#34;&gt;特征&lt;/h2&gt;
-&lt;p&gt;根据不同的需求场景进行总体归纳全局id生成服务的特征：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;全局唯一：最基本要求，不能出现重复的id；&lt;/li&gt;
-&lt;li&gt;趋势递增：业务中如果大量使用mysql innodb来存放数据，而innodb使用聚集索引(cluster index)，使用b+tree来存放索引数据，所以在主键的选择存放上应该尽量使用整数型有序的主键，来保证数据的写入性能(顺序io)&lt;/li&gt;
-&lt;li&gt;单调递增：IM增量消息，排序序列号&lt;/li&gt;
-&lt;li&gt;可解码：比如统计分析id的生成情况，尽量是服务分布均匀，需要查看业务id(appID),生成时间(time ms), 以及id服务节点号(nodeID)&lt;/li&gt;
-&lt;li&gt;信息安全：生成id的规律不能过于简单，比如单调递增，信息详情展示页会有规律的爬取，这样直接可以估算出一些指标数据(天订单量，天feed产生流量等)；所以需要id无规律生成(可以内部获取有规律的id后，进行加盐编码处理)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;这些特征有些是互斥的，不能同时满足，需要根据业务场景具体分析(可能有些场景特征还未考虑到，后续加入），选择对应特征方案来满足。&lt;/p&gt;
-&lt;p&gt;id生成服务的评价指标：（由于在分布式系统中，id生成服务依赖度非常高，需要高可用和高性能）&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;平均响应时间和所有请求中的千分之999的最低相应时间(TP999)尽可能的低；&lt;/li&gt;
-&lt;li&gt;SLA(可用性)5个9(全年低于5分钟的不可用时间)&lt;/li&gt;
-&lt;li&gt;QPS(每秒请求量)尽可能的高&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;方案&#34;&gt;方案&lt;/h2&gt;
-&lt;h3 id=&#34;uuid&#34;&gt;uuid&lt;/h3&gt;
-&lt;p&gt;标准型式包含32个16进制数字，以连字号分为五段，形式为8-4-4-4-12的36个字符，无序，不适合用来做为数据库(B+Tree)中的主键。&lt;/p&gt;
-&lt;h3 id=&#34;snowflake&#34;&gt;snowflake&lt;/h3&gt;
-&lt;p&gt;twitter中的feed数据从mysql迁移至Cassandra中存放，cassandra没有顺序id生成机制，提出的一种解决方案；不依赖其他组件服务，直接程序算法实现；&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;41位的时间序列（精确到毫秒，41位的长度可以使用69年）&lt;/li&gt;
-&lt;li&gt;10位的机器标识（10位的长度最多支持部署1024个节点），根据业务服务类型和部署还可进行细分，比如idc,机器,业务id(appid)&lt;/li&gt;
-&lt;li&gt;12位的计数顺序号（12位的计数顺序号支持每个节点每毫秒产生4096个ID序号）&lt;/li&gt;
-&lt;li&gt;最高位是符号位，始终为0&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/snowflake-64bit.jpg&#34; alt=&#34;snowflake&#34;&gt;&lt;/p&gt;
-&lt;p&gt;64位bigint类型ID, 最大2^63-1  19位10进制数&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;缺点: 多机部署时，必须保证时间是同步的，否则如果存在时间回溯，出现重复id。&lt;/li&gt;
-&lt;li&gt;解决方案：可以加上多台机器时间同步检测恢复机制&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E7%B6%B2%E8%B7%AF%E6%99%82%E9%96%93%E5%8D%94%E5%AE%9A&#34;&gt;NTP网络时间协议&lt;/a&gt;，可以尽量避免&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;redis生成id&#34;&gt;redis生成id:&lt;/h3&gt;
-&lt;p&gt;利用redis的单线程机制，以及原子递增操作INCR和INCRBY来实现；多台部署：采用按起始值分N台机器数间隔递增(等差数列)，格式：时间戳+单日增长号；(单点故障，由于等差值N机器数是事先定义好的，水平扩容不方便，不便于运维)&lt;/p&gt;
-&lt;h3 id=&#34;mysql生成id64位&#34;&gt;mysql生成id(64位):&lt;/h3&gt;
-&lt;p&gt;利用mysql的auto_increment自助机制 + replace into table操作(table定义两个字段，一个是64位的主键自增字段，一个是属性唯一字段) +InnoDB/MyISAM引擎 来实现，多台主从部署：采用按起始值分N台机器数间隔递增(等差数列)，需要设置mysql自增参数：set auto_increment_increment=N.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;存在问题：&lt;br&gt;
-主跪了，切从，主从数据同步存在延时的话，id会出现重复的情况，以及每次生成id，都要访问一次数据库replace操作，性能会降低很多；&lt;/li&gt;
-&lt;li&gt;解决方案：&lt;br&gt;
-通过“号段”segment批量获取的方式，从mysql中获取ID,然后扩大倍数M,设定范围[ID*M,(ID+1)*M]，然后从内存中的这个范围里生成一个自增序列号，如果到了范围的最大值，则阻塞其他请求，由最早的线程去db获取id，设定范围，或者在号码到达最大范围的10~75%的时候提前去db获取id，这样就不会阻塞的情况；然后继续以述过程。这个方案有个小缺陷就是服务重启，以往内存中的id范围段就会浪费掉，但是64位还是挺多的，性能提高了，浪费点也就无所谓啦~ 当然如果你是处女座，最求极致可以旁路监控记录已经分配出去的id，启动的时候在捞回来放入内存中继续分配生成id）。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;这个方案比较常用，稳定，依赖mysql，需要与dba配合操作,和redis生成id一样不便于水平扩展，运维维护，改进方案类似于美团的Leaf-segment设计，采用元数据(tag,max_id,step,desc,create_time,update_time)管理，对业务tag进行分库扩容，减低运维维护成本&lt;/p&gt;
-&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;性能上当然snowflake性能最好，全局唯一，趋势递增，可解码，不依赖其他组件，唯一缺陷是时间不同步的问题，如果回退的时间比较大，服务可能就跪了，解决方案：服务启动时就进行校验时间是否与启动的服务节点一致，依赖于zk或者etcd来记录监控各个genId service服务节点的时间信息，验证相同则ok，否则启动失败，报警。应用场景feed流&lt;/li&gt;
-&lt;li&gt;稳定上mysql生成id方案比较好，全局唯一，单个mysql实例可以保证单调递增，扩容多实例变成趋势递增(proxy wrr负载均衡w=1)，性能和主从同步延迟导致id重复问题，这些问题可以通过内存中的ID范围段segment来计算生成自增序列id解决。应用场景订单号，消息id&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;参考阅读&#34;&gt;参考阅读&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/F7WTNeC3OUr76sZARtqRjw&#34;&gt;分布式架构系统生成全局唯一序列号的一个思路&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://tech.meituan.com/MT_Leaf.html&#34;&gt;美团点评id生成器系统-Leaf&lt;/a&gt;  (HA，性能，便于扩容,通过管理元数据(tag,max_id,step,desc,create_time,update_time)，对业务tag进行分库扩容；通过zk来同步每个启动的Leaf节点时间，新的服务启动是通过时间校验机制来规避时间戳不同步，回拨问题上的监控)&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://yuerblog.cc/2017/11/21/golang-id-alloc/&#34;&gt;golang分布式id生成服务&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://thesecretlivesofdata.com/raft/&#34;&gt;raft&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;</description>
       
     </item>
     

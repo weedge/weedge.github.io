@@ -6,7 +6,18 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 28 Dec 2021 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 02 Jan 2022 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>全栈开发</title>
+      <link>https://weedge.github.io/post/shop/</link>
+      <pubDate>Sun, 02 Jan 2022 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/shop/</guid>
+      <description>&lt;h2 id=&#34;介绍&#34;&gt;介绍&lt;/h2&gt;
+&lt;p&gt;以前工作中有过前端的开发经验，使用后端模版Smarty(主要是外部需求，现在新项目中应该很少使用这个了)，前端模版Mustache，页面中使用 js jquery交互逻辑，直接服用一些开源的UI组件Bootstrap，开源的后台UI系统，主要是建设内部后台的时候使用，自动生成CRUD页面；前端的技术栈更新迭代相对后端快些，通过以全栈技术栈为切入点，通过一个简单的系统，学习下最新技术栈工具，主要目的如下：&lt;/p&gt;
+&lt;p&gt;根据需求，实现一个简单功能的购物系统，目的是为了学习ts-&amp;gt;js on node.js全栈开发，了解整体开发构建工具，熟悉下工具开发流程，主要还是了解前端框架工具的使用，以及熟悉通过js运行时环境运行在后端服务上的应用开发工具，以便在后续开发后台系统的时候可以熟练使用这些技术进行开发，这些工具的设计思想可以借鉴到其他后端业务开发语言中。&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>CRDT</title>
       <link>https://weedge.github.io/post/crdt/</link>
@@ -215,22 +226,6 @@
 &lt;p&gt;源码标记，浏览源码挺好用的工具,轻量级的，简单易用。 gtags类似ctags,但是效率比ctags高，具体比较查看&lt;a href=&#34;https://github.com/OpenGrok/OpenGrok/wiki/Comparison-with-Similar-Tools&#34;&gt;这里&lt;/a&gt;(OpenGrok使用相对比较复杂)，而且未来支持的语言也比较多。对Linux-2.6.32源码390M的文件进行标签产出289MB的标签文件。&lt;/p&gt;
 &lt;p&gt;可以通过源码安装就OK &lt;!-- raw HTML omitted --&gt;wget &lt;a href=&#34;http://tamacom.com/global/global-6.3.2.tar.gz;&#34;&gt;http://tamacom.com/global/global-6.3.2.tar.gz;&lt;/a&gt; tar zxvf global-6.3.2.tar.gz; cd global-6.3.2; ./configure; make &amp;amp;&amp;amp; make install&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
 &lt;p&gt;在需要查找的目录下运行&lt;!-- raw HTML omitted --&gt;gtags&lt;!-- raw HTML omitted --&gt;,会生成三个文件： GTAGS&amp;ndash;定义的函数变量； GRTAGS&amp;ndash;引用的函数变量； GPATH&amp;ndash;函数变量所在文件的路径。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>登泰山</title>
-      <link>https://weedge.github.io/post/taishan/</link>
-      <pubDate>Sun, 21 Sep 2014 22:04:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/taishan/</guid>
-      <description>&lt;h2 id=&#34;登泰山看日出&#34;&gt;登泰山看日出&lt;/h2&gt;
-&lt;p&gt;会当凌绝顶，一览众山小  &amp;ndash; 杜甫《望岳》&lt;br&gt;
-平明登日观，举手开云关  &amp;ndash; 李白《游泰山》&lt;/p&gt;
-&lt;!-- raw HTML omitted --&gt;
-&lt;h3 id=&#34;出发&#34;&gt;出发&lt;/h3&gt;
-&lt;p&gt;登泰山，一次突然做出的决定，木有看攻略，木有做啥子准备，备点衣服和一些吃的就走了。为了赶火车，提前下班打卡就从公司出发啦~（ps:哈哈，恰好周五公司发下午茶，多拿了一盒水果，感谢公司福利，~！~)。在南站与老宋汇合后，在车站吃了点晚餐就走了。&lt;br&gt;
-而且定火车那天木有直达的列车，买了到济南西，然后转泰安的车票。就这么愉快的出发鸟~~~&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/taishan/1.jpeg&#34; alt=&#34;出发&#34;&gt;&lt;/p&gt;</description>
     </item>
     
   </channel>
