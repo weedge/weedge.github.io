@@ -439,7 +439,7 @@ npm install
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# install vue3-router&lt;/span&gt;
 npm install vue-router@4
 
-&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#install element-ui3&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#install element-plus ui&lt;/span&gt;
 npm install element-plus --save
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#auto import &lt;/span&gt;
 npm install -D unplugin-vue-components unplugin-auto-import
