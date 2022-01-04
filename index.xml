@@ -317,8 +317,8 @@
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;ER关系：&lt;/p&gt;
-&lt;p&gt;[tbl_shop_items]    &amp;lt;-N&amp;mdash;&amp;gt;   &amp;lt;tbl_user_items&amp;gt;  &amp;lt;&amp;mdash;-M-&amp;gt; [tbl_users]&lt;/p&gt;
-&lt;p&gt;[tbl_shop_items] &amp;lt;-1&amp;mdash;N-&amp;gt; [tbl_user_orders]  &amp;lt;-M&amp;ndash;1-&amp;gt; [tbl_users]&lt;/p&gt;
+&lt;p&gt;[tbl_shop_items]    &amp;lt;-1&amp;mdash;N-&amp;gt;   [tbl_user_items]  &amp;lt;-M&amp;mdash;1-&amp;gt; [tbl_users]&lt;/p&gt;
+&lt;p&gt;[tbl_shop_items] &amp;lt;-1&amp;mdash;N-&amp;gt; [tbl_user_orders]  &amp;lt;-M&amp;mdash;1-&amp;gt; [tbl_users]&lt;/p&gt;
 &lt;h3 id=&#34;消息设计&#34;&gt;消息设计&lt;/h3&gt;
 &lt;p&gt;订单生成后，通知下游系统，订阅消息，暂不考虑。&lt;/p&gt;
 &lt;h3 id=&#34;后端接口设计&#34;&gt;后端接口设计&lt;/h3&gt;
@@ -466,7 +466,7 @@ npm run dev
 &lt;li&gt;Vite: &lt;a href=&#34;https://cn.vitejs.dev/guide/&#34;&gt;https://cn.vitejs.dev/guide/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Vue CLI: &lt;a href=&#34;https://cli.vuejs.org/zh/guide/&#34;&gt;https://cli.vuejs.org/zh/guide/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Element-Plus UI: &lt;a href=&#34;https://element-plus.gitee.io/zh-CN/guide/installation.html&#34;&gt;https://element-plus.gitee.io/zh-CN/guide/installation.html&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;webpack：https://webpack.docschina.org/concepts/&lt;/li&gt;
+&lt;li&gt;webpack: &lt;a href=&#34;https://webpack.docschina.org/concepts/&#34;&gt;https://webpack.docschina.org/concepts/&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>
