@@ -420,7 +420,7 @@ node ace make:prldfile validator
 node ace make:middleware ***
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;前端开发&#34;&gt;前端开发&lt;/h3&gt;
 &lt;p&gt;Shop-frontend, shop-admin-frontend 前端页面逻辑，使用TypeScript+ Vue.js + ElementUI组件 通过vite构建本地开发(CI过程通过webpack打包生成静态资源，通过CD部署到边缘CDN节点)，开发环境具体操作如下：&lt;/p&gt;
-&lt;p&gt;Vue.js 3 + TypeScript + Vite + ElementUI 3&lt;/p&gt;
+&lt;p&gt;Vue.js 3 + TypeScript + Vite + ElementUI-plus&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# install vue cli&lt;/span&gt;
 npm install -g @vue/cli
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# u can use vue create app use vue.js v3&lt;/span&gt;
