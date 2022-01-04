@@ -371,7 +371,7 @@
 &lt;p&gt;Validator: validate data schema&lt;/p&gt;
 &lt;p&gt;Rules: validate rules(common &amp;amp; DIY  start preload rules)&lt;/p&gt;
 &lt;p&gt;Middleware:  Middleware are a series of functions that are executed during an HTTP request before it reaches the route handler. Every function in the chain has the ability to end the request or forward it to the &lt;code&gt;next&lt;/code&gt; function.&lt;/p&gt;
-&lt;p&gt;通过adonis-ts-app demo 初始化一个app:	(as golang web dev tools like &lt;a href=&#34;https://github.com/gin-gonic/gin&#34;&gt;Gin&lt;/a&gt;+&lt;a href=&#34;https://github.com/google/wire&#34;&gt;wire&lt;/a&gt;, php web dev tools like Laravel)&lt;/p&gt;
+&lt;p&gt;通过adonis-ts-app demo 初始化一个app:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#new project&lt;/span&gt;
 npm init adonis-ts-app@latest shop-backend
 npm init adonis-ts-app@latest shop-admin-backend
