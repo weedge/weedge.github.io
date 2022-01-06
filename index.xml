@@ -351,7 +351,7 @@
 &lt;h4 id=&#34;shop-admin-frontend-crud-edge-template-layout-page&#34;&gt;Shop-admin-frontend (CRUD edge template layout page)&lt;/h4&gt;
 &lt;p&gt;CRUD RESTful api  for resource methods to render edge page&lt;/p&gt;
 &lt;h2 id=&#34;开发&#34;&gt;开发&lt;/h2&gt;
-&lt;p&gt;初期整体使用前端js全栈开发技术栈；Typescript 静态语言，通过 tsc 将ts编译成js 减少错误；通过npm管理依赖包(vim vundle/python pipe/php composer/go module)；使用VS Code IDE开发神器编码(All in ONE，可远程ssh连接安装了linux 内核虚拟服务调试学习，查看源码很方便)，安装所需插件。&lt;/p&gt;
+&lt;p&gt;初期整体使用前端js全栈开发技术栈；Typescript 静态语言，通过 tsc 将ts编译成js 减少错误；通过npm管理依赖包(vim vundle/python pip/php composer/go module)；使用VS Code IDE开发神器编码(All in ONE，可远程ssh连接安装了linux 内核虚拟服务调试学习，查看源码很方便)，安装所需插件。&lt;/p&gt;
 &lt;p&gt;具体开发工具如下：&lt;/p&gt;
 &lt;p&gt;Typescript 编程语言(JavaScript超级 tsc 4.5.4 ts-&amp;gt;js) + Node.js 运行时环境(v17.2 V8 JavaScript 引擎 from Google Chrome 的内核) + Adonis.js MVC后端框架(v5.0+) + Vue.js前端框架(v3.0+)  + Element-plus UI 前端页面UI模版(v1.3)&lt;/p&gt;
 &lt;h3 id=&#34;后端服务开发&#34;&gt;后端服务开发&lt;/h3&gt;
