@@ -150,7 +150,7 @@
 &lt;tr&gt;
 &lt;td&gt;is_soldout&lt;/td&gt;
 &lt;td&gt;bool&lt;/td&gt;
-&lt;td&gt;是否下架&lt;/td&gt;
+&lt;td&gt;是否售匿&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;is_del&lt;/td&gt;
