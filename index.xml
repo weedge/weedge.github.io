@@ -78,7 +78,7 @@
 &lt;/ol&gt;
 &lt;p&gt;卖家基本需求：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;后台录入查看修改删除商品(一个用户编辑多个商品项，一个商品项也可以给多个用户编辑，及用户和商品是多对多)；&lt;/li&gt;
+&lt;li&gt;后台录入查看修改删除商品(一个用户编辑多个商品项，一个商品项也可以给多个用户编辑，及用户和商品是多对多，为了简单考虑，不考虑协同的情况)；&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;后台需求：&lt;/p&gt;
 &lt;ol&gt;
@@ -333,15 +333,13 @@
 &lt;/ol&gt;
 &lt;h4 id=&#34;shop-admin-backend-服务端口2022&#34;&gt;Shop-admin-backend 服务端口：2022&lt;/h4&gt;
 &lt;ol&gt;
-&lt;li&gt;POST /shopadmin/api/v1/item 添加商品&lt;/li&gt;
-&lt;li&gt;POST /shopadmin/api/v1/item/:id  商品更新&lt;/li&gt;
-&lt;li&gt;POST /shopadmin/api/v1/item/:id/check 商品审核&lt;/li&gt;
-&lt;li&gt;GET /shopadmin/api/v1/item/:id 获取商品详情&lt;/li&gt;
-&lt;li&gt;GET /shopadmin/api/v1/list 分页显示商品列表&lt;/li&gt;
+&lt;li&gt;shop items CRUD RESTful api  for resource methods (&lt;a href=&#34;https://docs.adonisjs.com/guides/controllers#resourceful-routes-and-controllers&#34;&gt;route RESTful resource&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;POST /shopadmin/api/v1/items/:id/check 商品审核&lt;/li&gt;
+&lt;li&gt;GET /shopadmin/api/v1/items/:uid  获取用户编辑商品&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h3 id=&#34;前端页面交互设计&#34;&gt;前端页面交互设计&lt;/h3&gt;
 &lt;p&gt;前端页面调试，本地起页面服务端口进行本地调试&lt;/p&gt;
-&lt;h4 id=&#34;shop-frontend&#34;&gt;Shop-frontend&lt;/h4&gt;
+&lt;h4 id=&#34;shop-frontend-vue-layout-page&#34;&gt;Shop-frontend (vue layout page)&lt;/h4&gt;
 &lt;ol&gt;
 &lt;li&gt;/     主页面，列表页面 ，展示搜索框&lt;/li&gt;
 &lt;li&gt;/item/:id   详细页面， 展示购买按钮&lt;/li&gt;
@@ -350,13 +348,8 @@
 &lt;li&gt;/order/:id 商品购买页面&lt;/li&gt;
 &lt;li&gt;/order/list 用户商品订单列表页面&lt;/li&gt;
 &lt;/ol&gt;
-&lt;h4 id=&#34;shop-admin-frontend-curd&#34;&gt;Shop-admin-frontend (CURD)&lt;/h4&gt;
-&lt;ol&gt;
-&lt;li&gt;/  后台列表页面&lt;/li&gt;
-&lt;li&gt;/add  添加页面&lt;/li&gt;
-&lt;li&gt;/update 更新页面&lt;/li&gt;
-&lt;li&gt;/item/:id 详细页面，包括 更新，审核，删除按钮&lt;/li&gt;
-&lt;/ol&gt;
+&lt;h4 id=&#34;shop-admin-frontend-crud-edge-template-layout-page&#34;&gt;Shop-admin-frontend (CRUD edge template layout page)&lt;/h4&gt;
+&lt;p&gt;CRUD RESTful api  for resource methods to render edge page&lt;/p&gt;
 &lt;h2 id=&#34;开发&#34;&gt;开发&lt;/h2&gt;
 &lt;p&gt;初期整体使用前端js全栈开发技术栈；Typescript 静态语言，通过 tsc 将ts编译成js 减少错误；通过npm管理依赖包(vim vundle/python pipe/php composer/go module)；使用VS Code IDE开发神器编码(All in ONE，可远程ssh连接安装了linux 内核虚拟服务调试学习，查看源码很方便)，安装所需插件。&lt;/p&gt;
 &lt;p&gt;具体开发工具如下：&lt;/p&gt;
@@ -364,13 +357,15 @@
 &lt;h3 id=&#34;后端服务开发&#34;&gt;后端服务开发&lt;/h3&gt;
 &lt;p&gt;shop-backend, shop-admin-backend 服务逻辑， 使用ts语言，AdonisJS (MVC+IoC开发框架,适合后台开发框架) 5.0+开发环境：&lt;/p&gt;
 &lt;p&gt;tips：业务模块设计尽量满足SOLID原则，最终满足&lt;strong&gt;高内聚，低耦合&lt;/strong&gt;, 尽量让开发框架来满足。&lt;/p&gt;
-&lt;p&gt;Model: app ER(entity relationship) data model -&amp;gt; table schema by migration -&amp;gt; create table -&amp;gt; make  table model&lt;/p&gt;
-&lt;p&gt;Controller: make controller for api logic&lt;/p&gt;
-&lt;p&gt;Route: http RESTful api router (start preload routes)&lt;/p&gt;
-&lt;p&gt;View: view  edge template reander frontend page&lt;/p&gt;
-&lt;p&gt;Validator: validate data schema&lt;/p&gt;
-&lt;p&gt;Rules: validate rules(common &amp;amp; DIY  start preload rules)&lt;/p&gt;
-&lt;p&gt;Middleware:  Middleware are a series of functions that are executed during an HTTP request before it reaches the route handler. Every function in the chain has the ability to end the request or forward it to the &lt;code&gt;next&lt;/code&gt; function.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/database/introduction&#34;&gt;Model&lt;/a&gt;: app ER(entity relationship) data model -&amp;gt; table schema by migration -&amp;gt; create table -&amp;gt; make  table model&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/controllers&#34;&gt;Controller&lt;/a&gt;: make controller for api logic&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/routing&#34;&gt;Routing&lt;/a&gt;: http RESTful api router (start preload routes)&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/views/introduction&#34;&gt;View&lt;/a&gt;: view  edge template reander frontend page&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/validator/introduction&#34;&gt;Validator&lt;/a&gt;: validate data schema&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/validator/custom-rules&#34;&gt;Rules&lt;/a&gt;: validate rules(common &amp;amp; DIY  start preload rules)&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/middleware&#34;&gt;Middleware&lt;/a&gt;:  Middleware are a series of functions that are executed during an HTTP request before it reaches the route handler. Every function in the chain has the ability to end the request or forward it to the &lt;code&gt;next&lt;/code&gt; function. &lt;strong&gt;&lt;del&gt;server&lt;/del&gt;&lt;/strong&gt; Middleware, &lt;strong&gt;Global&lt;/strong&gt; Middleware, &lt;strong&gt;Naming&lt;/strong&gt; Middleware&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/auth/introduction&#34;&gt;Authentication&lt;/a&gt;: using &lt;strong&gt;sessions&lt;/strong&gt;, &lt;strong&gt;basic auth&lt;/strong&gt; or &lt;strong&gt;API tokens(JWT, OAT)&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/events&#34;&gt;Events&lt;/a&gt;: define evens listener  to listen async event on(eventName,callback) , then emit event to tigger regist event&amp;rsquo;s callback; eg: new user to emit event callback to send email (DIY events Listenner, start preload events)&lt;/p&gt;
 &lt;p&gt;通过adonis-ts-app demo 初始化一个app:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#new project&lt;/span&gt;
 npm init adonis-ts-app@latest shop-backend
@@ -390,10 +385,16 @@ npm install phc-argon2
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#invoke package to select lucid and api tokens&lt;/span&gt;
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# https://docs.adonisjs.com/guides/auth/introduction&lt;/span&gt;
 node ace invoke @adonisjs/auth
-&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# rigister auth middleware in start/kernel.js  auth: &amp;#39;App/Middleware/Auth&amp;#39;,&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# rigister auth naming middleware in start/kernel.js  auth: &amp;#39;App/Middleware/Auth&amp;#39;,&lt;/span&gt;
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# add auth middleware for router in start/router.js  &lt;/span&gt;
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# use database-backed opaque access token&lt;/span&gt;
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# demo: https://dev.to/tngeene/adonisjs-understanding-user-registration-and-authentication-2ojl&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# for session auth&lt;/span&gt;
+npm i @adonisjs/session 
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# for CSRF token protection&lt;/span&gt;
+npm i @adonisjs/shield 
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#invoke add fhield global middleware in start/kernel.js () =&amp;gt; import(&amp;#39;@ioc:Adonis/Addons/Shield&amp;#39;)&lt;/span&gt;
+node ace invoke @adonisjs/shield
 
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#change .env modify mysql conf&lt;/span&gt;
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#migration table&lt;/span&gt;
@@ -413,11 +414,20 @@ node ace make:validator ***
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#or diy validate rules&lt;/span&gt;
 node ace make:prldfile validator
 
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#make events to gen start/events.ts for listen on(eventName,callback)&lt;/span&gt;
+node ace make:prldfile events
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#or make listener to listen on eventsList &lt;/span&gt;
+node ace make:listener ***
+
+
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#make a middleware like auth middleware;&lt;/span&gt;
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#transmit by ctx, ctx-&amp;gt;ctx-&amp;gt;ctx to next()&lt;/span&gt;
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#eg: u can make a user action log middleware to analyse or A/B test for recommended system&lt;/span&gt;
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#https://docs.adonisjs.com/guides/middleware&lt;/span&gt;
 node ace make:middleware ***
+
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# watch run &lt;/span&gt;
+node ace serve --watch
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;前端开发&#34;&gt;前端开发&lt;/h3&gt;
 &lt;p&gt;Shop-frontend, shop-admin-frontend 前端页面逻辑，使用TypeScript+ Vue.js + ElementUI组件 通过vite构建本地开发(CI过程通过webpack打包生成静态资源，通过CD部署到边缘CDN节点)，开发环境具体操作如下：&lt;/p&gt;
 &lt;p&gt;Vue.js 3 + TypeScript + Vite + ElementUI-plus&lt;/p&gt;
@@ -444,7 +454,7 @@ npm install element-plus --save
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#auto import &lt;/span&gt;
 npm install -D unplugin-vue-components unplugin-auto-import
 
-&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# run local vue dev runtime app service&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# run local vue dev runtime app service (--port)&lt;/span&gt;
 npm run dev
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;整体联调&#34;&gt;整体联调&lt;/h3&gt;
