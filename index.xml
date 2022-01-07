@@ -465,7 +465,7 @@ npm run dev
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;附具体代码：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/backend-adonisjs-api/tree/main/shop-admin-backend&#34;&gt;Shop-admin-backend&lt;/a&gt; : 后台管理系统，为了方便根据数据库表一键生生成CURD代码，采用后端模版edge template；用户管理可以采用内部公司用户平台SSO单点登录获取ticket的方式，或者使用框架本身的身份认证功能进行后台模块的权限管理(web authentication) （done 90%）&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/backend-adonisjs-api/tree/main/shop-admin-backend&#34;&gt;Shop-admin-backend&lt;/a&gt; : 后台管理系统，为了方便后续根据数据库表一键生成CURD代码，采用后端模版edge template；用户管理可以采用内部公司用户平台SSO单点登录获取ticket的方式，或者使用框架本身的身份认证功能进行后台模块的权限管理(web authentication) （done 90%）&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/weedge/backend-adonisjs-api/tree/main/adonisjs-shop-backend-api&#34;&gt;Shop-backend-api&lt;/a&gt; (@todo)&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/weedge/frontend-vue/tree/main/vue-shop-frontend&#34;&gt;Shop-frontend-vue&lt;/a&gt; (@todo)&lt;/li&gt;
 &lt;/ol&gt;
