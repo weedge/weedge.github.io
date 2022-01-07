@@ -341,7 +341,7 @@
 &lt;ol&gt;
 &lt;li&gt;shop items CRUD RESTful api  for resource methods (&lt;a href=&#34;https://docs.adonisjs.com/guides/controllers#resourceful-routes-and-controllers&#34;&gt;route RESTful resource&lt;/a&gt;)&lt;/li&gt;
 &lt;li&gt;POST /shopadmin/api/v1/items/:id/check 商品审核&lt;/li&gt;
-&lt;li&gt;GET /shopadmin/api/v1/items/:uid  获取用户编辑商品&lt;/li&gt;
+&lt;li&gt;GET /shopadmin/api/v1/items/:uid  获取用户创建的商品&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h3 id=&#34;前端页面交互设计&#34;&gt;前端页面交互设计&lt;/h3&gt;
 &lt;p&gt;前端页面调试，本地起页面服务端口进行本地调试&lt;/p&gt;
@@ -463,7 +463,13 @@ npm install -D unplugin-vue-components unplugin-auto-import
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# run local vue dev runtime app service (--port)&lt;/span&gt;
 npm run dev
 
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;整体联调&#34;&gt;整体联调&lt;/h3&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;附具体代码：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/backend-adonisjs-api/tree/main/shop-admin-backend&#34;&gt;Shop-admin-backend&lt;/a&gt; : 后台管理系统，为了方便根据数据库表一键生生成CURD代码，采用后端模版edge template；用户管理可以采用内部公司用户平台SSO单点登录获取ticket的方式，或者使用框架本身的身份认证功能进行后台模块的权限管理(web authentication) （done 90%）&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/backend-adonisjs-api/tree/main/adonisjs-shop-backend-api&#34;&gt;Shop-backend-api&lt;/a&gt; (@todo)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/frontend-vue/tree/main/vue-shop-frontend&#34;&gt;Shop-frontend-vue&lt;/a&gt; (@todo)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;整体联调&#34;&gt;整体联调&lt;/h3&gt;
 &lt;p&gt;这里前后端统一技术栈采用js on node  by (AdonisJS 5 + Vue 3 + Element-plus UI)， 如果熟悉node js  很方便调试，开发1人工全栈搞定就行，至于外部需求UI的调整美化由PM和设计师确定好，尽量通过工具自动化， 降低沟通成本；&lt;/p&gt;
 &lt;p&gt;当然当后续系统切成微服务，把1人工全栈的活分成多个人来维护，从公司和组织架构层面来说，虽然增加了开发沟通成本，但是对公司来说是有利的，人员离职对系统影响会降低很多吧(from: 郭老师的架构课,以心理学+认知等方面)；&lt;/p&gt;
 &lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
