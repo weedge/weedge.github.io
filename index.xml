@@ -158,6 +158,11 @@
 &lt;td&gt;是否删除&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
+&lt;td&gt;owner_id&lt;/td&gt;
+&lt;td&gt;unsigned int64&lt;/td&gt;
+&lt;td&gt;添加者用户id&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
 &lt;td&gt;create_at&lt;/td&gt;
 &lt;td&gt;timestamp&lt;/td&gt;
 &lt;td&gt;创建时间&lt;/td&gt;
@@ -317,8 +322,9 @@
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;ER关系：&lt;/p&gt;
-&lt;p&gt;[tbl_shop_items]    &amp;lt;-1&amp;mdash;N-&amp;gt;   [tbl_user_items]  &amp;lt;-M&amp;mdash;1-&amp;gt; [tbl_users]&lt;/p&gt;
-&lt;p&gt;[tbl_shop_items] &amp;lt;-1&amp;mdash;N-&amp;gt; [tbl_user_orders]  &amp;lt;-M&amp;mdash;1-&amp;gt; [tbl_users]&lt;/p&gt;
+&lt;p&gt;[tbl_shop_items] &amp;lt;-N&amp;mdash;1-&amp;gt; (create) [tbl_users]&lt;/p&gt;
+&lt;p&gt;[tbl_shop_items] &amp;lt;-1&amp;mdash;N-&amp;gt; [tbl_user_items] (record)   &amp;lt;-M&amp;mdash;1-&amp;gt; [tbl_users]&lt;/p&gt;
+&lt;p&gt;[tbl_shop_items] &amp;lt;-1&amp;mdash;N-&amp;gt; [tbl_user_orders] (order) &amp;lt;-M&amp;mdash;1-&amp;gt; [tbl_users]&lt;/p&gt;
 &lt;h3 id=&#34;消息设计&#34;&gt;消息设计&lt;/h3&gt;
 &lt;p&gt;订单生成后，通知下游系统，订阅消息，暂不考虑。&lt;/p&gt;
 &lt;h3 id=&#34;后端接口设计&#34;&gt;后端接口设计&lt;/h3&gt;
