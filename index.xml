@@ -360,9 +360,9 @@
 &lt;p&gt;初期整体使用前端js全栈开发技术栈；Typescript 静态语言，通过 tsc 将ts编译成js 减少错误；通过npm管理依赖包(vim vundle/python pip/php composer/go module)；使用VS Code IDE开发神器编码(All in ONE，可远程ssh连接安装了linux 内核虚拟服务调试学习，查看源码很方便)，安装所需插件。&lt;/p&gt;
 &lt;p&gt;具体开发工具如下：&lt;/p&gt;
 &lt;p&gt;Typescript 编程语言(JavaScript超级 tsc 4.5.4 ts-&amp;gt;js) + Node.js 运行时环境(v17.2 V8 JavaScript 引擎 from Google Chrome 的内核) + Adonis.js MVC后端框架(v5.0+) + Vue.js前端框架(v3.0+)  + Element-plus UI 前端页面UI模版(v1.3)&lt;/p&gt;
+&lt;p&gt;tips：业务模块设计尽量满足SOLID原则，最终满足&lt;strong&gt;高内聚，低耦合&lt;/strong&gt;, 尽量让开发框架来满足。&lt;/p&gt;
 &lt;h3 id=&#34;后端服务开发&#34;&gt;后端服务开发&lt;/h3&gt;
 &lt;p&gt;shop-backend, shop-admin-backend 服务逻辑， 使用ts语言，AdonisJS (MVC+IoC开发框架,适合后台开发框架) 5.0+开发环境：&lt;/p&gt;
-&lt;p&gt;tips：业务模块设计尽量满足SOLID原则，最终满足&lt;strong&gt;高内聚，低耦合&lt;/strong&gt;, 尽量让开发框架来满足。&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/database/introduction&#34;&gt;Model&lt;/a&gt;: app ER(entity relationship) data model -&amp;gt; table schema by migration -&amp;gt; create table -&amp;gt; make  table model&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/controllers&#34;&gt;Controller&lt;/a&gt;: make controller for api logic&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/routing&#34;&gt;Routing&lt;/a&gt;: http RESTful api router (start preload routes)&lt;/p&gt;
@@ -435,8 +435,12 @@ node ace make:middleware ***
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# watch run &lt;/span&gt;
 node ace serve --watch
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;前端开发&#34;&gt;前端开发&lt;/h3&gt;
-&lt;p&gt;Shop-frontend, shop-admin-frontend 前端页面逻辑，使用TypeScript+ Vue.js + ElementUI组件 通过vite构建本地开发(CI过程通过webpack打包生成静态资源，通过CD部署到边缘CDN节点)，开发环境具体操作如下：&lt;/p&gt;
+&lt;p&gt;Shop-frontend, shop-admin-frontend 前端页面逻辑，使用TypeScript+ Vue.js(前端开发框架) + ElementUI组件 通过vite构建本地开发(CI过程通过webpack打包生成静态资源，通过CD部署到边缘CDN节点)，开发环境具体操作如下：&lt;/p&gt;
 &lt;p&gt;Vue.js 3 + TypeScript + Vite + ElementUI-plus&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://next.router.vuejs.org/zh/&#34;&gt;vue router&lt;/a&gt;: 通过 Vue.js，用组件组成应用；通过 Vue Router 将组件映射到路由上，让 Vue Router 知道在哪里渲染它们;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://axios-http.com/zh/docs/intro&#34;&gt;axios&lt;/a&gt;: HTTP 网络client请求库;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://next.vuex.vuejs.org/zh/index.html&#34;&gt;vuex&lt;/a&gt;: state management pattern + library stat/view/actions like MVC;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://vee-validate.logaretm.com/v4/guide/overview&#34;&gt;vee-validate&lt;/a&gt;: form validation;  &lt;a href=&#34;https://www.npmjs.com/package/yup&#34;&gt;yup&lt;/a&gt;:  data schema validation;&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# install vue cli&lt;/span&gt;
 npm install -g @vue/cli
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# u can use vue create app use vue.js v3&lt;/span&gt;
@@ -449,11 +453,22 @@ npm init @vitejs/app shop-admin-frontend
 
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# eg: shop-frontend&lt;/span&gt;
 &lt;span style=&#34;color:#0aa&#34;&gt;cd&lt;/span&gt; shop-frontend (shop-admin-frontend)
-&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# chose vue-ts when install&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# choose vue-ts when install&lt;/span&gt;
 npm install
 
-&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# install vue3-router&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# install vue-router4, https://next.router.vuejs.org/zh/&lt;/span&gt;
 npm install vue-router@4
+
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# install axios https://axios-http.com/zh/docs/intro&lt;/span&gt;
+npm install axios
+
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# install vuex, nice design(state management pattern + library stat/view/actions like MVC)  &lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# https://next.vuex.vuejs.org/zh/index.html&lt;/span&gt;
+npm install vuex@next --save
+
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# install vee-validate, https://vee-validate.logaretm.com/v4/guide/overview&lt;/span&gt;
+npm i vee-validate@next --save
+
 
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#install element-plus ui&lt;/span&gt;
 npm install element-plus --save
@@ -473,7 +488,7 @@ npm run dev
 &lt;p&gt;这里前后端统一技术栈采用js on node  by (AdonisJS 5 + Vue 3 + Element-plus UI)， 如果熟悉node js  很方便调试，开发1人工全栈搞定就行，至于外部需求UI的调整美化由PM和设计师确定好，尽量通过工具自动化， 降低沟通成本；&lt;/p&gt;
 &lt;p&gt;当然当后续系统切成微服务，把1人工全栈的活分成多个人来维护，从公司和组织架构层面来说，虽然增加了开发沟通成本，但是对公司来说是有利的，人员离职对系统影响会降低很多吧(from: 郭老师的架构课,以心理学+认知等方面)；&lt;/p&gt;
 &lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
-&lt;p&gt;前端的技术迭代速度是快于后端的，主要是前端有大量的需求开发，不管是外部业务还是内部需求开发，所以需要满足业务场景下的高效迭代速度，衍生出高效的开发框架工具和UI组件复用，同时需要保持工具在项目中的迭代升级，而且在基于前端技术发展触及到后端开发，演变出前后技术栈统一的全栈开发，但是需求增多，需要更多的资源来承载用户请求，对于后端一些基础组件服务和性能优化的场景，还是需要根据&lt;strong&gt;语言特性，人力，组织结构&lt;/strong&gt;等因素考虑；前端技术底层引擎和原理性基础知识是不易变的，可以在关注变化的过程中，深入浅出共性的底层逻辑，以不变应万变；工欲善其事，必先利其器；(不管是前端/后端开发，DevOps, 以及大数据开发，甚至AI，&lt;strong&gt;熟练&lt;/strong&gt;利用好工具，工具是在应用场景下沉淀下来的，&lt;strong&gt;理解&lt;/strong&gt;基础原理和工具设计原理，结合使用场景，输出最大化，技术工具没有银弹，应用在适用场景达到事半功倍效果，学会在巨人的肩膀上考虑问题，搞事情)。&lt;/p&gt;
+&lt;p&gt;前端的技术迭代速度是快于后端的，主要是前端有大量的需求开发，不管是外部业务还是内部需求开发，所以需要满足业务场景下的高效迭代速度，衍生出高效的开发框架工具和UI组件复用，同时需要保持工具在项目中的迭代升级，而且在基于前端技术发展触及到后端开发，演变出前后技术栈统一的全栈开发，但是需求增多，需要更多的资源来承载用户请求，对于后端一些基础组件服务和性能优化的场景，还是需要根据&lt;strong&gt;语言特性，人力，组织结构&lt;/strong&gt;等因素考虑；前端技术底层引擎和原理性基础知识是不易变的，可以在关注变化的过程中，深入浅出共性的底层逻辑，以不变应万变；工欲善其事，必先利其器；(不管是前端/后端开发，DevOps, 以及大数据开发，甚至AI，&lt;strong&gt;熟练&lt;/strong&gt;利用好工具，工具是在应用场景下沉淀下来的，&lt;strong&gt;理解&lt;/strong&gt;基础原理和工具设计原理，结合使用场景，快速定位(文档，问题)，输出最大化，技术工具没有银弹，应用在适用场景达到事半功倍效果，学会在巨人的肩膀上考虑问题，搞事情)。&lt;/p&gt;
 &lt;h2 id=&#34;reference&#34;&gt;reference&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;ECMAScript: &lt;a href=&#34;https://tc39.es/ecma262/&#34;&gt;https://tc39.es/ecma262/&lt;/a&gt;&lt;/li&gt;
@@ -489,6 +504,7 @@ npm run dev
 &lt;li&gt;Vue CLI: &lt;a href=&#34;https://cli.vuejs.org/zh/guide/&#34;&gt;https://cli.vuejs.org/zh/guide/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Element-Plus UI: &lt;a href=&#34;https://element-plus.gitee.io/zh-CN/guide/installation.html&#34;&gt;https://element-plus.gitee.io/zh-CN/guide/installation.html&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;webpack: &lt;a href=&#34;https://webpack.docschina.org/concepts/&#34;&gt;https://webpack.docschina.org/concepts/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;web开发: &lt;strong&gt;&lt;a href=&#34;https://developer.mozilla.org/zh-CN/docs/Web&#34;&gt;https://developer.mozilla.org/zh-CN/docs/Web&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>
@@ -676,7 +692,7 @@ list *io_threads_list[IO_THREADS_MAX_NUM];
 &lt;li&gt;&lt;a href=&#34;https://www.ardanlabs.com/blog/2018/08/scheduling-in-go-part1.html&#34;&gt;Scheduling In Go : Part I - OS Scheduler&lt;/a&gt; &lt;a href=&#34;https://www.ardanlabs.com/blog/2018/08/scheduling-in-go-part2.html&#34;&gt;Part II - Go Scheduler&lt;/a&gt; &lt;a href=&#34;https://www.ardanlabs.com/blog/2018/12/scheduling-in-go-part3.html&#34;&gt;Part III - Concurrency&lt;/a&gt;  &lt;a href=&#34;https://github.com/ardanlabs/gotraining&#34;&gt;gotraining&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=f6kdp27TYZs&#34;&gt;Google I/O 2012 - Go Concurrency Patterns &lt;/a&gt; &lt;a href=&#34;https://talks.golang.org/2012/concurrency.slide#1&#34;&gt;「slide」&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=QDDwwePbDtw&#34;&gt;Google I/O 2013 - Advanced Go Concurrency Patterns&lt;/a&gt;  &lt;a href=&#34;https://talks.golang.org/2013/advconc.slide#1&#34;&gt;「slide」&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=5zXAHh5tJqQ&#34;&gt;Rethinking Classical Concurrency Patterns&lt;/a&gt;  &lt;a href=&#34;https://drive.google.com/file/d/1nPdvhB0PutEJzdCq5ms6UI58dp50fcAN/view&#34;&gt;「slide」&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=5zXAHh5tJqQ&#34;&gt;Rethinking Classical Concurrency Patterns&lt;/a&gt;  &lt;strong&gt;&lt;a href=&#34;https://drive.google.com/file/d/1nPdvhB0PutEJzdCq5ms6UI58dp50fcAN/view&#34;&gt;「slide」&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://docs.google.com/document/d/1ETuA2IOmnaQ4j81AtTGT40Y4_Jr6_IDASEKg0t0dBR8/edit&#34;&gt;Go Preemptive Scheduler Design Doc&lt;/a&gt;  &lt;a href=&#34;https://rakyll.org/scheduler/&#34;&gt;Go&amp;rsquo;s work-stealing scheduler&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://tonybai.com/2017/06/27/an-intro-about-go-portability/&#34;&gt;也谈Go的可移植性&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=KINIAgRpkDA&#34;&gt;The Design of the Go Assembler&lt;/a&gt; &lt;a href=&#34;https://9p.io/sys/doc/asm.html&#34;&gt;A Manual for the Plan 9 assembler&lt;/a&gt; &lt;a href=&#34;https://github.com/cch123/golang-notes/blob/master/assembly.md&#34;&gt;plan9 assembly 完全解析&lt;/a&gt;&lt;/li&gt;

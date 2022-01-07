@@ -75,7 +75,7 @@
 以前工作中有过前端的开发经验，使用后端模版Smarty(主要是外部需求，现在新项目中应该很少使用这个了)，前端模版Mustache，页面中使用 js jquery交互逻辑，直接服用一些开源的UI组件Bootstrap，开源的后台UI系统，主要是建设内部后台的时候使用，自动生成CRUD页面；前端的技术栈更新迭代相对后端快些，通过以全栈技术栈为切入点，通过一个简单的系统，学习下最新技术栈工具，主要目的如下：
 根据需求，实现一个简单功能的购物系统，目的是为了学习ts-&gt;js on node.js全栈开发，了解整体开发构建工具，熟悉下工具开发流程，主要还是了解前端框架工具的使用，以及熟悉通过js运行时环境运行在后端服务上的应用开发工具，以便在后续开发后台系统的时候可以熟练使用这些技术进行开发，这些工具的设计思想可以借鉴到其他后端业务开发语言中。"><meta itemprop="datePublished" content="2022-01-02T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2022-01-02T10:26:23+08:00" />
-<meta itemprop="wordCount" content="3591">
+<meta itemprop="wordCount" content="3733">
 <meta itemprop="keywords" content="全栈," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="全栈开发"/>
 <meta name="twitter:description" content="介绍
@@ -664,9 +664,9 @@
 <p>初期整体使用前端js全栈开发技术栈；Typescript 静态语言，通过 tsc 将ts编译成js 减少错误；通过npm管理依赖包(vim vundle/python pip/php composer/go module)；使用VS Code IDE开发神器编码(All in ONE，可远程ssh连接安装了linux 内核虚拟服务调试学习，查看源码很方便)，安装所需插件。</p>
 <p>具体开发工具如下：</p>
 <p>Typescript 编程语言(JavaScript超级 tsc 4.5.4 ts-&gt;js) + Node.js 运行时环境(v17.2 V8 JavaScript 引擎 from Google Chrome 的内核) + Adonis.js MVC后端框架(v5.0+) + Vue.js前端框架(v3.0+)  + Element-plus UI 前端页面UI模版(v1.3)</p>
+<p>tips：业务模块设计尽量满足SOLID原则，最终满足<strong>高内聚，低耦合</strong>, 尽量让开发框架来满足。</p>
 <h3 id="后端服务开发">后端服务开发</h3>
 <p>shop-backend, shop-admin-backend 服务逻辑， 使用ts语言，AdonisJS (MVC+IoC开发框架,适合后台开发框架) 5.0+开发环境：</p>
-<p>tips：业务模块设计尽量满足SOLID原则，最终满足<strong>高内聚，低耦合</strong>, 尽量让开发框架来满足。</p>
 <p><a href="https://docs.adonisjs.com/guides/database/introduction">Model</a>: app ER(entity relationship) data model -&gt; table schema by migration -&gt; create table -&gt; make  table model</p>
 <p><a href="https://docs.adonisjs.com/guides/controllers">Controller</a>: make controller for api logic</p>
 <p><a href="https://docs.adonisjs.com/guides/routing">Routing</a>: http RESTful api router (start preload routes)</p>
@@ -739,8 +739,12 @@ node ace make:middleware ***
 <span style="color:#aaa;font-style:italic"># watch run </span>
 node ace serve --watch
 </code></pre></div><h3 id="前端开发">前端开发</h3>
-<p>Shop-frontend, shop-admin-frontend 前端页面逻辑，使用TypeScript+ Vue.js + ElementUI组件 通过vite构建本地开发(CI过程通过webpack打包生成静态资源，通过CD部署到边缘CDN节点)，开发环境具体操作如下：</p>
+<p>Shop-frontend, shop-admin-frontend 前端页面逻辑，使用TypeScript+ Vue.js(前端开发框架) + ElementUI组件 通过vite构建本地开发(CI过程通过webpack打包生成静态资源，通过CD部署到边缘CDN节点)，开发环境具体操作如下：</p>
 <p>Vue.js 3 + TypeScript + Vite + ElementUI-plus</p>
+<p><a href="https://next.router.vuejs.org/zh/">vue router</a>: 通过 Vue.js，用组件组成应用；通过 Vue Router 将组件映射到路由上，让 Vue Router 知道在哪里渲染它们;</p>
+<p><a href="https://axios-http.com/zh/docs/intro">axios</a>: HTTP 网络client请求库;</p>
+<p><a href="https://next.vuex.vuejs.org/zh/index.html">vuex</a>: state management pattern + library stat/view/actions like MVC;</p>
+<p><a href="https://vee-validate.logaretm.com/v4/guide/overview">vee-validate</a>: form validation;  <a href="https://www.npmjs.com/package/yup">yup</a>:  data schema validation;</p>
 <div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#aaa;font-style:italic"># install vue cli</span>
 npm install -g @vue/cli
 <span style="color:#aaa;font-style:italic"># u can use vue create app use vue.js v3</span>
@@ -753,11 +757,22 @@ npm init @vitejs/app shop-admin-frontend
 
 <span style="color:#aaa;font-style:italic"># eg: shop-frontend</span>
 <span style="color:#0aa">cd</span> shop-frontend (shop-admin-frontend)
-<span style="color:#aaa;font-style:italic"># chose vue-ts when install</span>
+<span style="color:#aaa;font-style:italic"># choose vue-ts when install</span>
 npm install
 
-<span style="color:#aaa;font-style:italic"># install vue3-router</span>
+<span style="color:#aaa;font-style:italic"># install vue-router4, https://next.router.vuejs.org/zh/</span>
 npm install vue-router@4
+
+<span style="color:#aaa;font-style:italic"># install axios https://axios-http.com/zh/docs/intro</span>
+npm install axios
+
+<span style="color:#aaa;font-style:italic"># install vuex, nice design(state management pattern + library stat/view/actions like MVC)  </span>
+<span style="color:#aaa;font-style:italic"># https://next.vuex.vuejs.org/zh/index.html</span>
+npm install vuex@next --save
+
+<span style="color:#aaa;font-style:italic"># install vee-validate, https://vee-validate.logaretm.com/v4/guide/overview</span>
+npm i vee-validate@next --save
+
 
 <span style="color:#aaa;font-style:italic">#install element-plus ui</span>
 npm install element-plus --save
@@ -777,7 +792,7 @@ npm run dev
 <p>这里前后端统一技术栈采用js on node  by (AdonisJS 5 + Vue 3 + Element-plus UI)， 如果熟悉node js  很方便调试，开发1人工全栈搞定就行，至于外部需求UI的调整美化由PM和设计师确定好，尽量通过工具自动化， 降低沟通成本；</p>
 <p>当然当后续系统切成微服务，把1人工全栈的活分成多个人来维护，从公司和组织架构层面来说，虽然增加了开发沟通成本，但是对公司来说是有利的，人员离职对系统影响会降低很多吧(from: 郭老师的架构课,以心理学+认知等方面)；</p>
 <h2 id="总结">总结</h2>
-<p>前端的技术迭代速度是快于后端的，主要是前端有大量的需求开发，不管是外部业务还是内部需求开发，所以需要满足业务场景下的高效迭代速度，衍生出高效的开发框架工具和UI组件复用，同时需要保持工具在项目中的迭代升级，而且在基于前端技术发展触及到后端开发，演变出前后技术栈统一的全栈开发，但是需求增多，需要更多的资源来承载用户请求，对于后端一些基础组件服务和性能优化的场景，还是需要根据<strong>语言特性，人力，组织结构</strong>等因素考虑；前端技术底层引擎和原理性基础知识是不易变的，可以在关注变化的过程中，深入浅出共性的底层逻辑，以不变应万变；工欲善其事，必先利其器；(不管是前端/后端开发，DevOps, 以及大数据开发，甚至AI，<strong>熟练</strong>利用好工具，工具是在应用场景下沉淀下来的，<strong>理解</strong>基础原理和工具设计原理，结合使用场景，输出最大化，技术工具没有银弹，应用在适用场景达到事半功倍效果，学会在巨人的肩膀上考虑问题，搞事情)。</p>
+<p>前端的技术迭代速度是快于后端的，主要是前端有大量的需求开发，不管是外部业务还是内部需求开发，所以需要满足业务场景下的高效迭代速度，衍生出高效的开发框架工具和UI组件复用，同时需要保持工具在项目中的迭代升级，而且在基于前端技术发展触及到后端开发，演变出前后技术栈统一的全栈开发，但是需求增多，需要更多的资源来承载用户请求，对于后端一些基础组件服务和性能优化的场景，还是需要根据<strong>语言特性，人力，组织结构</strong>等因素考虑；前端技术底层引擎和原理性基础知识是不易变的，可以在关注变化的过程中，深入浅出共性的底层逻辑，以不变应万变；工欲善其事，必先利其器；(不管是前端/后端开发，DevOps, 以及大数据开发，甚至AI，<strong>熟练</strong>利用好工具，工具是在应用场景下沉淀下来的，<strong>理解</strong>基础原理和工具设计原理，结合使用场景，快速定位(文档，问题)，输出最大化，技术工具没有银弹，应用在适用场景达到事半功倍效果，学会在巨人的肩膀上考虑问题，搞事情)。</p>
 <h2 id="reference">reference</h2>
 <ol>
 <li>ECMAScript: <a href="https://tc39.es/ecma262/">https://tc39.es/ecma262/</a></li>
@@ -793,6 +808,7 @@ npm run dev
 <li>Vue CLI: <a href="https://cli.vuejs.org/zh/guide/">https://cli.vuejs.org/zh/guide/</a></li>
 <li>Element-Plus UI: <a href="https://element-plus.gitee.io/zh-CN/guide/installation.html">https://element-plus.gitee.io/zh-CN/guide/installation.html</a></li>
 <li>webpack: <a href="https://webpack.docschina.org/concepts/">https://webpack.docschina.org/concepts/</a></li>
+<li>web开发: <strong><a href="https://developer.mozilla.org/zh-CN/docs/Web">https://developer.mozilla.org/zh-CN/docs/Web</a></strong></li>
 </ol>
     </div>
 
