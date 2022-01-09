@@ -75,7 +75,7 @@
 以前工作中有过前端的开发经验，使用后端模版Smarty(主要是外部需求，现在新项目中应该很少使用这个了)，前端模版Mustache，页面中使用 js jquery交互逻辑，直接服用一些开源的UI组件Bootstrap，开源的后台UI系统，主要是建设内部后台的时候使用，自动生成CRUD页面；前端的技术栈更新迭代相对后端快些，通过以全栈技术栈为切入点，通过一个简单的系统，学习下最新技术栈工具，主要目的如下：
 根据需求，实现一个简单功能的购物系统，目的是为了学习ts-&gt;js on node.js全栈开发，了解整体开发构建工具，熟悉下工具开发流程，主要还是了解前端框架工具的使用，以及熟悉通过js运行时环境运行在后端服务上的应用开发工具，以便在后续开发后台系统的时候可以熟练使用这些技术进行开发，这些工具的设计思想可以借鉴到其他后端业务开发语言中。"><meta itemprop="datePublished" content="2022-01-02T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2022-01-02T10:26:23+08:00" />
-<meta itemprop="wordCount" content="3733">
+<meta itemprop="wordCount" content="3958">
 <meta itemprop="keywords" content="全栈," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="全栈开发"/>
 <meta name="twitter:description" content="介绍
@@ -635,11 +635,12 @@
 <p>因为逻辑简单，就没有画出接口功能的时序图和流程图。</p>
 <h4 id="shop-backend--服务端口2021">Shop-backend  服务端口：2021</h4>
 <ol>
-<li>GET /shop/api/v1/list  分页显示商品列表</li>
-<li>GET /shop/api/v1/item/:id 商品详情</li>
-<li>GET /shop/api/v1/search 更具名称搜索商品</li>
-<li>POST /shop/api/v1/order/:id  商品下单</li>
-<li>GET /shop/api/v1/order/list 用户商品订单列表</li>
+<li>GET /shop/api/v1/itmes  商品列表</li>
+<li>GET /shop/api/v1/items/:id 商品详情</li>
+<li>GET /shop/api/v1/items/search?q=** 更具名称搜索商品</li>
+<li>POST /shop/api/v1/order  商品下单</li>
+<li>GET  /shop/api/v1/orders/:orderId  获取订单详情</li>
+<li>GET /shop/api/v1/users/:uid/orders 用户商品订单列表</li>
 </ol>
 <h4 id="shop-admin-backend-服务端口2022">Shop-admin-backend 服务端口：2022</h4>
 <ol>
@@ -649,14 +650,12 @@
 </ol>
 <h3 id="前端页面交互设计">前端页面交互设计</h3>
 <p>前端页面调试，本地起页面服务端口进行本地调试</p>
-<h4 id="shop-frontend-vue-layout-page">Shop-frontend (vue layout page)</h4>
+<h4 id="shop-frontend-vue-route-component-page">Shop-frontend (vue route component page)</h4>
 <ol>
-<li>/     主页面，列表页面 ，展示搜索框</li>
-<li>/item/:id   详细页面， 展示购买按钮</li>
-<li>/search  搜索页面，和主页面一样</li>
+<li>/     主页面/搜索结构页，列表页面 ，展示搜索框</li>
+<li>/items/:id   详细页面， 展示购买按钮</li>
+<li>/user/:id/orders 用户商品订单列表页面</li>
 <li>/error  访问不到的页面</li>
-<li>/order/:id 商品购买页面</li>
-<li>/order/list 用户商品订单列表页面</li>
 </ol>
 <h4 id="shop-admin-frontend-crud-edge-template-layout-page">Shop-admin-frontend (CRUD edge template layout page)</h4>
 <p>CRUD RESTful api  for resource methods to render edge page</p>
@@ -779,14 +778,14 @@ npm install element-plus --save
 <span style="color:#aaa;font-style:italic">#auto import </span>
 npm install -D unplugin-vue-components unplugin-auto-import
 
-<span style="color:#aaa;font-style:italic"># run local vue dev runtime app service (--port)</span>
+<span style="color:#aaa;font-style:italic"># run local vue dev runtime app service (vite --port 5000 --host)</span>
 npm run dev
 
 </code></pre></div><p>附具体代码：</p>
 <ol>
-<li><a href="https://github.com/weedge/backend-adonisjs-api/tree/main/shop-admin-backend">Shop-admin-backend</a> : 后台管理系统，为了方便后续根据数据库表一键生成CURD代码，采用后端模版edge template；用户管理可以采用内部公司用户平台SSO单点登录获取ticket的方式，或者使用框架本身的身份认证功能进行后台模块的权限管理(web authentication) （done 90%）</li>
-<li><a href="https://github.com/weedge/backend-adonisjs-api/tree/main/adonisjs-shop-backend-api">Shop-backend-api</a> (@todo)</li>
-<li><a href="https://github.com/weedge/frontend-vue/tree/main/vue-shop-frontend">Shop-frontend-vue</a> (@todo)</li>
+<li><a href="https://github.com/weedge/backend-adonisjs-api/tree/main/shop-admin-backend">Shop-admin-backend</a> : 后台管理系统，为了方便后续根据数据库表一键生成CURD代码，采用后端模版edge template；用户管理可以采用内部公司用户平台SSO单点登录获取ticket的方式，或者使用框架本身的身份认证功能进行后台模块的权限管理(web authentication)</li>
+<li><a href="https://github.com/weedge/backend-adonisjs-api/tree/main/adonisjs-shop-backend-api">Shop-backend-api</a>：后端接口，获取接口数据，需要登录验证，和token鉴权，记录用户行为日志，读写操作数据库和缓等；</li>
+<li><a href="https://github.com/weedge/frontend-vue/tree/main/vue-shop-frontend">Shop-frontend-vue</a>：前端页面，使用vue框架开发，访问后端API使用axios，状态管理使用vuex，页面路由使vue-router，表单验证和数据验证分别使用vee-valdate和yup，组件的使用需要结合文档使用；首页/搜索结果页展示商品列表，点击更多进入商品详细页面进行购买，购买需要登录/注册，登录后进入订单列表页，具体需求推动；</li>
 </ol>
 <h3 id="整体联调">整体联调</h3>
 <p>这里前后端统一技术栈采用js on node  by (AdonisJS 5 + Vue 3 + Element-plus UI)， 如果熟悉node js  很方便调试，开发1人工全栈搞定就行，至于外部需求UI的调整美化由PM和设计师确定好，尽量通过工具自动化， 降低沟通成本；</p>

@@ -331,11 +331,12 @@
 &lt;p&gt;因为逻辑简单，就没有画出接口功能的时序图和流程图。&lt;/p&gt;
 &lt;h4 id=&#34;shop-backend--服务端口2021&#34;&gt;Shop-backend  服务端口：2021&lt;/h4&gt;
 &lt;ol&gt;
-&lt;li&gt;GET /shop/api/v1/list  分页显示商品列表&lt;/li&gt;
-&lt;li&gt;GET /shop/api/v1/item/:id 商品详情&lt;/li&gt;
-&lt;li&gt;GET /shop/api/v1/search 更具名称搜索商品&lt;/li&gt;
-&lt;li&gt;POST /shop/api/v1/order/:id  商品下单&lt;/li&gt;
-&lt;li&gt;GET /shop/api/v1/order/list 用户商品订单列表&lt;/li&gt;
+&lt;li&gt;GET /shop/api/v1/itmes  商品列表&lt;/li&gt;
+&lt;li&gt;GET /shop/api/v1/items/:id 商品详情&lt;/li&gt;
+&lt;li&gt;GET /shop/api/v1/items/search?q=** 更具名称搜索商品&lt;/li&gt;
+&lt;li&gt;POST /shop/api/v1/order  商品下单&lt;/li&gt;
+&lt;li&gt;GET  /shop/api/v1/orders/:orderId  获取订单详情&lt;/li&gt;
+&lt;li&gt;GET /shop/api/v1/users/:uid/orders 用户商品订单列表&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h4 id=&#34;shop-admin-backend-服务端口2022&#34;&gt;Shop-admin-backend 服务端口：2022&lt;/h4&gt;
 &lt;ol&gt;
@@ -345,14 +346,12 @@
 &lt;/ol&gt;
 &lt;h3 id=&#34;前端页面交互设计&#34;&gt;前端页面交互设计&lt;/h3&gt;
 &lt;p&gt;前端页面调试，本地起页面服务端口进行本地调试&lt;/p&gt;
-&lt;h4 id=&#34;shop-frontend-vue-layout-page&#34;&gt;Shop-frontend (vue layout page)&lt;/h4&gt;
+&lt;h4 id=&#34;shop-frontend-vue-route-component-page&#34;&gt;Shop-frontend (vue route component page)&lt;/h4&gt;
 &lt;ol&gt;
-&lt;li&gt;/     主页面，列表页面 ，展示搜索框&lt;/li&gt;
-&lt;li&gt;/item/:id   详细页面， 展示购买按钮&lt;/li&gt;
-&lt;li&gt;/search  搜索页面，和主页面一样&lt;/li&gt;
+&lt;li&gt;/     主页面/搜索结构页，列表页面 ，展示搜索框&lt;/li&gt;
+&lt;li&gt;/items/:id   详细页面， 展示购买按钮&lt;/li&gt;
+&lt;li&gt;/user/:id/orders 用户商品订单列表页面&lt;/li&gt;
 &lt;li&gt;/error  访问不到的页面&lt;/li&gt;
-&lt;li&gt;/order/:id 商品购买页面&lt;/li&gt;
-&lt;li&gt;/order/list 用户商品订单列表页面&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h4 id=&#34;shop-admin-frontend-crud-edge-template-layout-page&#34;&gt;Shop-admin-frontend (CRUD edge template layout page)&lt;/h4&gt;
 &lt;p&gt;CRUD RESTful api  for resource methods to render edge page&lt;/p&gt;
@@ -475,14 +474,14 @@ npm install element-plus --save
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#auto import &lt;/span&gt;
 npm install -D unplugin-vue-components unplugin-auto-import
 
-&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# run local vue dev runtime app service (--port)&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# run local vue dev runtime app service (vite --port 5000 --host)&lt;/span&gt;
 npm run dev
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;附具体代码：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/backend-adonisjs-api/tree/main/shop-admin-backend&#34;&gt;Shop-admin-backend&lt;/a&gt; : 后台管理系统，为了方便后续根据数据库表一键生成CURD代码，采用后端模版edge template；用户管理可以采用内部公司用户平台SSO单点登录获取ticket的方式，或者使用框架本身的身份认证功能进行后台模块的权限管理(web authentication) （done 90%）&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/backend-adonisjs-api/tree/main/adonisjs-shop-backend-api&#34;&gt;Shop-backend-api&lt;/a&gt; (@todo)&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/frontend-vue/tree/main/vue-shop-frontend&#34;&gt;Shop-frontend-vue&lt;/a&gt; (@todo)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/backend-adonisjs-api/tree/main/shop-admin-backend&#34;&gt;Shop-admin-backend&lt;/a&gt; : 后台管理系统，为了方便后续根据数据库表一键生成CURD代码，采用后端模版edge template；用户管理可以采用内部公司用户平台SSO单点登录获取ticket的方式，或者使用框架本身的身份认证功能进行后台模块的权限管理(web authentication)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/backend-adonisjs-api/tree/main/adonisjs-shop-backend-api&#34;&gt;Shop-backend-api&lt;/a&gt;：后端接口，获取接口数据，需要登录验证，和token鉴权，记录用户行为日志，读写操作数据库和缓等；&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/frontend-vue/tree/main/vue-shop-frontend&#34;&gt;Shop-frontend-vue&lt;/a&gt;：前端页面，使用vue框架开发，访问后端API使用axios，状态管理使用vuex，页面路由使vue-router，表单验证和数据验证分别使用vee-valdate和yup，组件的使用需要结合文档使用；首页/搜索结果页展示商品列表，点击更多进入商品详细页面进行购买，购买需要登录/注册，登录后进入订单列表页，具体需求推动；&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h3 id=&#34;整体联调&#34;&gt;整体联调&lt;/h3&gt;
 &lt;p&gt;这里前后端统一技术栈采用js on node  by (AdonisJS 5 + Vue 3 + Element-plus UI)， 如果熟悉node js  很方便调试，开发1人工全栈搞定就行，至于外部需求UI的调整美化由PM和设计师确定好，尽量通过工具自动化， 降低沟通成本；&lt;/p&gt;
