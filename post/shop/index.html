@@ -75,7 +75,7 @@
 以前工作中有过前端的开发经验，使用后端模版Smarty(主要是外部需求，现在新项目中应该很少使用这个了)，前端模版Mustache，页面中使用 js jquery交互逻辑，直接服用一些开源的UI组件Bootstrap，开源的后台UI系统，主要是建设内部后台的时候使用，自动生成CRUD页面；前端的技术栈更新迭代相对后端快些，通过以全栈技术栈为切入点，通过一个简单的系统，学习下最新技术栈工具，主要目的如下：
 根据需求，实现一个简单功能的购物系统，目的是为了学习ts-&gt;js on node.js全栈开发，了解整体开发构建工具，熟悉下工具开发流程，主要还是了解前端框架工具的使用，以及熟悉通过js运行时环境运行在后端服务上的应用开发工具，以便在后续开发后台系统的时候可以熟练使用这些技术进行开发，这些工具的设计思想可以借鉴到其他后端业务开发语言中。"><meta itemprop="datePublished" content="2022-01-02T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2022-01-02T10:26:23+08:00" />
-<meta itemprop="wordCount" content="3958">
+<meta itemprop="wordCount" content="3984">
 <meta itemprop="keywords" content="全栈," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="全栈开发"/>
 <meta name="twitter:description" content="介绍
@@ -572,7 +572,7 @@
 </tbody>
 </table>
 <ol start="4">
-<li>用户表 tbl_users</li>
+<li>用户表 tbl_users (users)</li>
 </ol>
 <table>
 <thead>
@@ -628,7 +628,7 @@
 <p>ER关系：</p>
 <p>[tbl_shop_items] &lt;-N&mdash;1-&gt; (create) [tbl_users]</p>
 <p>[tbl_shop_items] &lt;-1&mdash;N-&gt; [tbl_user_items] (record)   &lt;-M&mdash;1-&gt; [tbl_users]</p>
-<p>[tbl_shop_items] &lt;-1&mdash;N-&gt; [tbl_user_orders] (order) &lt;-M&mdash;1-&gt; [tbl_users]</p>
+<p>[tbl_shop_items] &lt;-1&mdash;N-&gt; [tbl_user_orders] (order) &lt;-M&mdash;1-&gt; [users]</p>
 <h3 id="消息设计">消息设计</h3>
 <p>订单生成后，通知下游系统，订阅消息，暂不考虑。</p>
 <h3 id="后端接口设计">后端接口设计</h3>
@@ -735,6 +735,17 @@ node ace make:listener ***
 <span style="color:#aaa;font-style:italic">#https://docs.adonisjs.com/guides/middleware</span>
 node ace make:middleware ***
 
+<span style="color:#aaa;font-style:italic"># https://github.com/luin/ioredis/blob/master/API.md</span>
+<span style="color:#aaa;font-style:italic"># https://docs.adonisjs.com/guides/redis</span>
+<span style="color:#aaa;font-style:italic">#install redis</span>
+npm i @adonisjs/redis
+node ace configure @adonisjs/redis
+
+<span style="color:#aaa;font-style:italic"># https://www.npmjs.com/package/@elastic/elasticsearch</span>
+<span style="color:#aaa;font-style:italic"># https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/typescript.html</span>
+npm i @elastic/elasticsearch
+
+
 <span style="color:#aaa;font-style:italic"># watch run </span>
 node ace serve --watch
 </code></pre></div><h3 id="前端开发">前端开发</h3>
@@ -775,6 +786,7 @@ npm i vee-validate@next --save
 
 <span style="color:#aaa;font-style:italic">#install element-plus ui</span>
 npm install element-plus --save
+npm i -D sass
 <span style="color:#aaa;font-style:italic">#auto import </span>
 npm install -D unplugin-vue-components unplugin-auto-import
 
@@ -784,7 +796,7 @@ npm run dev
 </code></pre></div><p>附具体代码：</p>
 <ol>
 <li><a href="https://github.com/weedge/backend-adonisjs-api/tree/main/shop-admin-backend">Shop-admin-backend</a> : 后台管理系统，为了方便后续根据数据库表一键生成CURD代码，采用后端模版edge template；用户管理可以采用内部公司用户平台SSO单点登录获取ticket的方式，或者使用框架本身的身份认证功能进行后台模块的权限管理(web authentication)</li>
-<li><a href="https://github.com/weedge/backend-adonisjs-api/tree/main/adonisjs-shop-backend-api">Shop-backend-api</a>：后端接口，获取接口数据，需要登录验证，和token鉴权，记录用户行为日志，读写操作数据库和缓等；</li>
+<li><a href="https://github.com/weedge/backend-adonisjs-api/tree/main/adonisjs-shop-backend-api">Shop-backend-api</a>：后端接口，获取接口数据，需要登录验证，和token鉴权，记录用户行为日志，读写操作数据库和缓存等；</li>
 <li><a href="https://github.com/weedge/frontend-vue/tree/main/vue-shop-frontend">Shop-frontend-vue</a>：前端页面，使用vue框架开发，访问后端API使用axios，状态管理使用vuex，页面路由使vue-router，表单验证和数据验证分别使用vee-valdate和yup，组件的使用需要结合文档使用；首页/搜索结果页展示商品列表，点击更多进入商品详细页面进行购买，购买需要登录/注册，登录后进入订单列表页，具体需求推动；</li>
 </ol>
 <h3 id="整体联调">整体联调</h3>

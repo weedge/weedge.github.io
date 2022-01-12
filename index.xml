@@ -268,7 +268,7 @@
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;ol start=&#34;4&#34;&gt;
-&lt;li&gt;用户表 tbl_users&lt;/li&gt;
+&lt;li&gt;用户表 tbl_users (users)&lt;/li&gt;
 &lt;/ol&gt;
 &lt;table&gt;
 &lt;thead&gt;
@@ -324,7 +324,7 @@
 &lt;p&gt;ER关系：&lt;/p&gt;
 &lt;p&gt;[tbl_shop_items] &amp;lt;-N&amp;mdash;1-&amp;gt; (create) [tbl_users]&lt;/p&gt;
 &lt;p&gt;[tbl_shop_items] &amp;lt;-1&amp;mdash;N-&amp;gt; [tbl_user_items] (record)   &amp;lt;-M&amp;mdash;1-&amp;gt; [tbl_users]&lt;/p&gt;
-&lt;p&gt;[tbl_shop_items] &amp;lt;-1&amp;mdash;N-&amp;gt; [tbl_user_orders] (order) &amp;lt;-M&amp;mdash;1-&amp;gt; [tbl_users]&lt;/p&gt;
+&lt;p&gt;[tbl_shop_items] &amp;lt;-1&amp;mdash;N-&amp;gt; [tbl_user_orders] (order) &amp;lt;-M&amp;mdash;1-&amp;gt; [users]&lt;/p&gt;
 &lt;h3 id=&#34;消息设计&#34;&gt;消息设计&lt;/h3&gt;
 &lt;p&gt;订单生成后，通知下游系统，订阅消息，暂不考虑。&lt;/p&gt;
 &lt;h3 id=&#34;后端接口设计&#34;&gt;后端接口设计&lt;/h3&gt;
@@ -431,6 +431,17 @@ node ace make:listener ***
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#https://docs.adonisjs.com/guides/middleware&lt;/span&gt;
 node ace make:middleware ***
 
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# https://github.com/luin/ioredis/blob/master/API.md&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# https://docs.adonisjs.com/guides/redis&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#install redis&lt;/span&gt;
+npm i @adonisjs/redis
+node ace configure @adonisjs/redis
+
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# https://www.npmjs.com/package/@elastic/elasticsearch&lt;/span&gt;
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/typescript.html&lt;/span&gt;
+npm i @elastic/elasticsearch
+
+
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# watch run &lt;/span&gt;
 node ace serve --watch
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;前端开发&#34;&gt;前端开发&lt;/h3&gt;
@@ -471,6 +482,7 @@ npm i vee-validate@next --save
 
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#install element-plus ui&lt;/span&gt;
 npm install element-plus --save
+npm i -D sass
 &lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;#auto import &lt;/span&gt;
 npm install -D unplugin-vue-components unplugin-auto-import
 
@@ -480,7 +492,7 @@ npm run dev
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;附具体代码：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/weedge/backend-adonisjs-api/tree/main/shop-admin-backend&#34;&gt;Shop-admin-backend&lt;/a&gt; : 后台管理系统，为了方便后续根据数据库表一键生成CURD代码，采用后端模版edge template；用户管理可以采用内部公司用户平台SSO单点登录获取ticket的方式，或者使用框架本身的身份认证功能进行后台模块的权限管理(web authentication)&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/backend-adonisjs-api/tree/main/adonisjs-shop-backend-api&#34;&gt;Shop-backend-api&lt;/a&gt;：后端接口，获取接口数据，需要登录验证，和token鉴权，记录用户行为日志，读写操作数据库和缓等；&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/backend-adonisjs-api/tree/main/adonisjs-shop-backend-api&#34;&gt;Shop-backend-api&lt;/a&gt;：后端接口，获取接口数据，需要登录验证，和token鉴权，记录用户行为日志，读写操作数据库和缓存等；&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/weedge/frontend-vue/tree/main/vue-shop-frontend&#34;&gt;Shop-frontend-vue&lt;/a&gt;：前端页面，使用vue框架开发，访问后端API使用axios，状态管理使用vuex，页面路由使vue-router，表单验证和数据验证分别使用vee-valdate和yup，组件的使用需要结合文档使用；首页/搜索结果页展示商品列表，点击更多进入商品详细页面进行购买，购买需要登录/注册，登录后进入订单列表页，具体需求推动；&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h3 id=&#34;整体联调&#34;&gt;整体联调&lt;/h3&gt;
