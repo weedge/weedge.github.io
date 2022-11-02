@@ -94,7 +94,7 @@
 
 对此进行方案分析，本文将介绍一种实时离线处理分析用户行为数据方案，即能帮助企业低成本地使用海量数据，又能更快速地响应业务需求，同时借助亚马逊云科技的托管服务，能够快速实施和轻松运维。"><meta itemprop="datePublished" content="2022-11-02T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2022-11-02T10:26:23+08:00" />
-<meta itemprop="wordCount" content="7505">
+<meta itemprop="wordCount" content="7513">
 <meta itemprop="keywords" content="aws,方案,全栈," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="用户行为分析方案设计"/>
 <meta name="twitter:description" content="背景
@@ -639,6 +639,8 @@ python3 src/scripts/producer-kds-test.py
 cdk destroy KDS-KDF-S3-stack
 cdk destroy KDS-KDA-sql-Lambda-DynamoDB-stack
 cdk destroy CDK-Workshop-Lambda-KDS-stack
+<span style="color:#aaa;font-style:italic"># or cdk destroy --all</span>
+cdk destroy --all
 </code></pre></div><h3 id="代码结构">代码结构</h3>
 <pre tabindex="0"><code>├── cmd                              -- golang cmd bin dir
 ├── docs                             -- help doc

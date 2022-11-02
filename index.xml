@@ -304,6 +304,8 @@ python3 src/scripts/producer-kds-test.py
 cdk destroy KDS-KDF-S3-stack
 cdk destroy KDS-KDA-sql-Lambda-DynamoDB-stack
 cdk destroy CDK-Workshop-Lambda-KDS-stack
+&lt;span style=&#34;color:#aaa;font-style:italic&#34;&gt;# or cdk destroy --all&lt;/span&gt;
+cdk destroy --all
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;代码结构&#34;&gt;代码结构&lt;/h3&gt;
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;├── cmd                              -- golang cmd bin dir
 ├── docs                             -- help doc
