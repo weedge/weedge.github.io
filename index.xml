@@ -317,6 +317,7 @@ cdk destroy CDK-Workshop-Lambda-KDS-stack
 │   └── scripts                      -- local run test code by use aws sdk
 ├── test                             -- test cdk logic
 &lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+&lt;p&gt;sam cli, &lt;a href=&#34;https://docs.aws.amazon.com/zh_cn/serverless-application-model/latest/developerguide/serverless-sam-cli-using-invoke.html&#34;&gt;local debug lambda&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;streaming cdk: &lt;a href=&#34;https://github.com/aws-samples/streaming-solution-aws-cdk&#34;&gt;https://github.com/aws-samples/streaming-solution-aws-cdk&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;kds and msk cdk: &lt;a href=&#34;https://github.com/aws-solutions/streaming-data-solution-for-amazon-kinesis-and-amazon-msk&#34;&gt;https://github.com/aws-solutions/streaming-data-solution-for-amazon-kinesis-and-amazon-msk&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;Redshift cdk : &lt;a href=&#34;https://github.com/miztiik/redshift-demo&#34;&gt;https://github.com/miztiik/redshift-demo&lt;/a&gt;&lt;/p&gt;
