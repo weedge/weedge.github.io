@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>全栈 on 时间飘过</title>
-    <link>https://weedge.github.io/tags/%E5%85%A8%E6%A0%88/</link>
-    <description>Recent content in 全栈 on 时间飘过</description>
+    <title>aws on 时间飘过</title>
+    <link>https://weedge.github.io/tags/aws/</link>
+    <description>Recent content in aws on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 02 Nov 2022 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/%E5%85%A8%E6%A0%88/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 02 Nov 2022 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/aws/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>用户行为分析方案设计</title>
       <link>https://weedge.github.io/post/user-behavior-analytics-solution/</link>
@@ -25,17 +25,6 @@
 &lt;li&gt;离线批处理，分析用户历史数据，进行推荐算法等机器学习算法模型训练使用，数据仓库中根据不同维度对数据过滤聚合，进行上卷下钻分析，比如计算DAU,WAU,MAU，转化率(购买率，注册率)分析等，通常对数据建设投入多的话， 会把用户产生的结构化非结构化的数据都存下，放在一个大的池子里待使用时进行分析，即所谓的数据湖，围湖而建挖掘数据价值；而数仓相对精细化的分析，前置建模建表分析；&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;对此进行方案分析，本文将介绍一种实时离线处理分析用户行为数据方案，即能帮助企业低成本地使用海量数据，又能更快速地响应业务需求，同时借助亚马逊云科技的托管服务，能够快速实施和轻松运维。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>全栈开发</title>
-      <link>https://weedge.github.io/post/shop/</link>
-      <pubDate>Sun, 02 Jan 2022 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/shop/</guid>
-      <description>&lt;h2 id=&#34;介绍&#34;&gt;介绍&lt;/h2&gt;
-&lt;p&gt;以前工作中有过前端的开发经验，使用后端模版Smarty(主要是外部需求，现在新项目中应该很少使用这个了)，前端模版Mustache，页面中使用 js jquery交互逻辑，直接服用一些开源的UI组件Bootstrap，开源的后台UI系统，主要是建设内部后台的时候使用，自动生成CRUD页面；前端的技术栈更新迭代相对后端快些，通过以全栈技术栈为切入点，通过一个简单的系统，学习下最新技术栈工具，主要目的如下：&lt;/p&gt;
-&lt;p&gt;根据需求，实现一个简单功能的购物系统，目的是为了学习ts-&amp;gt;js on node.js全栈开发，了解整体开发构建工具，熟悉下工具开发流程，主要还是了解前端框架工具的使用，以及熟悉通过js运行时环境运行在后端服务上的应用开发工具，以便在后续开发后台系统的时候可以熟练使用这些技术进行开发，这些工具的设计思想可以借鉴到其他后端业务开发语言中。&lt;/p&gt;</description>
     </item>
     
   </channel>

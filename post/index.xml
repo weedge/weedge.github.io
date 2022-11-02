@@ -6,7 +6,27 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sun, 02 Jan 2022 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 02 Nov 2022 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>用户行为分析方案设计</title>
+      <link>https://weedge.github.io/post/user-behavior-analytics-solution/</link>
+      <pubDate>Wed, 02 Nov 2022 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/user-behavior-analytics-solution/</guid>
+      <description>&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
+&lt;p&gt;用户在手机和pc端使用客户业务产品，比如浏览网页，购买商品，查看文档，观看视频，直播，IOT场景；会产生大量的用户行为数据，主要包括：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;非结构化数据：日志(前端事件埋点日志，服务端处理事件日志)，还有些非结构化的图片，音视频数据等等，主要存放在文件存储系统中；&lt;/li&gt;
+&lt;li&gt;结构化和半结构化数据： 用户操作产品写入的结构化数据存放于数据库表中，将文档型半结构化的数据放入文档数据库中；&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;需要分析用户的行为数据，进行决策；分为实时流式处理和离线批处理：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;实时流处理，主要用于实时展现客户端看板，后台BI实时分析，实时风控/推荐，异常报警等场景；&lt;/li&gt;
+&lt;li&gt;离线批处理，分析用户历史数据，进行推荐算法等机器学习算法模型训练使用，数据仓库中根据不同维度对数据过滤聚合，进行上卷下钻分析，比如计算DAU,WAU,MAU，转化率(购买率，注册率)分析等，通常对数据建设投入多的话， 会把用户产生的结构化非结构化的数据都存下，放在一个大的池子里待使用时进行分析，即所谓的数据湖，围湖而建挖掘数据价值；而数仓相对精细化的分析，前置建模建表分析；&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;对此进行方案分析，本文将介绍一种实时离线处理分析用户行为数据方案，即能帮助企业低成本地使用海量数据，又能更快速地响应业务需求，同时借助亚马逊云科技的托管服务，能够快速实施和轻松运维。&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>全栈开发</title>
       <link>https://weedge.github.io/post/shop/</link>
@@ -214,18 +234,6 @@
 &lt;p&gt;  现在吃穿住行的app大都有定位的功能；如何让手机app所在的定位寻找出附近的POI(Point of Interest)呢？至于用户手机是如何获取定位的可以自行Google/Baidu，有时间整理一下。&lt;/p&gt;
 &lt;p&gt;地图上定位一个地方，通过经度(longitude)和纬度(latitude)来标记，由WGS84规定(为GPS全球定位系统使用而建立的坐标系统)；比如地球🌍作为一个球体，纬度是指&lt;code&gt;所在位置的纬线到地心的直线&lt;/code&gt;和&lt;code&gt;赤道的纬线到地心的直线&lt;/code&gt;的夹角，通常北纬为正，南纬为负；经度是指&lt;code&gt;所在位置的经线平面&lt;/code&gt;和&lt;code&gt;规定的本初子午线平面&lt;/code&gt;的夹角，以东为东经，以西为西经，通常东经为正，西经为负；&lt;/p&gt;
 &lt;p&gt;一个地点的经度一般与它于协调世界时之间的时差相应：每天有24小时，而一个圆圈有360度，因此地球每小时自转15度。因此假如一个人的地方时比协调世界UTC(Coordinated Universal Time)时早3小时的话，那么他在东经45度左右，比如北京是在东经116左右，那时区+8作为中国标准时间CST(China Standard Time)&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>工具盒子-GNU global</title>
-      <link>https://weedge.github.io/post/gnu-global/</link>
-      <pubDate>Sat, 15 Nov 2014 21:04:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/gnu-global/</guid>
-      <description>&lt;h3 id=&#34;gnu-global&#34;&gt;gnu global&lt;/h3&gt;
-&lt;p&gt;源码标记，浏览源码挺好用的工具,轻量级的，简单易用。 gtags类似ctags,但是效率比ctags高，具体比较查看&lt;a href=&#34;https://github.com/OpenGrok/OpenGrok/wiki/Comparison-with-Similar-Tools&#34;&gt;这里&lt;/a&gt;(OpenGrok使用相对比较复杂)，而且未来支持的语言也比较多。对Linux-2.6.32源码390M的文件进行标签产出289MB的标签文件。&lt;/p&gt;
-&lt;p&gt;可以通过源码安装就OK &lt;!-- raw HTML omitted --&gt;wget &lt;a href=&#34;http://tamacom.com/global/global-6.3.2.tar.gz;&#34;&gt;http://tamacom.com/global/global-6.3.2.tar.gz;&lt;/a&gt; tar zxvf global-6.3.2.tar.gz; cd global-6.3.2; ./configure; make &amp;amp;&amp;amp; make install&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
-&lt;p&gt;在需要查找的目录下运行&lt;!-- raw HTML omitted --&gt;gtags&lt;!-- raw HTML omitted --&gt;,会生成三个文件： GTAGS&amp;ndash;定义的函数变量； GRTAGS&amp;ndash;引用的函数变量； GPATH&amp;ndash;函数变量所在文件的路径。&lt;/p&gt;</description>
     </item>
     
   </channel>
