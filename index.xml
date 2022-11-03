@@ -330,8 +330,8 @@ cdk destroy --all
 &lt;p&gt;aurora mysql dms kds opensearch cdk: &lt;a href=&#34;https://github.com/aws-samples/aws-dms-cdc-data-pipeline.git&#34;&gt;https://github.com/aws-samples/aws-dms-cdc-data-pipeline.git&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;kda-flink-py: &lt;a href=&#34;https://aws.amazon.com/cn/blogs/china/python-stream-data-processing-and-analysis-using-pyflink-in-amazon-kinesis-data-analytics/&#34;&gt;https://aws.amazon.com/cn/blogs/china/python-stream-data-processing-and-analysis-using-pyflink-in-amazon-kinesis-data-analytics/&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;kda-zeppelin-flink-py: &lt;a href=&#34;https://aws.amazon.com/cn/blogs/big-data/query-your-data-streams-interactively-using-kinesis-data-analytics-studio-and-python/&#34;&gt;https://aws.amazon.com/cn/blogs/big-data/query-your-data-streams-interactively-using-kinesis-data-analytics-studio-and-python/&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://docs.aws.amazon.com/pdfs/whitepapers/latest/microservices-on-aws/microservices-on-aws.pdf&#34;&gt;Implementing Microservices on AWS&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://d1.awsstatic.com/whitepapers/aws-cloud-data-ingestion-patterns-practices.pdf&#34;&gt;AWS Cloud Data Ingestion Patterns and Practices&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://docs.aws.amazon.com/pdfs/whitepapers/latest/microservices-on-aws/microservices-on-aws.pdf&#34;&gt;Implementing Microservices on AWS&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://d1.awsstatic.com/whitepapers/aws-cloud-data-ingestion-patterns-practices.pdf&#34;&gt;AWS Cloud Data Ingestion Patterns and Practices&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;</description>
       
     </item>
     
