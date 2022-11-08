@@ -6,13 +6,31 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 02 Nov 2022 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 08 Nov 2022 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>aws</title>
       <link>https://weedge.github.io/tags/aws/</link>
-      <pubDate>Wed, 02 Nov 2022 10:26:23 +0800</pubDate>
+      <pubDate>Tue, 08 Nov 2022 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/aws/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>ML</title>
+      <link>https://weedge.github.io/tags/ml/</link>
+      <pubDate>Tue, 08 Nov 2022 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/ml/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>TF</title>
+      <link>https://weedge.github.io/tags/tf/</link>
+      <pubDate>Tue, 08 Nov 2022 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/tf/</guid>
       <description></description>
     </item>
     
@@ -166,24 +184,6 @@
       <pubDate>Sat, 26 Jan 2019 01:16:30 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/%E9%9A%8F%E7%AC%94%E8%AE%B0%E5%BD%95/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>macbook</title>
-      <link>https://weedge.github.io/tags/macbook/</link>
-      <pubDate>Sat, 19 Jan 2019 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/macbook/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>idgen</title>
-      <link>https://weedge.github.io/tags/idgen/</link>
-      <pubDate>Tue, 12 Dec 2017 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/idgen/</guid>
       <description></description>
     </item>
     

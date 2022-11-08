@@ -295,6 +295,49 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/crdt/">CRDT</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2021-12-28" class="post-time">
+        2021-12-28
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <h2 id="介绍">介绍</h2>
+<p><strong>无冲突复制数据类型</strong>(CRDT: <strong>conflict-free replicated data type</strong>) 是一种简化分布式数据存储系统和多用户应用程序的数据结构。</p>
+<p>在许多系统中，某些数据的副本需要存储在多台计算机上。此类系统的示例包括：</p>
+<ul>
+<li>在本地设备上存储数据，并且需要将该数据同步到属于同一用户的其他设备（同一用户多端设备同步，例如日历、笔记、联系人或提醒）的移动应用程序；</li>
+<li>分布式数据库，维护数据的多个副本（在同一数据中心或不同位置,一般是不同数据中心的多活场景），以便在某些副本离线时系统继续正常工作；</li>
+<li>协作软件，例如 Google Docs、Trello、Figma 或许多其他软件，其中多个用户可以同时更改同一文件或数据；</li>
+<li><a href="https://docs.microsoft.com/en-us/shows/tech-exceptions/concordant-always-know-what-to-expect-from-your-data">边缘计算场景</a>，比如多个手机/车载app 在无信号的森林中，产生的本地离线协同数据，多个设备同步到云上处理;</li>
+<li>大规模数据存储和处理系统，复制数据以实现全球可扩展性。</li>
+</ul>
+    </div>
+    <div class="read-more">
+      <a href="/post/crdt/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/pool/">pool</a>
     </h1>
     
@@ -355,41 +398,6 @@
     </div>
     <div class="read-more">
       <a href="/post/wal/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/conf/">设计-配置平台</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2021-11-18" class="post-time">
-        2021-11-18
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h3 id="介绍">介绍</h3>
-<p>业务服务在启动时加载配置，配置分为静态配置和动态配置，静态配置如服务监听的端口，日志路径，访问依赖服务单元不同云(region / zone) 域名地址等；动态配置包括业务配置，流程管理配置，策略配置等；静态配置服务启动之后不会更改，而动态配置在服务启动运行时可以动态热加载；将配置的内容和版本进行分离，关注配置的管理而无需关注配置的内容，配置内容用户可以自定义配置内容，使用json-schema进行校验，提供自定义配置内容json给后台ui前端进行单个整体配置的交互，配置后台只需加载json-schema进行校验提交内容，json-schema由用户上传提供地址即可。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/conf/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>

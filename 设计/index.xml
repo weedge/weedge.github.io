@@ -8,6 +8,15 @@
     <language>zh-cn</language><atom:link href="https://weedge.github.io/%E8%AE%BE%E8%AE%A1/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title></title>
+      <link>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/aws/mldl/%E8%AE%A9%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E8%B5%B7%E6%9D%A5/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/aws/mldl/%E8%AE%A9%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E8%B5%B7%E6%9D%A5/</guid>
+      <description>介绍 上文提到通过用户的行为数据存放在S3中，这些数据包括结构化和非结构化数据，怎么让这些数据变得有价值呢？一种是人为进行数据挖掘，对相关指标</description>
+    </item>
+    
+    <item>
+      <title></title>
       <link>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/aws/%E5%88%86%E6%9E%90/aws-solution/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       

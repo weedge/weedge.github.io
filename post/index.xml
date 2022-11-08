@@ -6,7 +6,18 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 02 Nov 2022 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 08 Nov 2022 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>让ML跑起来</title>
+      <link>https://weedge.github.io/post/let-ml-go/</link>
+      <pubDate>Tue, 08 Nov 2022 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/let-ml-go/</guid>
+      <description>&lt;h3 id=&#34;介绍&#34;&gt;介绍&lt;/h3&gt;
+&lt;p&gt;上文提到通过用户的行为数据存放在S3中，这些数据包括结构化和非结构化数据，怎么让这些数据变得有价值呢？一种是人为进行数据挖掘，对相关指标转化率进行评估；还有一种是通过这些数据来训练模型，然后将预测模型用于生产环境中进行A/B测试，选出适合的模型，这个模型需要不断更新迭代，并且自动化半自动化运行起来；&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://docs.aws.amazon.com/zh_cn/sagemaker/latest/dg/images/ml-concepts-10.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>用户行为分析方案设计</title>
       <link>https://weedge.github.io/post/user-behavior-analytics-solution/</link>
@@ -222,18 +233,6 @@
 &lt;blockquote&gt;
 &lt;p&gt;经常听到技术人总结的话：技术是一个积累的过程，从别人那里看到的，和自己去动手实现的是两回事，别人趟过的坑，你再重新踩一次，也许会遇到新的坑，这些踩过之后，把这些知识点和满坑方案记录下来，日积月累，是对以后是有帮助的。&lt;/p&gt;
 &lt;/blockquote&gt;</description>
-    </item>
-    
-    <item>
-      <title>附近POI: geohash原理</title>
-      <link>https://weedge.github.io/post/geohash/</link>
-      <pubDate>Wed, 03 Jun 2015 00:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/geohash/</guid>
-      <description>&lt;h3 id=&#34;问题&#34;&gt;问题&lt;/h3&gt;
-&lt;p&gt;  现在吃穿住行的app大都有定位的功能；如何让手机app所在的定位寻找出附近的POI(Point of Interest)呢？至于用户手机是如何获取定位的可以自行Google/Baidu，有时间整理一下。&lt;/p&gt;
-&lt;p&gt;地图上定位一个地方，通过经度(longitude)和纬度(latitude)来标记，由WGS84规定(为GPS全球定位系统使用而建立的坐标系统)；比如地球🌍作为一个球体，纬度是指&lt;code&gt;所在位置的纬线到地心的直线&lt;/code&gt;和&lt;code&gt;赤道的纬线到地心的直线&lt;/code&gt;的夹角，通常北纬为正，南纬为负；经度是指&lt;code&gt;所在位置的经线平面&lt;/code&gt;和&lt;code&gt;规定的本初子午线平面&lt;/code&gt;的夹角，以东为东经，以西为西经，通常东经为正，西经为负；&lt;/p&gt;
-&lt;p&gt;一个地点的经度一般与它于协调世界时之间的时差相应：每天有24小时，而一个圆圈有360度，因此地球每小时自转15度。因此假如一个人的地方时比协调世界UTC(Coordinated Universal Time)时早3小时的话，那么他在东经45度左右，比如北京是在东经116左右，那时区+8作为中国标准时间CST(China Standard Time)&lt;/p&gt;</description>
     </item>
     
   </channel>

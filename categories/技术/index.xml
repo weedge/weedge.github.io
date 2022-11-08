@@ -6,7 +6,18 @@
     <description>Recent content in 技术 on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 02 Nov 2022 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 08 Nov 2022 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>让ML跑起来</title>
+      <link>https://weedge.github.io/post/let-ml-go/</link>
+      <pubDate>Tue, 08 Nov 2022 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/let-ml-go/</guid>
+      <description>&lt;h3 id=&#34;介绍&#34;&gt;介绍&lt;/h3&gt;
+&lt;p&gt;上文提到通过用户的行为数据存放在S3中，这些数据包括结构化和非结构化数据，怎么让这些数据变得有价值呢？一种是人为进行数据挖掘，对相关指标转化率进行评估；还有一种是通过这些数据来训练模型，然后将预测模型用于生产环境中进行A/B测试，选出适合的模型，这个模型需要不断更新迭代，并且自动化半自动化运行起来；&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://docs.aws.amazon.com/zh_cn/sagemaker/latest/dg/images/ml-concepts-10.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>用户行为分析方案设计</title>
       <link>https://weedge.github.io/post/user-behavior-analytics-solution/</link>
