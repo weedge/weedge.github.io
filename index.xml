@@ -110,6 +110,14 @@
 &lt;/ol&gt;
 &lt;h3 id=&#34;开源方案&#34;&gt;开源方案&lt;/h3&gt;
 &lt;p&gt;&lt;a href=&#34;https://www.kubeflow.org/docs/started/introduction/&#34;&gt;Kubeflow&lt;/a&gt; 在 Kubernetes 上部署机器学习 (ML) 工作流变得简单、可移植和可扩展。提供一种直接的方式来将用于 ML 的同类最佳开源系统部署到不同的基础设施；在任何运行 Kubernetes 的地方，都应该能够运行 Kubeflow。&lt;/p&gt;
+&lt;h3 id=&#34;tfx-with-kubeflow-on-gke&#34;&gt;TFX with kubeflow on GKE&lt;/h3&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/tensorflow/tfx&#34;&gt;https://github.com/tensorflow/tfx&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;文档：&lt;a href=&#34;https://www.tensorflow.org/tfx/tutorials&#34;&gt;TFX tutorials&lt;/a&gt;&lt;/p&gt;
+
+&lt;div style=&#34;position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;&#34;&gt;
+  &lt;iframe src=&#34;https://www.youtube.com/embed/17l3VR2MIeg&#34; style=&#34;position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;&#34; allowfullscreen title=&#34;YouTube Video&#34;&gt;&lt;/iframe&gt;
+&lt;/div&gt;
+
 &lt;h3 id=&#34;ml-on--amazon-sagemakerhttpsawsamazoncomsagemaker&#34;&gt;ML on  &lt;a href=&#34;https://aws.amazon.com/sagemaker/&#34;&gt;Amazon SageMaker&lt;/a&gt;&lt;/h3&gt;
 &lt;p&gt;分布式训练： &lt;a href=&#34;https://aws.amazon.com/cn/sagemaker/distributed-training/&#34;&gt;https://aws.amazon.com/cn/sagemaker/distributed-training/&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;文档：&lt;a href=&#34;https://sagemaker-examples.readthedocs.io/en/latest/index.html&#34;&gt;Amazon SageMaker Example Notebooks&lt;/a&gt;， &lt;a href=&#34;https://sagemaker-workshop.com/&#34;&gt;Amazon SageMaker Workshop&lt;/a&gt;&lt;/p&gt;
@@ -121,6 +129,7 @@
 &lt;h3 id=&#34;参考&#34;&gt;参考&lt;/h3&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://developers.google.com/machine-learning&#34;&gt;google-developers-ml&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.tensorflow.org/tfx/&#34;&gt;TFX&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://xgboost.readthedocs.io/en/latest/index.html&#34;&gt;XGBoost文档&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.tensorflow.org/tfx/guide/serving&#34;&gt;TF Serving&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://time.geekbang.org/column/article/303430&#34;&gt;深度学习推荐系统实战&lt;/a&gt; &lt;a href=&#34;https://github.com/wzhe06/SparrowRecSys&#34;&gt;SparrowRecSys&lt;/a&gt;&lt;/li&gt;
