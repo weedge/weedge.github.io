@@ -360,7 +360,7 @@
 &lt;p&gt;KDS-KDA-flink-OpenSearch-stack&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;KDS-KDA-flink-KDS-stack: eg: for near-realtime-warehouse, make a pipeline (ODS-&amp;gt;&lt;strong&gt;DWD-&amp;gt;DWM-&amp;gt;DWS&lt;/strong&gt;) sink to Redshift&lt;/p&gt;
+&lt;p&gt;KDS-KDA-flink-KDS-stack: eg: for near-realtime-warehouse, make a pipeline (ODS-&amp;gt;&lt;strong&gt;DWD-&amp;gt;DWM-&amp;gt;DWS&lt;/strong&gt;) sink to Redshift; like this &lt;a href=&#34;https://cloud.tencent.com/developer/article/1919594&#34;&gt;tencent news Pipeline pattern&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;KDS-KDF-Redshift-stack:&lt;/p&gt;
