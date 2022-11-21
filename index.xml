@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 08 Nov 2022 10:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 21 Nov 2022 10:26:23 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -48,6 +48,427 @@
 &lt;li&gt;&amp;ldquo;&lt;strong&gt;万物之始，大道至简，衍化至繁&lt;/strong&gt;&amp;rdquo; &amp;ndash; 老子《&lt;a href=&#34;https://baike.baidu.com/item/%E9%81%93%E5%BE%B7%E7%BB%8F/327138&#34;&gt;道德经&lt;/a&gt;》&lt;/li&gt;
 &lt;/ol&gt;
 </description>
+      
+    </item>
+    
+    <item>
+      <title>设计-直播间赠送礼物功能</title>
+      <link>https://weedge.github.io/post/zb-gift/</link>
+      <pubDate>Mon, 21 Nov 2022 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/zb-gift/</guid>
+      
+        <description>&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
+&lt;p&gt;直播线上互动，已成为当下生活的一部分，特别是受疫情影响，成为互联网的主要流量入口；研究了下各个平台直播间送礼物的功能，发现大同小异，在礼物分组，一些定制化的礼物有区分，整体交互流程大致相同，主要是直播间主播上播，用户通过礼物打赏给主播们(一个直播间可能有多名主播在互动)，礼物是通过虚拟币(**币) 换算，早期互联网用户线上互动礼物，玩家最多的应该是QQ币了，只不过以前的打赏赠送场景是在web2.0刚开始的时候，交互的大多是文字和图片，相关产品场景，虚拟空间(个人空间，博客，种菜等娱乐互动场景)；随着底层网络基建的发展，4G之后出现了大量的视频网站，用户可以录一些视频内容来互动；到后来音视频流媒体的发展，相关的在线直播间开始涌现，用户之间享受一波直播红利带来的互动，当然影响相对于前面的形式更加实时和直接；现在的5G和未来6G，以及物联网都会给直播形式带来新的互动场景,比如：虚拟会场，人机互动；其中早期培养起来的打赏送礼行为功能经常用于有主播的娱乐互动直播中，也是增值盈利的一部分；&lt;/p&gt;
+&lt;p&gt;tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦，电商带货商品，没有主播，节目直播/转播，会议直播，自习室，基本的点赞，计数，聊天基础服务功能；还有些抽奖功能，答题功能(教育类直播居多)，投票，红包这些功能服务可在开播时设置，是否启用；有用户基础的流量平台可能还会以竞价排名的方式推荐一波；这些功能可以作为一个可管理的插件，通过组合的方式应用于直播中，方便管理，后续可以添加新功能满足某类型直播场景。&lt;/p&gt;
+&lt;h2 id=&#34;需求设计&#34;&gt;需求设计&lt;/h2&gt;
+&lt;p&gt;设计一个简单礼物打赏功能: A用户(观众)赠送礼物给B用户(主播)，可以给多个主播赠送礼物；&lt;/p&gt;
+&lt;h3 id=&#34;分析&#34;&gt;分析&lt;/h3&gt;
+&lt;p&gt;礼物：直播平台通过虚拟币来统一等价交换的虚拟物品，而虚拟币是需要通过用户充值购买；发送礼物可以获得一些积分；&lt;/p&gt;
+&lt;p&gt;A用户发送礼物给B用户，A的虚拟币扣除，B的虚拟币相应增加；需要保证赠送和收到的数量一致；&lt;/p&gt;
+&lt;p&gt;需要考虑并发场景，对于热门主播高峰期的流量值100w观众用户在线互动，每秒送礼的请求数量也可能高于这个值，用户可能连击送出多次， 而且为了保证数据一致和吞吐，尽量减少锁的使用，或者说采用&lt;a href=&#34;https://en.wikipedia.org/wiki/Optimistic_concurrency_control&#34;&gt;OCC&lt;/a&gt;，乐观锁的方式来处理事务，交由业务服务程序来处理，尽量减少或减短数据库中心存储服务上的锁操作，原理就是：夯主后，就呆萌了，资源未释放，请求资源一增多，导致整个服务吞吐下降，一直持续下去随时都会down掉，而且锁是建立在索引数据之上的， 如果没有相关降级处理，弄不好整体服务就&lt;a href=&#34;https://www.youtube.com/watch?v=4m48GqaOz90&#34;&gt;galigeigei&lt;/a&gt;；&lt;/p&gt;
+&lt;p&gt;100W 观众A向同一个主播B 赠送礼物，对于主播B的虚拟币累计写操作比较大，同一时间可能100W+的w 操作 主播B 虚拟币这条记录，如果直接同步操作在数据库层面会出现行锁，会等待夯主整个赠送流程，所以需要把这些集中写，通过消息队列异步去更新虚拟币数目，进而提高观众送礼接口的吞吐量，&lt;/p&gt;
+&lt;p&gt;观众虽然操作自己的虚拟币数目行记录，但是直接操作数据库，即使对用户资产表进行分库分表操作，也会有大量的磁盘i/o，所以直播间的互动数据直接在缓存中操作，把观众的操作记录消息队列的方式异步落库；&lt;/p&gt;
+&lt;p&gt;缓存的方式操作，需要把观众的用户资产信息前置预热至缓存中，直播中直接操作缓存， 操作缓存需要保证并发操作事务的原子性，保证观众的虚拟币不能多扣或者少扣；&lt;/p&gt;
+&lt;p&gt;并发场景下，为了减少大量用户冲击底层数据库，减少磁盘io, 送礼物这些互动直接读写用户缓存数据，这些缓存数据的操作类型分为是/否更新频繁；&lt;/p&gt;
+&lt;p&gt;更新不频繁数据：用户，直播间，物料详情等信息，这些缓存数据在进入直播间的时候直接从数据库以cacheAside pattern获取填充，填充的时候采用singleflight方式；物料信息还可以服务本地缓存一份；变更数据时，远端缓存数据可以通过CDC订阅数据库操作日志(比如：binlog)来主动异步更新缓存数据，或者使用延时双删来被动更新，本地缓存可根据通过控制平面配置下发来触发从远端缓存更新数据；&lt;/p&gt;
+&lt;p&gt;更新频繁数据： 这个主要发生在用户直播互动，赠送礼物场景，多次并发操作，变更的实体数据 观众/主播虚拟资产扣除/增加，这些数据以writeThrough/Behind parttern方式直接更新缓存，队列异步落库；因为直播场景用户的数据都在缓存中，数据实时更新查看，不影响用户体验；直播监控后台从数据库里订阅近实时查看用户的虚拟资产，会有一个批量窗口的处理延迟；&lt;/p&gt;
+&lt;p&gt;缓存数据初始化，可以在用户刚打开app的时候初始化，也可以在进入/创建好直播间的时候初始化好用户直播间缓存数据；&lt;/p&gt;
+&lt;p&gt;以上可以将操作分2个关键步骤： 观众赠送礼物和异步更新观众和主播的资产信息；通过消息队列来解耦，提高送礼接口吞吐和请求响应延迟，以及以pull方式消费，缓解数据库实例的读写压力；&lt;/p&gt;
+&lt;p&gt;观众赠送礼物： 礼物是通过虚拟货币进行等价交换的，通过礼物id获取到对应消费的虚拟资产，对中心远端缓存分片中的观众虚拟资产进行事务扣除处理，事务提交之后，发送事务消息；这里采用cas方式处理，一种是watch key(string 读写io是O(1), 不用hash是因为读取全部资产信息io是O(n))+事务方式，一种是lua的形式直接写业务提交脚本给redis核心主线程去处理；这里可能会想到直接用 hash incr原子操作，但是这里不行，因为需要读出key对应的虚拟资产，用于判断虚拟资源是否充足，读出来在扣除写入，需要一起执行，保证事务原子性；除了核心流程，还有发送礼物成功后，需要推送消息到直播间，根据产品礼品策略判断是否展示特效; 以及增加用户活动积分，增加互动积极性；&lt;/p&gt;
+&lt;p&gt;异步更新观众和主播数据库落地资产信息：这里为了减少对数据库的行锁的并发压力，也采用CAS的方式来更新数据库的数据，&lt;/p&gt;
+&lt;p&gt;消息队列：涉及到金钱，为了提高吞吐，需要保证数据准确，数据最终一致(&lt;a href=&#34;https://www.allthingsdistributed.com/2008/12/eventually_consistent.html&#34;&gt;&lt;strong&gt;BASE&lt;/strong&gt;&lt;/a&gt;)，采用支持事务消息的分布式消息队列，比如：&lt;a href=&#34;https://rocketmq.apache.org/zh/docs/featureBehavior/04transactionmessage/&#34;&gt;rocketMQ&lt;strong&gt;事务消息&lt;/strong&gt;&lt;/a&gt;，这里可能有个疑问如果刚开始发送事务消息就失败了，可能是网络抖动原因，一般是启用failover权重&lt;a href=&#34;https://en.wikipedia.org/wiki/Exponential_backoff&#34;&gt;指数退避&lt;/a&gt;策略重试到不同机房的rocketMQ集群，可以查看&lt;a href=&#34;https://rocketmq.apache.org/zh/docs/featureBehavior/05sendretrypolicy#%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6&#34;&gt;消息发送重试机制&lt;/a&gt; 和 &lt;a href=&#34;https://rocketmq.apache.org/zh/docs/bestPractice/15bestpractice&#34;&gt;最佳实践&lt;/a&gt;, &lt;a href=&#34;https://aws.amazon.com/cn/builders-library/timeouts-retries-and-backoff-with-jitter/&#34;&gt;timeouts-retries-and-backoff-with-jitter&lt;/a&gt;；如果重试还是失败打印错误日志记录发送详情，通过实时数据流将异常行为写入db中，以便后续补发；&lt;/p&gt;
+&lt;p&gt;Tips: 如果使用阿里云rocketMQ, 需要注意支持版本提供的SDK，5.0 版本 &lt;a href=&#34;https://github.com/apache/rocketmq-clients&#34;&gt;client SDK&lt;/a&gt; ; 4.0相关版本有些开发语言不支持tcp方式，仅提供http的方式(会少了一些功能，比如批量发送普通消息)；选用新版的5.0版本的SDK开发; 如果有自建运维能力，直接使用开源方案来搭建一套，比如用&lt;a href=&#34;https://www.amazonaws.cn/solutions/apache-rocketmq-on-aws/&#34;&gt;rocketMQ on aws&lt;/a&gt;，并且使用5.0可以实现一层mq-proxy;&lt;/p&gt;
+&lt;p&gt;题外话: 现在分布式消息队列&lt;a href=&#34;https://kafka.apache.org/33/documentation/streams/architecture&#34;&gt;kafka-streams&lt;/a&gt;, &lt;a href=&#34;https://github.com/apache/rocketmq-streams&#34;&gt;rocketmq-streams&lt;/a&gt; 支持数据流(stream)处理大数据实时场景，支持一些简单算子操作和SQL(&lt;a href=&#34;https://github.com/confluentinc/ksql&#34;&gt;ksql&lt;/a&gt;, &lt;a href=&#34;https://github.com/alibaba/rsqldb&#34;&gt;rsql&lt;/a&gt;)；这个和flink对应功能是重合了，flink也在往table store上发力满足数据堆积的能力; 一波流～&lt;/p&gt;
+&lt;h3 id=&#34;调研&#34;&gt;调研&lt;/h3&gt;
+&lt;p&gt;以pc端抓http包为例，手机端接口一样&lt;/p&gt;
+&lt;h4 id=&#34;抖音接口&#34;&gt;抖音接口&lt;/h4&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;curl &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;https://live.douyin.com/webcast/gift/send/?aid=6383&amp;amp;live_id=1&amp;amp;device_platform=web&amp;amp;language=zh-CN&amp;amp;enter_from=web_live&amp;amp;cookie_enabled=true&amp;amp;screen_width=2048&amp;amp;screen_height=1152&amp;amp;browser_language=zh-CN&amp;amp;browser_platform=MacIntel&amp;amp;browser_name=Chrome&amp;amp;browser_version=107.0.0.0&amp;amp;browser_online=true&amp;amp;engine_name=Blink&amp;amp;engine_version=107.0.0.0&amp;amp;os_name=Mac+OS&amp;amp;os_version=10.15.7&amp;amp;cpu_core_num=8&amp;amp;device_memory=8&amp;amp;platform=PC&amp;amp;downlink=10&amp;amp;effective_type=4g&amp;amp;round_trip_time=50&amp;amp;channel=channel_pc_web&amp;amp;app_name=douyin_web&amp;amp;webid=7167235205950047744&amp;amp;user_agent=Mozilla%2F5.0+(Macintosh%3B+Intel+Mac+OS+X+10_15_7)+AppleWebKit%2F537.36+(KHTML,+like+Gecko)+Chrome%2F107.0.0.0+Safari%2F537.36&amp;amp;fp=verify_lam4f5i1_plZJSYeB_iUgU_4z2o_9JHF_d7Z0Z60sLg33&amp;amp;did=0&amp;amp;referer=https:%2F%2Flive.douyin.com%2F444452144000%3Fcover_type%3D0%26enter_from_merge%3Dweb_live%26enter_method%3Dweb_card%26game_name%3D%26is_recommend%3D1%26live_type%3Dgame%26more_detail%3D%26request_id%3D2022111814283801020916816201004237%26room_id%3D7167220081737468683%26stream_type%3Dvertical%26title_type%3D1%26web_live_page%3Dhot_live%26web_live_tab%3Dall&amp;amp;target=&amp;amp;device_id=7167235205950047744&amp;amp;msToken=aOEoMNHAEI98H45Z0n-zUTffiNgv7HNkGU0lwFptk-JBg00tEs0I74G4sYXgG670cAdhSmXNcKlRU3-QaxW7Pflt-p8YAmyU5eC3EGJQfp7Mk7JpmP_P&amp;amp;X-Bogus=DFSzswVL0qCmAcoQS8MuBN7TlqS8&amp;amp;_signature=_02B4Z6wo00001Heu8JQAAIDD43irmgubdKx3rvQAAH6ktTtRdH7gtQJWp3SjldUkeBB51lpkXUQ700UnFEXODUicQ0r1ccxSxq4OwWIjvxuNe8Acl-gJzChe99W43SojHkPp9aa82Qzi9VoTd2&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;authority: live.douyin.com&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;accept: application/json, text/plain, */*&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;accept-language: zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;content-type: application/x-www-form-urlencoded&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;cookie: xgplayer_user_id=502915240928; csrf_session_id=f5161482adac52884f25a91fa758d7b0; ttcid=5cd5ff73751f4ab39911c85e57f9ca7479; passport_csrf_token=46e48d1e7b4df245f8caab8a34b64935; passport_csrf_token_default=46e48d1e7b4df245f8caab8a34b64935; home_can_add_dy_2_desktop=%220%22; n_mh=Qo43cptpX41bfwDmWyVyRUGMZnsucxhgcWJqKjjWkvI; sso_uid_tt=a84f8e3ae1f0c8301f5a882b05abe3f0; sso_uid_tt_ss=a84f8e3ae1f0c8301f5a882b05abe3f0; toutiao_sso_user=a28a6e92e7dc7d690b4f6b9a59077692; toutiao_sso_user_ss=a28a6e92e7dc7d690b4f6b9a59077692; passport_assist_user=Cjyr0IY04IJK-7Hxgl87vzPKZIfpFS29oAG2arITfMftUANM_d6SDxwAksiJEuVqZgZdE_BYyvcjLLGAQaYaSAo8zVwGiPnNM3S7eRNlXwMkuS7yNVm17pbNfKqXsXj3Rgk9Nm08DWh_PY0JRbH8FQeLxabRAoqM4bPJTzQ8EM_DoQ0Yia_WVCIBAxToQPk%3D; sid_ucp_sso_v1=1.0.0-KGIxM2FlNmE2MDdiNWE5MDA1YmIwZjg5OWVkNTUxMTBhMzdhYWE2OTIKHQjhrMGYrgIQt8vcmwYY7zEgDDDHuNHRBTgGQPQHGgJobCIgYTI4YTZlOTJlN2RjN2Q2OTBiNGY2YjlhNTkwNzc2OTI; ssid_ucp_sso_v1=1.0.0-KGIxM2FlNmE2MDdiNWE5MDA1YmIwZjg5OWVkNTUxMTBhMzdhYWE2OTIKHQjhrMGYrgIQt8vcmwYY7zEgDDDHuNHRBTgGQPQHGgJobCIgYTI4YTZlOTJlN2RjN2Q2OTBiNGY2YjlhNTkwNzc2OTI; passport_auth_status=ba24f5319c0f02c6232d484fd51c2187%2C; passport_auth_status_ss=ba24f5319c0f02c6232d484fd51c2187%2C; sid_guard=ea2e466c926c317f4f552f0d3982a458%7C1668752823%7C5184000%7CTue%2C+17-Jan-2023+06%3A27%3A03+GMT; uid_tt=23c596f546d448da13c0098152ef5d17; uid_tt_ss=23c596f546d448da13c0098152ef5d17; sid_tt=ea2e466c926c317f4f552f0d3982a458; sessionid=ea2e466c926c317f4f552f0d3982a458; sessionid_ss=ea2e466c926c317f4f552f0d3982a458; sid_ucp_v1=1.0.0-KDRiMzcyMDVkZmZhMWIxNjhjNDM4YjBiZDA4Y2E5ZTBmN2IxNTE1NjIKFwjhrMGYrgIQt8vcmwYY7zEgDDgGQPQHGgJsZiIgZWEyZTQ2NmM5MjZjMzE3ZjRmNTUyZjBkMzk4MmE0NTg; ssid_ucp_v1=1.0.0-KDRiMzcyMDVkZmZhMWIxNjhjNDM4YjBiZDA4Y2E5ZTBmN2IxNTE1NjIKFwjhrMGYrgIQt8vcmwYY7zEgDDgGQPQHGgJsZiIgZWEyZTQ2NmM5MjZjMzE3ZjRmNTUyZjBkMzk4MmE0NTg; FOLLOW_NUMBER_YELLOW_POINT_INFO=%22MS4wLjABAAAAt_v5oVMmcxuNnLLRzi6Ey1GKVQr_2XVFt2jPbkhZPI8%2F1668787200000%2F0%2F1668752826051%2F0%22; strategyABtestKey=%221668752909.101%22; __ac_nonce=06377261b0070042789c9; __ac_signature=_02B4Z6wo00f01JfP74gAAIDDAxm0hJMbmiiX7-sAAEaJTk9YXvYiEKlcYbhZnUTqyIVISJ6Z9uR3UEye00i7MfEP1dAywrmbnaQAIP3m1.7zOA8BmpqIWhyYJal-u6k6LMxVpsCtyakYsz3325; live_can_add_dy_2_desktop=%221%22; tt_scid=PpJHVbeNWnhY54EQ6vWraqXl5A8SZDtl3dn9JTaQQNLPo37ztPaJz.xoJHxyhNYScf8e; s_v_web_id=verify_lam4f5i1_plZJSYeB_iUgU_4z2o_9JHF_d7Z0Z60sLg33; ttwid=1%7C-XDacSDIgDIHmJqBxLj6Op91O91Ww4nvf96AveJpNeE%7C1668752951%7C0275ac24a410dd06b5f87dc4d84188f6eedaf20ed69cc9d0e979559df7df461e; download_guide=%223%2F20221118%22; odin_tt=3a02e4ad7a6c9042e1c42ece6d0d4a1aeeb37ed334f3450eb4adf57a6d0e09938523f8954816d90d557b27f5d3cbea85; msToken=1GTirdFSckP7H_txAPOKIMLWleKhlwccm-ts_3OviXegeQ2cr0B56jMAqfB3SqEGnxPEBjXRWsmg-sxVW3okb1s-acOAnBkIVDA_47g5aZFOqMKEzI-N; msToken=aOEoMNHAEI98H45Z0n-zUTffiNgv7HNkGU0lwFptk-JBg00tEs0I74G4sYXgG670cAdhSmXNcKlRU3-QaxW7Pflt-p8YAmyU5eC3EGJQfp7Mk7JpmP_P&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;origin: https://live.douyin.com&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;referer: https://live.douyin.com/444452144000&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;sec-ch-ua: &amp;#34;Google Chrome&amp;#34;;v=&amp;#34;107&amp;#34;, &amp;#34;Chromium&amp;#34;;v=&amp;#34;107&amp;#34;, &amp;#34;Not=A?Brand&amp;#34;;v=&amp;#34;24&amp;#34;&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;sec-ch-ua-mobile: ?0&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;sec-ch-ua-platform: &amp;#34;macOS&amp;#34;&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;sec-fetch-dest: empty&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;sec-fetch-mode: cors&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;sec-fetch-site: same-origin&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;x-secsdk-csrf-token: 000100000001c39118162052c6b50f6dadb067cc07c073c9b93f035ea22242c67c43f5951903172899f1bc355042&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  --data-raw &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;room_id=7167220081737468683&amp;amp;to_room_id=7167220081737468683&amp;amp;sec_to_user_id=MS4wLjABAAAAOgGR5D9qmmPglgaT08-30j8vnjeeAdmgXhJY_8Q7oLk&amp;amp;to_episode_id=0&amp;amp;send_type=4&amp;amp;send_scene=1&amp;amp;gift_source=0&amp;amp;buff_level=0&amp;amp;count=1&amp;amp;price=2&amp;amp;gift_id=2002&amp;amp;is_first_combo=true&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  --compressed -iv
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;响应&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;{
+ &lt;span style=&#34;color:#1e90ff;font-weight:bold&#34;&gt;&amp;#34;data&amp;#34;&lt;/span&gt;: {
+   &lt;span style=&#34;color:#1e90ff;font-weight:bold&#34;&gt;&amp;#34;message&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#a50&#34;&gt;&amp;#34;Insufficient Fund&amp;#34;&lt;/span&gt;,
+   &lt;span style=&#34;color:#1e90ff;font-weight:bold&#34;&gt;&amp;#34;prompts&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#a50&#34;&gt;&amp;#34;余额不足&amp;#34;&lt;/span&gt;
+ },
+ &lt;span style=&#34;color:#1e90ff;font-weight:bold&#34;&gt;&amp;#34;extra&amp;#34;&lt;/span&gt;: {
+   &lt;span style=&#34;color:#1e90ff;font-weight:bold&#34;&gt;&amp;#34;now&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#099&#34;&gt;1668755929438&lt;/span&gt;
+ },
+ &lt;span style=&#34;color:#1e90ff;font-weight:bold&#34;&gt;&amp;#34;status_code&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#099&#34;&gt;40001&lt;/span&gt;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;快手接口&#34;&gt;快手接口&lt;/h4&gt;
+&lt;p&gt;请求&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;curl &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;https://live.kuaishou.com/live_graphql&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;Connection: keep-alive&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;Cookie: clientid=3; did=web_0d47b6546f1fd39fe4d1236703ae2b16; kuaishou.live.bfb1s=9b8f70844293bed778aade6e0a8f9942; client_key=65890b29; kpn=GAME_ZONE; userId=553458447; kuaishou.live.web_st=ChRrdWFpc2hvdS5saXZlLndlYi5zdBKgAV6EW8_dkcqveTyN6yy6uaMZd7O2c9rYOi19Fb3FhhOTPjtHtkb7lPQxQ4QaygTV0J-_Z0E7-4E5lFUZ2MRRzwjNAgbEEeSbf5duEVRtpGJnR_EEjJeZ3yyPMWPsJelIVcpSHGX02esKljXrWSXcbMWU709r4hxtaNHdMQtnvmLt1nijHxRE7lio0ZRYM5n-EK65VJq2EUpFqHFY_jFqxm0aEhrHsWfESUHgv806qk-5eqStgCIgOVwse70J74NPwA2TbGfOv-Ze0M-TVQJ0kHcHOHiTkKooBTAB; kuaishou.live.web_ph=75bafd83e69f9caf80b760c47f7b9c976d31; userId=553458447; ksliveShowClipTip=true&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;Origin: https://live.kuaishou.com&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;Referer: https://live.kuaishou.com/u/YiGe6666&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;Sec-Fetch-Dest: empty&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;Sec-Fetch-Mode: cors&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;Sec-Fetch-Site: same-origin&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;accept: */*&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;content-type: application/json&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;sec-ch-ua: &amp;#34;Google Chrome&amp;#34;;v=&amp;#34;107&amp;#34;, &amp;#34;Chromium&amp;#34;;v=&amp;#34;107&amp;#34;, &amp;#34;Not=A?Brand&amp;#34;;v=&amp;#34;24&amp;#34;&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;sec-ch-ua-mobile: ?0&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  -H &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;sec-ch-ua-platform: &amp;#34;macOS&amp;#34;&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  --data-raw &lt;span style=&#34;color:#a50&#34;&gt;&amp;#39;{&amp;#34;operationName&amp;#34;:&amp;#34;SendTokenGift&amp;#34;,&amp;#34;variables&amp;#34;:{&amp;#34;e&amp;#34;:&amp;#34;UJfUx05OooLVLeaLzurAD7t0ycf7qHV57YPA64hWOh5Nslk4cNv5GCO5UIhUfygGimZNaBMDaQF7CWigSoxuOG4KmX6PBg7Nw/BxK3lCQ/MeVM8H3VRD7RIv7A9H4Zt+z/43c25jpTuaQrjLpxrWXzNYORIKJRjga9ZUGPCbNwatxYFMuVGEJcn8SZxFdd2rr1HMsQV2HXhl1PcILcXZ5fcnu7+VARIIj26snB4TOiQ=&amp;#34;,&amp;#34;iv&amp;#34;:&amp;#34;yLelD2PBybOSK8LM&amp;#34;,&amp;#34;giftId&amp;#34;:114,&amp;#34;liveStreamId&amp;#34;:&amp;#34;sOuGkqrHrOs&amp;#34;,&amp;#34;count&amp;#34;:1,&amp;#34;comboKey&amp;#34;:&amp;#34;IZLFwC_9lDBi2YL6_1668754497884&amp;#34;,&amp;#34;giftToken&amp;#34;:&amp;#34;CkMQj7b0hwIaNIECAoICgwLHAgmLAowCjQIOENsBnAGfAt8B4AEhoQLhAakCKXFysgLyAfYBtwL3AfgB+QEgNCi36OokEIzc0szIMBqQARbIi9FshY8J3yb72Pi3Kf3b4VlRZ8dHHr2d64OWA545YQ6SBsTaqA6ERQ9DQbGDCXK3L5MoVtVL/wy4cLlD+XTMYIYjEYUU/0IwTbvhrTXWdll64SIP1APvRQXCjDugMBShDAqlMCBPqREhchX0t8tXHhYO2h+h6k3+kwe3yAdSioapP7i5NxtuLxCFTYPiVA==&amp;#34;},&amp;#34;query&amp;#34;:&amp;#34;mutation SendTokenGift($e: String, $iv: String, $giftId: Int, $liveStreamId: ID, $count: Int, $comboKey: String, $giftToken: String) {\n  sendTokenGift(e: $e, iv: $iv, giftId: $giftId, liveStreamId: $liveStreamId, count: $count, comboKey: $comboKey, giftToken: $giftToken) {\n    result\n    ksCoin\n    styleType\n    __typename\n  }\n}\n&amp;#34;}&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#a50&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#a50&#34;&gt;&lt;/span&gt;  --compressed -iv
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;响应&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;{
+  &lt;span style=&#34;color:#1e90ff;font-weight:bold&#34;&gt;&amp;#34;data&amp;#34;&lt;/span&gt;: {
+    &lt;span style=&#34;color:#1e90ff;font-weight:bold&#34;&gt;&amp;#34;sendTokenGift&amp;#34;&lt;/span&gt;: {
+      &lt;span style=&#34;color:#1e90ff;font-weight:bold&#34;&gt;&amp;#34;result&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#099&#34;&gt;1&lt;/span&gt;,&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;//成功&lt;/span&gt;
+      &lt;span style=&#34;color:#1e90ff;font-weight:bold&#34;&gt;&amp;#34;ksCoin&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#099&#34;&gt;0&lt;/span&gt;,
+      &lt;span style=&#34;color:#1e90ff;font-weight:bold&#34;&gt;&amp;#34;styleType&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#00a&#34;&gt;null&lt;/span&gt;,
+      &lt;span style=&#34;color:#1e90ff;font-weight:bold&#34;&gt;&amp;#34;__typename&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#a50&#34;&gt;&amp;#34;SendGiftResult&amp;#34;&lt;/span&gt;
+    }
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;快手给端上的接口使用的&lt;a href=&#34;https://spec.graphql.org/draft/&#34;&gt;graphql&lt;/a&gt;统一中心化了入口，方便后续规范化管理接口；整体交互也有些差别，一个是后置判断，一个是前置判断礼物是否可以赠送，但是对于赠送礼物接口还是需要判断是否满足赠送的金额；前置对于用户体验会好些，少了些交互吧; 接口数据都有token加密验证，防止三方黑产中途拦截，后者对整体赠送数据也是压缩加密了(用户行为打点数据也是压缩上报的)；&lt;/p&gt;
+&lt;p&gt;Tips: 貌似礼物的价格在各个直播平台都一样的，不像商品价格有相对波动，只是会有些直播场景定制化的礼物，有种非理性情感冲动消费的感觉，搞直播类用户产品，心理学貌似挺重要的，老铁带一波 666～&lt;/p&gt;
+&lt;h3 id=&#34;设计&#34;&gt;设计&lt;/h3&gt;
+&lt;h4 id=&#34;整体设计服务模块流程&#34;&gt;整体设计服务模块流程&lt;/h4&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/%E7%9B%B4%E6%92%AD%E4%BA%92%E5%8A%A8-%E8%B5%A0%E9%80%81%E7%A4%BC%E7%89%A9%E8%AE%BE%E8%AE%A1.drawio.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h4 id=&#34;db&#34;&gt;DB&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;gift 礼物表&lt;/strong&gt;：有限集，这个物料数目是固定的，没有SKU这一概念，可以直接定义好配置之后，直接存放在数据库中；便于后续缓存至远端或者服务本地；&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;字段&lt;/th&gt;
+&lt;th&gt;类型&lt;/th&gt;
+&lt;th&gt;描述&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;giftId&lt;/td&gt;
+&lt;td&gt;int64&lt;/td&gt;
+&lt;td&gt;UK  唯一键&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;name&lt;/td&gt;
+&lt;td&gt;string&lt;/td&gt;
+&lt;td&gt;礼物名称&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;currencyCn&lt;/td&gt;
+&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;价格：虚拟货币数目&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;unit&lt;/td&gt;
+&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;虚拟货币度量单位，对应资产类型：金币/钻石/X币&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;giftCategory&lt;/td&gt;
+&lt;td&gt;string&lt;/td&gt;
+&lt;td&gt;礼物类别&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;iconUrl&lt;/td&gt;
+&lt;td&gt;string&lt;/td&gt;
+&lt;td&gt;礼物icon地址&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;sendRule&lt;/td&gt;
+&lt;td&gt;string&lt;/td&gt;
+&lt;td&gt;赠送规则&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;effectsUrl&lt;/td&gt;
+&lt;td&gt;string&lt;/td&gt;
+&lt;td&gt;礼物特效地址&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;createdAt&lt;/td&gt;
+&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;创建时间&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;updatedAt&lt;/td&gt;
+&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;更新时间&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;&lt;strong&gt;user_asset 用户拥有的虚拟资产表&lt;/strong&gt;：  用户当前拥有的虚拟币余额&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;字段&lt;/th&gt;
+&lt;th&gt;类型&lt;/th&gt;
+&lt;th&gt;描述&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;userId&lt;/td&gt;
+&lt;td&gt;int64&lt;/td&gt;
+&lt;td&gt;用户id&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;assetCn&lt;/td&gt;
+&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;资产数量&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;assetType&lt;/td&gt;
+&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;资产类型 1. 金币 2.钻石 3. X币 &lt;del&gt;4. X优惠卷&lt;/del&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;version&lt;/td&gt;
+&lt;td&gt;int64&lt;/td&gt;
+&lt;td&gt;更新版本&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;createdAt&lt;/td&gt;
+&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;创建时间&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;updatedAt&lt;/td&gt;
+&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;更新时间&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;悲观锁 select for update事务实现&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span style=&#34;color:#00a&#34;&gt;SET&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;AUTOCOMMIT=&lt;span style=&#34;color:#099&#34;&gt;0&lt;/span&gt;;&lt;span style=&#34;color:#bbb&#34;&gt; 
+&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;BEGIN&lt;/span&gt;&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;；&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;   &lt;/span&gt;a&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;=&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;SELECT&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetCn&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;user_asset&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;WHERE&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;userId=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;userId&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;and&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetType=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;assetType&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;FOR&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;UPDATE&lt;/span&gt;;&lt;span style=&#34;color:#bbb&#34;&gt;  
+&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;   &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;update&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;user_asset&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;set&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetCn=a.assetCn+&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;incrCn&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;where&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;userId=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;userId&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;and&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetType=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;assetType&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;;&lt;span style=&#34;color:#bbb&#34;&gt; 
+&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;COMMIT&lt;/span&gt;;&lt;span style=&#34;color:#bbb&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;乐观锁 CAS的方式，没有更新继续循环，直到更新ok或者资产余额不足了退出&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;a&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;=&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;SELECT&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetCn&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;user_asset&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;WHERE&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;userId=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;userId&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;and&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetType=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;assetType&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;;&lt;span style=&#34;color:#bbb&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;&lt;/span&gt;#&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;$&lt;/span&gt;oldAssetCn&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;=&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;a.assetCn&lt;span style=&#34;color:#bbb&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;&lt;/span&gt;#&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;$&lt;/span&gt;newAssetCn&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;=&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;a.assetCn+&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;$&lt;/span&gt;incrCn&lt;span style=&#34;color:#bbb&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;&lt;/span&gt;#&lt;span style=&#34;color:#00a&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;$&lt;/span&gt;newAssetCn&amp;gt;=&lt;span style=&#34;color:#099&#34;&gt;0&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;-&amp;gt;&lt;span style=&#34;color:#00a&#34;&gt;update&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;update&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;user_asset&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;set&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetCn=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;newAssetCn&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;where&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;userId=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;userId&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;and&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetType=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;assetType&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;and&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetCn&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;=&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;oldAssetCn&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; 
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;存在ABA问题：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;考虑如下操作：&lt;/p&gt;
+&lt;p&gt;并发1（上）：获取出数据的初始值是A，后续计划实施CAS乐观锁，期望数据仍是A的时候，修改才能成功&lt;/p&gt;
+&lt;p&gt;并发2：将数据修改成B&lt;/p&gt;
+&lt;p&gt;并发3：将数据修改回A&lt;/p&gt;
+&lt;p&gt;并发1（下）：CAS乐观锁，检测发现初始值还是A，进行数据修改&lt;/p&gt;
+&lt;p&gt;并发1在修改数据时，虽然还是A，但已经不是初始条件的A了，中间发生了A变B，B又变A的变化，此A已经非彼A，数据却成功修改，可能导致错误&lt;/p&gt;
+&lt;p&gt;ABA问题导致的原因，是CAS过程中只简单进行了“值”的校验，再有些情况下，“值”相同不会引入错误的业务逻辑（例如库存），有些情况下，“值”虽然相同，却已经不是原来的数据了。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;加上版本字段version, 对版本进行CAS更新&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;a&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;=&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;SELECT&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetCn,&lt;span style=&#34;color:#00a&#34;&gt;version&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;user_asset&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;WHERE&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;userId=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;userId&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;and&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetType=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;assetType&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;;&lt;span style=&#34;color:#bbb&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;&lt;/span&gt;#&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;$&lt;/span&gt;oldAssetCn&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;=&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;a.assetCn&lt;span style=&#34;color:#bbb&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;&lt;/span&gt;#&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;$&lt;/span&gt;oldVersion&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;=&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;a.&lt;span style=&#34;color:#00a&#34;&gt;version&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;&lt;/span&gt;#&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;$&lt;/span&gt;newAssetCn&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;=&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;a.assetCn+&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;$&lt;/span&gt;incrCn&lt;span style=&#34;color:#bbb&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;&lt;/span&gt;#&lt;span style=&#34;color:#00a&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;$&lt;/span&gt;newAssetCn&amp;gt;=&lt;span style=&#34;color:#099&#34;&gt;0&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;-&amp;gt;&lt;span style=&#34;color:#00a&#34;&gt;update&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;&lt;/span&gt;#&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;$&lt;/span&gt;newVersion&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;=&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;$&lt;/span&gt;oldVersion+&lt;span style=&#34;color:#099&#34;&gt;1&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;update&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;user_asset&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;set&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetCn=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;newAssetCn&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;and&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;version&lt;/span&gt;=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;newVersion&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;where&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;userId=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;userId&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;and&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetType=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;assetType&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;and&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;version&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;=&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;oldVersion&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; 
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;想一想：mysql为了高可用和读写分离，生产环境部署的实例集群是主从架构，存在主从延迟，其实这个是不影响的，最终都是CAS的update更新，更新成功会返回affect rows为1，没有更新则为0；&lt;/p&gt;
+&lt;p&gt;Notice:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;mysql 在非串行化隔离级别下，不能直接使用更新语句，如下：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span style=&#34;color:#00a&#34;&gt;update&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;user_asset&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;set&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetCn=assetCn+&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;incrCn&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;where&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;userId=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;userId&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;and&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetType=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;assetType&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;&lt;/span&gt;#&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;其实是先查询在更新，查询没有&lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;for&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;update加排斥锁&lt;span style=&#34;color:#bbb&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;select for update 加排斥锁和所建的索引有关(间隔锁，锁行/表)&lt;/li&gt;
+&lt;li&gt;如果使用mongodb来存放，直接使用findAndModify incr 来操作即可，当然防止重复数据，需要加唯一索引&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;user_asset_record 虚拟币交易流水表&lt;/strong&gt;：记录虚拟币增加和减少数据详情，这个提供后台查看，用于重复请求幂等处理， 建库建表按照userId进行parttion 分库分表；&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;字段&lt;/th&gt;
+&lt;th&gt;类型&lt;/th&gt;
+&lt;th&gt;描述&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;recordId&lt;/td&gt;
+&lt;td&gt;int64&lt;/td&gt;
+&lt;td&gt;PK  用户资产流水记录id&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;userId&lt;/td&gt;
+&lt;td&gt;int64&lt;/td&gt;
+&lt;td&gt;用户id&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;roomId&lt;/td&gt;
+&lt;td&gt;int64&lt;/td&gt;
+&lt;td&gt;房间id&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;giftId&lt;/td&gt;
+&lt;td&gt;int64&lt;/td&gt;
+&lt;td&gt;礼物id&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;record&lt;/td&gt;
+&lt;td&gt;string&lt;/td&gt;
+&lt;td&gt;记录行为&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;recordOp&lt;/td&gt;
+&lt;td&gt;string&lt;/td&gt;
+&lt;td&gt;操作记录 虚拟币增加和减少&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;createdAt&lt;/td&gt;
+&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;创建时间&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;updatedAt&lt;/td&gt;
+&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;更新时间&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;资源评估：&lt;/p&gt;
+&lt;h4 id=&#34;cache&#34;&gt;Cache&lt;/h4&gt;
+&lt;p&gt;key设计：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;名称&lt;/th&gt;
+&lt;th&gt;key&lt;/th&gt;
+&lt;th&gt;value&lt;/th&gt;
+&lt;th&gt;ex&lt;/th&gt;
+&lt;th&gt;是否频繁更新&lt;/th&gt;
+&lt;th&gt;说明&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;用户虚拟资产信息&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;Y&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;礼物信息&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;N&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;用户信息&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;N&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;直播间信息&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;N&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;资源评估：&lt;/p&gt;
+&lt;p&gt;并发场景：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;缓存从db中获取&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;频繁增/减用户虚拟资产缓存存量数据&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;热key:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;用户维度的用户虚拟资产信息，通过userId进行分散即可， 如果多用户/租户 对 共享缓存资源频繁操作(比如 优惠卷/商卷)，突破了单redis实例的读写瓶颈，需要对key进行再次切分；如果是读多场景，更新不频繁缓存可以缓存在本地服务进程中；&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;大key:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;存放的value值比较大，一般是list, set，zset, hash这些集合结构，存储的item/field数目一般在5000个左右，需要按比例切分，读放大的问题可以并发控制读取；&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&#34;消息队列&#34;&gt;消息队列&lt;/h4&gt;
+&lt;p&gt;topic&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;名称&lt;/th&gt;
+&lt;th&gt;消息类型&lt;/th&gt;
+&lt;th&gt;消息key&lt;/th&gt;
+&lt;th&gt;消息tag&lt;/th&gt;
+&lt;th&gt;说明&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;/table&gt;
+&lt;h4 id=&#34;api&#34;&gt;API&lt;/h4&gt;
+&lt;p&gt;前台统一入口接口参数安全验证&lt;/p&gt;
+&lt;p&gt;互动中台：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;赠送礼物接口&lt;/li&gt;
+&lt;li&gt;获取直播间礼物列表接口&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;支付中台：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;变更用户虚拟资产接口&lt;/li&gt;
+&lt;li&gt;获取用户虚拟资产接口&lt;/li&gt;
+&lt;li&gt;获取用户资产变更流水接口&lt;/li&gt;
+&lt;li&gt;更新数据库中的用户资产 消费逻辑&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;消息服务： &lt;a href=&#34;https://weedge.github.io/post/jxzbim/&#34;&gt;https://weedge.github.io/post/jxzbim/&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;开发&#34;&gt;开发&lt;/h3&gt;
+&lt;p&gt;按服务模块进行并行开发，联调；给出对应排期&lt;/p&gt;
+&lt;h5 id=&#34;开源开发框架和组件选择&#34;&gt;开源开发框架和组件选择&lt;/h5&gt;
+&lt;ol&gt;
+&lt;li&gt;开发语言：golang + lua + shell&lt;/li&gt;
+&lt;li&gt;开发框架：gin&lt;/li&gt;
+&lt;li&gt;DB：支持mysql协议的分布式数据库，且无需在业务中考虑分库分表操作，比如：tidb/polardb/aurora,   &lt;a href=&#34;https://gorm.io/&#34;&gt;gorm&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Cache:  redis,   &lt;a href=&#34;https://redis.uptrace.dev/guide/&#34;&gt;go-redis&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;MQ: rocketMQ, &lt;a href=&#34;https://github.com/apache/rocketmq-client-go&#34;&gt;rocketmq-client-go&lt;/a&gt;,  如果使用阿里云rocketMQ使用对应&lt;a href=&#34;https://github.com/apache/rocketmq-clients/tree/master/golang&#34;&gt;client SDK&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;测试&#34;&gt;测试&lt;/h3&gt;
+&lt;p&gt;基本功能逻辑测试；然后加上 业务/基础服务/中间件服务监控，日志，在开始压测，给出性能报告，调优；最终给出接口/整体服务吞吐和延时上限，采用服务流控对服务接口加上接口/服务限流，以及超时重试，服务相关降级策略；然后模拟线上场景继续压测，触发对应报警和限流，降级策略；&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;模块测试&lt;/li&gt;
+&lt;li&gt;加上服务监控，日志，报警，重点关注核心链路指标&lt;/li&gt;
+&lt;li&gt;接口压测&lt;/li&gt;
+&lt;li&gt;核心前端接口整体压测&lt;/li&gt;
+&lt;li&gt;调优：耗时，内存，cpu，I/O(网络，磁盘)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
+&lt;p&gt;面对大量并发请求的用户交互场景，整体思路是预热快速路径响应用户的交互请求行为，然后异步队列解耦，依次pipeline执行慢路径，快/慢路径上通过并发批量处理提高吞吐，尽量使用乐观锁，减少block；需要考虑到数据一致，资产更改准确；服务异常时的降级措施，以及服务过载时的限流，反压措施。&lt;/p&gt;
+&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/Cmw3QExqCfBAz9V0AlsS9A&#34;&gt;https://mp.weixin.qq.com/s/Cmw3QExqCfBAz9V0AlsS9A&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://aws.amazon.com/cn/builders-library/timeouts-retries-and-backoff-with-jitter/&#34;&gt;https://aws.amazon.com/cn/builders-library/timeouts-retries-and-backoff-with-jitter/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/jznfR9Jc-U-uCXioHXjeew&#34;&gt;https://mp.weixin.qq.com/s/jznfR9Jc-U-uCXioHXjeew&lt;/a&gt; , &lt;a href=&#34;https://mp.weixin.qq.com/s/AV4E0Y9d4k5VYTL7n2TNug&#34;&gt;https://mp.weixin.qq.com/s/AV4E0Y9d4k5VYTL7n2TNug&lt;/a&gt; , &lt;a href=&#34;https://mp.weixin.qq.com/s/cT9b2GDsUinVNoA6gyqs_g&#34;&gt;https://mp.weixin.qq.com/s/cT9b2GDsUinVNoA6gyqs_g&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.52im.net/thread-3515-1-1.html#26&#34;&gt;https://www.52im.net/thread-3515-1-1.html#26&lt;/a&gt; , &lt;a href=&#34;http://www.52im.net/thread-3994-1-1.html&#34;&gt;http://www.52im.net/thread-3994-1-1.html&lt;/a&gt; , &lt;a href=&#34;http://www.52im.net/thread-3376-1-1.html&#34;&gt;http://www.52im.net/thread-3376-1-1.html&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://coolshell.cn/articles/8239.html&#34;&gt;https://coolshell.cn/articles/8239.html&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;</description>
       
     </item>
     
@@ -3343,89 +3764,6 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。&lt;
 &lt;li&gt;&lt;a href=&#34;https://blog.betacat.io/post/golang-atomic-value-exploration/&#34;&gt;https://blog.betacat.io/post/golang-atomic-value-exploration/&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 </description>
-      
-    </item>
-    
-    <item>
-      <title>2019 TODO</title>
-      <link>https://weedge.github.io/post/2019todo/</link>
-      <pubDate>Sat, 26 Jan 2019 01:16:30 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/2019todo/</guid>
-      
-        <description>&lt;!-- raw HTML omitted --&gt;
-&lt;p&gt; 2018年感觉过的好快，时间荏苒，有些事和人，感觉在2018变化很大；人都是有欲望的，在欲望的驱使下，去实现自己的目标，其中有失败，有成功，还有一直在路上前行的；每年给自己定的目标要么期望太高，要么随遇而安，到头来给自己的感觉是不太务实，有点好高骛远了和缺乏动力；但是如果没有梦想和目标，和咸鱼有什么分别呢？所以把2019年的新年目标任务写下来，给自己立个flag，实施准则：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;低头看书学习做事，抬头思考总结做人~&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h2 id=&#34;书&#34;&gt;书&lt;/h2&gt;
-&lt;p&gt;现在大部分时间看书都是利用手机，在上班下班的时间，碎片化阅读；双休日和假期的时候，找一个天上午下午来深度阅读；不过感觉后面给书的时间越来越少了，时间的管理是越发的重要。&lt;/p&gt;
-&lt;h3 id=&#34;非技术类&#34;&gt;非技术类&lt;/h3&gt;
-&lt;p&gt;读书不分先后顺序， 按一年12个月算，暂时定每个月看完一到两本书，这里大部分心理学和经济学方面的：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;a href=&#34;https://book.douban.com/subject/1012611/&#34;&gt;乌合之众&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;a href=&#34;https://book.douban.com/subject/10785583/&#34;&gt;思考，快与慢&lt;/a&gt; (书比较难啃)&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;a href=&#34;https://book.douban.com/subject/10785583/&#34;&gt;原则&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;a href=&#34;https://book.douban.com/subject/11445548/&#34;&gt;自私的基因&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;a href=&#34;https://book.douban.com/subject/30259720/&#34;&gt;今日简史&lt;/a&gt; &lt;a href=&#34;https://book.douban.com/subject/26945094/&#34;&gt;未来简史&lt;/a&gt; &lt;a href=&#34;https://book.douban.com/subject/25985021/&#34;&gt;人类简史&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;a href=&#34;https://book.douban.com/subject/30186119/&#34;&gt;硅谷增长黑客实战笔记&lt;/a&gt; (适合ab策略数据分析)&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;a href=&#34;https://book.douban.com/subject/27167992/&#34;&gt;见识&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;a href=&#34;https://book.douban.com/subject/26704143/&#34;&gt;把时间当作朋友&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;a href=&#34;https://book.douban.com/subject/27662713/&#34;&gt;舆论&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;a href=&#34;https://book.douban.com/subject/26412113/&#34;&gt;机器人叛乱&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;a href=&#34;https://book.douban.com/subject/6811366/&#34;&gt;禅与摩托车维修艺术&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;技术类&#34;&gt;技术类&lt;/h3&gt;
-&lt;p&gt;技术类的主要是最近工作可能会用到的，作为参考书籍，具体还需要到工作中实践转化成自己，就如一本武功秘籍，还需要日积月累的修炼，大侠不是一招一式就能混迹江湖的；技术迭代越来越快，学习是一个长期的过期，新技术层出不穷(新技术的学习离不开开源社区github，代码是最好的文档)，但是计算机基础的东西是不变的，技术的迭代都是在原有的基础技术上发展，所以修炼内功心法还是很重要的：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;a href=&#34;https://book.douban.com/subject/26337939/&#34;&gt;七周七并发模型&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;a href=&#34;https://book.douban.com/subject/26586598/&#34;&gt;性能之巅&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;a href=&#34;https://book.douban.com/subject/26586598/&#34;&gt;Linux高性能服务器编程&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;a href=&#34;https://book.douban.com/subject/10590856/&#34;&gt;统计学习方法&lt;/a&gt; &lt;a href=&#34;https://book.douban.com/subject/26708119/&#34;&gt;机器学习&lt;/a&gt; &lt;a href=&#34;https://book.douban.com/subject/27087503/&#34;&gt;深度学习&lt;/a&gt; (这个学起来有些枯燥，需要网上找点代码case来结合实际应用场景)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;其他语言类的，网络编程类的，数据库操作优化类的数据都可以在越到问题的时候，通过技术专有的关键字可以google/百度一下, 去解决实际越到问题，要比直接看书要印象深刻的多，知其然而知所以然。&lt;/p&gt;
-&lt;h2 id=&#34;事&#34;&gt;事&lt;/h2&gt;
-&lt;p&gt;2018的事还是比较简单的。&lt;/p&gt;
-&lt;p&gt;工作上大部分时间是解决业务需求，偶尔也会写出一些bug, 做事缺乏全面的考虑，有些事情不是自己愿意去做的，有时候缺乏积极性；作为一个在职场混迹六年的人来说，范这些错误，难免会有点尴尬，所以在后面的职场工作中，不管是喜欢和重复厌倦的事情，都要认真负责的去对待，工作是给公司解决问题，不能带着情绪化处理；还有工作上需要协调把控好效率和产出质量。&lt;/p&gt;
-&lt;p&gt;感情上通过相亲认识了投缘的另一半，虽然两人外形上可能有些不搭调~，但是最后异地恋走在一起挺不容易的；年底总数把买房子的事情给结尾，装修的事情两人商量着慢慢来，彼此相信会有一个温馨的家🏠&lt;/p&gt;
-&lt;p&gt;2019的规划：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;主要是自己工作上有突破，不管是技能还是处理事情&lt;/li&gt;
-&lt;li&gt;帮助她找到一份还算满意的工作&lt;/li&gt;
-&lt;li&gt;弄完房子准备结婚🎎&lt;/li&gt;
-&lt;li&gt;接父母过来玩&lt;/li&gt;
-&lt;li&gt;用golang 重构一下小机器人&lt;/li&gt;
-&lt;li&gt;完成网关weegate&lt;/li&gt;
-&lt;li&gt;more&amp;hellip;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id=&#34;思&#34;&gt;思&lt;/h2&gt;
-&lt;p&gt;年复一年，岁月催人老，30+的程序猿看着00后都已经开始上大学，开始进入社会实习了，突然危机感油然而生，是否就一定会被社会淘汰呢，是否就到了35+岁, 就不能编程了呢，给公司创造的价值就打折了呢？也许这些问题和社会上的鸭梨一直会存在，并激励着资历老猿们去反思，去复盘总结；经验是有的，斗志在，就怕不学习，俗话说的好：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;活到老，学到老，干到老！（为即将或者已成老猿 代言，笔芯~）&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h2 id=&#34;最后&#34;&gt;最后&lt;/h2&gt;
-&lt;p&gt;借用我最喜欢的乔布斯语录，作为本文的结尾（虽然有点鸡血的感觉）：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;人这一辈子没法做太多的事情，所以每一件都要做得精彩绝伦。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;blockquote&gt;
-&lt;p&gt;你的时间有限，所以不要为别人而活。不要被教条所限，不要活在别人的观念里。不要让别人的意见左右自己内心的声音。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;blockquote&gt;
-&lt;p&gt;最重要的是，勇敢的去追随自己的心灵和直觉，只有自己的心灵和直觉才知道你自己的真实想法，其他一切都是次要。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h2 id=&#34;链接&#34;&gt;链接&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s?__biz=MjM5MDE0Mjc4MA==&amp;amp;mid=2651011968&amp;amp;idx=1&amp;amp;sn=3d500660f7dd47c9fa4033bd9fa69c2f&#34;&gt;解读2018：我们处在一个什么样的技术浪潮当中？&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.zhihu.com/question/22937279&#34;&gt;程序员工作只能做到 35 岁吗？&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s?__biz=MzI2MDI5NDQwMg==&amp;amp;mid=2247483959&amp;amp;idx=1&amp;amp;sn=bcb5fb9eb2aca5810d87ad3b63c4612b&amp;amp;chksm=ea6a905add1d194c57468ac88b611b9005290d1d922154a7b6fe9fec3fdd710c27de41282608&amp;amp;mpshare=1&amp;amp;scene=1&amp;amp;srcid=0327cbNpv&#34;&gt;35岁以后的大龄程序员，正处于怎样一种状态?&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;</description>
       
     </item>
     

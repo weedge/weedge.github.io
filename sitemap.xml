@@ -9,14 +9,56 @@
   </url>
   
   <url>
-    <loc>https://weedge.github.io/tags/aws/</loc>
-    <lastmod>2022-11-08T10:26:23+08:00</lastmod>
+    <loc>https://weedge.github.io/categories/</loc>
+    <lastmod>2022-11-21T10:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>https://weedge.github.io/categories/</loc>
+    <loc>https://weedge.github.io/post/</loc>
+    <lastmod>2022-11-21T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/</loc>
+    <lastmod>2022-11-21T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/</loc>
+    <lastmod>2022-11-21T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/</loc>
+    <lastmod>2022-11-21T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/%E7%9B%B4%E6%92%AD/</loc>
+    <lastmod>2022-11-21T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/zb-gift/</loc>
+    <lastmod>2022-11-21T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/aws/</loc>
     <lastmod>2022-11-08T10:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
@@ -30,35 +72,7 @@
   </url>
   
   <url>
-    <loc>https://weedge.github.io/post/</loc>
-    <lastmod>2022-11-08T10:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/tags/</loc>
-    <lastmod>2022-11-08T10:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
     <loc>https://weedge.github.io/tags/tf/</loc>
-    <lastmod>2022-11-08T10:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/</loc>
-    <lastmod>2022-11-08T10:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/</loc>
     <lastmod>2022-11-08T10:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
@@ -235,13 +249,6 @@
   <url>
     <loc>https://weedge.github.io/post/servicetransformation/</loc>
     <lastmod>2021-10-30T17:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/tags/%E7%9B%B4%E6%92%AD/</loc>
-    <lastmod>2021-11-06T17:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -575,11 +582,6 @@
   </url>
   
   <url>
-    <loc>https://weedge.github.io/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/</loc>
-    <priority>0</priority>
-  </url>
-  
-  <url>
     <loc>https://weedge.github.io/%E7%AE%A1%E7%90%86/%E7%99%BE%E5%BA%A6%E5%B7%A5%E7%A8%8B%E5%B8%88%E5%85%AD%E5%A4%A7%E6%84%8F%E8%AF%86/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
@@ -647,6 +649,12 @@
   
   <url>
     <loc>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/rpc%E8%AE%BE%E8%AE%A1/simple-rpc%E8%AE%BE%E8%AE%A1/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/%E8%AE%BE%E8%AE%A1/%E5%8A%9F%E8%83%BD%E9%9C%80%E6%B1%82%E8%AE%BE%E8%AE%A1/%E7%9B%B4%E6%92%AD%E9%97%B4%E6%89%93%E8%B5%8F%E5%8A%9F%E8%83%BD%E8%AE%BE%E8%AE%A1/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
