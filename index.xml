@@ -52,7 +52,7 @@
     </item>
     
     <item>
-      <title>设计-直播间赠送礼物功能</title>
+      <title>设计草稿-直播间赠送礼物功能</title>
       <link>https://weedge.github.io/post/zb-gift/</link>
       <pubDate>Mon, 21 Nov 2022 10:26:23 +0800</pubDate>
       
@@ -200,12 +200,12 @@
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;createdAt&lt;/td&gt;
-&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;timestamp&lt;/td&gt;
 &lt;td&gt;创建时间&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;updatedAt&lt;/td&gt;
-&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;timestamp&lt;/td&gt;
 &lt;td&gt;更新时间&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;
@@ -242,23 +242,33 @@
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;createdAt&lt;/td&gt;
-&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;timestamp&lt;/td&gt;
 &lt;td&gt;创建时间&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;updatedAt&lt;/td&gt;
-&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;timestamp&lt;/td&gt;
 &lt;td&gt;更新时间&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
+&lt;p&gt;如果存在 &lt;strong&gt;select 资产，然后根据不同产品策略进行业务逻辑计算出更新后资产，最后update 更新&lt;/strong&gt; 场景，在并发场景下，三种方式：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;服务直接通过分布式锁来处理，这种方式不能防住其他其他服务或者脚本直接操作数据库的情况，除非在操作之前也去获取一次锁，而且引入外部依赖；可以考虑自举方式，服务资源实例自己来上锁；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
 &lt;p&gt;悲观锁 select for update事务实现&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span style=&#34;color:#00a&#34;&gt;SET&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;AUTOCOMMIT=&lt;span style=&#34;color:#099&#34;&gt;0&lt;/span&gt;;&lt;span style=&#34;color:#bbb&#34;&gt; 
 &lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;BEGIN&lt;/span&gt;&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;；&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;
 &lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;   &lt;/span&gt;a&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;=&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;SELECT&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetCn&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;user_asset&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;WHERE&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;userId=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;userId&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;and&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetType=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;assetType&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;FOR&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;UPDATE&lt;/span&gt;;&lt;span style=&#34;color:#bbb&#34;&gt;  
 &lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;   &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;update&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;user_asset&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;set&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetCn=a.assetCn+&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;incrCn&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;where&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;userId=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;userId&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;and&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetType=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;assetType&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;;&lt;span style=&#34;color:#bbb&#34;&gt; 
 &lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;COMMIT&lt;/span&gt;;&lt;span style=&#34;color:#bbb&#34;&gt;
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;乐观锁 CAS的方式，没有更新继续循环，直到更新ok或者资产余额不足了退出&lt;/p&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;3&#34;&gt;
+&lt;li&gt;乐观锁 CAS的方式，没有更新继续循环，直到更新ok&lt;/li&gt;
+&lt;/ol&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;a&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;=&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;SELECT&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetCn&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;user_asset&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;WHERE&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;userId=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;userId&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;and&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetType=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;assetType&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;;&lt;span style=&#34;color:#bbb&#34;&gt;
 &lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;&lt;/span&gt;#&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;$&lt;/span&gt;oldAssetCn&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;=&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;a.assetCn&lt;span style=&#34;color:#bbb&#34;&gt;
 &lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;&lt;/span&gt;#&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;$&lt;/span&gt;newAssetCn&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;=&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;a.assetCn+&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;$&lt;/span&gt;incrCn&lt;span style=&#34;color:#bbb&#34;&gt;
@@ -285,15 +295,14 @@
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;想一想：mysql为了高可用和读写分离，生产环境部署的实例集群是主从架构，存在主从延迟，其实这个是不影响的，最终都是CAS的update更新，更新成功会返回affect rows为1，没有更新则为0；&lt;/p&gt;
 &lt;p&gt;Notice:&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;mysql 在非串行化隔离级别下，不能直接使用更新语句，如下：&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;select for update 加排斥锁和所建的索引有关(间隔(gap)锁，临键(next-key)锁，锁行/表)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;如果使用mongodb来存放，直接使用findAndModify incr 来操作即可，当然防止重复数据，需要加唯一索引&lt;/p&gt;
+&lt;/li&gt;
 &lt;/ol&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span style=&#34;color:#00a&#34;&gt;update&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;user_asset&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;set&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetCn=assetCn+&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;incrCn&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;where&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;userId=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;userId&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;and&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;assetType=&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;{$&lt;/span&gt;assetType&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt;&lt;/span&gt;#&lt;span style=&#34;color:#f00;background-color:#faa&#34;&gt;其实是先查询在更新，查询没有&lt;/span&gt;&lt;span style=&#34;color:#00a&#34;&gt;for&lt;/span&gt;&lt;span style=&#34;color:#bbb&#34;&gt; &lt;/span&gt;update加排斥锁&lt;span style=&#34;color:#bbb&#34;&gt;
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;2&#34;&gt;
-&lt;li&gt;select for update 加排斥锁和所建的索引有关(间隔锁，锁行/表)&lt;/li&gt;
-&lt;li&gt;如果使用mongodb来存放，直接使用findAndModify incr 来操作即可，当然防止重复数据，需要加唯一索引&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;&lt;strong&gt;user_asset_record 虚拟币交易流水表&lt;/strong&gt;：记录虚拟币增加和减少数据详情，这个提供后台查看，用于重复请求幂等处理， 建库建表按照userId进行parttion 分库分表；&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;user_asset_record 用户虚拟币交易流水表&lt;/strong&gt;：记录虚拟币增加和减少数据详情，这个提供后台查看，用于重复请求幂等处理， 建库建表按照userId进行parttion 分库分表；&lt;/p&gt;
 &lt;table&gt;
 &lt;thead&gt;
 &lt;tr&gt;
@@ -322,6 +331,11 @@
 &lt;td&gt;giftId&lt;/td&gt;
 &lt;td&gt;int64&lt;/td&gt;
 &lt;td&gt;礼物id&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;interactId&lt;/td&gt;
+&lt;td&gt;int64&lt;/td&gt;
+&lt;td&gt;互动ID 用于贯彻整个送礼物流水链路,进行幂等处理，互动中台生成&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;record&lt;/td&gt;
@@ -446,8 +460,8 @@
 &lt;ol&gt;
 &lt;li&gt;开发语言：golang + lua + shell&lt;/li&gt;
 &lt;li&gt;开发框架：gin&lt;/li&gt;
-&lt;li&gt;DB：支持mysql协议的分布式数据库，且无需在业务中考虑分库分表操作，比如：tidb/polardb/aurora,   &lt;a href=&#34;https://gorm.io/&#34;&gt;gorm&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Cache:  redis,   &lt;a href=&#34;https://redis.uptrace.dev/guide/&#34;&gt;go-redis&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;DB：mysql, 高可用集群方案：支持mysql协议的分布式数据库，且无需在业务中考虑分库分表操作，以及分库分表的分布式事务；比如：开源方案 &lt;a href=&#34;https://docs.pingcap.com/zh/&#34;&gt;tidb&lt;/a&gt;(shared nothing,scale out)，云厂商：&lt;a href=&#34;https://polardbx.com/document&#34;&gt;polardb-x&lt;/a&gt; (shared nothing, scale out)/&lt;a href=&#34;https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.html&#34;&gt;aurora mysql&lt;/a&gt; (shared disk, scale up),   &lt;a href=&#34;https://gorm.io/&#34;&gt;gorm&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Cache:  redis, 高可用集群方案 &lt;a href=&#34;https://redis.io/docs/management/scaling/&#34;&gt;redis-cluster&lt;/a&gt;   &lt;a href=&#34;https://redis.uptrace.dev/guide/&#34;&gt;go-redis&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;MQ: rocketMQ, &lt;a href=&#34;https://github.com/apache/rocketmq-client-go&#34;&gt;rocketmq-client-go&lt;/a&gt;,  如果使用阿里云rocketMQ使用对应&lt;a href=&#34;https://github.com/apache/rocketmq-clients/tree/master/golang&#34;&gt;client SDK&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h3 id=&#34;测试&#34;&gt;测试&lt;/h3&gt;
@@ -466,8 +480,9 @@
 &lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/Cmw3QExqCfBAz9V0AlsS9A&#34;&gt;https://mp.weixin.qq.com/s/Cmw3QExqCfBAz9V0AlsS9A&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://aws.amazon.com/cn/builders-library/timeouts-retries-and-backoff-with-jitter/&#34;&gt;https://aws.amazon.com/cn/builders-library/timeouts-retries-and-backoff-with-jitter/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/jznfR9Jc-U-uCXioHXjeew&#34;&gt;https://mp.weixin.qq.com/s/jznfR9Jc-U-uCXioHXjeew&lt;/a&gt; , &lt;a href=&#34;https://mp.weixin.qq.com/s/AV4E0Y9d4k5VYTL7n2TNug&#34;&gt;https://mp.weixin.qq.com/s/AV4E0Y9d4k5VYTL7n2TNug&lt;/a&gt; , &lt;a href=&#34;https://mp.weixin.qq.com/s/cT9b2GDsUinVNoA6gyqs_g&#34;&gt;https://mp.weixin.qq.com/s/cT9b2GDsUinVNoA6gyqs_g&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.52im.net/thread-3515-1-1.html#26&#34;&gt;https://www.52im.net/thread-3515-1-1.html#26&lt;/a&gt; , &lt;a href=&#34;http://www.52im.net/thread-3994-1-1.html&#34;&gt;http://www.52im.net/thread-3994-1-1.html&lt;/a&gt; , &lt;a href=&#34;http://www.52im.net/thread-3376-1-1.html&#34;&gt;http://www.52im.net/thread-3376-1-1.html&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.52im.net/thread-3515-1-1.html#26&#34;&gt;http://www.52im.net/thread-3515-1-1.html#26&lt;/a&gt; , &lt;a href=&#34;http://www.52im.net/thread-3994-1-1.html&#34;&gt;http://www.52im.net/thread-3994-1-1.html&lt;/a&gt; , &lt;a href=&#34;http://www.52im.net/thread-3376-1-1.html&#34;&gt;http://www.52im.net/thread-3376-1-1.html&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://coolshell.cn/articles/8239.html&#34;&gt;https://coolshell.cn/articles/8239.html&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://redis.com/blog/redis-clustering-best-practices-with-keys/&#34;&gt;https://redis.com/blog/redis-clustering-best-practices-with-keys/&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>
