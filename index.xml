@@ -469,10 +469,11 @@
 &lt;h5 id=&#34;开源开发框架和组件选择&#34;&gt;开源开发框架和组件选择&lt;/h5&gt;
 &lt;ol&gt;
 &lt;li&gt;开发语言：golang + lua + shell&lt;/li&gt;
-&lt;li&gt;开发框架：gin&lt;/li&gt;
+&lt;li&gt;开发框架：&lt;a href=&#34;https://gin-gonic.com/zh-cn/docs/&#34;&gt;gin&lt;/a&gt; or &lt;a href=&#34;https://www.cloudwego.io/zh/docs/kitex/getting-started/&#34;&gt;kitex&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;DB：mysql, 高可用集群方案：不推荐自建sharding+proxy的方式；推荐使用支持mysql协议的分布式数据库，且无需在业务中考虑分库分表操作，以及分库分表的分布式事务；比如：开源方案 &lt;a href=&#34;https://docs.pingcap.com/zh/&#34;&gt;tidb&lt;/a&gt;(shared nothing,scale out)，云厂商：&lt;a href=&#34;https://polardbx.com/document&#34;&gt;polardb-x&lt;/a&gt; (shared nothing, scale out)/&lt;a href=&#34;https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.html&#34;&gt;aurora mysql&lt;/a&gt; (shared disk, scale up),   &lt;a href=&#34;https://gorm.io/&#34;&gt;gorm&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Cache:  redis, 高可用集群方案 &lt;a href=&#34;https://redis.io/docs/management/scaling/&#34;&gt;redis-cluster&lt;/a&gt;   &lt;a href=&#34;https://redis.uptrace.dev/guide/&#34;&gt;go-redis&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;MQ: rocketMQ, &lt;a href=&#34;https://github.com/apache/rocketmq-client-go&#34;&gt;rocketmq-client-go&lt;/a&gt;,  如果使用阿里云rocketMQ使用对应&lt;a href=&#34;https://github.com/apache/rocketmq-clients/tree/master/golang&#34;&gt;client SDK&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;服务编排治理：&lt;a href=&#34;https://kubernetes.io/zh-cn/docs/home/&#34;&gt;k8s&lt;/a&gt; + &lt;a href=&#34;https://istio.io/latest/docs/&#34;&gt;istio&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h3 id=&#34;测试&#34;&gt;测试&lt;/h3&gt;
 &lt;p&gt;基本功能逻辑测试，并发场景下的扣减和新增数据一致；然后加上 业务/基础服务/中间件服务监控，日志，在开始压测，给出性能报告，调优；最终给出接口/整体服务吞吐和延时上限，采用服务流控对服务接口加上接口/服务限流，以及超时重试，服务相关降级策略；然后模拟线上场景继续压测，触发对应报警和限流，降级策略；&lt;/p&gt;
