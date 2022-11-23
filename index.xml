@@ -77,7 +77,7 @@
 &lt;p&gt;以上可以将操作分2个关键步骤： 观众赠送礼物和异步更新观众和主播的资产信息；通过消息队列来解耦，提高送礼接口吞吐和请求响应延迟，以及以pull方式消费，缓解数据库实例的读写压力；&lt;/p&gt;
 &lt;p&gt;观众赠送礼物： 礼物是通过虚拟货币进行等价交换的，通过礼物id获取到对应消费的虚拟资产，对中心远端缓存分片中的观众虚拟资产进行事务扣除处理，事务提交之后，发送事务消息；这里采用cas方式处理，一种是watch key(string 读写io是O(1), 不用hash是因为读取全部资产信息io是O(n))+事务方式，一种是lua的形式直接写业务提交脚本给redis核心主线程去处理；这里可能会想到直接用 hash incr原子操作，但是这里不行，因为需要读出key对应的虚拟资产，用于判断虚拟资源是否充足，读出来在扣除写入，需要一起执行，保证事务原子性；除了核心流程，还有发送礼物成功后，需要推送消息到直播间，根据产品礼品策略判断是否展示特效; 以及增加用户活动积分，增加互动积极性；&lt;/p&gt;
 &lt;p&gt;异步更新观众和主播数据库落地资产信息：这里为了减少对数据库的行锁的并发压力，也采用CAS的方式来更新数据库的数据，&lt;/p&gt;
-&lt;p&gt;消息队列：涉及到金钱，为了提高吞吐，需要保证数据准确，数据最终一致(&lt;a href=&#34;https://www.allthingsdistributed.com/2008/12/eventually_consistent.html&#34;&gt;&lt;strong&gt;BASE&lt;/strong&gt;&lt;/a&gt;)，采用支持事务消息的分布式消息队列，比如：&lt;a href=&#34;https://rocketmq.apache.org/zh/docs/featureBehavior/04transactionmessage/&#34;&gt;rocketMQ&lt;strong&gt;事务消息&lt;/strong&gt;&lt;/a&gt;，这里可能有个疑问如果刚开始发送事务消息就失败了，可能是网络抖动原因，一般是启用failover权重&lt;a href=&#34;https://en.wikipedia.org/wiki/Exponential_backoff&#34;&gt;指数退避&lt;/a&gt;策略重试到不同机房的rocketMQ集群，可以查看&lt;a href=&#34;https://rocketmq.apache.org/zh/docs/featureBehavior/05sendretrypolicy#%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6&#34;&gt;消息发送重试机制&lt;/a&gt; 和 &lt;a href=&#34;https://rocketmq.apache.org/zh/docs/bestPractice/15bestpractice&#34;&gt;最佳实践&lt;/a&gt;, &lt;a href=&#34;https://aws.amazon.com/cn/builders-library/timeouts-retries-and-backoff-with-jitter/&#34;&gt;timeouts-retries-and-backoff-with-jitter&lt;/a&gt;；如果重试还是失败打印错误日志记录发送详情，通过实时数据流将异常行为写入db中，以便后续补发；&lt;/p&gt;
+&lt;p&gt;消息队列：涉及到金钱，为了提高吞吐，需要保证数据准确，数据最终一致(&lt;a href=&#34;https://www.allthingsdistributed.com/2008/12/eventually_consistent.html&#34;&gt;&lt;strong&gt;BASE&lt;/strong&gt;&lt;/a&gt;)，采用支持事务消息的分布式消息队列，比如：&lt;a href=&#34;https://rocketmq.apache.org/zh/docs/featureBehavior/04transactionmessage/&#34;&gt;rocketMQ&lt;strong&gt;事务消息&lt;/strong&gt;&lt;/a&gt;，这里可能有个疑问如果刚开始发送事务消息就失败了，可能是网络抖动,或者服务负载告等原因，一般是启用failover权重&lt;a href=&#34;https://en.wikipedia.org/wiki/Exponential_backoff&#34;&gt;指数退避&lt;/a&gt;策略重试到不同机房的rocketMQ集群，可以查看&lt;a href=&#34;https://rocketmq.apache.org/zh/docs/featureBehavior/05sendretrypolicy#%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6&#34;&gt;消息发送重试机制&lt;/a&gt; 和 &lt;a href=&#34;https://rocketmq.apache.org/zh/docs/bestPractice/15bestpractice&#34;&gt;最佳实践&lt;/a&gt;, &lt;a href=&#34;https://aws.amazon.com/cn/builders-library/timeouts-retries-and-backoff-with-jitter/&#34;&gt;timeouts-retries-and-backoff-with-jitter&lt;/a&gt;；如果重试还是失败打印错误日志记录发送详情，通过实时数据流将异常行为写入db中，以便后续补发；&lt;/p&gt;
 &lt;p&gt;Tips: 如果使用阿里云rocketMQ, 需要注意支持版本提供的SDK，5.0 版本 &lt;a href=&#34;https://github.com/apache/rocketmq-clients&#34;&gt;client SDK&lt;/a&gt; ; 4.0相关版本有些开发语言不支持tcp方式，仅提供http的方式(会少了一些功能，比如批量发送普通消息)；选用新版的5.0版本的SDK开发; 如果有自建运维能力，直接使用开源方案来搭建一套，比如用&lt;a href=&#34;https://www.amazonaws.cn/solutions/apache-rocketmq-on-aws/&#34;&gt;rocketMQ on aws&lt;/a&gt;，并且使用5.0可以实现一层mq-proxy;&lt;/p&gt;
 &lt;p&gt;题外话: 现在分布式消息队列&lt;a href=&#34;https://kafka.apache.org/33/documentation/streams/architecture&#34;&gt;kafka-streams&lt;/a&gt;, &lt;a href=&#34;https://github.com/apache/rocketmq-streams&#34;&gt;rocketmq-streams&lt;/a&gt; 支持数据流(stream)处理大数据实时场景，支持一些简单算子操作和SQL(&lt;a href=&#34;https://github.com/confluentinc/ksql&#34;&gt;ksql&lt;/a&gt;, &lt;a href=&#34;https://github.com/alibaba/rsqldb&#34;&gt;rsql&lt;/a&gt;)；这个和flink对应功能是重合了，flink也在往table store上发力满足数据堆积的能力; 一波流～&lt;/p&gt;
 &lt;h3 id=&#34;调研&#34;&gt;调研&lt;/h3&gt;
@@ -252,7 +252,7 @@
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;如果存在 &lt;strong&gt;select 资产，然后根据不同产品策略进行业务逻辑计算出更新后资产，最后update 更新&lt;/strong&gt; 场景，在并发场景下，三种方式：&lt;/p&gt;
+&lt;p&gt;对于&lt;strong&gt;单个用户资产修改&lt;/strong&gt;；如果存在 &lt;strong&gt;select 资产，然后根据不同产品策略进行业务逻辑计算出更新后资产，最后update 更新&lt;/strong&gt; 场景，在并发场景下，三种方式：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
 &lt;p&gt;服务直接通过分布式锁来处理，这种方式不能防住其他其他服务或者脚本直接操作数据库的情况，除非在操作之前也去获取一次锁，而且引入外部依赖；可以考虑自举方式，服务资源实例自己来上锁；&lt;/p&gt;
@@ -323,6 +323,11 @@
 &lt;td&gt;用户id&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
+&lt;td&gt;recUserId&lt;/td&gt;
+&lt;td&gt;int64&lt;/td&gt;
+&lt;td&gt;接收者用户id&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
 &lt;td&gt;roomId&lt;/td&gt;
 &lt;td&gt;int64&lt;/td&gt;
 &lt;td&gt;房间id&lt;/td&gt;
@@ -333,9 +338,9 @@
 &lt;td&gt;礼物id&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td&gt;interactId&lt;/td&gt;
+&lt;td&gt;eventId&lt;/td&gt;
 &lt;td&gt;int64&lt;/td&gt;
-&lt;td&gt;互动ID 用于贯彻整个送礼物流水链路,进行幂等处理，互动中台生成&lt;/td&gt;
+&lt;td&gt;事件Id: 直播互动场景下，互动ID 用于贯彻整个送礼物流水链路,进行幂等处理，互动中台生成； 用户充值场景下，订单id，支付中台生成；&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;record&lt;/td&gt;
@@ -349,17 +354,22 @@
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;createdAt&lt;/td&gt;
-&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;timestamp&lt;/td&gt;
 &lt;td&gt;创建时间&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;updatedAt&lt;/td&gt;
-&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;timestamp&lt;/td&gt;
 &lt;td&gt;更新时间&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;资源评估：&lt;/p&gt;
+&lt;p&gt;在支付中台，某个互动涉及到多个用户资产的变更，需要把多个写操作关联到一个本地事务进行处理，保证数据扣减和增减一致，需要开启本地事务来处理多表数据；以下gist为并发mysql本地事务处理测试demo&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/weedge/1700dd7053a87a4ab35ba4fce0ebea6a.js&#34;&gt;&lt;/script&gt;
+
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/weedge/fd731ce8549cd99ccfc9491f6025ae8e.js&#34;&gt;&lt;/script&gt;
+
 &lt;h4 id=&#34;cache&#34;&gt;Cache&lt;/h4&gt;
 &lt;p&gt;key设计：&lt;/p&gt;
 &lt;table&gt;
@@ -460,12 +470,12 @@
 &lt;ol&gt;
 &lt;li&gt;开发语言：golang + lua + shell&lt;/li&gt;
 &lt;li&gt;开发框架：gin&lt;/li&gt;
-&lt;li&gt;DB：mysql, 高可用集群方案：支持mysql协议的分布式数据库，且无需在业务中考虑分库分表操作，以及分库分表的分布式事务；比如：开源方案 &lt;a href=&#34;https://docs.pingcap.com/zh/&#34;&gt;tidb&lt;/a&gt;(shared nothing,scale out)，云厂商：&lt;a href=&#34;https://polardbx.com/document&#34;&gt;polardb-x&lt;/a&gt; (shared nothing, scale out)/&lt;a href=&#34;https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.html&#34;&gt;aurora mysql&lt;/a&gt; (shared disk, scale up),   &lt;a href=&#34;https://gorm.io/&#34;&gt;gorm&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;DB：mysql, 高可用集群方案：不推荐自建sharding+proxy的方式；推荐使用支持mysql协议的分布式数据库，且无需在业务中考虑分库分表操作，以及分库分表的分布式事务；比如：开源方案 &lt;a href=&#34;https://docs.pingcap.com/zh/&#34;&gt;tidb&lt;/a&gt;(shared nothing,scale out)，云厂商：&lt;a href=&#34;https://polardbx.com/document&#34;&gt;polardb-x&lt;/a&gt; (shared nothing, scale out)/&lt;a href=&#34;https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.html&#34;&gt;aurora mysql&lt;/a&gt; (shared disk, scale up),   &lt;a href=&#34;https://gorm.io/&#34;&gt;gorm&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Cache:  redis, 高可用集群方案 &lt;a href=&#34;https://redis.io/docs/management/scaling/&#34;&gt;redis-cluster&lt;/a&gt;   &lt;a href=&#34;https://redis.uptrace.dev/guide/&#34;&gt;go-redis&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;MQ: rocketMQ, &lt;a href=&#34;https://github.com/apache/rocketmq-client-go&#34;&gt;rocketmq-client-go&lt;/a&gt;,  如果使用阿里云rocketMQ使用对应&lt;a href=&#34;https://github.com/apache/rocketmq-clients/tree/master/golang&#34;&gt;client SDK&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h3 id=&#34;测试&#34;&gt;测试&lt;/h3&gt;
-&lt;p&gt;基本功能逻辑测试；然后加上 业务/基础服务/中间件服务监控，日志，在开始压测，给出性能报告，调优；最终给出接口/整体服务吞吐和延时上限，采用服务流控对服务接口加上接口/服务限流，以及超时重试，服务相关降级策略；然后模拟线上场景继续压测，触发对应报警和限流，降级策略；&lt;/p&gt;
+&lt;p&gt;基本功能逻辑测试，并发场景下的扣减和新增数据一致；然后加上 业务/基础服务/中间件服务监控，日志，在开始压测，给出性能报告，调优；最终给出接口/整体服务吞吐和延时上限，采用服务流控对服务接口加上接口/服务限流，以及超时重试，服务相关降级策略；然后模拟线上场景继续压测，触发对应报警和限流，降级策略；&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;模块测试&lt;/li&gt;
 &lt;li&gt;加上服务监控，日志，报警，重点关注核心链路指标&lt;/li&gt;
@@ -474,7 +484,7 @@
 &lt;li&gt;调优：耗时，内存，cpu，I/O(网络，磁盘)&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
-&lt;p&gt;面对大量并发请求的用户交互场景，整体思路是预热快速路径响应用户的交互请求行为，然后异步队列解耦，依次pipeline执行慢路径，快/慢路径上通过并发批量处理提高吞吐，尽量使用乐观锁，减少block；需要考虑到数据一致，资产更改准确；服务异常时的降级措施，以及服务过载时的限流，反压措施。&lt;/p&gt;
+&lt;p&gt;面对大量并发请求的用户交互场景，整体思路是预热快速路径响应用户的交互请求行为，然后异步队列解耦，执行慢路径，快/慢路径上通过并发批量处理提高吞吐，快路径尽量使用乐观锁，减少block；需要考虑到数据一致，资产更改准确；本地事务(多表更新)，分布式事务场景(多服务对应表更新)；服务异常时的降级措施，以及服务过载时的限流，以及消息数据流的反压措施。&lt;/p&gt;
 &lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/Cmw3QExqCfBAz9V0AlsS9A&#34;&gt;https://mp.weixin.qq.com/s/Cmw3QExqCfBAz9V0AlsS9A&lt;/a&gt;&lt;/li&gt;
