@@ -475,7 +475,7 @@
 &lt;li&gt;MQ: rocketMQ, &lt;a href=&#34;https://github.com/apache/rocketmq-client-go&#34;&gt;rocketmq-client-go&lt;/a&gt;,  如果使用阿里云rocketMQ使用对应&lt;a href=&#34;https://github.com/apache/rocketmq-clients/tree/master/golang&#34;&gt;client SDK&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;服务编排流量治理：&lt;a href=&#34;https://kubernetes.io/zh-cn/docs/home/&#34;&gt;k8s&lt;/a&gt; + &lt;a href=&#34;https://istio.io/latest/docs/&#34;&gt;istio&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;tips: 在本地开发， 除了本地部署，可以通过docker+minikube/kind+helm 来部署本地节点的多pod集群版本数据库(mysql/tidb/polardb-x)，redis-cluster，以及集群版rocketMQ；以及开发完业务服务应用后，也可以部署在本地pod的容器中, 以便后续CI/CD自动化集成部署至多云容器服务中;&lt;/p&gt;
+&lt;p&gt;tips: 在本地开发， 除了本地部署，可以通过docker+minikube/kind+helm 来部署本地节点的多pod集群版本数据库(mysql/tidb/polardb-x)，redis-cluster，以及集群版rocketMQ；以及开发完业务服务应用后，也可以部署在本地pod的容器中, 以便后续CI/CD自动化集成部署至多云容器服务/自托管的容器服务中;&lt;/p&gt;
 &lt;p&gt;Tidb-operator: &lt;a href=&#34;https://github.com/pingcap/tidb-operator&#34;&gt;https://github.com/pingcap/tidb-operator&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;Redis-cluster: &lt;a href=&#34;https://github.com/bitnami/charts/tree/main/bitnami/redis-cluster&#34;&gt;https://github.com/bitnami/charts/tree/main/bitnami/redis-cluster&lt;/a&gt; , &lt;a href=&#34;https://kubedb.com/docs/v2022.10.18/guides/redis/clustering/redis-cluster/&#34;&gt;https://kubedb.com/docs/v2022.10.18/guides/redis/clustering/redis-cluster/&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;RocketMQ-operator: &lt;a href=&#34;https://github.com/apache/rocketmq-operator&#34;&gt;https://github.com/apache/rocketmq-operator&lt;/a&gt;&lt;/p&gt;
