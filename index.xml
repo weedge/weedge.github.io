@@ -466,7 +466,15 @@
 &lt;p&gt;消息服务： &lt;a href=&#34;https://weedge.github.io/post/jxzbim/&#34;&gt;https://weedge.github.io/post/jxzbim/&lt;/a&gt;&lt;/p&gt;
 &lt;h3 id=&#34;开发&#34;&gt;开发&lt;/h3&gt;
 &lt;p&gt;按服务模块进行并行开发，联调；给出对应排期&lt;/p&gt;
-&lt;h5 id=&#34;开源开发框架和组件选择&#34;&gt;开源开发框架和组件选择&lt;/h5&gt;
+&lt;ol&gt;
+&lt;li&gt;搭建基础环境，tidb, redis, rocketmq 1d&lt;/li&gt;
+&lt;li&gt;测试demo, redis cluster集群下的缓存事务和 tidb分布式缓存事务，rocketmq 分布式消息事务；1d&lt;/li&gt;
+&lt;li&gt;了解kitex, 写一个demo, 基于kitex进行开发 2d&lt;/li&gt;
+&lt;li&gt;编写makefile, dockerfile, 打包成docker镜像， 整体解决方案依赖组件也可以通过docker-compose部署至docker容器中 1d&lt;/li&gt;
+&lt;li&gt;编写相关k8s资源 (deployment,configmap,secret,pod,ingress)通过minikube/kind 部署至本地k8s集群 1d&lt;/li&gt;
+&lt;li&gt;将服务网格化istio&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;开源开发框架和组件选择&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;开发语言：golang + lua + shell&lt;/li&gt;
 &lt;li&gt;开发框架：&lt;a href=&#34;https://gin-gonic.com/zh-cn/docs/&#34;&gt;gin&lt;/a&gt; or &lt;a href=&#34;https://www.cloudwego.io/zh/docs/kitex/getting-started/&#34;&gt;kitex&lt;/a&gt;&lt;/li&gt;
@@ -491,7 +499,6 @@
 &lt;/ol&gt;
 &lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
 &lt;p&gt;面对大量并发请求的用户交互场景，整体思路是预热快速路径响应用户的交互请求行为，然后异步队列解耦，执行慢路径，快/慢路径上通过并发批量处理提高吞吐，快路径尽量使用乐观锁，减少block；需要考虑到数据一致，资产更改准确；本地事务(同服务多表更新)，分布式事务场景(多服务对应表更新)；服务异常时的降级措施，以及服务过载时的限流，以及消息数据流的反压措施。&lt;/p&gt;
-&lt;p&gt;Tips: 理论上，这些通用的解决方案，可以通过k8s/istio operator的方式直接一键部署(数据库，中间件和场景下的通用业务解决方案), 降本增效。&lt;/p&gt;
 &lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/Cmw3QExqCfBAz9V0AlsS9A&#34;&gt;https://mp.weixin.qq.com/s/Cmw3QExqCfBAz9V0AlsS9A&lt;/a&gt;&lt;/li&gt;
