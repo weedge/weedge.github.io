@@ -75,7 +75,7 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 直播线上互动，已成为当下生活的一部分，特别是受疫情影响，成为互联网的主要流量入口；研究了下各个平台直播间送礼物的功能，发现大同小异，在礼物分组，一些定制化的礼物有区分，整体交互流程大致相同，主要是直播间主播上播，用户通过礼物打赏给主播们(一个直播间可能有多名主播在互动)，礼物是通过虚拟币(**币) 换算，早期互联网用户线上互动礼物，玩家最多的应该是QQ币了，只不过以前的打赏赠送场景是在web2.0刚开始的时候，交互的大多是文字和图片，相关产品场景，虚拟空间(个人空间，博客，种菜等娱乐互动场景)；随着底层网络基建的发展，4G之后出现了大量的视频网站，用户可以录一些视频内容来互动；到后来音视频流媒体的发展，相关的在线直播间开始涌现，用户之间享受一波直播红利带来的互动，当然影响相对于前面的形式更加实时和直接；现在的5G和未来6G，以及物联网都会给直播形式带来新的互动场景,比如：虚拟会场，人机互动；其中早期培养起来的打赏送礼行为功能经常用于有主播的娱乐互动直播中，也是增值盈利的一部分；
 tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦，电商带货商品，没有主播，节目直播/转播，会议直播，自习室，基本的点赞，计数，聊天基础服务功能；还有些抽奖功能，答题功能(教育类直播居多)，投票，红包这些功能服务可在开播时设置，是否启用；有用户基础的流量平台可能还会以竞价排名的方式推荐一波；这些功能可以作为一个可管理的插件，通过组合的方式应用于直播中，方便管理，后续可以添加新功能满足某类型直播场景。"><meta itemprop="datePublished" content="2022-11-21T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2022-11-21T10:26:23+08:00" />
-<meta itemprop="wordCount" content="7461">
+<meta itemprop="wordCount" content="7681">
 <meta itemprop="keywords" content="直播," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="设计草稿-直播间赠送礼物功能"/>
 <meta name="twitter:description" content="背景
@@ -746,10 +746,10 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 </ol>
 <p>支付中台：</p>
 <ol>
-<li>变更用户虚拟资产接口</li>
+<li><strong>变更用户虚拟资产接口</strong></li>
 <li>获取用户虚拟资产接口</li>
 <li>获取用户资产变更流水接口</li>
-<li>更新数据库中的用户资产 消费逻辑</li>
+<li><strong>更新数据库中的用户资产 消费逻辑</strong></li>
 </ol>
 <p>消息服务： <a href="https://weedge.github.io/post/jxzbim/">https://weedge.github.io/post/jxzbim/</a></p>
 <h3 id="开发">开发</h3>
@@ -757,7 +757,7 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 <ol>
 <li>搭建基础环境，tidb, redis, rocketmq 1d</li>
 <li>测试demo, redis cluster集群下的缓存事务和 tidb分布式缓存事务，rocketmq 分布式消息事务；1d</li>
-<li>了解kitex, 写一个demo, 基于kitex进行开发 2d</li>
+<li>核心服务模块开发支付中台接口 1d</li>
 <li>编写makefile, dockerfile, 打包成docker镜像， 整体解决方案依赖组件也可以通过docker-compose部署至docker容器中 1d</li>
 <li>编写相关k8s资源 (deployment,configmap,secret,pod,ingress)通过minikube/kind 部署至本地k8s集群 1d</li>
 <li>将服务网格化istio</li>
@@ -765,17 +765,21 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 <p>开源开发框架和组件选择</p>
 <ol>
 <li>开发语言：golang + lua + shell</li>
-<li>开发框架：<a href="https://gin-gonic.com/zh-cn/docs/">gin</a> or <a href="https://www.cloudwego.io/zh/docs/kitex/getting-started/">kitex</a></li>
+<li>开发框架：<a href="https://gin-gonic.com/zh-cn/docs/">gin</a></li>
 <li>DB：mysql, 高可用集群方案：不推荐自建sharding+proxy的方式；推荐使用支持mysql协议的分布式数据库，且无需在业务中考虑分库分表操作，以及分库分表的分布式事务；比如：开源方案 <a href="https://docs.pingcap.com/zh/">tidb</a>(shared nothing,scale out)，云厂商：<a href="https://polardbx.com/document">polardb-x</a> (shared nothing, scale out)/<a href="https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.html">aurora mysql</a> (shared disk, scale up),   <a href="https://gorm.io/">gorm</a></li>
 <li>Cache:  redis, 高可用集群方案 开源方案<a href="https://redis.io/docs/management/scaling/">redis-cluster</a>, <a href="https://github.com/RedisLabs/redis-cluster-proxy">redis-cluster-proxy</a>；云厂商proxy代理方式：<a href="https://help.aliyun.com/document_detail/52228.html">阿里云redis</a>,  或者支持redis cluster协议 底层利用rocksdb/leveldb 作为kv存储引擎的开源方案，比如<a href="https://github.com/apache/incubator-kvrocks">kvrocks</a>(watch命令暂未支持，可以使用lua脚本命令),  <a href="https://redis.uptrace.dev/guide/">go-redis</a></li>
 <li>MQ: rocketMQ, <a href="https://github.com/apache/rocketmq-client-go">rocketmq-client-go</a>,  如果使用阿里云rocketMQ使用对应<a href="https://github.com/apache/rocketmq-clients/tree/master/golang">client SDK</a></li>
 <li>服务编排流量治理：<a href="https://kubernetes.io/zh-cn/docs/home/">k8s</a> + <a href="https://istio.io/latest/docs/">istio</a></li>
 </ol>
-<p>tips: 在本地开发， 除了本地部署，可以通过docker+minikube/kind+helm 来部署本地节点的多pod集群版本数据库(mysql/tidb/polardb-x)，redis-cluster，以及集群版rocketMQ；以及开发完业务服务应用后，也可以部署在本地pod的容器中, 以便后续CI/CD自动化集成部署至多云容器服务/自托管的容器服务中;</p>
+<p>tips: 在本地开发，可以通过docker compose 本地部署； 还可以通过docker+minikube/kind+helm 来部署本地节点的多pod集群版本数据库(mysql/tidb/polardb-x)，redis-cluster，以及集群版rocketMQ；以及开发完业务服务应用后，也可以部署在本地pod的容器中, 以便后续CI/CD自动化集成部署至多云容器服务/自托管的容器服务中，具体可参考<a href="https://jimmysong.io/kubernetes-handbook/practice/ci-cd.html">k8s ci/cd</a> , GitOps实践: <a href="https://cloudyuga.guru/blog/jenkins-argo">github-jenkins-argo</a> , <a href="https://www.jokerbai.com/archives/ji-yu-jenkins-he-argocd-shi-xian-devops">使用gitlab,Jenkins和Argocd实现CI/CD</a>, <a href="https://www.jokerbai.com/archives/shi-yong-argorollouts-shi-xian-jin-si-que-fa-bu">使用argo rollouts实现金丝雀发布</a></p>
+<p>无状态服务快速开发迭代大致自动化构建部署如下：</p>
+<p>CI:  begin -&gt; build(local makefile/test build, dockerfile build) -&gt; push docker registry(自建<a href="https://goharbor.io/docs/2.6.0/">harbor</a>或者云服务) -&gt; end  (gitlab/jenkins CI)</p>
+<p>CD: 分开发，测试，预发和生产环境，开发，测试直接单pod部署实例；预发双pod;  生产环境则分阶段部署和回滚：蓝绿部署/金丝雀(灰度)部署 (<a href="https://argo-cd.readthedocs.io/en/stable/">argo CD</a>, <a href="https://argoproj.github.io/argo-rollouts/">argo Rollouts</a>)</p>
+<p>有状态服务通过operator部署：</p>
 <p>Tidb-operator: <a href="https://github.com/pingcap/tidb-operator">https://github.com/pingcap/tidb-operator</a></p>
-<p>Redis-cluster: <a href="https://github.com/bitnami/charts/tree/main/bitnami/redis-cluster">https://github.com/bitnami/charts/tree/main/bitnami/redis-cluster</a> , <a href="https://kubedb.com/docs/v2022.10.18/guides/redis/clustering/redis-cluster/">https://kubedb.com/docs/v2022.10.18/guides/redis/clustering/redis-cluster/</a></p>
-<p>RocketMQ-operator: <a href="https://github.com/apache/rocketmq-operator">https://github.com/apache/rocketmq-operator</a></p>
-<p>题外话：或者进一步的直接使用无服务serverless 函数计算，开源方案 <a href="https://docs.openfaas.com/deployment/kubernetes/"><strong>openfaas on k8s</strong></a>, 或者使用云服务比如<a href="https://aws.amazon.com/cn/campaigns/lambda/">aws lambda</a>, 专注于业务逻辑，减少&rsquo;胶水&rsquo;代码，缺少了开发框架的依赖，常用于数据事件处理（DevOps-&gt;AppOps）；</p>
+<p>Redis-cluster:   <a href="https://github.com/bitnami/charts/tree/main/bitnami/redis-cluster">https://github.com/bitnami/charts/tree/main/bitnami/redis-cluster</a> , <a href="https://kubedb.com/docs/v2022.10.18/guides/redis/clustering/redis-cluster/">https://kubedb.com/docs/v2022.10.18/guides/redis/clustering/redis-cluster/</a></p>
+<p>RocketMQ-operator on k8s: <a href="https://github.com/apache/rocketmq-operator">https://github.com/apache/rocketmq-operator</a></p>
+<p>题外话：或者进一步的直接使用无服务serverless 函数计算，开源方案 <a href="https://docs.openfaas.com/deployment/kubernetes/"><strong>openfaas on k8s</strong></a>, 或者使用云服务比如<a href="https://aws.amazon.com/cn/campaigns/lambda/">aws lambda</a>, 专注于业务逻辑，减少&rsquo;胶水&rsquo;代码，缺少了开发框架的依赖，常用于数据事件处理（DevOps-&gt;AppOps)。</p>
 <h3 id="测试">测试</h3>
 <p>基本功能逻辑测试，并发场景下的扣减和新增数据一致；然后加上 业务/基础服务/中间件服务监控，日志，在开始压测，给出性能报告，调优；最终给出接口/整体服务吞吐和延时上限，采用服务流控对服务接口加上接口/服务限流，以及超时重试，服务相关降级策略；然后模拟线上场景继续压测，触发对应报警和限流，降级策略；</p>
 <ol>
