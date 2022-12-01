@@ -515,6 +515,7 @@
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
+&lt;p&gt;consumer GroupID: GID_GIFT_ASSET_CHANGE&lt;/p&gt;
 &lt;h4 id=&#34;api&#34;&gt;API&lt;/h4&gt;
 &lt;p&gt;前台统一入口接口参数安全验证&lt;/p&gt;
 &lt;p&gt;互动中台：&lt;/p&gt;
