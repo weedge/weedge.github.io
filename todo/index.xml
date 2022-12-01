@@ -13,7 +13,7 @@
       <pubDate>Wed, 10 Jun 2020 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/todo/policyworker/</guid>
-      <description>策略模型 1package main 2 3import ( 4 &amp;#34;sync/atomic&amp;#34; 5 &amp;#34;time&amp;#34; 6) 7 8func loadConfig() map[string]string { 9 // 从数据库或者文件系统中读取配置信息，然后以map的形式存放在内存里 10 return make(map[string]string) 11} 12 13func requests() chan int { 14 // 将从外界</description>
+      <description>策略模型 package main import ( &amp;#34;sync/atomic&amp;#34; &amp;#34;time&amp;#34; ) func loadConfig() map[string]string { // 从数据库或者文件系统中读取配置信息，然后以map的形式存放在内存里 return make(map[string]string) } func requests() chan int { // 将从外界中接受到的请求放</description>
     </item>
     
     <item>

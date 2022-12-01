@@ -477,8 +477,8 @@ Clock-pro有明显较小的内存使用大量的key(当key的数量超过 1m)。
 <li>
 <p>allkeys-lfu：从所有的数据集（server.db[i].dict）中挑选近似 LFU 数据淘汰。</p>
 <p>LFU 类似于 LRU：它使用一个概率计数器，称为<a href="https://en.wikipedia.org/wiki/Approximate_counting_algorithm">莫里斯计数器</a>，以便仅使用每个对象的几位来估计对象访问频率，并结合衰减周期，以便计数器随着时间的推移而减少：在某些时候，我们不再希望将key视为经常访问的key，即使它们过去是这样，以便算法可以适应访问的转变。LFU具有可调参数:  （见：<a href="http://antirez.com/news/109">Random notes on improving the Redis LRU algorithm</a> Least Frequently Used)</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="ln">1</span>lfu-log-factor 10 //在大约一百万个请求时使计数器饱和因子，计数器对数因子会改变需要多少次命中才能使频率计数器饱和，这恰好在 0-255 的范围内。系数越高，需要越多的访问以达到最大值。系数越低，低访问计数器的分辨率越好，见redis示例redis.conf文件
-<span class="ln">2</span>lfu-decay-time 1 //每一分钟衰减一次计数器。
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">lfu-log-factor 10 //在大约一百万个请求时使计数器饱和因子，计数器对数因子会改变需要多少次命中才能使频率计数器饱和，这恰好在 0-255 的范围内。系数越高，需要越多的访问以达到最大值。系数越低，低访问计数器的分辨率越好，见redis示例redis.conf文件
+lfu-decay-time 1 //每一分钟衰减一次计数器。
 </code></pre></div></li>
 </ul>
 <p>当 cache 中没有符合清除条件的 key 时，回收策略 volatile-lru, volatile-random 和volatile-ttl 将会和 策略 noeviction 一样返回错误。选择正确的回收策略是很重要的，取决于你的应用程序的访问模式。但是，你可以在程序运行时重新配置策略，使用 INFO 输出来监控缓存命中和错过的次数，以调优你的设置。</p>

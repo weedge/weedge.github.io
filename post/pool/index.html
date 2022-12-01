@@ -74,7 +74,7 @@
 <meta itemprop="description" content="介绍
 平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(pool)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，进程(process PCB 内核态)、线程(thread TCB  内核态)、协程(coroutine 用户态协作式调度,尽量减少内核调度)为载体的工作任务(work task 在用户态分配栈空间)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。"><meta itemprop="datePublished" content="2021-12-02T12:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-12-11T17:26:23+08:00" />
-<meta itemprop="wordCount" content="10112">
+<meta itemprop="wordCount" content="10109">
 <meta itemprop="keywords" content="pool," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="pool"/>
 <meta name="twitter:description" content="介绍
@@ -369,10 +369,10 @@
 </ol>
 <p>fsync内存异步持久落盘操作和close异步关闭文件操作；</p>
 <p>由于内存中大ke同步删除会耗时高从而阻塞核心逻辑，所以将这些内存释放采用lazyfree机制优化异步化处理，包括两类：一类是主动释放<code>unlink</code> <code>flushall async</code> ；一类是被动释放, 分为4种场景，按需求场景进行打开优化(默认是关闭的)：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="ln">1</span>lazyfree-lazy-eviction no
-<span class="ln">2</span>lazyfree-lazy-expire no
-<span class="ln">3</span>lazyfree-lazy-server-del no
-<span class="ln">4</span>slave-lazy-flush no
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">lazyfree-lazy-eviction no
+lazyfree-lazy-expire no
+lazyfree-lazy-server-del no
+slave-lazy-flush no
 </code></pre></div><p>​	lazyfree-lazy-eviction：针对redis内存使用达到maxmeory，并设置有淘汰策略时；在被动淘汰键时，是否采用lazy free机制； 具体流程见<a href="https://weedge.github.io/post/lru/#%E8%BF%91%E4%BC%BClru%E7%AE%97%E6%B3%95">redis 近似lru算法</a>；</p>
 <p>​	lazyfree-lazy-expire：针对设置有TTL的键，达到过期后，被redis清理删除时是否采用lazy free机制；可开启</p>
 <p>​	lazyfree-lazy-server-del：针对有些指令在处理已存在的键时，会带有一个隐式的DEL键的操作，比如<code>rename</code>操作，如果key存在会先删除这个key/value, 如果是大key场景会阻塞；可开启</p>
@@ -389,23 +389,23 @@
 <p>处理流程和以前的单线程reactor模式差不多，主要区别是对读写IO优化(异步多线程处理)； 读入请求命令读取解析和写出响应数据给客户端，增加了I/O多线程来处理，以前的主线程处理的核心逻辑没有变，增加了和I/O多线程交互的读写LIFO队列(clients_pending_read / clients_pending_write)，有点像扇入扇出模式；尽量保持 <strong>less is more</strong> 原则；</p>
 <p>而且redis v6.0为了高性能，网络IO多线程场景，和nginx一样也对多核CPU NUMA架构进行了亲和性处理(见setcpuaffinity.c中逻辑，<a href="https://github.com/redis/redis/commit/1a0deab2a548fa306171f03439e858c00836fe69">commit 1a0deab2</a>)，充分利用CPU本地缓存，并行处理；另外redis v6.0还有一些性能优化骚操作，无锁化处理，看代码时会发现用到了mutex lock，通过 pthread_mutex_lock 给 io_threads_mutex[i] (0&lt;=i&lt;128) 上锁，其实目的是主线程用来通知I/O线程使用的，最终还是通过io_threads_pending[i] 原子化操作(atomic_load_explicit)获取判读是否等待；每个处理I/O线程都有自己的本地队列io_threads_list[i] 用于处理封装的client结构，I/O线程之间互不干涉；而且主线程和I/O子线程处理本地队列 io_threads_list[i] 以及io_threads_op 通过控制主线程和 I/O 线程交错访问来规避共享数据竞争(data race)问题。</p>
 <p>THREADED I/O 核心操作变量如下：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="ln"> 1</span><span class="cm">/* ==========================================================================
-</span><span class="ln"> 2</span><span class="cm"> * Threaded I/O
-</span><span class="ln"> 3</span><span class="cm"> * ========================================================================== */</span>
-<span class="ln"> 4</span>
-<span class="ln"> 5</span><span class="cp">#define IO_THREADS_MAX_NUM 128
-</span><span class="ln"> 6</span><span class="cp">#define IO_THREADS_OP_READ 0
-</span><span class="ln"> 7</span><span class="cp">#define IO_THREADS_OP_WRITE 1
-</span><span class="ln"> 8</span><span class="cp"></span>
-<span class="ln"> 9</span><span class="n">pthread_t</span> <span class="n">io_threads</span><span class="p">[</span><span class="n">IO_THREADS_MAX_NUM</span><span class="p">];</span>
-<span class="ln">10</span><span class="n">pthread_mutex_t</span> <span class="n">io_threads_mutex</span><span class="p">[</span><span class="n">IO_THREADS_MAX_NUM</span><span class="p">];</span>
-<span class="ln">11</span><span class="n">redisAtomic</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">io_threads_pending</span><span class="p">[</span><span class="n">IO_THREADS_MAX_NUM</span><span class="p">];</span>
-<span class="ln">12</span><span class="kt">int</span> <span class="n">io_threads_op</span><span class="p">;</span>      <span class="cm">/* IO_THREADS_OP_WRITE or IO_THREADS_OP_READ. */</span>
-<span class="ln">13</span>
-<span class="ln">14</span><span class="cm">/* This is the list of clients each thread will serve when threaded I/O is
-</span><span class="ln">15</span><span class="cm"> * used. We spawn io_threads_num-1 threads, since one is the main thread
-</span><span class="ln">16</span><span class="cm"> * itself. */</span>
-<span class="ln">17</span><span class="n">list</span> <span class="o">*</span><span class="n">io_threads_list</span><span class="p">[</span><span class="n">IO_THREADS_MAX_NUM</span><span class="p">];</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="cm">/* ==========================================================================
+</span><span class="cm"> * Threaded I/O
+</span><span class="cm"> * ========================================================================== */</span>
+
+<span class="cp">#define IO_THREADS_MAX_NUM 128
+</span><span class="cp">#define IO_THREADS_OP_READ 0
+</span><span class="cp">#define IO_THREADS_OP_WRITE 1
+</span><span class="cp"></span>
+<span class="n">pthread_t</span> <span class="n">io_threads</span><span class="p">[</span><span class="n">IO_THREADS_MAX_NUM</span><span class="p">];</span>
+<span class="n">pthread_mutex_t</span> <span class="n">io_threads_mutex</span><span class="p">[</span><span class="n">IO_THREADS_MAX_NUM</span><span class="p">];</span>
+<span class="n">redisAtomic</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">io_threads_pending</span><span class="p">[</span><span class="n">IO_THREADS_MAX_NUM</span><span class="p">];</span>
+<span class="kt">int</span> <span class="n">io_threads_op</span><span class="p">;</span>      <span class="cm">/* IO_THREADS_OP_WRITE or IO_THREADS_OP_READ. */</span>
+
+<span class="cm">/* This is the list of clients each thread will serve when threaded I/O is
+</span><span class="cm"> * used. We spawn io_threads_num-1 threads, since one is the main thread
+</span><span class="cm"> * itself. */</span>
+<span class="n">list</span> <span class="o">*</span><span class="n">io_threads_list</span><span class="p">[</span><span class="n">IO_THREADS_MAX_NUM</span><span class="p">];</span>
 </code></pre></div><p>以上通过引入多线程来改善redis中I/O处理性能，这些优化都可以根据需求场景进行配置，也有具体说明 见: <a href="https://github.com/redis/redis/blob/unstable/redis.conf">redis.conf</a> (LAZY FREEING, THREADED I/O)；功能按需配置，<strong>可配置功能说明</strong> 配置文档原则 (开源软件配置文件一般都会有详细说明可了解)；</p>
 <h4 id="java-thread-pool">java thread pool</h4>
 <p>java多线程编程，也有相关的线程池(ThreadPoolExecutor，子类ScheduledThreadPoolExecutor - 利用延迟工作队列(最小堆)实现定时任务线程池)提供使用；使用ThreadPoolExecutor可以满足两种场景：</p>

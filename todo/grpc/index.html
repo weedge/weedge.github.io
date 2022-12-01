@@ -337,22 +337,22 @@
 <li>
 <p>Unary RPC：一元 RPC</p>
 <p>客户端发送一个请求给服务端，从服务端获取一个应答，就像一次普通的函数调用。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="ln">1</span><span class="nx">rpc</span> <span class="nf">SayHello</span><span class="p">(</span><span class="nx">HelloRequest</span><span class="p">)</span> <span class="nf">returns</span> <span class="p">(</span><span class="nx">HelloResponse</span><span class="p">);</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">rpc</span> <span class="nf">SayHello</span><span class="p">(</span><span class="nx">HelloRequest</span><span class="p">)</span> <span class="nf">returns</span> <span class="p">(</span><span class="nx">HelloResponse</span><span class="p">);</span>
 </code></pre></div></li>
 <li>
 <p>Server-side streaming RPC：服务端流式 RPC</p>
 <p>客户端向服务器发送请求并获取流以读回一系列消息。客户端从返回的流中读取，直到没有更多消息为止。gRPC 保证单个 RPC 调用中的消息顺序。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="ln">1</span><span class="nx">rpc</span> <span class="nf">LotsOfReplies</span><span class="p">(</span><span class="nx">HelloRequest</span><span class="p">)</span> <span class="nf">returns</span> <span class="p">(</span><span class="nx">stream</span> <span class="nx">HelloResponse</span><span class="p">);</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">rpc</span> <span class="nf">LotsOfReplies</span><span class="p">(</span><span class="nx">HelloRequest</span><span class="p">)</span> <span class="nf">returns</span> <span class="p">(</span><span class="nx">stream</span> <span class="nx">HelloResponse</span><span class="p">);</span>
 </code></pre></div></li>
 <li>
 <p>Client-side streaming RPC：客户端流式 RPC</p>
 <p>客户端写入一系列消息并将它们发送到服务器，再次使用提供的流。一旦客户端完成了消息的写入，它就会等待服务器读取它们并返回它的响应。gRPC 再次保证了单个 RPC 调用中的消息顺序。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="ln">1</span>rpc LotsOfReplies(HelloRequest) returns (stream HelloResponse);
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">rpc LotsOfReplies(HelloRequest) returns (stream HelloResponse);
 </code></pre></div></li>
 <li>
 <p>Bidirectional streaming RPC：双向流式 RPC</p>
 <p>客户端和服务端双方使用读写流发送一系列消息。这两个流独立运行，因此客户端和服务器可以按照他们喜欢的任何顺序读取和写入：例如，服务器可以在写入响应之前等待接收所有客户端消息，或者它可以交替读取消息然后写入消息，或其他一些读取和写入的组合。保留每个流中消息的顺序。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="ln">1</span>rpc LotsOfGreetings(stream HelloRequest) returns (HelloResponse);
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">rpc LotsOfGreetings(stream HelloRequest) returns (HelloResponse);
 </code></pre></div></li>
 </ol>
 <h3 id="references">references</h3>

@@ -71,7 +71,7 @@
 <meta itemprop="name" content="深入理解Linux的Page Cache 「转载的哦」">
 <meta itemprop="description" content="from: 互联网，了解下备个份而已啦～！unix 请看个 man 1、Page Cache 1.1 Page Cache 是什么？ 为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示"><meta itemprop="datePublished" content="2021-11-26T11:26:23+08:00" />
 <meta itemprop="dateModified" content="2021-11-26T11:26:23+08:00" />
-<meta itemprop="wordCount" content="5009">
+<meta itemprop="wordCount" content="5008">
 <meta itemprop="keywords" content="page cache," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="深入理解Linux的Page Cache 「转载的哦」"/>
 <meta name="twitter:description" content="from: 互联网，了解下备个份而已啦～！unix 请看个 man 1、Page Cache 1.1 Page Cache 是什么？ 为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示"/>
@@ -344,26 +344,26 @@
 <p>上图中，红色部分为 Page Cache。可见 Page Cache 的本质是由 Linux 内核管理的内存区域。我们通过 mmap 以及 buffered I/O 将文件读取到内存空间实际上都是读取到 Page Cache 中。</p>
 <h3 id="12-如何查看系统的-page-cache">1.2 如何查看系统的 Page Cache？</h3>
 <p>通过读取 /proc/meminfo 文件，能够实时获取系统内存情况：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="ln"> 1</span>$ cat /proc/meminfo  
-<span class="ln"> 2</span>...  
-<span class="ln"> 3</span>Buffers:            1224 kB  
-<span class="ln"> 4</span>Cached:           111472 kB  
-<span class="ln"> 5</span>SwapCached:        36364 kB  
-<span class="ln"> 6</span>Active:          6224232 kB  
-<span class="ln"> 7</span>Inactive:         979432 kB  
-<span class="ln"> 8</span>Active(anon):    6173036 kB  
-<span class="ln"> 9</span>Inactive(anon):   927932 kB  
-<span class="ln">10</span>Active(file):      51196 kB  
-<span class="ln">11</span>Inactive(file):    51500 kB  
-<span class="ln">12</span>...  
-<span class="ln">13</span>Shmem:             10000 kB  
-<span class="ln">14</span>... 
-<span class="ln">15</span>SReclaimable:      43532 kB  
-<span class="ln">16</span>... 
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">$ cat /proc/meminfo  
+...  
+Buffers:            1224 kB  
+Cached:           111472 kB  
+SwapCached:        36364 kB  
+Active:          6224232 kB  
+Inactive:         979432 kB  
+Active(anon):    6173036 kB  
+Inactive(anon):   927932 kB  
+Active(file):      51196 kB  
+Inactive(file):    51500 kB  
+...  
+Shmem:             10000 kB  
+... 
+SReclaimable:      43532 kB  
+... 
 </code></pre></div><p>根据上面的数据，你可以简单得出这样的公式（等式两边之和都是 112696 KB）：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="ln">1</span>Buffers + Cached + SwapCached = Active(file) + Inactive(file) + Shmem + SwapCached 
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">Buffers + Cached + SwapCached = Active(file) + Inactive(file) + Shmem + SwapCached 
 </code></pre></div><p>两边等式都是 Page Cache，即：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="ln">1</span>Page Cache = Buffers + Cached + SwapCached 
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">Page Cache = Buffers + Cached + SwapCached 
 </code></pre></div><p>通过阅读 1.4 以及 1.5 小节，就能够理解为什么 SwapCached 与 Buffers 也是 Page Cache 的一部分。</p>
 <p>题外话，小伙伴答案：</p>
 <p>内核计算源码（linux 2.6.19）：</p>
@@ -412,11 +412,11 @@
 <p><img src="https://nimg.ws.126.net/?url=http%3A%2F%2Fdingyue.ws.126.net%2F2021%2F1124%2F3c3bdceej00r32mkz000ac000hs0064g.jpg&amp;thumbnail=650x2147483647&amp;quality=80&amp;type=jpg" alt="img"></p>
 <h3 id="15-page-cache-与-buffer-cache">1.5 Page Cache 与 buffer cache</h3>
 <p>执行 free 命令，注意到会有两列名为 buffers 和 cached，也有一行名为 “-/+ buffers/cache”。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="ln">1</span>~ free -m  
-<span class="ln">2</span>             total       used       free     shared    buffers     cached  
-<span class="ln">3</span>Mem:        128956      96440      32515          0       5368      39900  
-<span class="ln">4</span>-/+ buffers/cache:      51172      77784  
-<span class="ln">5</span>Swap:        16002          0      16001 
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">~ free -m  
+             total       used       free     shared    buffers     cached  
+Mem:        128956      96440      32515          0       5368      39900  
+-/+ buffers/cache:      51172      77784  
+Swap:        16002          0      16001 
 </code></pre></div><p>其中，cached 列表示当前的页缓存（Page Cache）占用量，buffers 列表示当前的块缓存（buffer cache）占用量。用一句话来解释：Page Cache 用于缓存文件的页数据，buffer cache 用于缓存块设备（如磁盘）的块数据。页是逻辑上的概念，因此 Page Cache 是与文件系统同级的；块是物理上的概念，因此 buffer cache 是与块设备驱动程序同级的。</p>
 <p>Page Cache）占用量，buffers 列表示当前的块缓存（buffer cache）占用量。用一句话来解释：Page Cache 用于缓存文件的页数据，buffer cache 用于缓存块设备（如磁盘）的块数据。页是逻辑上的概念，因此 Page Cache 是与文件系统同级的；块是物理上的概念，因此 buffer cache 是与块设备驱动程序同级的。</p>
 <p>Page Cache 与 buffer cache 的共同目的都是加速数据 I/O：写数据时首先写到缓存，将写入的页标记为 dirty，然后向外部存储 flush，也就是缓存写机制中的 write-back（另一种是 write-through，Linux 默认情况下不采用）；读数据时首先读取缓存，如果未命中，再去外部存储读取，并且将读取来的数据也加入缓存。操作系统总是积极地将所有空闲内存都用作 Page Cache 和 buffer cache，当内存不够用时也会用 LRU 等算法淘汰缓存页。</p>

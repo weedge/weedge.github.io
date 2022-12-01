@@ -96,7 +96,7 @@
 
 对此进行方案分析，本文将介绍一种实时离线处理分析用户行为数据方案，即能帮助企业低成本地使用海量数据，又能更快速地响应业务需求，同时借助亚马逊云科技的托管服务，能够快速实施和轻松运维。"><meta itemprop="datePublished" content="2022-11-02T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2022-11-02T10:26:23+08:00" />
-<meta itemprop="wordCount" content="7644">
+<meta itemprop="wordCount" content="7613">
 <meta itemprop="keywords" content="aws,方案,全栈," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="用户行为分析方案设计"/>
 <meta name="twitter:description" content="背景
@@ -510,74 +510,74 @@
 </tbody>
 </table>
 <p>实时过滤出异常事件KDA SQL</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="ln"> 1</span><span class="c1">-- ** Continuous Filter ** 
-</span><span class="ln"> 2</span><span class="c1"></span><span class="w">    </span><span class="c1">-- Performs a continuous filter based on a WHERE condition.
-</span><span class="ln"> 3</span><span class="c1"></span><span class="w">    </span><span class="c1">--          .----------.   .----------.   .----------.              
-</span><span class="ln"> 4</span><span class="c1"></span><span class="w">    </span><span class="c1">--          |  SOURCE  |   |  INSERT  |   |  DESTIN. |              
-</span><span class="ln"> 5</span><span class="c1"></span><span class="w">    </span><span class="c1">-- Source--&gt;|  STREAM  |--&gt;| &amp; SELECT |--&gt;|  STREAM  |--&gt;Destination
-</span><span class="ln"> 6</span><span class="c1"></span><span class="w">    </span><span class="c1">--          |          |   |  (PUMP)  |   |          |              
-</span><span class="ln"> 7</span><span class="c1"></span><span class="w">    </span><span class="c1">--          &#39;----------&#39;   &#39;----------&#39;   &#39;----------&#39;               
-</span><span class="ln"> 8</span><span class="c1"></span><span class="w">    </span><span class="c1">-- STREAM (in-application): a continuously updated entity that you can SELECT from and INSERT into like a TABLE
-</span><span class="ln"> 9</span><span class="c1"></span><span class="w">    </span><span class="c1">-- PUMP: an entity used to continuously &#39;SELECT ... FROM&#39; a source STREAM, and INSERT SQL results into an output STREAM
-</span><span class="ln">10</span><span class="c1"></span><span class="w">    </span><span class="c1">-- Create output stream, which can be used to send to a destination
-</span><span class="ln">11</span><span class="c1">-- reference: 
-</span><span class="ln">12</span><span class="c1">-- https://docs.aws.amazon.com/zh_cn/kinesisanalytics/latest/sqlref/analytics-sql-reference.html
-</span><span class="ln">13</span><span class="c1">-- https://docs.aws.amazon.com/zh_cn/kinesisanalytics/latest/dev/streaming-sql-concepts.html
-</span><span class="ln">14</span><span class="c1">-- https://docs.aws.amazon.com/zh_cn/kinesisanalytics/latest/sqlref/kinesis-analytics-sqlref.pdf
-</span><span class="ln">15</span><span class="c1"></span><span class="w">
-</span><span class="ln">16</span><span class="w"></span><span class="c1">-- abnormality event stream
-</span><span class="ln">17</span><span class="c1"></span><span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="n">STREAM</span><span class="w"> </span><span class="s2">&#34;DESTINATION_SQL_STREAM&#34;</span><span class="w"> 
-</span><span class="ln">18</span><span class="w"></span><span class="p">(</span><span class="w">
-</span><span class="ln">19</span><span class="w">    </span><span class="s2">&#34;eventId&#34;</span><span class="w">       </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span><span class="w">
-</span><span class="ln">20</span><span class="w">    </span><span class="s2">&#34;action&#34;</span><span class="w">        </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span><span class="w">
-</span><span class="ln">21</span><span class="w">    </span><span class="s2">&#34;userId&#34;</span><span class="w">        </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span><span class="w">
-</span><span class="ln">22</span><span class="w">    </span><span class="s2">&#34;objectId&#34;</span><span class="w">      </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span><span class="w">
-</span><span class="ln">23</span><span class="w">    </span><span class="s2">&#34;bizId&#34;</span><span class="w">         </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span><span class="w">
-</span><span class="ln">24</span><span class="w">    </span><span class="s2">&#34;errorMsg&#34;</span><span class="w">      </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">1024</span><span class="p">),</span><span class="w">
-</span><span class="ln">25</span><span class="w">    </span><span class="s2">&#34;createdAt&#34;</span><span class="w">      </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span><span class="w">
-</span><span class="ln">26</span><span class="w"></span><span class="p">);</span><span class="w">
-</span><span class="ln">27</span><span class="w">
-</span><span class="ln">28</span><span class="w"></span><span class="c1">-- Filter errorMsg like panic/error pump
-</span><span class="ln">29</span><span class="c1"></span><span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="n">PUMP</span><span class="w"> </span><span class="s2">&#34;ERROR_PANIC_STREAM_PUMP&#34;</span><span class="w"> </span><span class="k">AS</span><span class="w">
-</span><span class="ln">30</span><span class="w">    </span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="s2">&#34;DESTINATION_SQL_STREAM&#34;</span><span class="w">
-</span><span class="ln">31</span><span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">STREAM</span><span class="w"> </span><span class="s2">&#34;eventId&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;action&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;userId&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;objectId&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;bizId&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;errorMsg&#34;</span><span class="p">,</span><span class="s2">&#34;createdAt&#34;</span><span class="w">
-</span><span class="ln">32</span><span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;SOURCE_SQL_STREAM_001&#34;</span><span class="w">
-</span><span class="ln">33</span><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="s2">&#34;errorMsg&#34;</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;%[PANIC]%&#39;</span><span class="w">
-</span><span class="ln">34</span><span class="w">        </span><span class="k">or</span><span class="w"> </span><span class="s2">&#34;errorMsg&#34;</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;%[panic]%&#39;</span><span class="w"> 
-</span><span class="ln">35</span><span class="w">        </span><span class="k">or</span><span class="w"> </span><span class="s2">&#34;errorMsg&#34;</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;%[ERROR]%&#39;</span><span class="w"> 
-</span><span class="ln">36</span><span class="w">        </span><span class="k">or</span><span class="w"> </span><span class="s2">&#34;errorMsg&#34;</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;%[error]%&#39;</span><span class="p">;</span><span class="w">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="c1">-- ** Continuous Filter ** 
+</span><span class="c1"></span><span class="w">    </span><span class="c1">-- Performs a continuous filter based on a WHERE condition.
+</span><span class="c1"></span><span class="w">    </span><span class="c1">--          .----------.   .----------.   .----------.              
+</span><span class="c1"></span><span class="w">    </span><span class="c1">--          |  SOURCE  |   |  INSERT  |   |  DESTIN. |              
+</span><span class="c1"></span><span class="w">    </span><span class="c1">-- Source--&gt;|  STREAM  |--&gt;| &amp; SELECT |--&gt;|  STREAM  |--&gt;Destination
+</span><span class="c1"></span><span class="w">    </span><span class="c1">--          |          |   |  (PUMP)  |   |          |              
+</span><span class="c1"></span><span class="w">    </span><span class="c1">--          &#39;----------&#39;   &#39;----------&#39;   &#39;----------&#39;               
+</span><span class="c1"></span><span class="w">    </span><span class="c1">-- STREAM (in-application): a continuously updated entity that you can SELECT from and INSERT into like a TABLE
+</span><span class="c1"></span><span class="w">    </span><span class="c1">-- PUMP: an entity used to continuously &#39;SELECT ... FROM&#39; a source STREAM, and INSERT SQL results into an output STREAM
+</span><span class="c1"></span><span class="w">    </span><span class="c1">-- Create output stream, which can be used to send to a destination
+</span><span class="c1">-- reference: 
+</span><span class="c1">-- https://docs.aws.amazon.com/zh_cn/kinesisanalytics/latest/sqlref/analytics-sql-reference.html
+</span><span class="c1">-- https://docs.aws.amazon.com/zh_cn/kinesisanalytics/latest/dev/streaming-sql-concepts.html
+</span><span class="c1">-- https://docs.aws.amazon.com/zh_cn/kinesisanalytics/latest/sqlref/kinesis-analytics-sqlref.pdf
+</span><span class="c1"></span><span class="w">
+</span><span class="w"></span><span class="c1">-- abnormality event stream
+</span><span class="c1"></span><span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="n">STREAM</span><span class="w"> </span><span class="s2">&#34;DESTINATION_SQL_STREAM&#34;</span><span class="w"> 
+</span><span class="w"></span><span class="p">(</span><span class="w">
+</span><span class="w">    </span><span class="s2">&#34;eventId&#34;</span><span class="w">       </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span><span class="w">
+</span><span class="w">    </span><span class="s2">&#34;action&#34;</span><span class="w">        </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span><span class="w">
+</span><span class="w">    </span><span class="s2">&#34;userId&#34;</span><span class="w">        </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span><span class="w">
+</span><span class="w">    </span><span class="s2">&#34;objectId&#34;</span><span class="w">      </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span><span class="w">
+</span><span class="w">    </span><span class="s2">&#34;bizId&#34;</span><span class="w">         </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span><span class="w">
+</span><span class="w">    </span><span class="s2">&#34;errorMsg&#34;</span><span class="w">      </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">1024</span><span class="p">),</span><span class="w">
+</span><span class="w">    </span><span class="s2">&#34;createdAt&#34;</span><span class="w">      </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span><span class="w">
+</span><span class="w"></span><span class="p">);</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="c1">-- Filter errorMsg like panic/error pump
+</span><span class="c1"></span><span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="n">PUMP</span><span class="w"> </span><span class="s2">&#34;ERROR_PANIC_STREAM_PUMP&#34;</span><span class="w"> </span><span class="k">AS</span><span class="w">
+</span><span class="w">    </span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="s2">&#34;DESTINATION_SQL_STREAM&#34;</span><span class="w">
+</span><span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">STREAM</span><span class="w"> </span><span class="s2">&#34;eventId&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;action&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;userId&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;objectId&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;bizId&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;errorMsg&#34;</span><span class="p">,</span><span class="s2">&#34;createdAt&#34;</span><span class="w">
+</span><span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;SOURCE_SQL_STREAM_001&#34;</span><span class="w">
+</span><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="s2">&#34;errorMsg&#34;</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;%[PANIC]%&#39;</span><span class="w">
+</span><span class="w">        </span><span class="k">or</span><span class="w"> </span><span class="s2">&#34;errorMsg&#34;</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;%[panic]%&#39;</span><span class="w"> 
+</span><span class="w">        </span><span class="k">or</span><span class="w"> </span><span class="s2">&#34;errorMsg&#34;</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;%[ERROR]%&#39;</span><span class="w"> 
+</span><span class="w">        </span><span class="k">or</span><span class="w"> </span><span class="s2">&#34;errorMsg&#34;</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;%[error]%&#39;</span><span class="p">;</span><span class="w">
 </span></code></pre></div><p>每1分钟warn数目超过10次的SQL(滚动窗口)</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="ln"> 1</span><span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="n">STREAM</span><span class="w"> </span><span class="s2">&#34;DESTINATION_SQL_STREAM&#34;</span><span class="w"> 
-</span><span class="ln"> 2</span><span class="w"></span><span class="p">(</span><span class="w">
-</span><span class="ln"> 3</span><span class="w">    </span><span class="s2">&#34;eventId&#34;</span><span class="w">       </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span><span class="w">
-</span><span class="ln"> 4</span><span class="w">    </span><span class="s2">&#34;action&#34;</span><span class="w">        </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span><span class="w">
-</span><span class="ln"> 5</span><span class="w">    </span><span class="s2">&#34;userId&#34;</span><span class="w">        </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span><span class="w">
-</span><span class="ln"> 6</span><span class="w">    </span><span class="s2">&#34;objectId&#34;</span><span class="w">      </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span><span class="w">
-</span><span class="ln"> 7</span><span class="w">    </span><span class="s2">&#34;bizId&#34;</span><span class="w">         </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span><span class="w">
-</span><span class="ln"> 8</span><span class="w">    </span><span class="s2">&#34;errorMsg&#34;</span><span class="w">      </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">1024</span><span class="p">),</span><span class="w">
-</span><span class="ln"> 9</span><span class="w">    </span><span class="s2">&#34;createAt&#34;</span><span class="w">      </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span><span class="w">
-</span><span class="ln">10</span><span class="w">    </span><span class="s2">&#34;INGREST_ROW_TIME&#34;</span><span class="w">      </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span><span class="w">
-</span><span class="ln">11</span><span class="w">    </span><span class="s2">&#34;APPROXIMATE_ARRIVAL_TIME&#34;</span><span class="w">      </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span><span class="w">
-</span><span class="ln">12</span><span class="w"></span><span class="p">);</span><span class="w">
-</span><span class="ln">13</span><span class="w">
-</span><span class="ln">14</span><span class="w"></span><span class="c1">-- Filter errorMsg like warning pump
-</span><span class="ln">15</span><span class="c1">-- Aggregation with time window(u can use stagger windows,tumbling windows, sliding windows)
-</span><span class="ln">16</span><span class="c1">-- use tumbling windows for this case
-</span><span class="ln">17</span><span class="c1"></span><span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="n">PUMP</span><span class="w"> </span><span class="s2">&#34;STREAM_PUMP&#34;</span><span class="w"> </span><span class="k">AS</span><span class="w">
-</span><span class="ln">18</span><span class="w">    </span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="s2">&#34;DESTINATION_SQL_STREAM&#34;</span><span class="w">
-</span><span class="ln">19</span><span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">STREAM</span><span class="w"> </span><span class="s2">&#34;eventId&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;userId&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;objectId&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;bizId&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;createAt&#34;</span><span class="w">
-</span><span class="ln">20</span><span class="w">        </span><span class="s2">&#34;errorMsg&#34;</span><span class="p">,</span><span class="s2">&#34;action&#34;</span><span class="p">,</span><span class="w">
-</span><span class="ln">21</span><span class="w">        </span><span class="n">STEP</span><span class="p">(</span><span class="s2">&#34;SOURCE_SQL_STREAM_001&#34;</span><span class="p">.</span><span class="n">ROWTIME</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="nb">INTERVAL</span><span class="w"> </span><span class="s1">&#39;60&#39;</span><span class="w"> </span><span class="k">SECOND</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s2">&#34;INGREST_ROW_TIME&#34;</span><span class="p">,</span><span class="w">
-</span><span class="ln">22</span><span class="w">        </span><span class="n">STEP</span><span class="p">(</span><span class="s2">&#34;SOURCE_SQL_STREAM_001&#34;</span><span class="p">.</span><span class="n">APPROXIMATE_ARRIVAL_TIME</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="nb">INTERVAL</span><span class="w"> </span><span class="s1">&#39;60&#39;</span><span class="w"> </span><span class="k">SECOND</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s2">&#34;APPROXIMATE_ARRIVAL_TIME&#34;</span><span class="p">,</span><span class="w">
-</span><span class="ln">23</span><span class="w">        </span><span class="c1">-- STEP(&#34;SOURCE_SQL_STREAM_001&#34;.EVENT_TIME BY INTERVAL &#39;60&#39; SECOND) AS &#34;EVENT_TIME&#34;,
-</span><span class="ln">24</span><span class="c1"></span><span class="w">        </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s2">&#34;action_warn_count&#34;</span><span class="w">
-</span><span class="ln">25</span><span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;SOURCE_SQL_STREAM_001&#34;</span><span class="w">
-</span><span class="ln">26</span><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="s2">&#34;errorMsg&#34;</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s2">&#34;% WARNNING %&#34;</span><span class="w"> </span><span class="k">or</span><span class="w"> </span><span class="s2">&#34;errorMsg&#34;</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s2">&#34;% warnning %&#34;</span><span class="w">
-</span><span class="ln">27</span><span class="w">    </span><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="s2">&#34;action&#34;</span><span class="p">,</span><span class="w">
-</span><span class="ln">28</span><span class="w">        </span><span class="n">STEP</span><span class="p">(</span><span class="s2">&#34;SOURCE_SQL_STREAM_001&#34;</span><span class="p">.</span><span class="n">ROWTIME</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="nb">INTERVAL</span><span class="w"> </span><span class="s1">&#39;60&#39;</span><span class="w"> </span><span class="k">SECOND</span><span class="p">),</span><span class="w">
-</span><span class="ln">29</span><span class="w">        </span><span class="n">STEP</span><span class="p">(</span><span class="s2">&#34;SOURCE_SQL_STREAM_001&#34;</span><span class="p">.</span><span class="n">APPROXIMATE_ARRIVAL_TIME</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="nb">INTERVAL</span><span class="w"> </span><span class="s1">&#39;60&#39;</span><span class="w"> </span><span class="k">SECOND</span><span class="p">)</span><span class="w">
-</span><span class="ln">30</span><span class="w">        </span><span class="c1">-- STEP(&#34;SOURCE_SQL_STREAM_001&#34;.EVENT_TIME BY INTERVAL &#39;60&#39; SECOND) 
-</span><span class="ln">31</span><span class="c1"></span><span class="w">    </span><span class="k">Having</span><span class="w"> </span><span class="s2">&#34;action_warn_count&#34;</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="n">STREAM</span><span class="w"> </span><span class="s2">&#34;DESTINATION_SQL_STREAM&#34;</span><span class="w"> 
+</span><span class="w"></span><span class="p">(</span><span class="w">
+</span><span class="w">    </span><span class="s2">&#34;eventId&#34;</span><span class="w">       </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span><span class="w">
+</span><span class="w">    </span><span class="s2">&#34;action&#34;</span><span class="w">        </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span><span class="w">
+</span><span class="w">    </span><span class="s2">&#34;userId&#34;</span><span class="w">        </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span><span class="w">
+</span><span class="w">    </span><span class="s2">&#34;objectId&#34;</span><span class="w">      </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span><span class="w">
+</span><span class="w">    </span><span class="s2">&#34;bizId&#34;</span><span class="w">         </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span><span class="w">
+</span><span class="w">    </span><span class="s2">&#34;errorMsg&#34;</span><span class="w">      </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">1024</span><span class="p">),</span><span class="w">
+</span><span class="w">    </span><span class="s2">&#34;createAt&#34;</span><span class="w">      </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span><span class="w">
+</span><span class="w">    </span><span class="s2">&#34;INGREST_ROW_TIME&#34;</span><span class="w">      </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span><span class="w">
+</span><span class="w">    </span><span class="s2">&#34;APPROXIMATE_ARRIVAL_TIME&#34;</span><span class="w">      </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span><span class="w">
+</span><span class="w"></span><span class="p">);</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="c1">-- Filter errorMsg like warning pump
+</span><span class="c1">-- Aggregation with time window(u can use stagger windows,tumbling windows, sliding windows)
+</span><span class="c1">-- use tumbling windows for this case
+</span><span class="c1"></span><span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="n">PUMP</span><span class="w"> </span><span class="s2">&#34;STREAM_PUMP&#34;</span><span class="w"> </span><span class="k">AS</span><span class="w">
+</span><span class="w">    </span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="s2">&#34;DESTINATION_SQL_STREAM&#34;</span><span class="w">
+</span><span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">STREAM</span><span class="w"> </span><span class="s2">&#34;eventId&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;userId&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;objectId&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;bizId&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;createAt&#34;</span><span class="w">
+</span><span class="w">        </span><span class="s2">&#34;errorMsg&#34;</span><span class="p">,</span><span class="s2">&#34;action&#34;</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">STEP</span><span class="p">(</span><span class="s2">&#34;SOURCE_SQL_STREAM_001&#34;</span><span class="p">.</span><span class="n">ROWTIME</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="nb">INTERVAL</span><span class="w"> </span><span class="s1">&#39;60&#39;</span><span class="w"> </span><span class="k">SECOND</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s2">&#34;INGREST_ROW_TIME&#34;</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">STEP</span><span class="p">(</span><span class="s2">&#34;SOURCE_SQL_STREAM_001&#34;</span><span class="p">.</span><span class="n">APPROXIMATE_ARRIVAL_TIME</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="nb">INTERVAL</span><span class="w"> </span><span class="s1">&#39;60&#39;</span><span class="w"> </span><span class="k">SECOND</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s2">&#34;APPROXIMATE_ARRIVAL_TIME&#34;</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="c1">-- STEP(&#34;SOURCE_SQL_STREAM_001&#34;.EVENT_TIME BY INTERVAL &#39;60&#39; SECOND) AS &#34;EVENT_TIME&#34;,
+</span><span class="c1"></span><span class="w">        </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s2">&#34;action_warn_count&#34;</span><span class="w">
+</span><span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;SOURCE_SQL_STREAM_001&#34;</span><span class="w">
+</span><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="s2">&#34;errorMsg&#34;</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s2">&#34;% WARNNING %&#34;</span><span class="w"> </span><span class="k">or</span><span class="w"> </span><span class="s2">&#34;errorMsg&#34;</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s2">&#34;% warnning %&#34;</span><span class="w">
+</span><span class="w">    </span><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="s2">&#34;action&#34;</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">STEP</span><span class="p">(</span><span class="s2">&#34;SOURCE_SQL_STREAM_001&#34;</span><span class="p">.</span><span class="n">ROWTIME</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="nb">INTERVAL</span><span class="w"> </span><span class="s1">&#39;60&#39;</span><span class="w"> </span><span class="k">SECOND</span><span class="p">),</span><span class="w">
+</span><span class="w">        </span><span class="n">STEP</span><span class="p">(</span><span class="s2">&#34;SOURCE_SQL_STREAM_001&#34;</span><span class="p">.</span><span class="n">APPROXIMATE_ARRIVAL_TIME</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="nb">INTERVAL</span><span class="w"> </span><span class="s1">&#39;60&#39;</span><span class="w"> </span><span class="k">SECOND</span><span class="p">)</span><span class="w">
+</span><span class="w">        </span><span class="c1">-- STEP(&#34;SOURCE_SQL_STREAM_001&#34;.EVENT_TIME BY INTERVAL &#39;60&#39; SECOND) 
+</span><span class="c1"></span><span class="w">    </span><span class="k">Having</span><span class="w"> </span><span class="s2">&#34;action_warn_count&#34;</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w">
 </span></code></pre></div><h2 id="服务构建">服务构建</h2>
 <p>基于以上服务搭建，需要用户去aws云平台上点击，配置使用， 特别是构建表，以及数据传输，属性和安全访问权限角色的管理，随着业务复杂度变高，基础服务也随之增多，可配置化的东西越来越多，会带来灾难性的后果，最终变得不可控，人力管理运维成本增加；aws平台提供了AWS CloudFormation 允许您通过将基础设施视为代码来建模、预置和管理 AWS 和第三方资源。即IaC，也是Devops经常所做的事情，可以使用相关IaC工具来自动化构建一个系统，常用的场景是CI/CD支持快速变化的业务需求开发；AWS一直提供基础服务的配置API，有相关的SDK可供使用，也有<code>aws</code> 工具来操作这些基础服务资源； 后面提供了一种开源软件开发框架AWS Cloud Development Kit (AWS <a href="https://docs.aws.amazon.com/zh_cn/cdk/v2/guide/home.html">CDK</a>)，可使用熟悉的编程语言来定义云应用程序资源；将云上硬件资源可编程化，可以很方便的实现自动化运维管理，充分利用云上的资源来组装construct成一个模块栈stack, 各个模块栈最终合成一个落地解决方案，方便开箱即用(安装软件一样)，降低云构建的复杂性；cdk construct分3个层次的封装，L1是最低级别初始封装，直接对应CloudFormation配置模版文件映射，称之为CFN 资源，必须配置每一项属性，需要深入了解资源模型的详细信息；L2是是对了L1的组合封装，使用资源属性默认值，比如new VPC；L3则是一种模式(pattern)，通过多种资源组合成一个常见资源架构，比如 new Fargate无服务化容器集群；具体参考见：<a href="https://docs.aws.amazon.com/zh_cn/cdk/v2/guide/constructs.html">constructs</a></p>
 <p>通过<a href="https://cdkworkshop.com">cdk workshop</a> 大概花半天时间学习这里的demo就可以试着搭建相关的服务， 也有更多的<a href="https://awesome-aws-workshops.com/">awesome workshop</a>可供参考和学习的，并且 <a href="https://aws.amazon.com/blogs">aws blog</a>  <a href="https://aws.amazon.com/cn/builders-library">builders' lib</a>也会有很多相关的解决方案提供学习；当然需要很好的架构aws服务，需要多落地实践，深入服务细节(查看帮助文档<a href="https://docs.aws.amazon.com/">docs</a>)，结合需求，才能构建一个相对完美的解决方案；当然前期生产落地需要使用CDK来进行架构推理。</p>
@@ -615,49 +615,49 @@
 <p>这里主要部署CDK-Workshop-Lambda-KDS-stack, KDS-KDA-sql-Lambda-Dynamodb-stack 和KDS-KDF-S3-stack 搭建SQL流式处理用户行为数据,具体见<a href="https://github.com/weedge/user-behavior-analytics-cdk">代码</a>；其他stack可以后续进行扩展进行构建，推理整体基础设施架构。</p>
 <h3 id="构建">构建</h3>
 <p>首先需要安装CDK, 具体查看<a href="https://aws.amazon.com/cn/getting-started/guides/setup-cdk/">入门教程</a>，执行如下命令：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="ln">1</span><span class="c1"># download code to start</span>
-<span class="ln">2</span>git clone https://github.com/weedge/user-behavior-analytics-cdk.git <span class="o">&amp;&amp;</span> <span class="nb">cd</span> user-behavior-analytics-cdk
-<span class="ln">3</span><span class="c1"># tips: cdk load cdk.json + cdk.context.json to run by js on node</span>
-<span class="ln">4</span><span class="c1"># list stacks</span>
-<span class="ln">5</span>cdk ls
-<span class="ln">6</span><span class="c1"># deploy KDS-KDA-sql-Lambda-DynamoDB-stack with KDS-KDF-S3-stack(need created kinesis data stream)</span>
-<span class="ln">7</span>cdk deploy KDS-KDA-sql-Lambda-DynamoDB-stack
-<span class="ln">8</span><span class="c1"># deploy CDK-Workshop-Lambda-KDS-stack for hit event stream; lambda func put record to KDS, dependcy KDS</span>
-<span class="ln">9</span>cdk deploy CDK-Workshop-Lambda-KDS-stack
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># download code to start</span>
+git clone https://github.com/weedge/user-behavior-analytics-cdk.git <span class="o">&amp;&amp;</span> <span class="nb">cd</span> user-behavior-analytics-cdk
+<span class="c1"># tips: cdk load cdk.json + cdk.context.json to run by js on node</span>
+<span class="c1"># list stacks</span>
+cdk ls
+<span class="c1"># deploy KDS-KDA-sql-Lambda-DynamoDB-stack with KDS-KDF-S3-stack(need created kinesis data stream)</span>
+cdk deploy KDS-KDA-sql-Lambda-DynamoDB-stack
+<span class="c1"># deploy CDK-Workshop-Lambda-KDS-stack for hit event stream; lambda func put record to KDS, dependcy KDS</span>
+cdk deploy CDK-Workshop-Lambda-KDS-stack
 </code></pre></div><p>部署完之后，会输出kinesis数据流的名称以及用于查看数据结果地址；</p>
 <p>开始写入测试数据，需要使用python3, 使用pip3 安装依赖包</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="ln">1</span><span class="c1"># init python virtural env</span>
-<span class="ln">2</span>python3 -m venv .venv <span class="o">&amp;&amp;</span> <span class="nb">source</span> .venv/bin/activate 
-<span class="ln">3</span><span class="c1"># install boto3  faker</span>
-<span class="ln">4</span>pip3 install boto3 faker
-<span class="ln">5</span><span class="c1"># run test script, wait KDA run, put record to KDS</span>
-<span class="ln">6</span>python3 src/scripts/producer-kds-test.py
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># init python virtural env</span>
+python3 -m venv .venv <span class="o">&amp;&amp;</span> <span class="nb">source</span> .venv/bin/activate 
+<span class="c1"># install boto3  faker</span>
+pip3 install boto3 faker
+<span class="c1"># run test script, wait KDA run, put record to KDS</span>
+python3 src/scripts/producer-kds-test.py
 </code></pre></div><p>运行测试脚本，输入region地域名称,比如us-east-1, 等待启动后，输入数据流名称，开始发送数据；</p>
 <p>每1秒发一次数据写入KDS中，发了10次含有错误事件，发了10次随机事件，总共20条；</p>
 <p>也可以使用aws提供KDS数据生成器：https://github.com/awslabs/amazon-kinesis-data-generator</p>
 <p>从刚才部署输出结果地址查看含有错误的数据已经有10条展现出来(数据获取式前端每隔几秒轮训获取api数据，实时展现可通过<a href="https://docs.aws.amazon.com/zh_cn/apigateway/latest/developerguide/apigateway-websocket-api.html">API Gateway WebSocket</a> 来支持)；历史数据可以在KDF配置的S3目标中点击查看，原始数据可以下载gz包进行解压查看;</p>
 <p>通过使用提供给前端访问的事件api(api地址在部署CDK-Workshop-Lambda-KDS-stack后输出的访问地址)来写入异常<code>[error]</code> 数据</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="ln">1</span>curl -XPOST -iv https://<span class="o">{</span>APIGateway<span class="o">}</span>.execute-api.<span class="o">{</span>region<span class="o">}</span>.amazonaws.com/prod/event -d <span class="s1">&#39;{&#34;eventId&#34;:&#34;1-1-1&#34;,&#34;bizId&#34;:&#34;123123&#34;,&#34;objectId&#34;:&#34;123&#34;,&#34;action&#34;:&#34;test&#34;,&#34;errorMsg&#34;:&#34;[error]&#34;,&#34;userId&#34;:&#34;1231321&#34;}&#39;</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">curl -XPOST -iv https://<span class="o">{</span>APIGateway<span class="o">}</span>.execute-api.<span class="o">{</span>region<span class="o">}</span>.amazonaws.com/prod/event -d <span class="s1">&#39;{&#34;eventId&#34;:&#34;1-1-1&#34;,&#34;bizId&#34;:&#34;123123&#34;,&#34;objectId&#34;:&#34;123&#34;,&#34;action&#34;:&#34;test&#34;,&#34;errorMsg&#34;:&#34;[error]&#34;,&#34;userId&#34;:&#34;1231321&#34;}&#39;</span>
 </code></pre></div><p>通过刚才部署KDS-KDA-sql-Lambda-DynamoDB-stack的结果地址可以 查看异常数据已经实时写入。</p>
 <p>最后将部署资源清除，依赖删除(和卸载软件一样)。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="ln">1</span><span class="c1"># destroy resources with dependent resources</span>
-<span class="ln">2</span>cdk destroy KDS-KDF-S3-stack
-<span class="ln">3</span>cdk destroy KDS-KDA-sql-Lambda-DynamoDB-stack
-<span class="ln">4</span>cdk destroy CDK-Workshop-Lambda-KDS-stack
-<span class="ln">5</span><span class="c1"># or cdk destroy --all</span>
-<span class="ln">6</span>cdk destroy --all
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># destroy resources with dependent resources</span>
+cdk destroy KDS-KDF-S3-stack
+cdk destroy KDS-KDA-sql-Lambda-DynamoDB-stack
+cdk destroy CDK-Workshop-Lambda-KDS-stack
+<span class="c1"># or cdk destroy --all</span>
+cdk destroy --all
 </code></pre></div><h3 id="代码结构">代码结构</h3>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="ln"> 1</span>├── cmd                              -- golang cmd bin dir
-<span class="ln"> 2</span>├── docs                             -- help doc
-<span class="ln"> 3</span>├── infra                            -- infrastructures stack
-<span class="ln"> 4</span>│   └── lib                          -- cdk constuct in stack
-<span class="ln"> 5</span>├── src                              -- source code to run
-<span class="ln"> 6</span>│   ├── kinesis-analytics-pyflink    -- KDA python scripts use flink python api 
-<span class="ln"> 7</span>│   ├── kinesis-analytics-sql        -- KDA sql
-<span class="ln"> 8</span>│   ├── lambda                       -- js,python,golang lambda func 
-<span class="ln"> 9</span>│   ├── redshift-sql                 -- redshift sql 
-<span class="ln">10</span>│   └── scripts                      -- local run test code by use aws sdk
-<span class="ln">11</span>├── test                             -- test cdk logic
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">├── cmd                              -- golang cmd bin dir
+├── docs                             -- help doc
+├── infra                            -- infrastructures stack
+│   └── lib                          -- cdk constuct in stack
+├── src                              -- source code to run
+│   ├── kinesis-analytics-pyflink    -- KDA python scripts use flink python api 
+│   ├── kinesis-analytics-sql        -- KDA sql
+│   ├── lambda                       -- js,python,golang lambda func 
+│   ├── redshift-sql                 -- redshift sql 
+│   └── scripts                      -- local run test code by use aws sdk
+├── test                             -- test cdk logic
 </code></pre></div><h2 id="参考">参考</h2>
 <p>sam cli <a href="https://docs.aws.amazon.com/zh_cn/serverless-application-model/latest/developerguide/serverless-sam-cli-using-invoke.html">local debug lambda</a></p>
 <p>streaming cdk: <a href="https://github.com/aws-samples/streaming-solution-aws-cdk">https://github.com/aws-samples/streaming-solution-aws-cdk</a></p>
