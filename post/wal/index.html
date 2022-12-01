@@ -59,6 +59,8 @@
 
 
 
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
 
 <meta property="og:title" content="WAL" />
 <meta property="og:description" content="序言
@@ -480,12 +482,12 @@
 <p>mysql是以plugin的方式管理存储引擎，replication(主从副本同步)插件和其他插件（通过<code>SHOW PLUGINS;</code>查看)；具体的插件代码在<a href="https://github.com/mysql/mysql-server/tree/8.0/plugin">plugin</a>文件中，简单的插件示例<a href="https://github.com/mysql/mysql-server/tree/8.0/plugin/rewrite_example">rewrite_example</a></p>
 <p>mysqld 启动时通过配置初始的存储引擎(默认innodb)，调用<a href="https://github.com/mysql/mysql-server/blob/8.0/sql/mysqld.cc#L5815">init_server_components</a> 调用innodb存储引擎的接口进行初始化ha_handler, 在<a href="https://github.com/mysql/mysql-server/blob/8.0/storage/innobase/handler/ha_innodb.cc#L4935">innodb_init</a>中进行初始化, 比如刷盘操作 innobase_hton-&gt;flush_logs = innobase_flush_logs; 然后在sql/handler中定义的相关接口调用, 比如<a href="https://github.com/mysql/mysql-server/blob/8.0/sql/handler.cc#L2459">ha_flush_logs</a>。</p>
 <p>安装replication插件时会注册插件中相应的方法加入observer 列表中，运行触发的时候以AOP的方式RUN_HOOK 扫描observer列表Observer_info-&gt;observer调用对应插件函数；replication插件需要实现以下<a href="https://github.com/mysql/mysql-server/blob/8.0/sql/replication.h">replication文件中</a>相关结构体的方法(接口) 才能加载：</p>
-<pre tabindex="0"><code>struct Trans_observer /* Observes and extends transaction execution */
-struct Server_state_observer /* Observer server state */
-struct Binlog_transmit_observer /* Observe and extends the binlog dumping thread. */
-struct Binlog_relay_IO_observer /* Observes and extends the service of slave IO thread. */
-struct Binlog_storage_observer /* Observe binlog logging storage */
-</code></pre><p>这里会有各种日志的刷新机制，可以通过<code>show variables like '%innodb%flush%'; show variables like 'sync_binlog';</code>获取对应的参数，可以去官网<a href="https://dev.mysql.com/doc/refman/8.0/en/server-option-variable-reference.html">Server Option, System Variable, and Status Variable Reference</a> 查找对应的详情进行配置优化；</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="ln">1</span>struct Trans_observer /* Observes and extends transaction execution */
+<span class="ln">2</span>struct Server_state_observer /* Observer server state */
+<span class="ln">3</span>struct Binlog_transmit_observer /* Observe and extends the binlog dumping thread. */
+<span class="ln">4</span>struct Binlog_relay_IO_observer /* Observes and extends the service of slave IO thread. */
+<span class="ln">5</span>struct Binlog_storage_observer /* Observe binlog logging storage */
+</code></pre></div><p>这里会有各种日志的刷新机制，可以通过<code>show variables like '%innodb%flush%'; show variables like 'sync_binlog';</code>获取对应的参数，可以去官网<a href="https://dev.mysql.com/doc/refman/8.0/en/server-option-variable-reference.html">Server Option, System Variable, and Status Variable Reference</a> 查找对应的详情进行配置优化；</p>
 <p>当开启binlog时, MySQL默认使用该隐式XA模式，开启自动提交事务autocommit。事务的提交流程相对比较复杂，执行简单的update操作，简述如下：</p>
 <p><strong>0. 执行器数据获取修改：</strong></p>
 <ol>
@@ -819,10 +821,14 @@ struct Binlog_storage_observer /* Observe binlog logging storage */
 
 
 
+  <script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
 
 
 
 
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
 
 
 </body>

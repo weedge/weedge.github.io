@@ -60,6 +60,8 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 
 
 
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
 
 <meta property="og:title" content="设计草稿-直播间赠送礼物功能" />
 <meta property="og:description" content="背景
@@ -75,7 +77,7 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 直播线上互动，已成为当下生活的一部分，特别是受疫情影响，成为互联网的主要流量入口；研究了下各个平台直播间送礼物的功能，发现大同小异，在礼物分组，一些定制化的礼物有区分，整体交互流程大致相同，主要是直播间主播上播，用户通过礼物打赏给主播们(一个直播间可能有多名主播在互动)，礼物是通过虚拟币(**币) 换算，早期互联网用户线上互动礼物，玩家最多的应该是QQ币了，只不过以前的打赏赠送场景是在web2.0刚开始的时候，交互的大多是文字和图片，相关产品场景，虚拟空间(个人空间，博客，种菜等娱乐互动场景)；随着底层网络基建的发展，4G之后出现了大量的视频网站，用户可以录一些视频内容来互动；到后来音视频流媒体的发展，相关的在线直播间开始涌现，用户之间享受一波直播红利带来的互动，当然影响相对于前面的形式更加实时和直接；现在的5G和未来6G，以及物联网都会给直播形式带来新的互动场景,比如：虚拟会场，人机互动；其中早期培养起来的打赏送礼行为功能经常用于有主播的娱乐互动直播中，也是增值盈利的一部分；
 tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦，电商带货商品，没有主播，节目直播/转播，会议直播，自习室，基本的点赞，计数，聊天基础服务功能；还有些抽奖功能，答题功能(教育类直播居多)，投票，红包这些功能服务可在开播时设置，是否启用；有用户基础的流量平台可能还会以竞价排名的方式推荐一波；这些功能可以作为一个可管理的插件，通过组合的方式应用于直播中，方便管理，后续可以添加新功能满足某类型直播场景。"><meta itemprop="datePublished" content="2022-11-21T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2022-11-21T10:26:23+08:00" />
-<meta itemprop="wordCount" content="7681">
+<meta itemprop="wordCount" content="8227">
 <meta itemprop="keywords" content="直播," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="设计草稿-直播间赠送礼物功能"/>
 <meta name="twitter:description" content="背景
@@ -369,67 +371,67 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 <p>Tips: 如果使用阿里云rocketMQ, 需要注意支持版本提供的SDK，5.0 版本 <a href="https://github.com/apache/rocketmq-clients">client SDK</a> ; 4.0相关版本有些开发语言不支持tcp方式，仅提供http的方式(会少了一些功能，比如批量发送普通消息)；选用新版的5.0版本的SDK开发; 如果有自建运维能力，直接使用开源方案来搭建一套，比如用<a href="https://www.amazonaws.cn/solutions/apache-rocketmq-on-aws/">rocketMQ on aws</a>，并且使用5.0可以实现一层mq-proxy;</p>
 <p>题外话: 现在分布式消息队列<a href="https://kafka.apache.org/33/documentation/streams/architecture">kafka-streams</a>, <a href="https://github.com/apache/rocketmq-streams">rocketmq-streams</a> 支持数据流(stream)处理大数据实时场景，支持一些简单算子操作和SQL(<a href="https://github.com/confluentinc/ksql">ksql</a>, <a href="https://github.com/alibaba/rsqldb">rsql</a>)；这个和flink对应功能是重合了，flink也在往table store上发力满足数据堆积的能力; 一波流～</p>
 <h3 id="调研">调研</h3>
-<p>以pc端抓http包为例，手机端接口一样</p>
+<p>以pc端抓http包为例，手机端接口一样，传输格式可能不同，pb/json</p>
 <h4 id="抖音接口">抖音接口</h4>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">curl <span style="color:#a50">&#39;https://live.douyin.com/webcast/gift/send/?aid=6383&amp;live_id=1&amp;device_platform=web&amp;language=zh-CN&amp;enter_from=web_live&amp;cookie_enabled=true&amp;screen_width=2048&amp;screen_height=1152&amp;browser_language=zh-CN&amp;browser_platform=MacIntel&amp;browser_name=Chrome&amp;browser_version=107.0.0.0&amp;browser_online=true&amp;engine_name=Blink&amp;engine_version=107.0.0.0&amp;os_name=Mac+OS&amp;os_version=10.15.7&amp;cpu_core_num=8&amp;device_memory=8&amp;platform=PC&amp;downlink=10&amp;effective_type=4g&amp;round_trip_time=50&amp;channel=channel_pc_web&amp;app_name=douyin_web&amp;webid=7167235205950047744&amp;user_agent=Mozilla%2F5.0+(Macintosh%3B+Intel+Mac+OS+X+10_15_7)+AppleWebKit%2F537.36+(KHTML,+like+Gecko)+Chrome%2F107.0.0.0+Safari%2F537.36&amp;fp=verify_lam4f5i1_plZJSYeB_iUgU_4z2o_9JHF_d7Z0Z60sLg33&amp;did=0&amp;referer=https:%2F%2Flive.douyin.com%2F444452144000%3Fcover_type%3D0%26enter_from_merge%3Dweb_live%26enter_method%3Dweb_card%26game_name%3D%26is_recommend%3D1%26live_type%3Dgame%26more_detail%3D%26request_id%3D2022111814283801020916816201004237%26room_id%3D7167220081737468683%26stream_type%3Dvertical%26title_type%3D1%26web_live_page%3Dhot_live%26web_live_tab%3Dall&amp;target=&amp;device_id=7167235205950047744&amp;msToken=aOEoMNHAEI98H45Z0n-zUTffiNgv7HNkGU0lwFptk-JBg00tEs0I74G4sYXgG670cAdhSmXNcKlRU3-QaxW7Pflt-p8YAmyU5eC3EGJQfp7Mk7JpmP_P&amp;X-Bogus=DFSzswVL0qCmAcoQS8MuBN7TlqS8&amp;_signature=_02B4Z6wo00001Heu8JQAAIDD43irmgubdKx3rvQAAH6ktTtRdH7gtQJWp3SjldUkeBB51lpkXUQ700UnFEXODUicQ0r1ccxSxq4OwWIjvxuNe8Acl-gJzChe99W43SojHkPp9aa82Qzi9VoTd2&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;authority: live.douyin.com&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;accept: application/json, text/plain, */*&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;accept-language: zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;content-type: application/x-www-form-urlencoded&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;cookie: xgplayer_user_id=502915240928; csrf_session_id=f5161482adac52884f25a91fa758d7b0; ttcid=5cd5ff73751f4ab39911c85e57f9ca7479; passport_csrf_token=46e48d1e7b4df245f8caab8a34b64935; passport_csrf_token_default=46e48d1e7b4df245f8caab8a34b64935; home_can_add_dy_2_desktop=%220%22; n_mh=Qo43cptpX41bfwDmWyVyRUGMZnsucxhgcWJqKjjWkvI; sso_uid_tt=a84f8e3ae1f0c8301f5a882b05abe3f0; sso_uid_tt_ss=a84f8e3ae1f0c8301f5a882b05abe3f0; toutiao_sso_user=a28a6e92e7dc7d690b4f6b9a59077692; toutiao_sso_user_ss=a28a6e92e7dc7d690b4f6b9a59077692; passport_assist_user=Cjyr0IY04IJK-7Hxgl87vzPKZIfpFS29oAG2arITfMftUANM_d6SDxwAksiJEuVqZgZdE_BYyvcjLLGAQaYaSAo8zVwGiPnNM3S7eRNlXwMkuS7yNVm17pbNfKqXsXj3Rgk9Nm08DWh_PY0JRbH8FQeLxabRAoqM4bPJTzQ8EM_DoQ0Yia_WVCIBAxToQPk%3D; sid_ucp_sso_v1=1.0.0-KGIxM2FlNmE2MDdiNWE5MDA1YmIwZjg5OWVkNTUxMTBhMzdhYWE2OTIKHQjhrMGYrgIQt8vcmwYY7zEgDDDHuNHRBTgGQPQHGgJobCIgYTI4YTZlOTJlN2RjN2Q2OTBiNGY2YjlhNTkwNzc2OTI; ssid_ucp_sso_v1=1.0.0-KGIxM2FlNmE2MDdiNWE5MDA1YmIwZjg5OWVkNTUxMTBhMzdhYWE2OTIKHQjhrMGYrgIQt8vcmwYY7zEgDDDHuNHRBTgGQPQHGgJobCIgYTI4YTZlOTJlN2RjN2Q2OTBiNGY2YjlhNTkwNzc2OTI; passport_auth_status=ba24f5319c0f02c6232d484fd51c2187%2C; passport_auth_status_ss=ba24f5319c0f02c6232d484fd51c2187%2C; sid_guard=ea2e466c926c317f4f552f0d3982a458%7C1668752823%7C5184000%7CTue%2C+17-Jan-2023+06%3A27%3A03+GMT; uid_tt=23c596f546d448da13c0098152ef5d17; uid_tt_ss=23c596f546d448da13c0098152ef5d17; sid_tt=ea2e466c926c317f4f552f0d3982a458; sessionid=ea2e466c926c317f4f552f0d3982a458; sessionid_ss=ea2e466c926c317f4f552f0d3982a458; sid_ucp_v1=1.0.0-KDRiMzcyMDVkZmZhMWIxNjhjNDM4YjBiZDA4Y2E5ZTBmN2IxNTE1NjIKFwjhrMGYrgIQt8vcmwYY7zEgDDgGQPQHGgJsZiIgZWEyZTQ2NmM5MjZjMzE3ZjRmNTUyZjBkMzk4MmE0NTg; ssid_ucp_v1=1.0.0-KDRiMzcyMDVkZmZhMWIxNjhjNDM4YjBiZDA4Y2E5ZTBmN2IxNTE1NjIKFwjhrMGYrgIQt8vcmwYY7zEgDDgGQPQHGgJsZiIgZWEyZTQ2NmM5MjZjMzE3ZjRmNTUyZjBkMzk4MmE0NTg; FOLLOW_NUMBER_YELLOW_POINT_INFO=%22MS4wLjABAAAAt_v5oVMmcxuNnLLRzi6Ey1GKVQr_2XVFt2jPbkhZPI8%2F1668787200000%2F0%2F1668752826051%2F0%22; strategyABtestKey=%221668752909.101%22; __ac_nonce=06377261b0070042789c9; __ac_signature=_02B4Z6wo00f01JfP74gAAIDDAxm0hJMbmiiX7-sAAEaJTk9YXvYiEKlcYbhZnUTqyIVISJ6Z9uR3UEye00i7MfEP1dAywrmbnaQAIP3m1.7zOA8BmpqIWhyYJal-u6k6LMxVpsCtyakYsz3325; live_can_add_dy_2_desktop=%221%22; tt_scid=PpJHVbeNWnhY54EQ6vWraqXl5A8SZDtl3dn9JTaQQNLPo37ztPaJz.xoJHxyhNYScf8e; s_v_web_id=verify_lam4f5i1_plZJSYeB_iUgU_4z2o_9JHF_d7Z0Z60sLg33; ttwid=1%7C-XDacSDIgDIHmJqBxLj6Op91O91Ww4nvf96AveJpNeE%7C1668752951%7C0275ac24a410dd06b5f87dc4d84188f6eedaf20ed69cc9d0e979559df7df461e; download_guide=%223%2F20221118%22; odin_tt=3a02e4ad7a6c9042e1c42ece6d0d4a1aeeb37ed334f3450eb4adf57a6d0e09938523f8954816d90d557b27f5d3cbea85; msToken=1GTirdFSckP7H_txAPOKIMLWleKhlwccm-ts_3OviXegeQ2cr0B56jMAqfB3SqEGnxPEBjXRWsmg-sxVW3okb1s-acOAnBkIVDA_47g5aZFOqMKEzI-N; msToken=aOEoMNHAEI98H45Z0n-zUTffiNgv7HNkGU0lwFptk-JBg00tEs0I74G4sYXgG670cAdhSmXNcKlRU3-QaxW7Pflt-p8YAmyU5eC3EGJQfp7Mk7JpmP_P&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;origin: https://live.douyin.com&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;referer: https://live.douyin.com/444452144000&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;sec-ch-ua: &#34;Google Chrome&#34;;v=&#34;107&#34;, &#34;Chromium&#34;;v=&#34;107&#34;, &#34;Not=A?Brand&#34;;v=&#34;24&#34;&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;sec-ch-ua-mobile: ?0&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;sec-ch-ua-platform: &#34;macOS&#34;&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;sec-fetch-dest: empty&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;sec-fetch-mode: cors&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;sec-fetch-site: same-origin&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;x-secsdk-csrf-token: 000100000001c39118162052c6b50f6dadb067cc07c073c9b93f035ea22242c67c43f5951903172899f1bc355042&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  --data-raw <span style="color:#a50">&#39;room_id=7167220081737468683&amp;to_room_id=7167220081737468683&amp;sec_to_user_id=MS4wLjABAAAAOgGR5D9qmmPglgaT08-30j8vnjeeAdmgXhJY_8Q7oLk&amp;to_episode_id=0&amp;send_type=4&amp;send_scene=1&amp;gift_source=0&amp;buff_level=0&amp;count=1&amp;price=2&amp;gift_id=2002&amp;is_first_combo=true&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  --compressed -iv
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="ln"> 1</span>curl <span class="s1">&#39;https://live.douyin.com/webcast/gift/send/?aid=6383&amp;live_id=1&amp;device_platform=web&amp;language=zh-CN&amp;enter_from=web_live&amp;cookie_enabled=true&amp;screen_width=2048&amp;screen_height=1152&amp;browser_language=zh-CN&amp;browser_platform=MacIntel&amp;browser_name=Chrome&amp;browser_version=107.0.0.0&amp;browser_online=true&amp;engine_name=Blink&amp;engine_version=107.0.0.0&amp;os_name=Mac+OS&amp;os_version=10.15.7&amp;cpu_core_num=8&amp;device_memory=8&amp;platform=PC&amp;downlink=10&amp;effective_type=4g&amp;round_trip_time=50&amp;channel=channel_pc_web&amp;app_name=douyin_web&amp;webid=7167235205950047744&amp;user_agent=Mozilla%2F5.0+(Macintosh%3B+Intel+Mac+OS+X+10_15_7)+AppleWebKit%2F537.36+(KHTML,+like+Gecko)+Chrome%2F107.0.0.0+Safari%2F537.36&amp;fp=verify_lam4f5i1_plZJSYeB_iUgU_4z2o_9JHF_d7Z0Z60sLg33&amp;did=0&amp;referer=https:%2F%2Flive.douyin.com%2F444452144000%3Fcover_type%3D0%26enter_from_merge%3Dweb_live%26enter_method%3Dweb_card%26game_name%3D%26is_recommend%3D1%26live_type%3Dgame%26more_detail%3D%26request_id%3D2022111814283801020916816201004237%26room_id%3D7167220081737468683%26stream_type%3Dvertical%26title_type%3D1%26web_live_page%3Dhot_live%26web_live_tab%3Dall&amp;target=&amp;device_id=7167235205950047744&amp;msToken=aOEoMNHAEI98H45Z0n-zUTffiNgv7HNkGU0lwFptk-JBg00tEs0I74G4sYXgG670cAdhSmXNcKlRU3-QaxW7Pflt-p8YAmyU5eC3EGJQfp7Mk7JpmP_P&amp;X-Bogus=DFSzswVL0qCmAcoQS8MuBN7TlqS8&amp;_signature=_02B4Z6wo00001Heu8JQAAIDD43irmgubdKx3rvQAAH6ktTtRdH7gtQJWp3SjldUkeBB51lpkXUQ700UnFEXODUicQ0r1ccxSxq4OwWIjvxuNe8Acl-gJzChe99W43SojHkPp9aa82Qzi9VoTd2&#39;</span> <span class="se">\
+</span><span class="ln"> 2</span><span class="se"></span>  -H <span class="s1">&#39;authority: live.douyin.com&#39;</span> <span class="se">\
+</span><span class="ln"> 3</span><span class="se"></span>  -H <span class="s1">&#39;accept: application/json, text/plain, */*&#39;</span> <span class="se">\
+</span><span class="ln"> 4</span><span class="se"></span>  -H <span class="s1">&#39;accept-language: zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7&#39;</span> <span class="se">\
+</span><span class="ln"> 5</span><span class="se"></span>  -H <span class="s1">&#39;content-type: application/x-www-form-urlencoded&#39;</span> <span class="se">\
+</span><span class="ln"> 6</span><span class="se"></span>  -H <span class="s1">&#39;cookie: xgplayer_user_id=502915240928; csrf_session_id=f5161482adac52884f25a91fa758d7b0; ttcid=5cd5ff73751f4ab39911c85e57f9ca7479; passport_csrf_token=46e48d1e7b4df245f8caab8a34b64935; passport_csrf_token_default=46e48d1e7b4df245f8caab8a34b64935; home_can_add_dy_2_desktop=%220%22; n_mh=Qo43cptpX41bfwDmWyVyRUGMZnsucxhgcWJqKjjWkvI; sso_uid_tt=a84f8e3ae1f0c8301f5a882b05abe3f0; sso_uid_tt_ss=a84f8e3ae1f0c8301f5a882b05abe3f0; toutiao_sso_user=a28a6e92e7dc7d690b4f6b9a59077692; toutiao_sso_user_ss=a28a6e92e7dc7d690b4f6b9a59077692; passport_assist_user=Cjyr0IY04IJK-7Hxgl87vzPKZIfpFS29oAG2arITfMftUANM_d6SDxwAksiJEuVqZgZdE_BYyvcjLLGAQaYaSAo8zVwGiPnNM3S7eRNlXwMkuS7yNVm17pbNfKqXsXj3Rgk9Nm08DWh_PY0JRbH8FQeLxabRAoqM4bPJTzQ8EM_DoQ0Yia_WVCIBAxToQPk%3D; sid_ucp_sso_v1=1.0.0-KGIxM2FlNmE2MDdiNWE5MDA1YmIwZjg5OWVkNTUxMTBhMzdhYWE2OTIKHQjhrMGYrgIQt8vcmwYY7zEgDDDHuNHRBTgGQPQHGgJobCIgYTI4YTZlOTJlN2RjN2Q2OTBiNGY2YjlhNTkwNzc2OTI; ssid_ucp_sso_v1=1.0.0-KGIxM2FlNmE2MDdiNWE5MDA1YmIwZjg5OWVkNTUxMTBhMzdhYWE2OTIKHQjhrMGYrgIQt8vcmwYY7zEgDDDHuNHRBTgGQPQHGgJobCIgYTI4YTZlOTJlN2RjN2Q2OTBiNGY2YjlhNTkwNzc2OTI; passport_auth_status=ba24f5319c0f02c6232d484fd51c2187%2C; passport_auth_status_ss=ba24f5319c0f02c6232d484fd51c2187%2C; sid_guard=ea2e466c926c317f4f552f0d3982a458%7C1668752823%7C5184000%7CTue%2C+17-Jan-2023+06%3A27%3A03+GMT; uid_tt=23c596f546d448da13c0098152ef5d17; uid_tt_ss=23c596f546d448da13c0098152ef5d17; sid_tt=ea2e466c926c317f4f552f0d3982a458; sessionid=ea2e466c926c317f4f552f0d3982a458; sessionid_ss=ea2e466c926c317f4f552f0d3982a458; sid_ucp_v1=1.0.0-KDRiMzcyMDVkZmZhMWIxNjhjNDM4YjBiZDA4Y2E5ZTBmN2IxNTE1NjIKFwjhrMGYrgIQt8vcmwYY7zEgDDgGQPQHGgJsZiIgZWEyZTQ2NmM5MjZjMzE3ZjRmNTUyZjBkMzk4MmE0NTg; ssid_ucp_v1=1.0.0-KDRiMzcyMDVkZmZhMWIxNjhjNDM4YjBiZDA4Y2E5ZTBmN2IxNTE1NjIKFwjhrMGYrgIQt8vcmwYY7zEgDDgGQPQHGgJsZiIgZWEyZTQ2NmM5MjZjMzE3ZjRmNTUyZjBkMzk4MmE0NTg; FOLLOW_NUMBER_YELLOW_POINT_INFO=%22MS4wLjABAAAAt_v5oVMmcxuNnLLRzi6Ey1GKVQr_2XVFt2jPbkhZPI8%2F1668787200000%2F0%2F1668752826051%2F0%22; strategyABtestKey=%221668752909.101%22; __ac_nonce=06377261b0070042789c9; __ac_signature=_02B4Z6wo00f01JfP74gAAIDDAxm0hJMbmiiX7-sAAEaJTk9YXvYiEKlcYbhZnUTqyIVISJ6Z9uR3UEye00i7MfEP1dAywrmbnaQAIP3m1.7zOA8BmpqIWhyYJal-u6k6LMxVpsCtyakYsz3325; live_can_add_dy_2_desktop=%221%22; tt_scid=PpJHVbeNWnhY54EQ6vWraqXl5A8SZDtl3dn9JTaQQNLPo37ztPaJz.xoJHxyhNYScf8e; s_v_web_id=verify_lam4f5i1_plZJSYeB_iUgU_4z2o_9JHF_d7Z0Z60sLg33; ttwid=1%7C-XDacSDIgDIHmJqBxLj6Op91O91Ww4nvf96AveJpNeE%7C1668752951%7C0275ac24a410dd06b5f87dc4d84188f6eedaf20ed69cc9d0e979559df7df461e; download_guide=%223%2F20221118%22; odin_tt=3a02e4ad7a6c9042e1c42ece6d0d4a1aeeb37ed334f3450eb4adf57a6d0e09938523f8954816d90d557b27f5d3cbea85; msToken=1GTirdFSckP7H_txAPOKIMLWleKhlwccm-ts_3OviXegeQ2cr0B56jMAqfB3SqEGnxPEBjXRWsmg-sxVW3okb1s-acOAnBkIVDA_47g5aZFOqMKEzI-N; msToken=aOEoMNHAEI98H45Z0n-zUTffiNgv7HNkGU0lwFptk-JBg00tEs0I74G4sYXgG670cAdhSmXNcKlRU3-QaxW7Pflt-p8YAmyU5eC3EGJQfp7Mk7JpmP_P&#39;</span> <span class="se">\
+</span><span class="ln"> 7</span><span class="se"></span>  -H <span class="s1">&#39;origin: https://live.douyin.com&#39;</span> <span class="se">\
+</span><span class="ln"> 8</span><span class="se"></span>  -H <span class="s1">&#39;referer: https://live.douyin.com/444452144000&#39;</span> <span class="se">\
+</span><span class="ln"> 9</span><span class="se"></span>  -H <span class="s1">&#39;sec-ch-ua: &#34;Google Chrome&#34;;v=&#34;107&#34;, &#34;Chromium&#34;;v=&#34;107&#34;, &#34;Not=A?Brand&#34;;v=&#34;24&#34;&#39;</span> <span class="se">\
+</span><span class="ln">10</span><span class="se"></span>  -H <span class="s1">&#39;sec-ch-ua-mobile: ?0&#39;</span> <span class="se">\
+</span><span class="ln">11</span><span class="se"></span>  -H <span class="s1">&#39;sec-ch-ua-platform: &#34;macOS&#34;&#39;</span> <span class="se">\
+</span><span class="ln">12</span><span class="se"></span>  -H <span class="s1">&#39;sec-fetch-dest: empty&#39;</span> <span class="se">\
+</span><span class="ln">13</span><span class="se"></span>  -H <span class="s1">&#39;sec-fetch-mode: cors&#39;</span> <span class="se">\
+</span><span class="ln">14</span><span class="se"></span>  -H <span class="s1">&#39;sec-fetch-site: same-origin&#39;</span> <span class="se">\
+</span><span class="ln">15</span><span class="se"></span>  -H <span class="s1">&#39;user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36&#39;</span> <span class="se">\
+</span><span class="ln">16</span><span class="se"></span>  -H <span class="s1">&#39;x-secsdk-csrf-token: 000100000001c39118162052c6b50f6dadb067cc07c073c9b93f035ea22242c67c43f5951903172899f1bc355042&#39;</span> <span class="se">\
+</span><span class="ln">17</span><span class="se"></span>  --data-raw <span class="s1">&#39;room_id=7167220081737468683&amp;to_room_id=7167220081737468683&amp;sec_to_user_id=MS4wLjABAAAAOgGR5D9qmmPglgaT08-30j8vnjeeAdmgXhJY_8Q7oLk&amp;to_episode_id=0&amp;send_type=4&amp;send_scene=1&amp;gift_source=0&amp;buff_level=0&amp;count=1&amp;price=2&amp;gift_id=2002&amp;is_first_combo=true&#39;</span> <span class="se">\
+</span><span class="ln">18</span><span class="se"></span>  --compressed -iv
 </code></pre></div><p>响应</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
- <span style="color:#1e90ff;font-weight:bold">&#34;data&#34;</span>: {
-   <span style="color:#1e90ff;font-weight:bold">&#34;message&#34;</span>: <span style="color:#a50">&#34;Insufficient Fund&#34;</span>,
-   <span style="color:#1e90ff;font-weight:bold">&#34;prompts&#34;</span>: <span style="color:#a50">&#34;余额不足&#34;</span>
- },
- <span style="color:#1e90ff;font-weight:bold">&#34;extra&#34;</span>: {
-   <span style="color:#1e90ff;font-weight:bold">&#34;now&#34;</span>: <span style="color:#099">1668755929438</span>
- },
- <span style="color:#1e90ff;font-weight:bold">&#34;status_code&#34;</span>: <span style="color:#099">40001</span>
-}
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="ln"> 1</span><span class="p">{</span>
+<span class="ln"> 2</span> <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">{</span>
+<span class="ln"> 3</span>   <span class="nt">&#34;message&#34;</span><span class="p">:</span> <span class="s2">&#34;Insufficient Fund&#34;</span><span class="p">,</span>
+<span class="ln"> 4</span>   <span class="nt">&#34;prompts&#34;</span><span class="p">:</span> <span class="s2">&#34;余额不足&#34;</span>
+<span class="ln"> 5</span> <span class="p">},</span>
+<span class="ln"> 6</span> <span class="nt">&#34;extra&#34;</span><span class="p">:</span> <span class="p">{</span>
+<span class="ln"> 7</span>   <span class="nt">&#34;now&#34;</span><span class="p">:</span> <span class="mi">1668755929438</span>
+<span class="ln"> 8</span> <span class="p">},</span>
+<span class="ln"> 9</span> <span class="nt">&#34;status_code&#34;</span><span class="p">:</span> <span class="mi">40001</span>
+<span class="ln">10</span><span class="p">}</span>
 </code></pre></div><h4 id="快手接口">快手接口</h4>
 <p>请求</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">curl <span style="color:#a50">&#39;https://live.kuaishou.com/live_graphql&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;Connection: keep-alive&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;Cookie: clientid=3; did=web_0d47b6546f1fd39fe4d1236703ae2b16; kuaishou.live.bfb1s=9b8f70844293bed778aade6e0a8f9942; client_key=65890b29; kpn=GAME_ZONE; userId=553458447; kuaishou.live.web_st=ChRrdWFpc2hvdS5saXZlLndlYi5zdBKgAV6EW8_dkcqveTyN6yy6uaMZd7O2c9rYOi19Fb3FhhOTPjtHtkb7lPQxQ4QaygTV0J-_Z0E7-4E5lFUZ2MRRzwjNAgbEEeSbf5duEVRtpGJnR_EEjJeZ3yyPMWPsJelIVcpSHGX02esKljXrWSXcbMWU709r4hxtaNHdMQtnvmLt1nijHxRE7lio0ZRYM5n-EK65VJq2EUpFqHFY_jFqxm0aEhrHsWfESUHgv806qk-5eqStgCIgOVwse70J74NPwA2TbGfOv-Ze0M-TVQJ0kHcHOHiTkKooBTAB; kuaishou.live.web_ph=75bafd83e69f9caf80b760c47f7b9c976d31; userId=553458447; ksliveShowClipTip=true&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;Origin: https://live.kuaishou.com&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;Referer: https://live.kuaishou.com/u/YiGe6666&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;Sec-Fetch-Dest: empty&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;Sec-Fetch-Mode: cors&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;Sec-Fetch-Site: same-origin&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;accept: */*&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;content-type: application/json&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;sec-ch-ua: &#34;Google Chrome&#34;;v=&#34;107&#34;, &#34;Chromium&#34;;v=&#34;107&#34;, &#34;Not=A?Brand&#34;;v=&#34;24&#34;&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;sec-ch-ua-mobile: ?0&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  -H <span style="color:#a50">&#39;sec-ch-ua-platform: &#34;macOS&#34;&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  --data-raw <span style="color:#a50">&#39;{&#34;operationName&#34;:&#34;SendTokenGift&#34;,&#34;variables&#34;:{&#34;e&#34;:&#34;UJfUx05OooLVLeaLzurAD7t0ycf7qHV57YPA64hWOh5Nslk4cNv5GCO5UIhUfygGimZNaBMDaQF7CWigSoxuOG4KmX6PBg7Nw/BxK3lCQ/MeVM8H3VRD7RIv7A9H4Zt+z/43c25jpTuaQrjLpxrWXzNYORIKJRjga9ZUGPCbNwatxYFMuVGEJcn8SZxFdd2rr1HMsQV2HXhl1PcILcXZ5fcnu7+VARIIj26snB4TOiQ=&#34;,&#34;iv&#34;:&#34;yLelD2PBybOSK8LM&#34;,&#34;giftId&#34;:114,&#34;liveStreamId&#34;:&#34;sOuGkqrHrOs&#34;,&#34;count&#34;:1,&#34;comboKey&#34;:&#34;IZLFwC_9lDBi2YL6_1668754497884&#34;,&#34;giftToken&#34;:&#34;CkMQj7b0hwIaNIECAoICgwLHAgmLAowCjQIOENsBnAGfAt8B4AEhoQLhAakCKXFysgLyAfYBtwL3AfgB+QEgNCi36OokEIzc0szIMBqQARbIi9FshY8J3yb72Pi3Kf3b4VlRZ8dHHr2d64OWA545YQ6SBsTaqA6ERQ9DQbGDCXK3L5MoVtVL/wy4cLlD+XTMYIYjEYUU/0IwTbvhrTXWdll64SIP1APvRQXCjDugMBShDAqlMCBPqREhchX0t8tXHhYO2h+h6k3+kwe3yAdSioapP7i5NxtuLxCFTYPiVA==&#34;},&#34;query&#34;:&#34;mutation SendTokenGift($e: String, $iv: String, $giftId: Int, $liveStreamId: ID, $count: Int, $comboKey: String, $giftToken: String) {\n  sendTokenGift(e: $e, iv: $iv, giftId: $giftId, liveStreamId: $liveStreamId, count: $count, comboKey: $comboKey, giftToken: $giftToken) {\n    result\n    ksCoin\n    styleType\n    __typename\n  }\n}\n&#34;}&#39;</span> <span style="color:#a50">\
-</span><span style="color:#a50"></span>  --compressed -iv
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="ln"> 1</span>curl <span class="s1">&#39;https://live.kuaishou.com/live_graphql&#39;</span> <span class="se">\
+</span><span class="ln"> 2</span><span class="se"></span>  -H <span class="s1">&#39;Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7&#39;</span> <span class="se">\
+</span><span class="ln"> 3</span><span class="se"></span>  -H <span class="s1">&#39;Connection: keep-alive&#39;</span> <span class="se">\
+</span><span class="ln"> 4</span><span class="se"></span>  -H <span class="s1">&#39;Cookie: clientid=3; did=web_0d47b6546f1fd39fe4d1236703ae2b16; kuaishou.live.bfb1s=9b8f70844293bed778aade6e0a8f9942; client_key=65890b29; kpn=GAME_ZONE; userId=553458447; kuaishou.live.web_st=ChRrdWFpc2hvdS5saXZlLndlYi5zdBKgAV6EW8_dkcqveTyN6yy6uaMZd7O2c9rYOi19Fb3FhhOTPjtHtkb7lPQxQ4QaygTV0J-_Z0E7-4E5lFUZ2MRRzwjNAgbEEeSbf5duEVRtpGJnR_EEjJeZ3yyPMWPsJelIVcpSHGX02esKljXrWSXcbMWU709r4hxtaNHdMQtnvmLt1nijHxRE7lio0ZRYM5n-EK65VJq2EUpFqHFY_jFqxm0aEhrHsWfESUHgv806qk-5eqStgCIgOVwse70J74NPwA2TbGfOv-Ze0M-TVQJ0kHcHOHiTkKooBTAB; kuaishou.live.web_ph=75bafd83e69f9caf80b760c47f7b9c976d31; userId=553458447; ksliveShowClipTip=true&#39;</span> <span class="se">\
+</span><span class="ln"> 5</span><span class="se"></span>  -H <span class="s1">&#39;Origin: https://live.kuaishou.com&#39;</span> <span class="se">\
+</span><span class="ln"> 6</span><span class="se"></span>  -H <span class="s1">&#39;Referer: https://live.kuaishou.com/u/YiGe6666&#39;</span> <span class="se">\
+</span><span class="ln"> 7</span><span class="se"></span>  -H <span class="s1">&#39;Sec-Fetch-Dest: empty&#39;</span> <span class="se">\
+</span><span class="ln"> 8</span><span class="se"></span>  -H <span class="s1">&#39;Sec-Fetch-Mode: cors&#39;</span> <span class="se">\
+</span><span class="ln"> 9</span><span class="se"></span>  -H <span class="s1">&#39;Sec-Fetch-Site: same-origin&#39;</span> <span class="se">\
+</span><span class="ln">10</span><span class="se"></span>  -H <span class="s1">&#39;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36&#39;</span> <span class="se">\
+</span><span class="ln">11</span><span class="se"></span>  -H <span class="s1">&#39;accept: */*&#39;</span> <span class="se">\
+</span><span class="ln">12</span><span class="se"></span>  -H <span class="s1">&#39;content-type: application/json&#39;</span> <span class="se">\
+</span><span class="ln">13</span><span class="se"></span>  -H <span class="s1">&#39;sec-ch-ua: &#34;Google Chrome&#34;;v=&#34;107&#34;, &#34;Chromium&#34;;v=&#34;107&#34;, &#34;Not=A?Brand&#34;;v=&#34;24&#34;&#39;</span> <span class="se">\
+</span><span class="ln">14</span><span class="se"></span>  -H <span class="s1">&#39;sec-ch-ua-mobile: ?0&#39;</span> <span class="se">\
+</span><span class="ln">15</span><span class="se"></span>  -H <span class="s1">&#39;sec-ch-ua-platform: &#34;macOS&#34;&#39;</span> <span class="se">\
+</span><span class="ln">16</span><span class="se"></span>  --data-raw <span class="s1">&#39;{&#34;operationName&#34;:&#34;SendTokenGift&#34;,&#34;variables&#34;:{&#34;e&#34;:&#34;UJfUx05OooLVLeaLzurAD7t0ycf7qHV57YPA64hWOh5Nslk4cNv5GCO5UIhUfygGimZNaBMDaQF7CWigSoxuOG4KmX6PBg7Nw/BxK3lCQ/MeVM8H3VRD7RIv7A9H4Zt+z/43c25jpTuaQrjLpxrWXzNYORIKJRjga9ZUGPCbNwatxYFMuVGEJcn8SZxFdd2rr1HMsQV2HXhl1PcILcXZ5fcnu7+VARIIj26snB4TOiQ=&#34;,&#34;iv&#34;:&#34;yLelD2PBybOSK8LM&#34;,&#34;giftId&#34;:114,&#34;liveStreamId&#34;:&#34;sOuGkqrHrOs&#34;,&#34;count&#34;:1,&#34;comboKey&#34;:&#34;IZLFwC_9lDBi2YL6_1668754497884&#34;,&#34;giftToken&#34;:&#34;CkMQj7b0hwIaNIECAoICgwLHAgmLAowCjQIOENsBnAGfAt8B4AEhoQLhAakCKXFysgLyAfYBtwL3AfgB+QEgNCi36OokEIzc0szIMBqQARbIi9FshY8J3yb72Pi3Kf3b4VlRZ8dHHr2d64OWA545YQ6SBsTaqA6ERQ9DQbGDCXK3L5MoVtVL/wy4cLlD+XTMYIYjEYUU/0IwTbvhrTXWdll64SIP1APvRQXCjDugMBShDAqlMCBPqREhchX0t8tXHhYO2h+h6k3+kwe3yAdSioapP7i5NxtuLxCFTYPiVA==&#34;},&#34;query&#34;:&#34;mutation SendTokenGift($e: String, $iv: String, $giftId: Int, $liveStreamId: ID, $count: Int, $comboKey: String, $giftToken: String) {\n  sendTokenGift(e: $e, iv: $iv, giftId: $giftId, liveStreamId: $liveStreamId, count: $count, comboKey: $comboKey, giftToken: $giftToken) {\n    result\n    ksCoin\n    styleType\n    __typename\n  }\n}\n&#34;}&#39;</span> <span class="se">\
+</span><span class="ln">17</span><span class="se"></span>  --compressed -iv
 </code></pre></div><p>响应</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-  <span style="color:#1e90ff;font-weight:bold">&#34;data&#34;</span>: {
-    <span style="color:#1e90ff;font-weight:bold">&#34;sendTokenGift&#34;</span>: {
-      <span style="color:#1e90ff;font-weight:bold">&#34;result&#34;</span>: <span style="color:#099">1</span>,<span style="color:#f00;background-color:#faa">//成功</span>
-      <span style="color:#1e90ff;font-weight:bold">&#34;ksCoin&#34;</span>: <span style="color:#099">0</span>,
-      <span style="color:#1e90ff;font-weight:bold">&#34;styleType&#34;</span>: <span style="color:#00a">null</span>,
-      <span style="color:#1e90ff;font-weight:bold">&#34;__typename&#34;</span>: <span style="color:#a50">&#34;SendGiftResult&#34;</span>
-    }
-  }
-}
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="ln"> 1</span><span class="p">{</span>
+<span class="ln"> 2</span>  <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">{</span>
+<span class="ln"> 3</span>    <span class="nt">&#34;sendTokenGift&#34;</span><span class="p">:</span> <span class="p">{</span>
+<span class="ln"> 4</span>      <span class="nt">&#34;result&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span><span class="err">//成功</span>
+<span class="ln"> 5</span>      <span class="nt">&#34;ksCoin&#34;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="ln"> 6</span>      <span class="nt">&#34;styleType&#34;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+<span class="ln"> 7</span>      <span class="nt">&#34;__typename&#34;</span><span class="p">:</span> <span class="s2">&#34;SendGiftResult&#34;</span>
+<span class="ln"> 8</span>    <span class="p">}</span>
+<span class="ln"> 9</span>  <span class="p">}</span>
+<span class="ln">10</span><span class="p">}</span>
 </code></pre></div><p>快手给端上的接口使用的<a href="https://spec.graphql.org/draft/">graphql</a>统一中心化了入口，方便后续规范化管理接口；整体交互也有些差别，一个是后置判断，一个是前置判断礼物是否可以赠送，但是对于赠送礼物接口还是需要判断是否满足赠送的金额；前置对于用户体验会好些，少了些交互吧; 接口数据都有token加密验证，防止三方黑产中途拦截，后者对整体赠送数据也是压缩加密了(用户行为打点数据也是压缩上报的)；</p>
 <p>Tips: 貌似礼物的价格在各个直播平台都一样的，不像商品价格有相对波动，只是会有些直播场景定制化的礼物，有种非理性情感冲动消费的感觉，搞直播类用户产品，心理学貌似挺重要的，老铁带一波 666～</p>
 <h3 id="设计">设计</h3>
@@ -549,19 +551,19 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 <p>悲观锁 select for update事务实现</p>
 </li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#00a">SET</span><span style="color:#bbb"> </span>AUTOCOMMIT=<span style="color:#099">0</span>;<span style="color:#bbb"> 
-</span><span style="color:#bbb"></span><span style="color:#00a">BEGIN</span><span style="color:#f00;background-color:#faa">；</span><span style="color:#bbb">
-</span><span style="color:#bbb">   </span>a<span style="color:#bbb"> </span>=<span style="color:#bbb"> </span><span style="color:#00a">SELECT</span><span style="color:#bbb"> </span>assetCn<span style="color:#bbb"> </span><span style="color:#00a">FROM</span><span style="color:#bbb"> </span>user_asset<span style="color:#bbb"> </span><span style="color:#00a">WHERE</span><span style="color:#bbb"> </span>userId=<span style="color:#f00;background-color:#faa">{$</span>userId<span style="color:#f00;background-color:#faa">}</span><span style="color:#bbb"> </span><span style="color:#00a">and</span><span style="color:#bbb"> </span>assetType=<span style="color:#f00;background-color:#faa">{$</span>assetType<span style="color:#f00;background-color:#faa">}</span><span style="color:#bbb"> </span><span style="color:#00a">FOR</span><span style="color:#bbb"> </span><span style="color:#00a">UPDATE</span>;<span style="color:#bbb">  
-</span><span style="color:#bbb">   </span><span style="color:#00a">update</span><span style="color:#bbb"> </span>user_asset<span style="color:#bbb"> </span><span style="color:#00a">set</span><span style="color:#bbb"> </span>assetCn=a.assetCn+<span style="color:#f00;background-color:#faa">{$</span>incrCn<span style="color:#f00;background-color:#faa">}</span><span style="color:#bbb"> </span><span style="color:#00a">where</span><span style="color:#bbb"> </span>userId=<span style="color:#f00;background-color:#faa">{$</span>userId<span style="color:#f00;background-color:#faa">}</span><span style="color:#bbb"> </span><span style="color:#00a">and</span><span style="color:#bbb"> </span>assetType=<span style="color:#f00;background-color:#faa">{$</span>assetType<span style="color:#f00;background-color:#faa">}</span>;<span style="color:#bbb"> 
-</span><span style="color:#bbb"></span><span style="color:#00a">COMMIT</span>;<span style="color:#bbb">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="ln">1</span><span class="k">SET</span><span class="w"> </span><span class="n">AUTOCOMMIT</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="w"> 
+</span><span class="ln">2</span><span class="w"></span><span class="k">BEGIN</span><span class="err">；</span><span class="w">
+</span><span class="ln">3</span><span class="w">   </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="n">assetCn</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">user_asset</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">userId</span><span class="o">=</span><span class="err">{$</span><span class="n">userId</span><span class="err">}</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="n">assetType</span><span class="o">=</span><span class="err">{$</span><span class="n">assetType</span><span class="err">}</span><span class="w"> </span><span class="k">FOR</span><span class="w"> </span><span class="k">UPDATE</span><span class="p">;</span><span class="w">  
+</span><span class="ln">4</span><span class="w">   </span><span class="k">update</span><span class="w"> </span><span class="n">user_asset</span><span class="w"> </span><span class="k">set</span><span class="w"> </span><span class="n">assetCn</span><span class="o">=</span><span class="n">a</span><span class="p">.</span><span class="n">assetCn</span><span class="o">+</span><span class="err">{$</span><span class="n">incrCn</span><span class="err">}</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">userId</span><span class="o">=</span><span class="err">{$</span><span class="n">userId</span><span class="err">}</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="n">assetType</span><span class="o">=</span><span class="err">{$</span><span class="n">assetType</span><span class="err">}</span><span class="p">;</span><span class="w"> 
+</span><span class="ln">5</span><span class="w"></span><span class="k">COMMIT</span><span class="p">;</span><span class="w">
 </span></code></pre></div><ol start="3">
 <li>乐观锁 CAS的方式，没有更新继续循环，直到更新ok</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql">a<span style="color:#bbb"> </span>=<span style="color:#bbb"> </span><span style="color:#00a">SELECT</span><span style="color:#bbb"> </span>assetCn<span style="color:#bbb"> </span><span style="color:#00a">FROM</span><span style="color:#bbb"> </span>user_asset<span style="color:#bbb"> </span><span style="color:#00a">WHERE</span><span style="color:#bbb"> </span>userId=<span style="color:#f00;background-color:#faa">{$</span>userId<span style="color:#f00;background-color:#faa">}</span><span style="color:#bbb"> </span><span style="color:#00a">and</span><span style="color:#bbb"> </span>assetType=<span style="color:#f00;background-color:#faa">{$</span>assetType<span style="color:#f00;background-color:#faa">}</span>;<span style="color:#bbb">
-</span><span style="color:#bbb"></span>#<span style="color:#f00;background-color:#faa">$</span>oldAssetCn<span style="color:#bbb"> </span>=<span style="color:#bbb"> </span>a.assetCn<span style="color:#bbb">
-</span><span style="color:#bbb"></span>#<span style="color:#f00;background-color:#faa">$</span>newAssetCn<span style="color:#bbb"> </span>=<span style="color:#bbb"> </span>a.assetCn+<span style="color:#f00;background-color:#faa">$</span>incrCn<span style="color:#bbb">
-</span><span style="color:#bbb"></span>#<span style="color:#00a">if</span><span style="color:#bbb"> </span><span style="color:#f00;background-color:#faa">$</span>newAssetCn&gt;=<span style="color:#099">0</span><span style="color:#bbb"> </span>-&gt;<span style="color:#00a">update</span><span style="color:#bbb">
-</span><span style="color:#bbb"></span><span style="color:#00a">update</span><span style="color:#bbb"> </span>user_asset<span style="color:#bbb"> </span><span style="color:#00a">set</span><span style="color:#bbb"> </span>assetCn=<span style="color:#f00;background-color:#faa">{$</span>newAssetCn<span style="color:#f00;background-color:#faa">}</span><span style="color:#bbb"> </span><span style="color:#00a">where</span><span style="color:#bbb"> </span>userId=<span style="color:#f00;background-color:#faa">{$</span>userId<span style="color:#f00;background-color:#faa">}</span><span style="color:#bbb"> </span><span style="color:#00a">and</span><span style="color:#bbb"> </span>assetType=<span style="color:#f00;background-color:#faa">{$</span>assetType<span style="color:#f00;background-color:#faa">}</span><span style="color:#bbb"> </span><span style="color:#00a">and</span><span style="color:#bbb"> </span>assetCn<span style="color:#bbb"> </span>=<span style="color:#bbb"> </span><span style="color:#f00;background-color:#faa">{$</span>oldAssetCn<span style="color:#f00;background-color:#faa">}</span><span style="color:#bbb"> 
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="ln">1</span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="n">assetCn</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">user_asset</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">userId</span><span class="o">=</span><span class="err">{$</span><span class="n">userId</span><span class="err">}</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="n">assetType</span><span class="o">=</span><span class="err">{$</span><span class="n">assetType</span><span class="err">}</span><span class="p">;</span><span class="w">
+</span><span class="ln">2</span><span class="w"></span><span class="o">#</span><span class="err">$</span><span class="n">oldAssetCn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">assetCn</span><span class="w">
+</span><span class="ln">3</span><span class="w"></span><span class="o">#</span><span class="err">$</span><span class="n">newAssetCn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">assetCn</span><span class="o">+</span><span class="err">$</span><span class="n">incrCn</span><span class="w">
+</span><span class="ln">4</span><span class="w"></span><span class="o">#</span><span class="k">if</span><span class="w"> </span><span class="err">$</span><span class="n">newAssetCn</span><span class="o">&gt;=</span><span class="mi">0</span><span class="w"> </span><span class="o">-&gt;</span><span class="k">update</span><span class="w">
+</span><span class="ln">5</span><span class="w"></span><span class="k">update</span><span class="w"> </span><span class="n">user_asset</span><span class="w"> </span><span class="k">set</span><span class="w"> </span><span class="n">assetCn</span><span class="o">=</span><span class="err">{$</span><span class="n">newAssetCn</span><span class="err">}</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">userId</span><span class="o">=</span><span class="err">{$</span><span class="n">userId</span><span class="err">}</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="n">assetType</span><span class="o">=</span><span class="err">{$</span><span class="n">assetType</span><span class="err">}</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="n">assetCn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">{$</span><span class="n">oldAssetCn</span><span class="err">}</span><span class="w"> 
 </span></code></pre></div><p>存在ABA问题：</p>
 <blockquote>
 <p>考虑如下操作：</p>
@@ -573,13 +575,13 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 <p>ABA问题导致的原因，是CAS过程中只简单进行了“值”的校验，再有些情况下，“值”相同不会引入错误的业务逻辑（例如库存），有些情况下，“值”虽然相同，却已经不是原来的数据了。</p>
 </blockquote>
 <p>加上版本字段version, 对版本进行CAS更新</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql">a<span style="color:#bbb"> </span>=<span style="color:#bbb"> </span><span style="color:#00a">SELECT</span><span style="color:#bbb"> </span>assetCn,<span style="color:#00a">version</span><span style="color:#bbb"> </span><span style="color:#00a">FROM</span><span style="color:#bbb"> </span>user_asset<span style="color:#bbb"> </span><span style="color:#00a">WHERE</span><span style="color:#bbb"> </span>userId=<span style="color:#f00;background-color:#faa">{$</span>userId<span style="color:#f00;background-color:#faa">}</span><span style="color:#bbb"> </span><span style="color:#00a">and</span><span style="color:#bbb"> </span>assetType=<span style="color:#f00;background-color:#faa">{$</span>assetType<span style="color:#f00;background-color:#faa">}</span>;<span style="color:#bbb">
-</span><span style="color:#bbb"></span>#<span style="color:#f00;background-color:#faa">$</span>oldAssetCn<span style="color:#bbb"> </span>=<span style="color:#bbb"> </span>a.assetCn<span style="color:#bbb">
-</span><span style="color:#bbb"></span>#<span style="color:#f00;background-color:#faa">$</span>oldVersion<span style="color:#bbb"> </span>=<span style="color:#bbb"> </span>a.<span style="color:#00a">version</span><span style="color:#bbb">
-</span><span style="color:#bbb"></span>#<span style="color:#f00;background-color:#faa">$</span>newAssetCn<span style="color:#bbb"> </span>=<span style="color:#bbb"> </span>a.assetCn+<span style="color:#f00;background-color:#faa">$</span>incrCn<span style="color:#bbb">
-</span><span style="color:#bbb"></span>#<span style="color:#00a">if</span><span style="color:#bbb"> </span><span style="color:#f00;background-color:#faa">$</span>newAssetCn&gt;=<span style="color:#099">0</span><span style="color:#bbb"> </span>-&gt;<span style="color:#00a">update</span><span style="color:#bbb">
-</span><span style="color:#bbb"></span>#<span style="color:#f00;background-color:#faa">$</span>newVersion<span style="color:#bbb"> </span>=<span style="color:#bbb"> </span><span style="color:#f00;background-color:#faa">$</span>oldVersion+<span style="color:#099">1</span><span style="color:#bbb">
-</span><span style="color:#bbb"></span><span style="color:#00a">update</span><span style="color:#bbb"> </span>user_asset<span style="color:#bbb"> </span><span style="color:#00a">set</span><span style="color:#bbb"> </span>assetCn=<span style="color:#f00;background-color:#faa">{$</span>newAssetCn<span style="color:#f00;background-color:#faa">}</span><span style="color:#bbb"> </span><span style="color:#00a">and</span><span style="color:#bbb"> </span><span style="color:#00a">version</span>=<span style="color:#f00;background-color:#faa">{$</span>newVersion<span style="color:#f00;background-color:#faa">}</span><span style="color:#bbb"> </span><span style="color:#00a">where</span><span style="color:#bbb"> </span>userId=<span style="color:#f00;background-color:#faa">{$</span>userId<span style="color:#f00;background-color:#faa">}</span><span style="color:#bbb"> </span><span style="color:#00a">and</span><span style="color:#bbb"> </span>assetType=<span style="color:#f00;background-color:#faa">{$</span>assetType<span style="color:#f00;background-color:#faa">}</span><span style="color:#bbb"> </span><span style="color:#00a">and</span><span style="color:#bbb"> </span><span style="color:#00a">version</span><span style="color:#bbb"> </span>=<span style="color:#bbb"> </span><span style="color:#f00;background-color:#faa">{$</span>oldVersion<span style="color:#f00;background-color:#faa">}</span><span style="color:#bbb"> 
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="ln">1</span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="n">assetCn</span><span class="p">,</span><span class="k">version</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">user_asset</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">userId</span><span class="o">=</span><span class="err">{$</span><span class="n">userId</span><span class="err">}</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="n">assetType</span><span class="o">=</span><span class="err">{$</span><span class="n">assetType</span><span class="err">}</span><span class="p">;</span><span class="w">
+</span><span class="ln">2</span><span class="w"></span><span class="o">#</span><span class="err">$</span><span class="n">oldAssetCn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">assetCn</span><span class="w">
+</span><span class="ln">3</span><span class="w"></span><span class="o">#</span><span class="err">$</span><span class="n">oldVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="k">version</span><span class="w">
+</span><span class="ln">4</span><span class="w"></span><span class="o">#</span><span class="err">$</span><span class="n">newAssetCn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">assetCn</span><span class="o">+</span><span class="err">$</span><span class="n">incrCn</span><span class="w">
+</span><span class="ln">5</span><span class="w"></span><span class="o">#</span><span class="k">if</span><span class="w"> </span><span class="err">$</span><span class="n">newAssetCn</span><span class="o">&gt;=</span><span class="mi">0</span><span class="w"> </span><span class="o">-&gt;</span><span class="k">update</span><span class="w">
+</span><span class="ln">6</span><span class="w"></span><span class="o">#</span><span class="err">$</span><span class="n">newVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="n">oldVersion</span><span class="o">+</span><span class="mi">1</span><span class="w">
+</span><span class="ln">7</span><span class="w"></span><span class="k">update</span><span class="w"> </span><span class="n">user_asset</span><span class="w"> </span><span class="k">set</span><span class="w"> </span><span class="n">assetCn</span><span class="o">=</span><span class="err">{$</span><span class="n">newAssetCn</span><span class="err">}</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="k">version</span><span class="o">=</span><span class="err">{$</span><span class="n">newVersion</span><span class="err">}</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">userId</span><span class="o">=</span><span class="err">{$</span><span class="n">userId</span><span class="err">}</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="n">assetType</span><span class="o">=</span><span class="err">{$</span><span class="n">assetType</span><span class="err">}</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="k">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">{$</span><span class="n">oldVersion</span><span class="err">}</span><span class="w"> 
 </span></code></pre></div><p>想一想：mysql为了高可用和读写分离，生产环境部署的实例集群是主从架构，存在主从延迟，其实这个是不影响的，最终都是CAS的update更新，更新成功会返回affect rows为1，没有更新则为0；</p>
 <p>Notice:</p>
 <ol>
@@ -652,7 +654,7 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 </tr>
 </tbody>
 </table>
-<p>资源评估：</p>
+<p>资源评估：rang</p>
 <p>在支付中台，某个互动涉及到多个用户资产的变更，需要把多个写操作关联到一个本地事务进行处理，保证数据扣减和增减一致，需要开启本地事务来处理多表数据；以下gist为并发mysql本地事务处理测试demo</p>
 <script type="application/javascript" src="https://gist.github.com/weedge/1700dd7053a87a4ab35ba4fce0ebea6a.js"></script>
 
@@ -665,6 +667,7 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 <tr>
 <th>名称</th>
 <th>key</th>
+<th>type</th>
 <th>value</th>
 <th>ex</th>
 <th>是否频繁更新</th>
@@ -674,33 +677,55 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 <tbody>
 <tr>
 <td>用户虚拟资产信息</td>
-<td></td>
-<td></td>
-<td></td>
+<td>I.asset.{userId}</td>
+<td>string</td>
+<td>user_asset(json)</td>
+<td>1 d</td>
 <td>Y</td>
 <td></td>
 </tr>
 <tr>
 <td>礼物信息</td>
-<td></td>
-<td></td>
-<td></td>
+<td>I.gift.{giftId}</td>
+<td>string</td>
+<td>gift(json)</td>
+<td>7 d</td>
 <td>N</td>
 <td></td>
 </tr>
 <tr>
 <td>用户信息</td>
-<td></td>
-<td></td>
-<td></td>
+<td>I.user.{userId}</td>
+<td>string</td>
+<td>user(json)</td>
+<td>1 d</td>
 <td>N</td>
 <td></td>
 </tr>
 <tr>
 <td>直播间信息</td>
+<td>I.room.{roomId}</td>
+<td>string</td>
+<td>room(json)</td>
+<td>1 d</td>
+<td>N</td>
 <td></td>
+</tr>
+<tr>
+<td>获取用户虚拟资产分布式锁</td>
+<td>L.asset.{userId}.{tag}</td>
+<td>string</td>
+<td>token(json)</td>
+<td>100 ms</td>
+<td>N</td>
 <td></td>
-<td></td>
+</tr>
+<tr>
+<td>资产变更消息</td>
+<td>M.asset.{eventId}</td>
+<td>string</td>
+<td>1</td>
+<td>1 d</td>
 <td>N</td>
 <td></td>
 </tr>
@@ -725,7 +750,7 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 <li>存放的value值比较大，一般是list, set，zset, hash这些集合结构，存储的item/field数目一般在5000个左右，需要按比例切分，读放大的问题可以并发控制读取；</li>
 </ol>
 <h4 id="消息队列">消息队列</h4>
-<p>topic</p>
+<p>Topic</p>
 <table>
 <thead>
 <tr>
@@ -736,6 +761,49 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 <th>说明</th>
 </tr>
 </thead>
+<tbody>
+<tr>
+<td>TOPIC_ASSET_CHANGE_EVENT</td>
+<td>事务消息</td>
+<td>eventId</td>
+<td>TAG_GIFT</td>
+<td>用户赠送礼物互动资产变更</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>messageBody</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>eventId</td>
+<td>int64</td>
+<td>变更事件id</td>
+</tr>
+<tr>
+<td>eventType</td>
+<td>string</td>
+<td>变更事件类型，interactGift</td>
+</tr>
+<tr>
+<td>msgData</td>
+<td>string</td>
+<td>消息数据，user_asset信息</td>
+</tr>
+</tbody>
 </table>
 <h4 id="api">API</h4>
 <p>前台统一入口接口参数安全验证</p>
@@ -755,27 +823,96 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 <h3 id="开发">开发</h3>
 <p>按服务模块进行并行开发，联调；给出对应排期</p>
 <ol>
-<li>搭建基础环境，tidb, redis, rocketmq 1d</li>
-<li>测试demo, redis cluster集群下的缓存事务和 tidb分布式缓存事务，rocketmq 分布式消息事务；1d</li>
-<li>核心服务模块开发支付中台接口 1d</li>
-<li>编写makefile, dockerfile, 打包成docker镜像， 整体解决方案依赖组件也可以通过docker-compose部署至docker容器中 1d</li>
-<li>编写相关k8s资源 (deployment,configmap,secret,pod,ingress)通过minikube/kind 部署至本地k8s集群 1d</li>
-<li>将服务网格化istio</li>
+<li>
+<p>搭建本地基础环境，tidb/polardb-x, redis, rocketmq 1d</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="ln"> 1</span><span class="c">#redis-cluster-single-docker-compose.yaml</span><span class="w">
+</span><span class="ln"> 2</span><span class="w"></span><span class="c">#https://github.com/bitnami/bitnami-docker-redis-cluster/issues/3</span><span class="w">
+</span><span class="ln"> 3</span><span class="w"></span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;3&#34;</span><span class="w">
+</span><span class="ln"> 4</span><span class="w"></span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;single-redis-cluster&#34;</span><span class="w">
+</span><span class="ln"> 5</span><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
+</span><span class="ln"> 6</span><span class="w">  </span><span class="nt">redis-cluster</span><span class="p">:</span><span class="w">
+</span><span class="ln"> 7</span><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">grokzen/redis-cluster:latest</span><span class="w">
+</span><span class="ln"> 8</span><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span><span class="ln"> 9</span><span class="w">      </span>- <span class="s2">&#34;26379-26384:26379-26384&#34;</span><span class="w">
+</span><span class="ln">10</span><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span><span class="ln">11</span><span class="w">      </span>- <span class="s2">&#34;INITIAL_PORT=26379&#34;</span><span class="w">
+</span><span class="ln">12</span><span class="w">      </span>- <span class="s2">&#34;MASTERS=3&#34;</span><span class="w">
+</span><span class="ln">13</span><span class="w">      </span>- <span class="s2">&#34;SLAVES_PER_MASTER=1&#34;</span><span class="w">
+</span><span class="ln">14</span><span class="w">      </span>- <span class="s2">&#34;SENTINEL=false&#34;</span><span class="w">
+</span><span class="ln">15</span><span class="w">      </span>- <span class="s2">&#34;REDIS_CLUSTER_IP=0.0.0.0&#34;</span><span class="w">
+</span><span class="ln">16</span><span class="w">      </span>- <span class="s2">&#34;IP=0.0.0.0&#34;</span><span class="w">
+</span><span class="ln">17</span><span class="w">      </span>- <span class="s2">&#34;BIND_ADDRESS=0.0.0.0&#34;</span><span class="w">
+</span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="ln"> 1</span><span class="c1"># redis-cluster docker local deploy</span>
+<span class="ln"> 2</span>docker-compose -f redis-cluster-single-docker-compose.yaml up -d
+<span class="ln"> 3</span><span class="c1"># check cluster state is ok </span>
+<span class="ln"> 4</span>redis-cli -c -p <span class="m">26379</span> cluster info
+<span class="ln"> 5</span>
+<span class="ln"> 6</span><span class="c1"># rocketmq docker local deploy    </span>
+<span class="ln"> 7</span><span class="c1"># https://github.com/apache/rocketmq-docker</span>
+<span class="ln"> 8</span>git clone https://github.com/apache/rocketmq-docker.git
+<span class="ln"> 9</span><span class="nb">cd</span> image-build
+<span class="ln">10</span>sh build-image.sh 5.0.0 alpine
+<span class="ln">11</span><span class="nb">cd</span> ..
+<span class="ln">12</span>sh stage.sh 5.0.0
+<span class="ln">13</span><span class="nb">cd</span> stages/5.0.0
+<span class="ln">14</span><span class="c1"># run simple single node docker</span>
+<span class="ln">15</span>./play-docker.sh alpine
+<span class="ln">16</span>
+<span class="ln">17</span><span class="c1">#tidb local deploy</span>
+<span class="ln">18</span><span class="c1"># notice:</span>
+<span class="ln">19</span><span class="c1"># docker is not support</span>
+<span class="ln">20</span><span class="c1"># u should use deploy local tidb by tiup tool</span>
+<span class="ln">21</span><span class="c1"># see this https://docs.pingcap.com/tidb/dev/quick-start-with-tidb</span>
+<span class="ln">22</span>tiup playground
+<span class="ln">23</span>
+<span class="ln">24</span><span class="c1">#polardb-x docker local deploy by pxd tool</span>
+<span class="ln">25</span><span class="c1">#see this https://doc.polardbx.com/quickstart/topics/quickstart.html</span>
+<span class="ln">26</span>pxd tryout
+</code></pre></div></li>
+<li>
+<p>测试demo, redis cluster集群下的缓存事务和 tidb分布式缓存事务，rocketmq 分布式消息事务；1d</p>
+</li>
+<li>
+<p>核心服务模块开发支付中台接口 1d</p>
+</li>
+<li>
+<p>编写makefile, dockerfile, 打包成docker镜像， 整体解决方案依赖组件也可以通过docker-compose部署至docker容器中 1d</p>
+</li>
+<li>
+<p>编写相关k8s资源 (deployment,configmap,secret,pod,ingress)通过minikube/kind 部署至本地k8s集群 1d</p>
+</li>
+<li>
+<p>将服务网格化istio(xds流控)</p>
+</li>
 </ol>
 <p>开源开发框架和组件选择</p>
 <ol>
-<li>开发语言：golang + lua + shell</li>
-<li>开发框架：<a href="https://gin-gonic.com/zh-cn/docs/">gin</a></li>
-<li>DB：mysql, 高可用集群方案：不推荐自建sharding+proxy的方式；推荐使用支持mysql协议的分布式数据库，且无需在业务中考虑分库分表操作，以及分库分表的分布式事务；比如：开源方案 <a href="https://docs.pingcap.com/zh/">tidb</a>(shared nothing,scale out)，云厂商：<a href="https://polardbx.com/document">polardb-x</a> (shared nothing, scale out)/<a href="https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.html">aurora mysql</a> (shared disk, scale up),   <a href="https://gorm.io/">gorm</a></li>
-<li>Cache:  redis, 高可用集群方案 开源方案<a href="https://redis.io/docs/management/scaling/">redis-cluster</a>, <a href="https://github.com/RedisLabs/redis-cluster-proxy">redis-cluster-proxy</a>；云厂商proxy代理方式：<a href="https://help.aliyun.com/document_detail/52228.html">阿里云redis</a>,  或者支持redis cluster协议 底层利用rocksdb/leveldb 作为kv存储引擎的开源方案，比如<a href="https://github.com/apache/incubator-kvrocks">kvrocks</a>(watch命令暂未支持，可以使用lua脚本命令),  <a href="https://redis.uptrace.dev/guide/">go-redis</a></li>
-<li>MQ: rocketMQ, <a href="https://github.com/apache/rocketmq-client-go">rocketmq-client-go</a>,  如果使用阿里云rocketMQ使用对应<a href="https://github.com/apache/rocketmq-clients/tree/master/golang">client SDK</a></li>
-<li>服务编排流量治理：<a href="https://kubernetes.io/zh-cn/docs/home/">k8s</a> + <a href="https://istio.io/latest/docs/">istio</a></li>
+<li>
+<p>开发语言：golang + lua5.1 + shell</p>
+</li>
+<li>
+<p>开发框架：<a href="https://www.cloudwego.io/zh/docs/kitex/overview/">kitex</a>(统一规范化了gRPC和thrift的脚手架，常支持内部微服务，泛化调用+ proxyless xds流控) + <a href="https://www.cloudwego.io/zh/docs/hertz/overview/">hertz</a>(http协议框架，常支持外部业务前/后台, 数据渲染,请求校验)</p>
+</li>
+<li>
+<p>DB：mysql, 高可用集群方案：不推荐自建sharding+proxy的方式；推荐使用支持mysql协议的分布式数据库，且无需在业务中考虑分库分表操作，以及分库分表的分布式事务；比如：开源方案 <a href="https://docs.pingcap.com/zh/">tidb</a>(shared nothing,scale out)，云厂商：<a href="https://polardbx.com/document">polardb-x</a> (shared nothing, scale out)/<a href="https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.html">aurora mysql</a> (shared disk, scale up, aurora相关解读可以看下<a href="youtube.com/watch?v=jJSh54J1s5o">mit 6.824 Cloud Replicated DB, Aurora</a>),   <a href="https://gorm.io/">gorm</a></p>
+<p>Tips: 对应分布式事务操作tide有所不同，tidb和原生的mysql innodb引擎事务操作sql语句有些区别: <a href="https://docs.pingcap.com/zh/tidb/dev/transaction-overview">tidb transaction</a>, <a href="https://docs.pingcap.com/zh/tidb/dev/dev-guide-sample-application-golang">tidb-gorm-sample</a>；<a href="https://doc.polardbx.com/features/topics/distributed-transaction.html">polardb-x 分布式事务</a> 和 aurora 则原生支持事务操作sql语句;</p>
+</li>
+<li>
+<p>Cache:  redis, 高可用集群方案 开源方案<a href="https://redis.io/docs/management/scaling/">redis-cluster</a>, <a href="https://github.com/RedisLabs/redis-cluster-proxy">redis-cluster-proxy</a>；云厂商proxy代理方式：<a href="https://help.aliyun.com/document_detail/52228.html">阿里云redis</a>,  或者支持redis cluster协议 底层利用rocksdb/leveldb 作为kv存储引擎的开源方案，比如<a href="https://github.com/apache/incubator-kvrocks">kvrocks</a>(watch命令暂未支持，可以使用lua脚本命令),  <a href="https://redis.uptrace.dev/guide/">go-redis</a></p>
+</li>
+<li>
+<p>MQ: rocketMQ, <a href="https://github.com/apache/rocketmq-client-go">rocketmq-client-go</a>,  如果使用阿里云rocketMQ使用对应<a href="https://github.com/apache/rocketmq-clients/tree/master/golang">client SDK</a></p>
+</li>
+<li>
+<p>服务编排流量治理：<a href="https://kubernetes.io/zh-cn/docs/home/">k8s</a> + <a href="https://istio.io/latest/docs/">istio</a></p>
+</li>
 </ol>
 <p>tips: 在本地开发，可以通过docker compose 本地部署； 还可以通过docker+minikube/kind+helm 来部署本地节点的多pod集群版本数据库(mysql/tidb/polardb-x)，redis-cluster，以及集群版rocketMQ；以及开发完业务服务应用后，也可以部署在本地pod的容器中, 以便后续CI/CD自动化集成部署至多云容器服务/自托管的容器服务中，具体可参考<a href="https://jimmysong.io/kubernetes-handbook/practice/ci-cd.html">k8s ci/cd</a> , GitOps实践: <a href="https://cloudyuga.guru/blog/jenkins-argo">github-jenkins-argo</a> , <a href="https://www.jokerbai.com/archives/ji-yu-jenkins-he-argocd-shi-xian-devops">使用gitlab,Jenkins和Argocd实现CI/CD</a>, <a href="https://www.jokerbai.com/archives/shi-yong-argorollouts-shi-xian-jin-si-que-fa-bu">使用argo rollouts实现金丝雀发布</a></p>
 <p>无状态服务快速开发迭代大致自动化构建部署如下：</p>
 <p>CI:  begin -&gt; build(local makefile/test build, dockerfile build) -&gt; push docker registry(自建<a href="https://goharbor.io/docs/2.6.0/">harbor</a>或者云服务) -&gt; end  (gitlab/jenkins CI)</p>
 <p>CD: 分开发，测试，预发和生产环境，开发，测试直接单pod部署实例；预发双pod;  生产环境则分阶段部署和回滚：蓝绿部署/金丝雀(灰度)部署 (<a href="https://argo-cd.readthedocs.io/en/stable/">argo CD</a>, <a href="https://argoproj.github.io/argo-rollouts/">argo Rollouts</a>)</p>
 <p>有状态服务通过operator部署：</p>
+<p>polardb-x operator: <a href="https://doc.polardbx.com/operator/">https://doc.polardbx.com/operator/</a></p>
 <p>Tidb-operator: <a href="https://github.com/pingcap/tidb-operator">https://github.com/pingcap/tidb-operator</a></p>
 <p>Redis-cluster:   <a href="https://github.com/bitnami/charts/tree/main/bitnami/redis-cluster">https://github.com/bitnami/charts/tree/main/bitnami/redis-cluster</a> , <a href="https://kubedb.com/docs/v2022.10.18/guides/redis/clustering/redis-cluster/">https://kubedb.com/docs/v2022.10.18/guides/redis/clustering/redis-cluster/</a></p>
 <p>RocketMQ-operator on k8s: <a href="https://github.com/apache/rocketmq-operator">https://github.com/apache/rocketmq-operator</a></p>
@@ -1017,10 +1154,14 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 
 
 
+  <script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
 
 
 
 
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
 
 
 </body>

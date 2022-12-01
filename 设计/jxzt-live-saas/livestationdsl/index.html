@@ -58,6 +58,8 @@
 
 
 
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
 
 <meta property="og:title" content="" />
 <meta property="og:description" content="介绍 ​ 直播中台提供细粒度的场景和聚合接口操作，针对直播间场景，主播初始，开始，暂停，切换，结束直播间；观众初始，开始，切换，结束直播间；获取" />
@@ -69,7 +71,7 @@
 <meta itemprop="name" content="">
 <meta itemprop="description" content="介绍 ​ 直播中台提供细粒度的场景和聚合接口操作，针对直播间场景，主播初始，开始，暂停，切换，结束直播间；观众初始，开始，切换，结束直播间；获取">
 
-<meta itemprop="wordCount" content="302">
+<meta itemprop="wordCount" content="372">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content=""/>
 <meta name="twitter:description" content="介绍 ​ 直播中台提供细粒度的场景和聚合接口操作，针对直播间场景，主播初始，开始，暂停，切换，结束直播间；观众初始，开始，切换，结束直播间；获取"/>
@@ -324,81 +326,81 @@
 <p>​	直播中台提供细粒度的场景和聚合接口操作，针对直播间场景，主播初始，开始，暂停，切换，结束直播间；观众初始，开始，切换，结束直播间；获取直播间相关的辅助信息;</p>
 <p>​	抽象出2中action类型： 一个是场景action（事件触发），一个是聚合action（无状态数据，可聚合资源）；通过dsl进行描述，方便流程可配置，可视化，方便监控定位</p>
 <h5 id="场景action">场景action</h5>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-    <span style="color:#1e90ff;font-weight:bold">&#34;type&#34;</span>: <span style="color:#a50">&#34;sceneAction&#34;</span>,
-    <span style="color:#1e90ff;font-weight:bold">&#34;action&#34;</span>: {
-        <span style="color:#1e90ff;font-weight:bold">&#34;desc&#34;</span>: <span style="color:#a50">&#34;场景demo action&#34;</span>,
-        <span style="color:#1e90ff;font-weight:bold">&#34;name&#34;</span>: <span style="color:#a50">&#34;sceneDemoAction&#34;</span>,
-        <span style="color:#1e90ff;font-weight:bold">&#34;run&#34;</span>: [
-            {
-                <span style="color:#1e90ff;font-weight:bold">&#34;method&#34;</span>: <span style="color:#a50">&#34;M1&#34;</span>,
-                <span style="color:#1e90ff;font-weight:bold">&#34;required&#34;</span>: <span style="color:#00a">true</span>,
-                <span style="color:#1e90ff;font-weight:bold">&#34;requests&#34;</span>:[
-                    <span style="color:#a50">&#34;this.curRoomInfos&#34;</span>
-                ]
-            },
-            {
-                <span style="color:#1e90ff;font-weight:bold">&#34;method&#34;</span>: <span style="color:#a50">&#34;M2&#34;</span>,
-                <span style="color:#1e90ff;font-weight:bold">&#34;required&#34;</span>: <span style="color:#00a">true</span>,
-                <span style="color:#1e90ff;font-weight:bold">&#34;requests&#34;</span>:[
-                    <span style="color:#a50">&#34;this.lcsConfig&#34;</span>
-                ]
-            },
-            {
-                <span style="color:#1e90ff;font-weight:bold">&#34;method&#34;</span>: <span style="color:#a50">&#34;M3&#34;</span>,
-                <span style="color:#1e90ff;font-weight:bold">&#34;required&#34;</span>: <span style="color:#00a">true</span>,
-                <span style="color:#1e90ff;font-weight:bold">&#34;requests&#34;</span>:[
-                    <span style="color:#a50">&#34;this.streamInfos&#34;</span>
-                ]
-            },
-            {
-                <span style="color:#1e90ff;font-weight:bold">&#34;method&#34;</span>: <span style="color:#a50">&#34;M4&#34;</span>,
-                <span style="color:#1e90ff;font-weight:bold">&#34;required&#34;</span>: <span style="color:#00a">true</span>,
-                <span style="color:#1e90ff;font-weight:bold">&#34;requests&#34;</span>: [
-                    <span style="color:#a50">&#34;nmq.updateUserInfos,required&#34;</span>,
-                    <span style="color:#a50">&#34;nmq.updateStatus,required&#34;</span>
-                ]
-            }
-        ]
-    }
-}
-
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="ln"> 1</span><span class="p">{</span>
+<span class="ln"> 2</span>    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;sceneAction&#34;</span><span class="p">,</span>
+<span class="ln"> 3</span>    <span class="nt">&#34;action&#34;</span><span class="p">:</span> <span class="p">{</span>
+<span class="ln"> 4</span>        <span class="nt">&#34;desc&#34;</span><span class="p">:</span> <span class="s2">&#34;场景demo action&#34;</span><span class="p">,</span>
+<span class="ln"> 5</span>        <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;sceneDemoAction&#34;</span><span class="p">,</span>
+<span class="ln"> 6</span>        <span class="nt">&#34;run&#34;</span><span class="p">:</span> <span class="p">[</span>
+<span class="ln"> 7</span>            <span class="p">{</span>
+<span class="ln"> 8</span>                <span class="nt">&#34;method&#34;</span><span class="p">:</span> <span class="s2">&#34;M1&#34;</span><span class="p">,</span>
+<span class="ln"> 9</span>                <span class="nt">&#34;required&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+<span class="ln">10</span>                <span class="nt">&#34;requests&#34;</span><span class="p">:[</span>
+<span class="ln">11</span>                    <span class="s2">&#34;this.curRoomInfos&#34;</span>
+<span class="ln">12</span>                <span class="p">]</span>
+<span class="ln">13</span>            <span class="p">},</span>
+<span class="ln">14</span>            <span class="p">{</span>
+<span class="ln">15</span>                <span class="nt">&#34;method&#34;</span><span class="p">:</span> <span class="s2">&#34;M2&#34;</span><span class="p">,</span>
+<span class="ln">16</span>                <span class="nt">&#34;required&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+<span class="ln">17</span>                <span class="nt">&#34;requests&#34;</span><span class="p">:[</span>
+<span class="ln">18</span>                    <span class="s2">&#34;this.lcsConfig&#34;</span>
+<span class="ln">19</span>                <span class="p">]</span>
+<span class="ln">20</span>            <span class="p">},</span>
+<span class="ln">21</span>            <span class="p">{</span>
+<span class="ln">22</span>                <span class="nt">&#34;method&#34;</span><span class="p">:</span> <span class="s2">&#34;M3&#34;</span><span class="p">,</span>
+<span class="ln">23</span>                <span class="nt">&#34;required&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+<span class="ln">24</span>                <span class="nt">&#34;requests&#34;</span><span class="p">:[</span>
+<span class="ln">25</span>                    <span class="s2">&#34;this.streamInfos&#34;</span>
+<span class="ln">26</span>                <span class="p">]</span>
+<span class="ln">27</span>            <span class="p">},</span>
+<span class="ln">28</span>            <span class="p">{</span>
+<span class="ln">29</span>                <span class="nt">&#34;method&#34;</span><span class="p">:</span> <span class="s2">&#34;M4&#34;</span><span class="p">,</span>
+<span class="ln">30</span>                <span class="nt">&#34;required&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+<span class="ln">31</span>                <span class="nt">&#34;requests&#34;</span><span class="p">:</span> <span class="p">[</span>
+<span class="ln">32</span>                    <span class="s2">&#34;nmq.updateUserInfos,required&#34;</span><span class="p">,</span>
+<span class="ln">33</span>                    <span class="s2">&#34;nmq.updateStatus,required&#34;</span>
+<span class="ln">34</span>                <span class="p">]</span>
+<span class="ln">35</span>            <span class="p">}</span>
+<span class="ln">36</span>        <span class="p">]</span>
+<span class="ln">37</span>    <span class="p">}</span>
+<span class="ln">38</span><span class="p">}</span>
+<span class="ln">39</span>
 </code></pre></div><h5 id="聚合action">聚合action</h5>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-    <span style="color:#1e90ff;font-weight:bold">&#34;type&#34;</span>: <span style="color:#a50">&#34;aggrAction&#34;</span>,
-    <span style="color:#1e90ff;font-weight:bold">&#34;action&#34;</span>: {
-        <span style="color:#1e90ff;font-weight:bold">&#34;name&#34;</span>: <span style="color:#a50">&#34;aggrDemo&#34;</span>,
-        <span style="color:#1e90ff;font-weight:bold">&#34;desc&#34;</span>: <span style="color:#a50">&#34;聚合demo action&#34;</span>,
-        <span style="color:#1e90ff;font-weight:bold">&#34;concurrency&#34;</span>: <span style="color:#00a">false</span>,
-        <span style="color:#1e90ff;font-weight:bold">&#34;properties&#34;</span>: [
-        {
-            <span style="color:#1e90ff;font-weight:bold">&#34;field&#34;</span>: <span style="color:#a50">&#34;clarityCdnList&#34;</span>,
-            <span style="color:#1e90ff;font-weight:bold">&#34;fieldType&#34;</span>:<span style="color:#a50">&#34;&#34;</span>,
-            <span style="color:#1e90ff;font-weight:bold">&#34;method&#34;</span>:<span style="color:#a50">&#34;GetPullAddress&#34;</span>
-        },
-        {
-            <span style="color:#1e90ff;font-weight:bold">&#34;field&#34;</span>: <span style="color:#a50">&#34;pullAddress&#34;</span>,
-            <span style="color:#1e90ff;font-weight:bold">&#34;method&#34;</span>:<span style="color:#a50">&#34;GetPullAddress&#34;</span>
-        },
-        {
-            <span style="color:#1e90ff;font-weight:bold">&#34;field&#34;</span>: <span style="color:#a50">&#34;streamRoomId&#34;</span>,
-            <span style="color:#1e90ff;font-weight:bold">&#34;fieldType&#34;</span>:<span style="color:#a50">&#34;&#34;</span>,
-            <span style="color:#1e90ff;font-weight:bold">&#34;method&#34;</span>:<span style="color:#a50">&#34;GetStreamInfo&#34;</span>
-        },
-        {
-            <span style="color:#1e90ff;font-weight:bold">&#34;field&#34;</span>: <span style="color:#a50">&#34;appId&#34;</span>,
-            <span style="color:#1e90ff;font-weight:bold">&#34;fieldType&#34;</span>:<span style="color:#a50">&#34;&#34;</span>,
-            <span style="color:#1e90ff;font-weight:bold">&#34;method&#34;</span>:<span style="color:#a50">&#34;GetStreamInfo&#34;</span>
-        },
-        {
-            <span style="color:#1e90ff;font-weight:bold">&#34;field&#34;</span>: <span style="color:#a50">&#34;token&#34;</span>,
-            <span style="color:#1e90ff;font-weight:bold">&#34;fieldType&#34;</span>:<span style="color:#a50">&#34;&#34;</span>,
-            <span style="color:#1e90ff;font-weight:bold">&#34;method&#34;</span>:<span style="color:#a50">&#34;GetStreamInfo&#34;</span>
-        }
-        ]
-    }
-}
-
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="ln"> 1</span><span class="p">{</span>
+<span class="ln"> 2</span>    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;aggrAction&#34;</span><span class="p">,</span>
+<span class="ln"> 3</span>    <span class="nt">&#34;action&#34;</span><span class="p">:</span> <span class="p">{</span>
+<span class="ln"> 4</span>        <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;aggrDemo&#34;</span><span class="p">,</span>
+<span class="ln"> 5</span>        <span class="nt">&#34;desc&#34;</span><span class="p">:</span> <span class="s2">&#34;聚合demo action&#34;</span><span class="p">,</span>
+<span class="ln"> 6</span>        <span class="nt">&#34;concurrency&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+<span class="ln"> 7</span>        <span class="nt">&#34;properties&#34;</span><span class="p">:</span> <span class="p">[</span>
+<span class="ln"> 8</span>        <span class="p">{</span>
+<span class="ln"> 9</span>            <span class="nt">&#34;field&#34;</span><span class="p">:</span> <span class="s2">&#34;clarityCdnList&#34;</span><span class="p">,</span>
+<span class="ln">10</span>            <span class="nt">&#34;fieldType&#34;</span><span class="p">:</span><span class="s2">&#34;&#34;</span><span class="p">,</span>
+<span class="ln">11</span>            <span class="nt">&#34;method&#34;</span><span class="p">:</span><span class="s2">&#34;GetPullAddress&#34;</span>
+<span class="ln">12</span>        <span class="p">},</span>
+<span class="ln">13</span>        <span class="p">{</span>
+<span class="ln">14</span>            <span class="nt">&#34;field&#34;</span><span class="p">:</span> <span class="s2">&#34;pullAddress&#34;</span><span class="p">,</span>
+<span class="ln">15</span>            <span class="nt">&#34;method&#34;</span><span class="p">:</span><span class="s2">&#34;GetPullAddress&#34;</span>
+<span class="ln">16</span>        <span class="p">},</span>
+<span class="ln">17</span>        <span class="p">{</span>
+<span class="ln">18</span>            <span class="nt">&#34;field&#34;</span><span class="p">:</span> <span class="s2">&#34;streamRoomId&#34;</span><span class="p">,</span>
+<span class="ln">19</span>            <span class="nt">&#34;fieldType&#34;</span><span class="p">:</span><span class="s2">&#34;&#34;</span><span class="p">,</span>
+<span class="ln">20</span>            <span class="nt">&#34;method&#34;</span><span class="p">:</span><span class="s2">&#34;GetStreamInfo&#34;</span>
+<span class="ln">21</span>        <span class="p">},</span>
+<span class="ln">22</span>        <span class="p">{</span>
+<span class="ln">23</span>            <span class="nt">&#34;field&#34;</span><span class="p">:</span> <span class="s2">&#34;appId&#34;</span><span class="p">,</span>
+<span class="ln">24</span>            <span class="nt">&#34;fieldType&#34;</span><span class="p">:</span><span class="s2">&#34;&#34;</span><span class="p">,</span>
+<span class="ln">25</span>            <span class="nt">&#34;method&#34;</span><span class="p">:</span><span class="s2">&#34;GetStreamInfo&#34;</span>
+<span class="ln">26</span>        <span class="p">},</span>
+<span class="ln">27</span>        <span class="p">{</span>
+<span class="ln">28</span>            <span class="nt">&#34;field&#34;</span><span class="p">:</span> <span class="s2">&#34;token&#34;</span><span class="p">,</span>
+<span class="ln">29</span>            <span class="nt">&#34;fieldType&#34;</span><span class="p">:</span><span class="s2">&#34;&#34;</span><span class="p">,</span>
+<span class="ln">30</span>            <span class="nt">&#34;method&#34;</span><span class="p">:</span><span class="s2">&#34;GetStreamInfo&#34;</span>
+<span class="ln">31</span>        <span class="p">}</span>
+<span class="ln">32</span>        <span class="p">]</span>
+<span class="ln">33</span>    <span class="p">}</span>
+<span class="ln">34</span><span class="p">}</span>
+<span class="ln">35</span>
 </code></pre></div>
   </div>
 
@@ -583,10 +585,14 @@
 
 
 
+  <script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
 
 
 
 
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
 
 
 </body>

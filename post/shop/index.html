@@ -60,6 +60,8 @@
 
 
 
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
 
 <meta property="og:title" content="全栈开发" />
 <meta property="og:description" content="介绍
@@ -75,7 +77,7 @@
 以前工作中有过前端的开发经验，使用后端模版Smarty(主要是外部需求，现在新项目中应该很少使用这个了)，前端模版Mustache，页面中使用 js jquery交互逻辑，直接服用一些开源的UI组件Bootstrap，开源的后台UI系统，主要是建设内部后台的时候使用，自动生成CRUD页面；前端的技术栈更新迭代相对后端快些，通过以全栈技术栈为切入点，通过一个简单的系统，学习下最新技术栈工具，主要目的如下：
 根据需求，实现一个简单功能的购物系统，目的是为了学习ts-&gt;js on node.js全栈开发，了解整体开发构建工具，熟悉下工具开发流程，主要还是了解前端框架工具的使用，以及熟悉通过js运行时环境运行在后端服务上的应用开发工具，以便在后续开发后台系统的时候可以熟练使用这些技术进行开发，这些工具的设计思想可以借鉴到其他后端业务开发语言中。"><meta itemprop="datePublished" content="2022-01-02T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2022-01-02T10:26:23+08:00" />
-<meta itemprop="wordCount" content="4022">
+<meta itemprop="wordCount" content="4042">
 <meta itemprop="keywords" content="全栈," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="全栈开发"/>
 <meta name="twitter:description" content="介绍
@@ -681,78 +683,78 @@
 <p><a href="https://docs.adonisjs.com/guides/auth/introduction">Authentication</a>: using <strong>sessions</strong>, <strong>basic auth</strong> or <strong>API tokens(JWT, OAT)</strong></p>
 <p><a href="https://docs.adonisjs.com/guides/events">Events</a>: define evens listener  to listen async event on(eventName,callback) , then emit event to tigger regist event&rsquo;s callback; eg: new user to emit event callback to send email (DIY events Listenner, start preload events)</p>
 <p>通过adonis-ts-app demo 初始化一个app:</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#aaa;font-style:italic">#new project</span>
-npm init adonis-ts-app@latest shop-backend
-npm init adonis-ts-app@latest shop-admin-backend
-<span style="color:#aaa;font-style:italic">#install package for mysql </span>
-npm i @adonisjs/lucid@alpha
-<span style="color:#aaa;font-style:italic">#invoke package to select mysql for ace make:model and migration table</span>
-node ace configure(invoke) @adonisjs/lucid
-<span style="color:#aaa;font-style:italic">#install mysql2</span>
-npm install mysql2
-<span style="color:#aaa;font-style:italic">#modify config/database.ts use mysql client: mysql2</span>
-
-<span style="color:#aaa;font-style:italic">#install auth middleware</span>
-npm i @adonisjs/auth@alpha
-<span style="color:#aaa;font-style:italic">#install Argon2 password hashing algorithm following the PHC string format</span>
-npm install phc-argon2
-<span style="color:#aaa;font-style:italic">#invoke package to select lucid and api tokens</span>
-<span style="color:#aaa;font-style:italic"># https://docs.adonisjs.com/guides/auth/introduction</span>
-node ace invoke @adonisjs/auth
-<span style="color:#aaa;font-style:italic"># rigister auth naming middleware in start/kernel.js  auth: &#39;App/Middleware/Auth&#39;,</span>
-<span style="color:#aaa;font-style:italic"># add auth middleware for router in start/router.js  </span>
-<span style="color:#aaa;font-style:italic"># use database-backed opaque access token</span>
-<span style="color:#aaa;font-style:italic"># demo: https://dev.to/tngeene/adonisjs-understanding-user-registration-and-authentication-2ojl</span>
-<span style="color:#aaa;font-style:italic"># for session auth</span>
-npm i @adonisjs/session 
-<span style="color:#aaa;font-style:italic"># for CSRF token protection</span>
-npm i @adonisjs/shield 
-<span style="color:#aaa;font-style:italic">#invoke add fhield global middleware in start/kernel.js () =&gt; import(&#39;@ioc:Adonis/Addons/Shield&#39;)</span>
-node ace invoke @adonisjs/shield
-
-<span style="color:#aaa;font-style:italic">#change .env modify mysql conf</span>
-<span style="color:#aaa;font-style:italic">#migration table</span>
-node ace make:migration {table}
-<span style="color:#aaa;font-style:italic">#migration create/rollback table</span>
-node ace migration:run / node ace migration:rollback
-
-<span style="color:#aaa;font-style:italic">#then u can use ace to make a new model app/Models/***.ts</span>
-node ace make:model ***
-<span style="color:#aaa;font-style:italic">#then u can use ace to make a new app/Controllers/Http/***Controller.ts</span>
-node ace make:controller ***
-<span style="color:#aaa;font-style:italic">#if use edge tpl, u can use ace to make a new view to render tpl</span>
-node ace make:view ***
-<span style="color:#aaa;font-style:italic">#if valide request param, u can use ace to make a new volidator</span>
-<span style="color:#aaa;font-style:italic">#https://docs.adonisjs.com/guides/validator/introduction</span>
-node ace make:validator ***
-<span style="color:#aaa;font-style:italic">#or diy validate rules</span>
-node ace make:prldfile validator
-
-<span style="color:#aaa;font-style:italic">#make events to gen start/events.ts for listen on(eventName,callback)</span>
-node ace make:prldfile events
-<span style="color:#aaa;font-style:italic">#or make listener to listen on eventsList </span>
-node ace make:listener ***
-
-
-<span style="color:#aaa;font-style:italic">#make a middleware like auth middleware;</span>
-<span style="color:#aaa;font-style:italic">#transmit by ctx, ctx-&gt;ctx-&gt;ctx to next()</span>
-<span style="color:#aaa;font-style:italic">#eg: u can make a user action log middleware to analyse or A/B test for recommended system</span>
-<span style="color:#aaa;font-style:italic">#https://docs.adonisjs.com/guides/middleware</span>
-node ace make:middleware ***
-
-<span style="color:#aaa;font-style:italic"># https://github.com/luin/ioredis/blob/master/API.md</span>
-<span style="color:#aaa;font-style:italic"># https://docs.adonisjs.com/guides/redis</span>
-<span style="color:#aaa;font-style:italic">#install redis</span>
-npm i @adonisjs/redis
-node ace configure @adonisjs/redis
-
-<span style="color:#aaa;font-style:italic"># https://www.npmjs.com/package/@elastic/elasticsearch</span>
-<span style="color:#aaa;font-style:italic"># https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/typescript.html</span>
-npm i @elastic/elasticsearch
-
-
-<span style="color:#aaa;font-style:italic"># watch run </span>
-node ace serve --watch
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="ln"> 1</span><span class="c1">#new project</span>
+<span class="ln"> 2</span>npm init adonis-ts-app@latest shop-backend
+<span class="ln"> 3</span>npm init adonis-ts-app@latest shop-admin-backend
+<span class="ln"> 4</span><span class="c1">#install package for mysql </span>
+<span class="ln"> 5</span>npm i @adonisjs/lucid@alpha
+<span class="ln"> 6</span><span class="c1">#invoke package to select mysql for ace make:model and migration table</span>
+<span class="ln"> 7</span>node ace configure<span class="o">(</span>invoke<span class="o">)</span> @adonisjs/lucid
+<span class="ln"> 8</span><span class="c1">#install mysql2</span>
+<span class="ln"> 9</span>npm install mysql2
+<span class="ln">10</span><span class="c1">#modify config/database.ts use mysql client: mysql2</span>
+<span class="ln">11</span>
+<span class="ln">12</span><span class="c1">#install auth middleware</span>
+<span class="ln">13</span>npm i @adonisjs/auth@alpha
+<span class="ln">14</span><span class="c1">#install Argon2 password hashing algorithm following the PHC string format</span>
+<span class="ln">15</span>npm install phc-argon2
+<span class="ln">16</span><span class="c1">#invoke package to select lucid and api tokens</span>
+<span class="ln">17</span><span class="c1"># https://docs.adonisjs.com/guides/auth/introduction</span>
+<span class="ln">18</span>node ace invoke @adonisjs/auth
+<span class="ln">19</span><span class="c1"># rigister auth naming middleware in start/kernel.js  auth: &#39;App/Middleware/Auth&#39;,</span>
+<span class="ln">20</span><span class="c1"># add auth middleware for router in start/router.js  </span>
+<span class="ln">21</span><span class="c1"># use database-backed opaque access token</span>
+<span class="ln">22</span><span class="c1"># demo: https://dev.to/tngeene/adonisjs-understanding-user-registration-and-authentication-2ojl</span>
+<span class="ln">23</span><span class="c1"># for session auth</span>
+<span class="ln">24</span>npm i @adonisjs/session 
+<span class="ln">25</span><span class="c1"># for CSRF token protection</span>
+<span class="ln">26</span>npm i @adonisjs/shield 
+<span class="ln">27</span><span class="c1">#invoke add fhield global middleware in start/kernel.js () =&gt; import(&#39;@ioc:Adonis/Addons/Shield&#39;)</span>
+<span class="ln">28</span>node ace invoke @adonisjs/shield
+<span class="ln">29</span>
+<span class="ln">30</span><span class="c1">#change .env modify mysql conf</span>
+<span class="ln">31</span><span class="c1">#migration table</span>
+<span class="ln">32</span>node ace make:migration <span class="o">{</span>table<span class="o">}</span>
+<span class="ln">33</span><span class="c1">#migration create/rollback table</span>
+<span class="ln">34</span>node ace migration:run / node ace migration:rollback
+<span class="ln">35</span>
+<span class="ln">36</span><span class="c1">#then u can use ace to make a new model app/Models/***.ts</span>
+<span class="ln">37</span>node ace make:model ***
+<span class="ln">38</span><span class="c1">#then u can use ace to make a new app/Controllers/Http/***Controller.ts</span>
+<span class="ln">39</span>node ace make:controller ***
+<span class="ln">40</span><span class="c1">#if use edge tpl, u can use ace to make a new view to render tpl</span>
+<span class="ln">41</span>node ace make:view ***
+<span class="ln">42</span><span class="c1">#if valide request param, u can use ace to make a new volidator</span>
+<span class="ln">43</span><span class="c1">#https://docs.adonisjs.com/guides/validator/introduction</span>
+<span class="ln">44</span>node ace make:validator ***
+<span class="ln">45</span><span class="c1">#or diy validate rules</span>
+<span class="ln">46</span>node ace make:prldfile validator
+<span class="ln">47</span>
+<span class="ln">48</span><span class="c1">#make events to gen start/events.ts for listen on(eventName,callback)</span>
+<span class="ln">49</span>node ace make:prldfile events
+<span class="ln">50</span><span class="c1">#or make listener to listen on eventsList </span>
+<span class="ln">51</span>node ace make:listener ***
+<span class="ln">52</span>
+<span class="ln">53</span>
+<span class="ln">54</span><span class="c1">#make a middleware like auth middleware;</span>
+<span class="ln">55</span><span class="c1">#transmit by ctx, ctx-&gt;ctx-&gt;ctx to next()</span>
+<span class="ln">56</span><span class="c1">#eg: u can make a user action log middleware to analyse or A/B test for recommended system</span>
+<span class="ln">57</span><span class="c1">#https://docs.adonisjs.com/guides/middleware</span>
+<span class="ln">58</span>node ace make:middleware ***
+<span class="ln">59</span>
+<span class="ln">60</span><span class="c1"># https://github.com/luin/ioredis/blob/master/API.md</span>
+<span class="ln">61</span><span class="c1"># https://docs.adonisjs.com/guides/redis</span>
+<span class="ln">62</span><span class="c1">#install redis</span>
+<span class="ln">63</span>npm i @adonisjs/redis
+<span class="ln">64</span>node ace configure @adonisjs/redis
+<span class="ln">65</span>
+<span class="ln">66</span><span class="c1"># https://www.npmjs.com/package/@elastic/elasticsearch</span>
+<span class="ln">67</span><span class="c1"># https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/typescript.html</span>
+<span class="ln">68</span>npm i @elastic/elasticsearch
+<span class="ln">69</span>
+<span class="ln">70</span>
+<span class="ln">71</span><span class="c1"># watch run </span>
+<span class="ln">72</span>node ace serve --watch
 </code></pre></div><h3 id="前端开发">前端开发</h3>
 <p>Shop-frontend, shop-admin-frontend 前端页面逻辑，使用TypeScript+ Vue.js(前端开发框架) + ElementUI组件 通过vite构建本地开发(CI过程通过webpack打包生成静态资源，通过CD部署到边缘CDN节点)，开发环境具体操作如下：</p>
 <p>Vue.js 3 + TypeScript + Vite + ElementUI-plus</p>
@@ -760,44 +762,44 @@ node ace serve --watch
 <p><a href="https://axios-http.com/zh/docs/intro">axios</a>: HTTP 网络client请求库;</p>
 <p><a href="https://next.vuex.vuejs.org/zh/index.html">vuex</a>: state management pattern + library stat/view/actions like MVC;</p>
 <p><a href="https://vee-validate.logaretm.com/v4/guide/overview">vee-validate</a>: form validation;  <a href="https://www.npmjs.com/package/yup">yup</a>:  data schema validation;</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#aaa;font-style:italic"># install vue cli</span>
-npm install -g @vue/cli
-<span style="color:#aaa;font-style:italic"># u can use vue create app use vue.js v3</span>
-<span style="color:#aaa;font-style:italic"># vue create vue-app &amp; cd vue-app</span>
-<span style="color:#aaa;font-style:italic"># vue add element-plus</span>
-
-<span style="color:#aaa;font-style:italic"># or use vite build vue.js v3 project app</span>
-npm init @vitejs/app shop-frontend 
-npm init @vitejs/app shop-admin-frontend
-
-<span style="color:#aaa;font-style:italic"># eg: shop-frontend</span>
-<span style="color:#0aa">cd</span> shop-frontend (shop-admin-frontend)
-<span style="color:#aaa;font-style:italic"># choose vue-ts when install</span>
-npm install
-
-<span style="color:#aaa;font-style:italic"># install vue-router4, https://next.router.vuejs.org/zh/</span>
-npm install vue-router@4
-
-<span style="color:#aaa;font-style:italic"># install axios https://axios-http.com/zh/docs/intro</span>
-npm install axios
-
-<span style="color:#aaa;font-style:italic"># install vuex, nice design(state management pattern + library stat/view/actions like MVC)  </span>
-<span style="color:#aaa;font-style:italic"># https://next.vuex.vuejs.org/zh/index.html</span>
-npm install vuex@next --save
-
-<span style="color:#aaa;font-style:italic"># install vee-validate, https://vee-validate.logaretm.com/v4/guide/overview</span>
-npm i vee-validate@next --save
-
-
-<span style="color:#aaa;font-style:italic">#install element-plus ui</span>
-npm install element-plus --save
-npm i -D sass
-<span style="color:#aaa;font-style:italic">#auto import </span>
-npm install -D unplugin-vue-components unplugin-auto-import
-
-<span style="color:#aaa;font-style:italic"># run local vue dev runtime app service (vite --port 5000 --host)</span>
-npm run dev
-
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="ln"> 1</span><span class="c1"># install vue cli</span>
+<span class="ln"> 2</span>npm install -g @vue/cli
+<span class="ln"> 3</span><span class="c1"># u can use vue create app use vue.js v3</span>
+<span class="ln"> 4</span><span class="c1"># vue create vue-app &amp; cd vue-app</span>
+<span class="ln"> 5</span><span class="c1"># vue add element-plus</span>
+<span class="ln"> 6</span>
+<span class="ln"> 7</span><span class="c1"># or use vite build vue.js v3 project app</span>
+<span class="ln"> 8</span>npm init @vitejs/app shop-frontend 
+<span class="ln"> 9</span>npm init @vitejs/app shop-admin-frontend
+<span class="ln">10</span>
+<span class="ln">11</span><span class="c1"># eg: shop-frontend</span>
+<span class="ln">12</span><span class="nb">cd</span> shop-frontend <span class="o">(</span>shop-admin-frontend<span class="o">)</span>
+<span class="ln">13</span><span class="c1"># choose vue-ts when install</span>
+<span class="ln">14</span>npm install
+<span class="ln">15</span>
+<span class="ln">16</span><span class="c1"># install vue-router4, https://next.router.vuejs.org/zh/</span>
+<span class="ln">17</span>npm install vue-router@4
+<span class="ln">18</span>
+<span class="ln">19</span><span class="c1"># install axios https://axios-http.com/zh/docs/intro</span>
+<span class="ln">20</span>npm install axios
+<span class="ln">21</span>
+<span class="ln">22</span><span class="c1"># install vuex, nice design(state management pattern + library stat/view/actions like MVC)  </span>
+<span class="ln">23</span><span class="c1"># https://next.vuex.vuejs.org/zh/index.html</span>
+<span class="ln">24</span>npm install vuex@next --save
+<span class="ln">25</span>
+<span class="ln">26</span><span class="c1"># install vee-validate, https://vee-validate.logaretm.com/v4/guide/overview</span>
+<span class="ln">27</span>npm i vee-validate@next --save
+<span class="ln">28</span>
+<span class="ln">29</span>
+<span class="ln">30</span><span class="c1">#install element-plus ui</span>
+<span class="ln">31</span>npm install element-plus --save
+<span class="ln">32</span>npm i -D sass
+<span class="ln">33</span><span class="c1">#auto import </span>
+<span class="ln">34</span>npm install -D unplugin-vue-components unplugin-auto-import
+<span class="ln">35</span>
+<span class="ln">36</span><span class="c1"># run local vue dev runtime app service (vite --port 5000 --host)</span>
+<span class="ln">37</span>npm run dev
+<span class="ln">38</span>
 </code></pre></div><p>附具体代码(Monolith版本, 后端状态存储数据读写使用同一个数据源)：</p>
 <ol>
 <li><a href="https://github.com/weedge/backend-adonisjs-api/tree/main/shop-admin-backend">Shop-admin-backend</a> : 后台管理系统，为了方便后续根据数据库表一键生成CURD代码，采用后端模版edge template；用户管理可以采用内部公司用户平台SSO单点登录获取ticket的方式，或者使用框架本身的身份认证功能进行后台模块的权限管理(web authentication)</li>
@@ -1051,10 +1053,14 @@ npm run dev
 
 
 
+  <script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
 
 
 
 
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
 
 
 </body>

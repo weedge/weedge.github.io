@@ -58,6 +58,8 @@
 
 
 
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
 
 <meta property="og:title" content="" />
 <meta property="og:description" content="介绍 上文提到通过用户的行为数据存放在S3中，这些数据包括结构化和非结构化数据，怎么让这些数据变得有价值呢？一种是人为进行数据挖掘，对相关指标" />
@@ -69,7 +71,7 @@
 <meta itemprop="name" content="">
 <meta itemprop="description" content="介绍 上文提到通过用户的行为数据存放在S3中，这些数据包括结构化和非结构化数据，怎么让这些数据变得有价值呢？一种是人为进行数据挖掘，对相关指标">
 
-<meta itemprop="wordCount" content="2483">
+<meta itemprop="wordCount" content="2487">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content=""/>
 <meta name="twitter:description" content="介绍 上文提到通过用户的行为数据存放在S3中，这些数据包括结构化和非结构化数据，怎么让这些数据变得有价值呢？一种是人为进行数据挖掘，对相关指标"/>
@@ -336,13 +338,13 @@
 <h3 id="模型训练">模型训练</h3>
 <p>相关库：</p>
 <p><a href="https://xgboost.ai/">XGBoost</a>,  <a href="https://en.wikipedia.org/wiki/Gradient_boosting">Gradient Boosting</a>框架下实现机器学习算法。XGBoost 提供了一种并行树提升（也称为 <a href="https://developers.google.com/machine-learning/decision-forests/intro-to-gbdt">GBDT</a>、GBM），可以快速准确地解决许多数据科学问题。支持在多台机器上进行分布式训练，包括 AWS、GCE、Azure 和 Yarn 集群；可与 Flink、Spark 等云数据流系统集成。</p>
-<pre tabindex="0"><code>如果说把机器学习问题分成，常规机器学习（conventional machine learning）和深度学习（deep learning）的话，那么XGBoost就是在常规ML竞赛获奖最多的算法。[XGBoost](https://github.com/dmlc/xgboost) 的全称是 Extreme Gradient Boosting，是gradient boosting的一种开源实现。gradient boosting 把若干弱模型通过决策树的方式聚合（ensemble）在一起， 形成一个最终的模型，这个过程是一个持续的、不断迭代优化过程，每次迭代优化的方向通过计算loss function的梯度来实现，然后采取梯度下降的方式不断的降低loss function，从而得到一个最终的模型。
-
-XGBoost最常用来解决常规ML中的分类（regression）和回归（classification）问题。回归问题，举例来说：根据一个人的年龄、职业、居住环境等个人信息推算出这个人的收入，这种推理的结果是一个连续的值（收入）的情况就是一个回归问题；分类问题，比如在欺诈检测中，根据有关交易的信息，来判断交易是不是欺诈，这里的判断是或者否就是一个二分类问题。通常这两类问题都是给出一个表格类型数据，表格中的每列数据都是跟推理的目标（属于某个分类或者推理值）有着潜在关系的数据，XGBoost特别擅长处理这类的表格数据（tabular data），并据此作出推断。对于表格数据，无非由行、列来组成，在ML中对于表格数据中的行和列，我们有很多约定俗称的称谓，在各种关于ML的文章中这些称谓会经常出现，为了便于大家理解，在这里对这些叫法做一个梳理：
-
-- 行（row），叫做一个观察（observation），或者一个样本（sample）
-- 列（column） ，也叫字段（field），属性（attribute），或者特征（feature）
-</code></pre><p><a href="https://keras.io/zh/">keras</a>: 深度学习模型库，高级神经网络,同时支持卷积神经网络和循环神经网络，以及两者的组合。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="ln">1</span>如果说把机器学习问题分成，常规机器学习（conventional machine learning）和深度学习（deep learning）的话，那么XGBoost就是在常规ML竞赛获奖最多的算法。[XGBoost](https://github.com/dmlc/xgboost) 的全称是 Extreme Gradient Boosting，是gradient boosting的一种开源实现。gradient boosting 把若干弱模型通过决策树的方式聚合（ensemble）在一起， 形成一个最终的模型，这个过程是一个持续的、不断迭代优化过程，每次迭代优化的方向通过计算loss function的梯度来实现，然后采取梯度下降的方式不断的降低loss function，从而得到一个最终的模型。
+<span class="ln">2</span>
+<span class="ln">3</span>XGBoost最常用来解决常规ML中的分类（regression）和回归（classification）问题。回归问题，举例来说：根据一个人的年龄、职业、居住环境等个人信息推算出这个人的收入，这种推理的结果是一个连续的值（收入）的情况就是一个回归问题；分类问题，比如在欺诈检测中，根据有关交易的信息，来判断交易是不是欺诈，这里的判断是或者否就是一个二分类问题。通常这两类问题都是给出一个表格类型数据，表格中的每列数据都是跟推理的目标（属于某个分类或者推理值）有着潜在关系的数据，XGBoost特别擅长处理这类的表格数据（tabular data），并据此作出推断。对于表格数据，无非由行、列来组成，在ML中对于表格数据中的行和列，我们有很多约定俗称的称谓，在各种关于ML的文章中这些称谓会经常出现，为了便于大家理解，在这里对这些叫法做一个梳理：
+<span class="ln">4</span>
+<span class="ln">5</span>- 行（row），叫做一个观察（observation），或者一个样本（sample）
+<span class="ln">6</span>- 列（column） ，也叫字段（field），属性（attribute），或者特征（feature）
+</code></pre></div><p><a href="https://keras.io/zh/">keras</a>: 深度学习模型库，高级神经网络,同时支持卷积神经网络和循环神经网络，以及两者的组合。</p>
 <h3 id="模型评估">模型评估</h3>
 <h3 id="模型部署">模型部署</h3>
 <p>如果使用<a href="https://www.tensorflow.org/">TF</a>(tensorflow)框架, 使用TF <a href="https://github.com/tensorflow/serving">serving</a>来支持加载训练好的模型发布到生产环境，并且可以进行A/B测试；</p>
@@ -580,10 +582,14 @@ XGBoost最常用来解决常规ML中的分类（regression）和回归（classif
 
 
 
+  <script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
 
 
 
 
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
 
 
 </body>

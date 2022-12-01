@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="策略模型 package main import ( &amp;#34;sync/atomic&amp;#34; &amp;#34;time&amp;#34; ) func loadConfig() map[string]string { // 从数据库或者文件系统中读取配置信息，然后以map的形式存放在内存里 return make(map[string]string) } func requests() chan int { // 将从外界中接受到的请求放" />
+  <meta name="description" content="策略模型 1package main 2 3import ( 4 &amp;#34;sync/atomic&amp;#34; 5 &amp;#34;time&amp;#34; 6) 7 8func loadConfig() map[string]string { 9 // 从数据库或者文件系统中读取配置信息，然后以map的形式存放在内存里 10 return make(map[string]string) 11} 12 13func requests() chan int { 14 // 将从外界" />
 
   <meta name="keywords" content="工作, 技术, 生活" />
 
@@ -58,21 +58,23 @@
 
 
 
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
 
 <meta property="og:title" content="policy worker" />
-<meta property="og:description" content="策略模型 package main import ( &#34;sync/atomic&#34; &#34;time&#34; ) func loadConfig() map[string]string { // 从数据库或者文件系统中读取配置信息，然后以map的形式存放在内存里 return make(map[string]string) } func requests() chan int { // 将从外界中接受到的请求放" />
+<meta property="og:description" content="策略模型 1package main 2 3import ( 4 &#34;sync/atomic&#34; 5 &#34;time&#34; 6) 7 8func loadConfig() map[string]string { 9 // 从数据库或者文件系统中读取配置信息，然后以map的形式存放在内存里 10 return make(map[string]string) 11} 12 13func requests() chan int { 14 // 将从外界" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://weedge.github.io/todo/policyworker/" /><meta property="article:section" content="todo" />
 <meta property="article:published_time" content="2020-06-10T10:26:23+08:00" />
 <meta property="article:modified_time" content="2020-06-10T10:26:23+08:00" />
 
 <meta itemprop="name" content="policy worker">
-<meta itemprop="description" content="策略模型 package main import ( &#34;sync/atomic&#34; &#34;time&#34; ) func loadConfig() map[string]string { // 从数据库或者文件系统中读取配置信息，然后以map的形式存放在内存里 return make(map[string]string) } func requests() chan int { // 将从外界中接受到的请求放"><meta itemprop="datePublished" content="2020-06-10T10:26:23+08:00" />
+<meta itemprop="description" content="策略模型 1package main 2 3import ( 4 &#34;sync/atomic&#34; 5 &#34;time&#34; 6) 7 8func loadConfig() map[string]string { 9 // 从数据库或者文件系统中读取配置信息，然后以map的形式存放在内存里 10 return make(map[string]string) 11} 12 13func requests() chan int { 14 // 将从外界"><meta itemprop="datePublished" content="2020-06-10T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2020-06-10T10:26:23+08:00" />
-<meta itemprop="wordCount" content="338">
+<meta itemprop="wordCount" content="373">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="policy worker"/>
-<meta name="twitter:description" content="策略模型 package main import ( &#34;sync/atomic&#34; &#34;time&#34; ) func loadConfig() map[string]string { // 从数据库或者文件系统中读取配置信息，然后以map的形式存放在内存里 return make(map[string]string) } func requests() chan int { // 将从外界中接受到的请求放"/>
+<meta name="twitter:description" content="策略模型 1package main 2 3import ( 4 &#34;sync/atomic&#34; 5 &#34;time&#34; 6) 7 8func loadConfig() map[string]string { 9 // 从数据库或者文件系统中读取配置信息，然后以map的形式存放在内存里 10 return make(map[string]string) 11} 12 13func requests() chan int { 14 // 将从外界"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -321,50 +323,50 @@
   
   <div class="post-content">
       <h4 id="策略模型">策略模型</h4>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#00a">package</span> main
-
-<span style="color:#00a">import</span> (
-  <span style="color:#a50">&#34;sync/atomic&#34;</span>
-  <span style="color:#a50">&#34;time&#34;</span>
-)
-
-<span style="color:#00a">func</span> <span style="color:#0a0">loadConfig</span>() <span style="color:#00a">map</span>[<span style="color:#0aa">string</span>]<span style="color:#0aa">string</span> {
-  <span style="color:#aaa;font-style:italic">// 从数据库或者文件系统中读取配置信息，然后以map的形式存放在内存里
-</span><span style="color:#aaa;font-style:italic"></span>  <span style="color:#00a">return</span> <span style="color:#0aa">make</span>(<span style="color:#00a">map</span>[<span style="color:#0aa">string</span>]<span style="color:#0aa">string</span>)
-}
-
-<span style="color:#00a">func</span> <span style="color:#0a0">requests</span>() <span style="color:#00a">chan</span> <span style="color:#0aa">int</span> {
-  <span style="color:#aaa;font-style:italic">// 将从外界中接受到的请求放入到channel里
-</span><span style="color:#aaa;font-style:italic"></span>  <span style="color:#00a">return</span> <span style="color:#0aa">make</span>(<span style="color:#00a">chan</span> <span style="color:#0aa">int</span>)
-}
-
-<span style="color:#00a">func</span> <span style="color:#0a0">main</span>() {
-  <span style="color:#aaa;font-style:italic">// config变量用来存放该服务的配置信息
-</span><span style="color:#aaa;font-style:italic"></span>  <span style="color:#00a">var</span> config atomic.Value
-  <span style="color:#aaa;font-style:italic">// 初始化时从别的地方加载配置文件，并存到config变量里
-</span><span style="color:#aaa;font-style:italic"></span>  config.<span style="color:#0a0">Store</span>(<span style="color:#0a0">loadConfig</span>())
-  <span style="color:#00a">go</span> <span style="color:#00a">func</span>() {
-    <span style="color:#aaa;font-style:italic">// 每10秒钟定时的拉取最新的配置信息，并且更新到config变量里
-</span><span style="color:#aaa;font-style:italic"></span>    <span style="color:#00a">for</span> {
-      time.<span style="color:#0a0">Sleep</span>(<span style="color:#099">10</span> * time.Second)
-      <span style="color:#aaa;font-style:italic">// 对应于赋值操作 config = loadConfig()
-</span><span style="color:#aaa;font-style:italic"></span>      config.<span style="color:#0a0">Store</span>(<span style="color:#0a0">loadConfig</span>())
-    }
-  }()
-  <span style="color:#aaa;font-style:italic">// 创建工作线程，每个工作线程都会根据它所读取到的最新的配置信息来处理请求
-</span><span style="color:#aaa;font-style:italic"></span>  <span style="color:#00a">for</span> i := <span style="color:#099">0</span>; i &lt; <span style="color:#099">10</span>; i++ {
-    <span style="color:#00a">go</span> <span style="color:#00a">func</span>() {
-      <span style="color:#00a">for</span> r := <span style="color:#00a">range</span> <span style="color:#0a0">requests</span>() {
-        <span style="color:#aaa;font-style:italic">// 对应于取值操作 c := config
-</span><span style="color:#aaa;font-style:italic"></span>        <span style="color:#aaa;font-style:italic">// 由于Load()返回的是一个interface{}类型，所以我们要先强制转换一下
-</span><span style="color:#aaa;font-style:italic"></span>        c := config.<span style="color:#0a0">Load</span>().(<span style="color:#00a">map</span>[<span style="color:#0aa">string</span>]<span style="color:#0aa">string</span>)
-        <span style="color:#aaa;font-style:italic">// 这里是根据配置信息处理请求的逻辑...
-</span><span style="color:#aaa;font-style:italic"></span>        _, _ = r, c
-      }
-    }()
-  }
-}
-
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="ln"> 1</span><span class="kn">package</span> <span class="nx">main</span>
+<span class="ln"> 2</span>
+<span class="ln"> 3</span><span class="kn">import</span> <span class="p">(</span>
+<span class="ln"> 4</span>  <span class="s">&#34;sync/atomic&#34;</span>
+<span class="ln"> 5</span>  <span class="s">&#34;time&#34;</span>
+<span class="ln"> 6</span><span class="p">)</span>
+<span class="ln"> 7</span>
+<span class="ln"> 8</span><span class="kd">func</span> <span class="nf">loadConfig</span><span class="p">()</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span> <span class="p">{</span>
+<span class="ln"> 9</span>  <span class="c1">// 从数据库或者文件系统中读取配置信息，然后以map的形式存放在内存里
+</span><span class="ln">10</span><span class="c1"></span>  <span class="k">return</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span><span class="p">)</span>
+<span class="ln">11</span><span class="p">}</span>
+<span class="ln">12</span>
+<span class="ln">13</span><span class="kd">func</span> <span class="nf">requests</span><span class="p">()</span> <span class="kd">chan</span> <span class="kt">int</span> <span class="p">{</span>
+<span class="ln">14</span>  <span class="c1">// 将从外界中接受到的请求放入到channel里
+</span><span class="ln">15</span><span class="c1"></span>  <span class="k">return</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">int</span><span class="p">)</span>
+<span class="ln">16</span><span class="p">}</span>
+<span class="ln">17</span>
+<span class="ln">18</span><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+<span class="ln">19</span>  <span class="c1">// config变量用来存放该服务的配置信息
+</span><span class="ln">20</span><span class="c1"></span>  <span class="kd">var</span> <span class="nx">config</span> <span class="nx">atomic</span><span class="p">.</span><span class="nx">Value</span>
+<span class="ln">21</span>  <span class="c1">// 初始化时从别的地方加载配置文件，并存到config变量里
+</span><span class="ln">22</span><span class="c1"></span>  <span class="nx">config</span><span class="p">.</span><span class="nf">Store</span><span class="p">(</span><span class="nf">loadConfig</span><span class="p">())</span>
+<span class="ln">23</span>  <span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+<span class="ln">24</span>    <span class="c1">// 每10秒钟定时的拉取最新的配置信息，并且更新到config变量里
+</span><span class="ln">25</span><span class="c1"></span>    <span class="k">for</span> <span class="p">{</span>
+<span class="ln">26</span>      <span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+<span class="ln">27</span>      <span class="c1">// 对应于赋值操作 config = loadConfig()
+</span><span class="ln">28</span><span class="c1"></span>      <span class="nx">config</span><span class="p">.</span><span class="nf">Store</span><span class="p">(</span><span class="nf">loadConfig</span><span class="p">())</span>
+<span class="ln">29</span>    <span class="p">}</span>
+<span class="ln">30</span>  <span class="p">}()</span>
+<span class="ln">31</span>  <span class="c1">// 创建工作线程，每个工作线程都会根据它所读取到的最新的配置信息来处理请求
+</span><span class="ln">32</span><span class="c1"></span>  <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+<span class="ln">33</span>    <span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+<span class="ln">34</span>      <span class="k">for</span> <span class="nx">r</span> <span class="o">:=</span> <span class="k">range</span> <span class="nf">requests</span><span class="p">()</span> <span class="p">{</span>
+<span class="ln">35</span>        <span class="c1">// 对应于取值操作 c := config
+</span><span class="ln">36</span><span class="c1"></span>        <span class="c1">// 由于Load()返回的是一个interface{}类型，所以我们要先强制转换一下
+</span><span class="ln">37</span><span class="c1"></span>        <span class="nx">c</span> <span class="o">:=</span> <span class="nx">config</span><span class="p">.</span><span class="nf">Load</span><span class="p">().(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span><span class="p">)</span>
+<span class="ln">38</span>        <span class="c1">// 这里是根据配置信息处理请求的逻辑...
+</span><span class="ln">39</span><span class="c1"></span>        <span class="nx">_</span><span class="p">,</span> <span class="nx">_</span> <span class="p">=</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">c</span>
+<span class="ln">40</span>      <span class="p">}</span>
+<span class="ln">41</span>    <span class="p">}()</span>
+<span class="ln">42</span>  <span class="p">}</span>
+<span class="ln">43</span><span class="p">}</span>
+<span class="ln">44</span>
 </code></pre></div><h4 id="参考">参考：</h4>
 <ol>
 <li><a href="https://blog.betacat.io/post/golang-atomic-value-exploration/">https://blog.betacat.io/post/golang-atomic-value-exploration/</a></li>
@@ -553,10 +555,14 @@
 
 
 
+  <script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
 
 
 
 
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
 
 
 </body>
