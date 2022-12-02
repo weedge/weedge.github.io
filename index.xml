@@ -590,7 +590,7 @@ pxd tryout
 &lt;p&gt;编写makefile, dockerfile, 打包成docker镜像， 整体解决方案依赖组件也可以通过docker-compose部署至docker容器中 1d&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;编写相关k8s资源 (deployment,configmap,secret,pod,ingress)通过minikube/kind 部署至本地k8s集群 1d&lt;/p&gt;
+&lt;p&gt;编写相关k8s资源 (configmap,secret,deployment+service,ingress)通过minikube/kind 部署至本地k8s集群 1d&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;将服务网格化istio(xds流控)  2d (like this: &lt;a href=&#34;https://mp.weixin.qq.com/s/SAn-H5p53IfvSy_Y3Mcz_Q&#34;&gt;https://mp.weixin.qq.com/s/SAn-H5p53IfvSy_Y3Mcz_Q&lt;/a&gt;)&lt;/p&gt;
