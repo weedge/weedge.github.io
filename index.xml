@@ -364,7 +364,7 @@
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;资源评估：&lt;/p&gt;
+&lt;p&gt;资源评估：用抖音看下阿根廷🇦🇷世界杯直播，去估算下吧～～&lt;/p&gt;
 &lt;p&gt;在支付中台，某个互动涉及到多个用户资产的变更，需要把多个写操作关联到一个本地事务进行处理，保证数据扣减和增减一致，需要开启本地事务来处理多表数据；以下gist为并发mysql本地事务处理测试demo&lt;/p&gt;
 &lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/weedge/1700dd7053a87a4ab35ba4fce0ebea6a.js&#34;&gt;&lt;/script&gt;
 
@@ -441,7 +441,7 @@
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;资源评估：&lt;/p&gt;
+&lt;p&gt;资源评估：用抖音看下阿根廷🇦🇷世界杯直播，去估算下吧～～&lt;/p&gt;
 &lt;p&gt;并发场景：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
@@ -536,7 +536,12 @@
 &lt;ol&gt;
 &lt;li&gt;
 &lt;p&gt;搭建本地基础环境，tidb/polardb-x, redis, rocketmq 1d&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span class=&#34;c&#34;&gt;#redis-cluster-single-docker-compose.yaml&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;c1&#34;&gt;#just for mac os local brew install&lt;/span&gt;
+brew install redis
+brew install mysql
+&lt;span class=&#34;c1&#34;&gt;#list services to view is ok &lt;/span&gt;
+brew services list
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span class=&#34;c&#34;&gt;#redis-cluster-single-docker-compose.yaml&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;c&#34;&gt;#https://github.com/bitnami/bitnami-docker-redis-cluster/issues/3&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;version&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;3&amp;#34;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;single-redis-cluster&amp;#34;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
