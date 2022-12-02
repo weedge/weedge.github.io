@@ -3329,7 +3329,7 @@ pool中按idle从小到大插入排序，便于获取bestKey,用于删除。&lt;
 &lt;li&gt;在8.0以前的 MySQL 版本中，系统表空间包含InnoDB数据字典mysql.* 。在 MySQL 8.0 中InnoDB将元数据存储在 MySQL 数据字典表空间中，表结构等数据字典元数据都是通过InnoDB来管理(mysql.ibd或者独立表空间*.ibd文件中）。&lt;/li&gt;
 &lt;li&gt;在 MySQL 8.0.20 之前，doublewrite 缓冲区存储区位于InnoDB系统表空间中；从 MySQL 8.0.20 开始，双写缓冲区存储区域位于双写文件中。附上官方mysql8.0 InnoDB存储引擎架构图(对比 &lt;a href=&#34;https://dev.mysql.com/doc/refman/5.7/en/innodb-architecture.html&#34;&gt;5.7版本架构&lt;/a&gt;)：&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;img src=&#34;https://dev.mysql.com/doc/refman/8.0/en/images/innodb-architecture.png&#34; alt=&#34;innodb-architecture&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://dev.mysql.com/doc/refman/8.0/en/images/innodb-architecture-8-0.png&#34; alt=&#34;innodb-architecture&#34;&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;段（Segment）&lt;/strong&gt; 由一个或多个区组成，区在文件系统是一个连续分配的空间（在 InnoDB 中是连续的 64 个页），不过在段中不要求区与区之间是相邻的。段是数据库中的分配单位，不同类型的数据库对象以不同的段形式存在。当我们创建数据表、索引的时候，就会相应创建对应的段，比如创建一张表时会创建一个表段，创建一个索引时会创建一个索引段。&lt;/p&gt;
