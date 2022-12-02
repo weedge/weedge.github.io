@@ -593,7 +593,7 @@ pxd tryout
 &lt;p&gt;编写相关k8s资源 (configmap,secret,deployment+service,ingress)通过minikube/kind 部署至本地k8s集群 1d&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;将服务网格化istio(xds流控)  2d (like this: &lt;a href=&#34;https://mp.weixin.qq.com/s/SAn-H5p53IfvSy_Y3Mcz_Q&#34;&gt;https://mp.weixin.qq.com/s/SAn-H5p53IfvSy_Y3Mcz_Q&lt;/a&gt;)&lt;/p&gt;
+&lt;p&gt;将服务网格化istio(xds流控, 可用于全链路监控, A/B测试，特别是产品新特性/模型策略场景)  2d (like this: &lt;a href=&#34;https://mp.weixin.qq.com/s/SAn-H5p53IfvSy_Y3Mcz_Q&#34;&gt;https://mp.weixin.qq.com/s/SAn-H5p53IfvSy_Y3Mcz_Q&lt;/a&gt;)&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;k8s/istio operator&lt;/p&gt;
@@ -642,6 +642,7 @@ pxd tryout
 &lt;/ol&gt;
 &lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
 &lt;p&gt;面对大量并发请求的用户交互场景，整体思路是预热快速路径响应用户的交互请求行为，然后异步队列解耦，执行慢路径，快/慢路径上通过并发批量处理提高吞吐，快路径尽量使用乐观锁，减少block；需要考虑到数据一致，资产更改准确；本地事务(同服务多表更新)，分布式事务场景(多服务对应表更新)；服务异常时的降级措施，以及服务过载时的限流，以及消息数据流的反压措施。&lt;/p&gt;
+&lt;p&gt;题外话： &lt;em&gt;纸上得来终觉浅，绝知此事要躬行&lt;/em&gt;，step by step, maybe day day up~&lt;/p&gt;
 &lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/Cmw3QExqCfBAz9V0AlsS9A&#34;&gt;https://mp.weixin.qq.com/s/Cmw3QExqCfBAz9V0AlsS9A&lt;/a&gt;&lt;/li&gt;
