@@ -77,7 +77,7 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 直播线上互动，已成为当下生活的一部分，特别是受疫情影响，成为互联网的主要流量入口；研究了下各个平台直播间送礼物的功能，发现大同小异，在礼物分组，一些定制化的礼物有区分，整体交互流程大致相同，主要是直播间主播上播，用户通过礼物打赏给主播们(一个直播间可能有多名主播在互动)，礼物是通过虚拟币(**币) 换算，早期互联网用户线上互动礼物，玩家最多的应该是QQ币了，只不过以前的打赏赠送场景是在web2.0刚开始的时候，交互的大多是文字和图片，相关产品场景，虚拟空间(个人空间，博客，种菜等娱乐互动场景)；随着底层网络基建的发展，4G之后出现了大量的视频网站，用户可以录一些视频内容来互动；到后来音视频流媒体的发展，相关的在线直播间开始涌现，用户之间享受一波直播红利带来的互动，当然影响相对于前面的形式更加实时和直接；现在的5G和未来6G，以及物联网都会给直播形式带来新的互动场景,比如：虚拟会场，人机互动；其中早期培养起来的打赏送礼行为功能经常用于有主播的娱乐互动直播中，也是增值盈利的一部分；
 tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦，电商带货商品，没有主播，节目直播/转播，会议直播，自习室，基本的点赞，计数，聊天基础服务功能；还有些抽奖功能，答题功能(教育类直播居多)，投票，红包这些功能服务可在开播时设置，是否启用；有用户基础的流量平台可能还会以竞价排名的方式推荐一波；这些功能可以作为一个可管理的插件，通过组合的方式应用于直播中，方便管理，后续可以添加新功能满足某类型直播场景。"><meta itemprop="datePublished" content="2022-11-21T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2022-11-21T10:26:23+08:00" />
-<meta itemprop="wordCount" content="8369">
+<meta itemprop="wordCount" content="8881">
 <meta itemprop="keywords" content="直播," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="设计草稿-直播间赠送礼物功能"/>
 <meta name="twitter:description" content="背景
@@ -366,7 +366,7 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 <p>缓存数据初始化，可以在用户刚打开app的时候初始化，也可以在进入/创建好直播间的时候初始化好用户直播间缓存数据；</p>
 <p>以上可以将操作分2个关键步骤： 观众赠送礼物和异步更新观众和主播的资产信息；通过消息队列来解耦，提高送礼接口吞吐和请求响应延迟，以及以pull方式消费，缓解数据库实例的读写压力；</p>
 <p>观众赠送礼物： 礼物是通过虚拟货币进行等价交换的，通过礼物id获取到对应消费的虚拟资产，对中心远端缓存分片中的观众虚拟资产进行事务扣除处理，事务提交之后，发送事务消息；这里采用cas方式处理，一种是watch key(string 读写io是O(1), 不用hash是因为读取全部资产信息io是O(n))+事务方式，一种是lua的形式直接写业务提交脚本给redis核心主线程去处理；这里可能会想到直接用 hash incr原子操作，但是这里不行，因为需要读出key对应的虚拟资产，用于判断虚拟资源是否充足，读出来在扣除写入，需要一起执行，保证事务原子性；除了核心流程，还有发送礼物成功后，需要推送消息到直播间，根据产品礼品策略判断是否展示特效; 以及增加用户活动积分，增加互动积极性；</p>
-<p>异步更新观众和主播数据库落地资产信息：这里为了减少对数据库的行锁的并发压力，也采用CAS的方式来更新数据库的数据，前提是单个用户资产操作，如果想单个事务单个事务处理，可以通过消息队列事务消息方式串起来(pipeline)；如果是多个用户资产操作在同一服务事物里操作的话，则不能使用CAS的方式处理了，只能以整体事务方式处理(默认RR级别)；</p>
+<p>异步更新观众和主播数据库落地资产信息：为了减少对数据库的行锁的并发压力，可采用CAS的方式来更新数据库的数据，前提是单个用户资产操作，如果想单个事务单个事务处理，可以通过消息队列事务消息方式串起来(pipeline)；如果是多个用户资产操作在同一服务事物里操作的话，则不能使用CAS的方式处理了，只能以整体事务方式处理(默认RR级别)；</p>
 <p>消息队列：涉及到金钱，为了提高吞吐，需要保证数据准确，数据最终一致(<a href="https://www.allthingsdistributed.com/2008/12/eventually_consistent.html"><strong>BASE</strong></a>)，采用支持事务消息的分布式消息队列，比如：<a href="https://rocketmq.apache.org/zh/docs/featureBehavior/04transactionmessage/">rocketMQ<strong>事务消息</strong></a>，这里可能有个疑问如果刚开始发送事务消息就失败了，可能是网络抖动,或者服务负载高等原因，一般是启用failover权重<a href="https://en.wikipedia.org/wiki/Exponential_backoff">指数退避</a>策略重试到不同机房的rocketMQ集群，可以查看<a href="https://rocketmq.apache.org/zh/docs/featureBehavior/05sendretrypolicy#%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6">消息发送重试机制</a> 和 <a href="https://rocketmq.apache.org/zh/docs/bestPractice/15bestpractice">最佳实践</a>, <a href="https://aws.amazon.com/cn/builders-library/timeouts-retries-and-backoff-with-jitter/">timeouts-retries-and-backoff-with-jitter</a>；如果重试还是失败打印错误日志记录发送详情，通过实时数据流将异常行为写入db中，以便后续补发；</p>
 <p>Tips: 如果使用阿里云rocketMQ, 需要注意支持版本提供的SDK，5.0 版本 <a href="https://github.com/apache/rocketmq-clients">client SDK</a> ; 4.0相关版本有些开发语言不支持tcp方式，仅提供http的方式(会少了一些功能，比如批量发送普通消息)；选用新版的5.0版本的SDK开发; 如果有自建运维能力，直接使用开源方案来搭建一套，比如用<a href="https://www.amazonaws.cn/solutions/apache-rocketmq-on-aws/">rocketMQ on aws</a>，并且使用5.0可以实现一层mq-proxy;</p>
 <p>题外话: 现在分布式消息队列<a href="https://kafka.apache.org/33/documentation/streams/architecture">kafka-streams</a>, <a href="https://github.com/apache/rocketmq-streams">rocketmq-streams</a> 支持数据流(stream)处理大数据实时场景，支持一些简单算子操作和SQL(<a href="https://github.com/confluentinc/ksql">ksql</a>, <a href="https://github.com/alibaba/rsqldb">rsql</a>)；这个和flink对应功能是重合了，flink也在往table store上发力满足数据堆积的能力; 一波流～</p>
@@ -629,8 +629,8 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 </tr>
 <tr>
 <td>eventId</td>
-<td>int64</td>
-<td>事件Id: 直播互动场景下，互动ID 用于贯彻整个送礼物流水链路,进行幂等处理，互动中台生成； 用户充值场景下，订单id，支付中台生成；</td>
+<td>string</td>
+<td>事件Id: 直播互动场景下，互动ID 用于贯彻整个送礼物流水链路,进行幂等处理; 用户充值场景下，订单id</td>
 </tr>
 <tr>
 <td>record</td>
@@ -718,15 +718,24 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 <td>token(json)</td>
 <td>100 ms</td>
 <td>N</td>
-<td></td>
+<td>AP型锁，加锁单个线程从db中获取数据写入缓存，初始化送礼用户资产信息；<!-- raw HTML omitted -->这里使用redlock，如果运行锁失效多次读写入缓存幂等操作,竞争条件是可以接受，直接用单集群实例redlock就行；否则需要多集群redlock加锁，具体详情：<a href="https://redis.io/docs/manual/patterns/distributed-locks/">distributed-locks</a> PS: 类似使用数据库锁也可以使用redlock算法来实现分布式可靠加锁</td>
 </tr>
 <tr>
 <td>资产变更消息</td>
-<td>M.asset.{eventId}</td>
+<td>M.asset.{opUserId}.{eventId}</td>
 <td>string</td>
 <td>1</td>
 <td>1 d</td>
 <td>N</td>
+<td>1. 保证幂等：类似Once done 原子操作(event事务维度)； <!-- raw HTML omitted -->2.事务消息回调RC可见(原子操作)</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
 <td></td>
 </tr>
 </tbody>
@@ -792,6 +801,11 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 <td>eventId</td>
 <td>int64</td>
 <td>变更事件id</td>
+</tr>
+<tr>
+<td>opUserId</td>
+<td>int64</td>
+<td>操作者id</td>
 </tr>
 <tr>
 <td>eventType</td>
@@ -933,10 +947,11 @@ pxd tryout
 <li>加上服务监控，日志，报警，重点关注核心链路指标</li>
 <li>接口压测</li>
 <li>核心前端接口整体压测</li>
-<li>调优：耗时，内存，cpu，I/O(网络，磁盘)</li>
+<li>业务功能调优：优先业务功能大方向调优，索引效率</li>
+<li>profiling调优：通过trace/prof工具关注耗时，内存(减少gc，频繁操作小对象池化复用，内存分配管理，局部性原则)，cpu(亲和性)，I/O(网络，磁盘I/O 尽量异步处理) ，buff(缓冲，batch)等</li>
 </ol>
 <h2 id="总结">总结</h2>
-<p>面对大量并发请求的用户交互场景，整体思路是预热快速路径响应用户的交互请求行为，然后异步队列解耦，执行慢路径，快/慢路径上通过并发批量处理提高吞吐，快路径尽量使用乐观锁，减少block；需要考虑到数据一致，资产更改准确；本地事务(同服务多表更新)，分布式事务场景(多服务对应表更新)；服务异常时的降级措施，以及服务过载时的限流，以及消息数据流的反压措施。</p>
+<p>面对大量并发请求的用户交互场景，涉及到用户金额等事务场景，整体思路是预热快速路径响应用户的交互请求行为，然后异步队列解耦，执行慢路径，慢路径上通过本地事务(同服务多表更新)，或者分布式事务(多服务对应表更新)，来保证数据整体一致，尽量通过批量处理提高吞吐；快路径尽量使用原子操作(服务主逻辑单线程执行)或者乐观锁用户程序自旋执行事务，按用户维度切分减少block；对于数据并发同步获取至缓存，则需要加分布式互斥锁自旋block一段时间，防止并发操作加锁尽量前置处理(warm up to run fast~),减少block；本质上都是将并行变成串行，只不过存内存IO比磁盘,网络IO操作要快很多(理论上，lua脚本在master主线程内存中原子执行相对watch+事务方式处理效率要高些)；还有服务异常时的降级措施，以及服务过载时的限流，以及消息数据流的反压措施。</p>
 <p>题外话： <em>纸上得来终觉浅，绝知此事要躬行</em>，step by step, maybe day day up~</p>
 <h2 id="参考">参考</h2>
 <ol>
