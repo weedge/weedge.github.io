@@ -425,7 +425,7 @@
 &lt;td&gt;获取用户虚拟资产分布式锁&lt;/td&gt;
 &lt;td&gt;L.asset.{userId}.{tag}&lt;/td&gt;
 &lt;td&gt;string&lt;/td&gt;
-&lt;td&gt;token(json)&lt;/td&gt;
+&lt;td&gt;token&lt;/td&gt;
 &lt;td&gt;100 ms&lt;/td&gt;
 &lt;td&gt;N&lt;/td&gt;
 &lt;td&gt;AP型锁，加锁单个线程从db中获取数据写入缓存，初始化送礼用户资产信息；&lt;!-- raw HTML omitted --&gt;这里使用redlock，如果运行锁失效多次读写入缓存幂等操作,竞争条件是可以接受，直接用单集群实例redlock就行；否则需要多集群redlock加锁，具体详情：&lt;a href=&#34;https://redis.io/docs/manual/patterns/distributed-locks/&#34;&gt;distributed-locks&lt;/a&gt; PS: 类似使用数据库锁也可以使用redlock算法来实现分布式可靠加锁&lt;/td&gt;

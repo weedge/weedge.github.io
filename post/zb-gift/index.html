@@ -715,7 +715,7 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 <td>获取用户虚拟资产分布式锁</td>
 <td>L.asset.{userId}.{tag}</td>
 <td>string</td>
-<td>token(json)</td>
+<td>token</td>
 <td>100 ms</td>
 <td>N</td>
 <td>AP型锁，加锁单个线程从db中获取数据写入缓存，初始化送礼用户资产信息；<!-- raw HTML omitted -->这里使用redlock，如果运行锁失效多次读写入缓存幂等操作,竞争条件是可以接受，直接用单集群实例redlock就行；否则需要多集群redlock加锁，具体详情：<a href="https://redis.io/docs/manual/patterns/distributed-locks/">distributed-locks</a> PS: 类似使用数据库锁也可以使用redlock算法来实现分布式可靠加锁</td>
