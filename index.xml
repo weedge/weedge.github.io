@@ -468,6 +468,9 @@
 &lt;ol&gt;
 &lt;li&gt;存放的value值比较大，一般是list, set，zset, hash这些集合结构，存储的item/field数目一般在5000个左右，需要按比例切分，读放大的问题可以并发控制读取；&lt;/li&gt;
 &lt;/ol&gt;
+&lt;p&gt;demo代码如下：&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/weedge/c2d830dceef4163acc6dd749a05493db.js&#34;&gt;&lt;/script&gt;
+
 &lt;h4 id=&#34;消息队列&#34;&gt;消息队列&lt;/h4&gt;
 &lt;p&gt;Topic&lt;/p&gt;
 &lt;table&gt;
@@ -596,7 +599,8 @@ sh stage.sh 5.0.0
 tiup playground
 
 &lt;span class=&#34;c1&#34;&gt;#polardb-x docker local deploy by pxd tool&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;#see this https://doc.polardbx.com/quickstart/topics/quickstart.html&lt;/span&gt;
+&lt;span class=&#34;c1&#34;&gt;#see this &lt;/span&gt;
+
 pxd tryout
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
 &lt;li&gt;
