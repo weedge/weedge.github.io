@@ -599,8 +599,7 @@ sh stage.sh 5.0.0
 tiup playground
 
 &lt;span class=&#34;c1&#34;&gt;#polardb-x docker local deploy by pxd tool&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;#see this &lt;/span&gt;
-
+&lt;span class=&#34;c1&#34;&gt;#see this https://doc.polardbx.com/quickstart/topics/quickstart-pxd-cluster.html&lt;/span&gt;
 pxd tryout
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
 &lt;li&gt;
@@ -708,6 +707,9 @@ pxd tryout
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;a href=&#34;https://kvrocks.apache.org/zh-CN/docs/Cluster/kvrocks-cluster-introduction&#34;&gt;https://kvrocks.apache.org/zh-CN/docs/Cluster/kvrocks-cluster-introduction&lt;/a&gt;   &lt;a href=&#34;https://www.qin.news/kvrocks-qian-xi/&#34;&gt;https://www.qin.news/kvrocks-qian-xi/&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://tidb.net/blog/09cc69f4&#34;&gt;https://tidb.net/blog/09cc69f4&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;a href=&#34;https://www.youtube.com/playlist?list=PLy7NrYWoggjziYQIDorlXjTvvwweTYoNC&#34;&gt;https://www.youtube.com/playlist?list=PLy7NrYWoggjziYQIDorlXjTvvwweTYoNC&lt;/a&gt;&lt;/p&gt;
