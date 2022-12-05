@@ -66,7 +66,7 @@
 &lt;h3 id=&#34;分析&#34;&gt;分析&lt;/h3&gt;
 &lt;p&gt;礼物：直播平台通过虚拟币来统一等价交换的虚拟物品，而虚拟币是需要通过用户充值购买；发送礼物可以获得一些积分；&lt;/p&gt;
 &lt;p&gt;A用户发送礼物给B用户，A的虚拟币扣除，B的虚拟币相应增加；需要保证赠送和收到的数量一致；&lt;/p&gt;
-&lt;p&gt;需要考虑并发场景，对于热门主播高峰期的流量值100w观众用户在线互动，每秒送礼的请求数量也可能高于这个值，用户可能连击送出多次， 而且为了保证数据一致和吞吐，尽量减少锁的使用，或者说采用&lt;a href=&#34;https://en.wikipedia.org/wiki/Optimistic_concurrency_control&#34;&gt;OCC&lt;/a&gt;，乐观锁的方式来处理事务，交由业务服务程序来处理，尽量减少或减短数据库中心存储服务上的锁操作，原理就是：夯主后，就呆萌了，资源未释放，请求资源一增多，导致整个服务吞吐下降，一直持续下去随时都会down掉，而且锁是建立在索引数据之上的， 如果没有相关降级处理，弄不好整体服务就&lt;a href=&#34;https://www.youtube.com/watch?v=4m48GqaOz90&#34;&gt;galigeigei&lt;/a&gt;；&lt;/p&gt;
+&lt;p&gt;需要考虑并发场景，对于热门主播高峰期的流量值100w观众用户在线互动，每秒送礼的请求数量也可能高于这个值，用户可能连击送出多次(连击行为客户端可以缓冲一次发送给后端)， 而且为了保证数据一致和吞吐，尽量减少锁的使用，或者说采用&lt;a href=&#34;https://en.wikipedia.org/wiki/Optimistic_concurrency_control&#34;&gt;OCC&lt;/a&gt;，乐观锁的方式来处理事务，交由业务服务程序来处理，尽量减少或减短数据库中心存储服务上的锁操作，原理就是：夯主后，就呆萌了，资源未释放，请求资源一增多，导致整个服务吞吐下降，一直持续下去随时都会down掉，而且锁是建立在索引数据之上的， 如果没有相关降级处理，弄不好整体服务就&lt;a href=&#34;https://www.youtube.com/watch?v=4m48GqaOz90&#34;&gt;galigeigei&lt;/a&gt;；&lt;/p&gt;
 &lt;p&gt;100W 观众A向同一个主播B 赠送礼物，对于主播B的虚拟币累计写操作比较大，同一时间可能100W+的w 操作 主播B 虚拟币这条记录，如果直接同步操作在数据库层面会出现行锁，会等待夯主整个赠送流程，所以需要把这些集中写，通过消息队列异步去更新虚拟币数目，进而提高观众送礼接口的吞吐量，&lt;/p&gt;
 &lt;p&gt;观众虽然操作自己的虚拟币数目行记录，但是直接操作数据库，即使对用户资产表进行分库分表操作，也会有大量的磁盘i/o，所以直播间的互动数据直接在缓存中操作，把观众的操作记录消息队列的方式异步落库；&lt;/p&gt;
 &lt;p&gt;缓存的方式操作，需要把观众的用户资产信息前置预热至缓存中，直播中直接操作缓存， 操作缓存需要保证并发操作事务的原子性，保证观众的虚拟币不能多扣或者少扣；&lt;/p&gt;
@@ -340,7 +340,7 @@
 &lt;tr&gt;
 &lt;td&gt;eventId&lt;/td&gt;
 &lt;td&gt;string&lt;/td&gt;
-&lt;td&gt;事件Id: 直播互动场景下，互动ID 用于贯彻整个送礼物流水链路,进行幂等处理; 用户充值场景下，订单id&lt;/td&gt;
+&lt;td&gt;事件Id: 直播互动场景下，互动ID 用于贯彻整个送礼物流水链路,进行幂等处理; 用户充值场景下，订单id, 唯一&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;record&lt;/td&gt;
@@ -426,9 +426,9 @@
 &lt;td&gt;L.asset.{userId}.{tag}&lt;/td&gt;
 &lt;td&gt;string&lt;/td&gt;
 &lt;td&gt;token&lt;/td&gt;
-&lt;td&gt;100 ms&lt;/td&gt;
+&lt;td&gt;60 s&lt;/td&gt;
 &lt;td&gt;N&lt;/td&gt;
-&lt;td&gt;AP型锁，加锁单个线程从db中获取数据写入缓存，初始化送礼用户资产信息；&lt;!-- raw HTML omitted --&gt;这里使用redlock，如果运行锁失效多次读写入缓存幂等操作,竞争条件是可以接受，直接用单集群实例redlock就行；否则需要多集群redlock加锁，具体详情：&lt;a href=&#34;https://redis.io/docs/manual/patterns/distributed-locks/&#34;&gt;distributed-locks&lt;/a&gt; PS: 类似使用数据库锁也可以使用redlock算法来实现分布式可靠加锁&lt;/td&gt;
+&lt;td&gt;AP型锁，加锁单个线程从db中获取数据写入缓存，初始化送礼用户资产信息，锁的是热更新资源；&lt;strong&gt;从follower读取数据必须是强一致性读，否则从master上读取&lt;/strong&gt;；&lt;!-- raw HTML omitted --&gt;这里使用redlock，如果运行锁失效多次读写入缓存幂等操作,竞争条件是可以接受，直接用单集群实例redlock就行；否则需要多集群redlock加锁，具体详情：&lt;a href=&#34;https://redis.io/docs/manual/patterns/distributed-locks/&#34;&gt;distributed-locks&lt;/a&gt; PS: 类似使用数据库锁也可以使用redlock算法来实现分布式可靠加锁;  锁的粒度，可以先分散到本地锁(需要加等待超时时间，防止夯主服务，超时上游可以重试)，然后分布式锁只有单个线程获取数据去设置缓存，降低分布式锁的竞争，最多部署进程实例数目竞争。 如下场景：&lt;strong&gt;很多观众给热门女主播送礼物，这个女主播同时给热门男主播送礼物&lt;/strong&gt;&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;资产变更消息&lt;/td&gt;
@@ -653,7 +653,7 @@ pxd tryout
 &lt;p&gt;Tidb-operator: &lt;a href=&#34;https://github.com/pingcap/tidb-operator&#34;&gt;https://github.com/pingcap/tidb-operator&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;Redis-cluster:   &lt;a href=&#34;https://github.com/bitnami/charts/tree/main/bitnami/redis-cluster&#34;&gt;https://github.com/bitnami/charts/tree/main/bitnami/redis-cluster&lt;/a&gt; , &lt;a href=&#34;https://kubedb.com/docs/v2022.10.18/guides/redis/clustering/redis-cluster/&#34;&gt;https://kubedb.com/docs/v2022.10.18/guides/redis/clustering/redis-cluster/&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;RocketMQ-operator on k8s: &lt;a href=&#34;https://github.com/apache/rocketmq-operator&#34;&gt;https://github.com/apache/rocketmq-operator&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;题外话：或者进一步的直接使用无服务serverless 函数计算，开源方案 &lt;a href=&#34;https://docs.openfaas.com/deployment/kubernetes/&#34;&gt;&lt;strong&gt;openfaas on k8s&lt;/strong&gt;&lt;/a&gt;, 或者使用云服务比如&lt;a href=&#34;https://aws.amazon.com/cn/campaigns/lambda/&#34;&gt;aws lambda&lt;/a&gt;(transform, not transport data), 专注于业务逻辑，减少&amp;rsquo;胶水&amp;rsquo;代码，缺少了开发框架的依赖，常用于数据事件处理,比如直播音视频处理（DevOps-&amp;gt;AppOps)， &lt;strong&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=PiQ_eZFO2GU&amp;amp;list=PL2yQDdvlhXf_lYR5Ntvr9V5iVYv5rcbNc&amp;amp;index=6&#34;&gt;AWS re:Invent 2022 - Best practices for advanced serverless developers&lt;/a&gt;&lt;/strong&gt;, &lt;strong&gt;&lt;a href=&#34;https://catalog.workshops.aws/complete-aws-sam/en-US&#34;&gt;The Complete AWS SAM workshop&lt;/a&gt;&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;题外话：或者进一步的直接使用无服务serverless 函数计算，开源方案 &lt;a href=&#34;https://docs.openfaas.com/deployment/kubernetes/&#34;&gt;&lt;strong&gt;openfaas on k8s&lt;/strong&gt;&lt;/a&gt;, 或者使用云服务比如&lt;a href=&#34;https://aws.amazon.com/cn/campaigns/lambda/&#34;&gt;aws lambda&lt;/a&gt;(transform, not transport data), 专注于业务逻辑，减少&amp;rsquo;胶水&amp;rsquo;代码，缺少了开发框架的依赖，常用于数据事件处理,比如直播音视频离线/实时处理（DevOps-&amp;gt;AppOps)， &lt;strong&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=PiQ_eZFO2GU&amp;amp;list=PL2yQDdvlhXf_lYR5Ntvr9V5iVYv5rcbNc&amp;amp;index=6&#34;&gt;AWS re:Invent 2022 - Best practices for advanced serverless developers&lt;/a&gt;&lt;/strong&gt;, &lt;strong&gt;&lt;a href=&#34;https://catalog.workshops.aws/complete-aws-sam/en-US&#34;&gt;The Complete AWS SAM workshop&lt;/a&gt;&lt;/strong&gt;。&lt;/p&gt;
 &lt;h3 id=&#34;测试&#34;&gt;测试&lt;/h3&gt;
 &lt;p&gt;基本功能逻辑测试，并发场景下的扣减和新增数据一致；然后加上 业务/基础服务/中间件服务监控，日志，在开始压测，给出性能报告，调优；最终给出接口/整体服务吞吐和延时上限，采用服务流控对服务接口加上接口/服务限流，以及超时重试，服务相关降级策略；然后模拟线上场景继续压测，触发对应报警和限流，降级策略；&lt;/p&gt;
 &lt;ol&gt;
@@ -670,6 +670,9 @@ pxd tryout
 &lt;p&gt;核心前端接口整体压测&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
+&lt;p&gt;混沌测试，尽量覆盖触发边界场景，面向故障编程，测试&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
 &lt;p&gt;业务功能调优：优先业务功能大方向调优，索引效率&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
@@ -679,7 +682,7 @@ pxd tryout
 &lt;/ol&gt;
 &lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
 &lt;p&gt;面对大量并发请求的用户交互场景，涉及到用户金额等事务场景，整体思路是预热快速路径响应用户的交互请求行为，然后异步队列解耦，执行慢路径，慢路径上通过本地事务(同服务多表更新)，或者分布式事务(多服务对应表更新)，来保证数据整体一致，尽量通过批量处理提高吞吐；快路径尽量使用原子操作(服务主逻辑单线程执行)或者乐观锁用户程序自旋执行事务，按用户维度切分减少block；对于数据并发同步获取至缓存，则需要加分布式互斥锁自旋block一段时间，防止并发操作加锁尽量前置处理(warm up to run fast~),减少block；本质上都是将并行变成串行，只不过存内存IO比磁盘,网络IO操作要快很多(理论上，lua脚本在master主线程内存中原子执行相对watch+事务方式处理效率要高些)；还有服务异常时的降级措施，以及服务过载时的限流，以及消息数据流的反压措施。&lt;/p&gt;
-&lt;p&gt;题外话：没有银弹，充分利用开源 ☁️红利； &lt;em&gt;纸上得来终觉浅，绝知此事要躬行&lt;/em&gt;， step by step, maybe day day up~&lt;/p&gt;
+&lt;p&gt;题外话：没有银弹，充分利用开源 ☁️红利； &lt;em&gt;纸上得来终觉浅，绝知此事要躬行&lt;/em&gt;， step by step, maybe day day up~  hope expand your horizons&lt;/p&gt;
 &lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;
@@ -695,7 +698,7 @@ pxd tryout
 &lt;p&gt;&lt;a href=&#34;http://www.52im.net/thread-3515-1-1.html#26&#34;&gt;http://www.52im.net/thread-3515-1-1.html#26&lt;/a&gt; , &lt;a href=&#34;http://www.52im.net/thread-3994-1-1.html&#34;&gt;http://www.52im.net/thread-3994-1-1.html&lt;/a&gt; , &lt;a href=&#34;http://www.52im.net/thread-3376-1-1.html&#34;&gt;http://www.52im.net/thread-3376-1-1.html&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://coolshell.cn/articles/8239.html&#34;&gt;https://coolshell.cn/articles/8239.html&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://coolshell.cn/articles/8239.html,&#34;&gt;https://coolshell.cn/articles/8239.html,&lt;/a&gt; &lt;a href=&#34;https://time.geekbang.org/column/article/4050&#34;&gt;https://time.geekbang.org/column/article/4050&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://redis.io/docs/manual/transactions/&#34;&gt;https://redis.io/docs/manual/transactions/&lt;/a&gt; , &lt;a href=&#34;https://redis.io/docs/manual/programmability/&#34;&gt;https://redis.io/docs/manual/programmability/&lt;/a&gt; , &lt;a href=&#34;https://redis.io/docs/reference/cluster-spec/&#34;&gt;https://redis.io/docs/reference/cluster-spec/&lt;/a&gt; , &lt;a href=&#34;https://redis.com/blog/redis-clustering-best-practices-with-keys/&#34;&gt;https://redis.com/blog/redis-clustering-best-practices-with-keys/&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
