@@ -428,7 +428,7 @@
 &lt;td&gt;token&lt;/td&gt;
 &lt;td&gt;60 s&lt;/td&gt;
 &lt;td&gt;N&lt;/td&gt;
-&lt;td&gt;AP型锁，加锁单个线程从db中获取数据写入缓存，初始化送礼用户资产信息，锁的是热更新资源；&lt;strong&gt;从follower读取数据必须是强一致性读，否则从master上读取&lt;/strong&gt;；&lt;!-- raw HTML omitted --&gt;这里使用redlock，如果运行锁失效多次读写入缓存幂等操作,竞争条件是可以接受，直接用单集群实例redlock就行；否则需要多集群redlock加锁，具体详情：&lt;a href=&#34;https://redis.io/docs/manual/patterns/distributed-locks/&#34;&gt;distributed-locks&lt;/a&gt; PS: 类似使用数据库锁也可以使用redlock算法来实现分布式可靠加锁;  锁的粒度，可以先分散到本地锁(需要加等待超时时间，防止夯主服务，超时上游可以重试)，然后分布式锁只有单个线程获取数据去设置缓存，降低分布式锁的竞争，最多部署进程实例数目竞争,高并发场景下很大幅度减少网络IO。 如下场景：&lt;strong&gt;很多观众给热门女主播送礼物，这个女主播同时给热门男主播送礼物&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;AP型锁，加锁单个线程从db中获取数据写入缓存，初始化送礼用户资产信息，锁的是热更新资源；&lt;strong&gt;从follower读取数据必须是强一致性读，否则从leader/master上读取&lt;/strong&gt;；&lt;!-- raw HTML omitted --&gt;这里使用redlock，如果运行锁失效多次读写入缓存幂等操作,竞争条件是可以接受，直接用单集群实例redlock就行；否则需要多集群redlock加锁，具体详情：&lt;a href=&#34;https://redis.io/docs/manual/patterns/distributed-locks/&#34;&gt;distributed-locks&lt;/a&gt; PS: 类似使用数据库锁也可以使用redlock算法来实现分布式可靠加锁;  锁的粒度，可以先分散到本地锁(需要加等待超时时间，防止夯主服务，超时上游可以重试)，然后分布式锁只有单个线程获取数据去设置缓存，降低分布式锁的竞争，最多部署进程实例数目竞争,高并发场景下很大幅度减少网络IO。 如下场景：&lt;strong&gt;很多观众给热门女主播送礼物，这个女主播同时给热门男主播送礼物&lt;/strong&gt;&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;资产变更消息&lt;/td&gt;
