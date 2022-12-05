@@ -677,7 +677,7 @@ pxd tryout
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;profiling调优：通过trace/prof工具关注耗时，使用系统内核优化的调用函数，以及系统参数调整，内存(减少gc，频繁操作小对象池化复用，内存分配管理，局部性原则)，cpu(亲和性)，I/O(网络，磁盘I/O 尽量异步处理,) ，buff(缓冲，batch)等&lt;/p&gt;
-&lt;p&gt;tips: 整体性能优化收益： 硬件(cpu/GPU浮点运算/TPU，内存/nvm，磁盘/ssd，网卡带宽拆解包校验) &amp;gt; 内核系统调用 &amp;gt; 业务代码(数据结构)&lt;/p&gt;
+&lt;p&gt;tips: 业务整体设计方案ok的情况下，整体性能优化收益： 硬件(cpu/GPU浮点运算/TPU，内存/nvm，磁盘/ssd，网卡带宽拆解包校验) &amp;gt; 内核系统调用 &amp;gt; 业务代码(数据结构)&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
