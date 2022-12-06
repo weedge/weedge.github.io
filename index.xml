@@ -392,7 +392,7 @@
 &lt;td&gt;user_asset(json)&lt;/td&gt;
 &lt;td&gt;1 d&lt;/td&gt;
 &lt;td&gt;Y&lt;/td&gt;
-&lt;td&gt;type: String vs Hash tradeoff &lt;!-- raw HTML omitted --&gt;1. String 对于redis读详情数据效率高，但是写操作资产数目需要json decode/encode，如果操作是在业务应用逻辑服务器上操作可以使用(有对应优化json库)，结合watch+事务的cas方式; &lt;!-- raw HTML omitted --&gt;2. Hash 相对string读详情数据效率低些，但是写操作资产数目仅需hincr操作即可，如果操作是在数据中心redis上执行lu a脚本原子操作可以使用，redis lua 使用cjson库相对解析效率低些，并发量大容易增加redis数据中心负载，降低吞吐； 结合具体场景使用&lt;/td&gt;
+&lt;td&gt;type: String vs Hash tradeoff &lt;!-- raw HTML omitted --&gt;1. String 对于redis读详情数据效率高，但是写操作资产数目需要json decode/encode get/set，如果操作是在业务应用逻辑服务器上操作可以使用(有对应优化json库)，结合watch+事务的cas方式; &lt;!-- raw HTML omitted --&gt;2. Hash 相对string读详情数据效率低些，但是写操作资产数目仅需hincrby(hget/hset)操作即可，如果操作是在数据中心redis上执行lu a脚本原子操作可以使用，redis lua 使用cjson库相对解析效率低些，特别是大json，参考&lt;a href=&#34;https://blog.codingnow.com/2014/07/sproto.html&#34;&gt;sproto&lt;/a&gt;，并发量大容易增加redis数据中心负载，降低吞吐； 结合具体场景使用&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;礼物信息&lt;/td&gt;
