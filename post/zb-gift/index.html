@@ -77,7 +77,7 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 直播线上互动，已成为当下生活的一部分，特别是受疫情影响，成为互联网的主要流量入口；研究了下各个平台直播间送礼物的功能，发现大同小异，在礼物分组，一些定制化的礼物有区分，整体交互流程大致相同，主要是直播间主播上播，用户通过礼物打赏给主播们(一个直播间可能有多名主播在互动)，礼物是通过虚拟币(**币) 换算，早期互联网用户线上互动礼物，玩家最多的应该是QQ币了，只不过以前的打赏赠送场景是在web2.0刚开始的时候，交互的大多是文字和图片，相关产品场景，虚拟空间(个人空间，博客，种菜等娱乐互动场景)；随着底层网络基建的发展，4G之后出现了大量的视频网站，用户可以录一些视频内容来互动；到后来音视频流媒体的发展，相关的在线直播间开始涌现，用户之间享受一波直播红利带来的互动，当然影响相对于前面的形式更加实时和直接；现在的5G和未来6G，以及物联网都会给直播形式带来新的互动场景,比如：虚拟会场，人机互动；其中早期培养起来的打赏送礼行为功能经常用于有主播的娱乐互动直播中，也是增值盈利的一部分；
 tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦，电商带货商品，没有主播，节目直播/转播，会议直播，自习室，基本的点赞，计数，聊天基础服务功能；还有些抽奖功能，答题功能(教育类直播居多)，投票，红包这些功能服务可在开播时设置，是否启用；有用户基础的流量平台可能还会以竞价排名的方式推荐一波；这些功能可以作为一个可管理的插件，通过组合的方式应用于直播中，方便管理，后续可以添加新功能满足某类型直播场景。"><meta itemprop="datePublished" content="2022-11-21T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2022-11-21T10:26:23+08:00" />
-<meta itemprop="wordCount" content="9266">
+<meta itemprop="wordCount" content="9526">
 <meta itemprop="keywords" content="直播," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="设计草稿-直播间赠送礼物功能"/>
 <meta name="twitter:description" content="背景
@@ -678,11 +678,11 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 <tr>
 <td>用户虚拟资产信息</td>
 <td>I.asset.{userId}</td>
-<td>string</td>
+<td>string/hash</td>
 <td>user_asset(json)</td>
 <td>1 d</td>
 <td>Y</td>
-<td></td>
+<td>type: String vs Hash tradeoff <!-- raw HTML omitted -->1. String 对于redis读详情数据效率高，但是写操作资产数目需要json decode/encode，如果操作是在业务应用逻辑服务器上操作可以使用(有对应优化json库)，结合watch+事务的cas方式; <!-- raw HTML omitted -->2. Hash 相对string读详情数据效率低些，但是写操作资产数目仅需hincr操作即可，如果操作是在数据中心redis上执行lu a脚本原子操作可以使用，redis lua 使用cjson库相对解析效率低些，并发量大容易增加redis数据中心负载，降低吞吐； 结合具体场景使用</td>
 </tr>
 <tr>
 <td>礼物信息</td>
@@ -758,7 +758,9 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 <ol>
 <li>存放的value值比较大，一般是list, set，zset, hash这些集合结构，存储的item/field数目一般在5000个左右，需要按比例切分，读放大的问题可以并发控制读取；</li>
 </ol>
-<p>demo代码如下：</p>
+<p>watch+事务，lua原子操作 demo代码如下：</p>
+<script type="application/javascript" src="https://gist.github.com/weedge/2b473c5baf0ac59d8d0c8b1ddc5692f5.js"></script>
+
 <script type="application/javascript" src="https://gist.github.com/weedge/c2d830dceef4163acc6dd749a05493db.js"></script>
 
 <h4 id="消息队列">消息队列</h4>
@@ -914,7 +916,7 @@ pxd tryout
 <p>开源开发框架和组件选择</p>
 <ol>
 <li>
-<p>开发语言：golang + lua5.1 + shell</p>
+<p>开发语言：golang + lua5.1(<a href="https://redis.io/docs/manual/programmability/lua-debugging/">redis lua debugging</a>) + shell</p>
 </li>
 <li>
 <p>开发框架：<a href="https://www.cloudwego.io/zh/docs/kitex/overview/">kitex</a>(统一规范化了gRPC和thrift的脚手架，常支持内部微服务，泛化调用+ proxyless xds流控, 参考<a href="https://mp.weixin.qq.com/s/G8vmlJyaimux_K-548kFbA">brpc</a>) + <a href="https://www.cloudwego.io/zh/docs/hertz/overview/">hertz</a>(http协议框架，常支持外部业务前/后台, 数据渲染,请求校验)</p>
@@ -966,7 +968,7 @@ pxd tryout
 </li>
 <li>
 <p>profiling调优：通过trace/prof工具关注耗时，使用系统内核优化的调用函数，以及系统参数调整，内存(减少gc，频繁操作小对象池化复用，内存分配管理，局部性原则)，cpu(亲和性)，I/O(网络，磁盘I/O 尽量异步处理,) ，buff(缓冲，batch)等</p>
-<p>tips: 业务整体设计方案ok的情况下，整体性能优化收益： 硬件(cpu/GPU浮点运算/TPU，内存/nvm，磁盘/ssd，网卡带宽拆解包校验) &gt; 内核系统调用 &gt; 业务代码(数据结构)</p>
+<p>tips: 业务整体设计方案ok的情况下，整体性能优化收益： 硬件(cpu/GPU浮点运算/TPU，内存/nvm，磁盘/ssd，网卡带宽拆解包校验) &gt; 内核系统调用 &gt; 业务代码(数据结构,语言层面编译优化)</p>
 </li>
 </ol>
 <h2 id="总结">总结</h2>
