@@ -492,8 +492,8 @@
 &lt;td&gt;default: 16/16&lt;/td&gt;
 &lt;td&gt;事务消息&lt;/td&gt;
 &lt;td&gt;eventId&lt;/td&gt;
-&lt;td&gt;TAG_SEND_GIFT (`&lt;/td&gt;
-&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;TAG_SEND_GIFT ( || 间隔多个tag)&lt;/td&gt;
+&lt;td&gt;用户赠送礼物互动资产变更&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;/td&gt;
