@@ -505,6 +505,7 @@
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
+&lt;p&gt;Tips: &lt;a href=&#34;https://github.com/apache/rocketmq/wiki/RIP-50-RocketMQ-Transaction-Message-Improvement&#34;&gt;RocketMQ事务消息改进&lt;/a&gt; 这个改进提案展示还未发布&lt;/p&gt;
 &lt;p&gt;messageBody&lt;/p&gt;
 &lt;table&gt;
 &lt;thead&gt;
@@ -538,7 +539,7 @@
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;producer GroupName/GroupID: P_GID_GIFT_ASSET_CHANGE&lt;/p&gt;
-&lt;p&gt;consumer GroupName/GroupID: C_GID_GIFT_ASSET_CHANGE   5.0版本尽量采用POP consumer模式&lt;/p&gt;
+&lt;p&gt;consumer GroupName/GroupID: C_GID_GIFT_ASSET_CHANGE   5.0版本尽量采用&lt;a href=&#34;https://mp.weixin.qq.com/s/UFWULymSblrs1hIGP5e7YQ&#34;&gt;POP consumer模式&lt;/a&gt;&lt;/p&gt;
 &lt;h4 id=&#34;api&#34;&gt;API&lt;/h4&gt;
 &lt;p&gt;前台统一入口接口参数安全验证&lt;/p&gt;
 &lt;p&gt;互动中台：&lt;/p&gt;
