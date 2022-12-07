@@ -78,7 +78,7 @@
 &lt;p&gt;观众赠送礼物： 礼物是通过虚拟货币进行等价交换的，通过礼物id获取到对应消费的虚拟资产，对中心远端缓存分片中的观众虚拟资产进行事务扣除处理，事务提交之后，发送事务消息；这里采用cas方式处理，一种是watch key(string 读写io是O(1), 不用hash是因为读取全部资产信息io是O(n))+事务方式，一种是lua的形式直接写业务提交脚本给redis核心主线程去处理；这里可能会想到直接用 hash incr原子操作，但是这里不行，因为需要读出key对应的虚拟资产，用于判断虚拟资源是否充足，读出来在扣除写入，需要一起执行，保证事务原子性；除了核心流程，还有发送礼物成功后，需要推送消息到直播间，根据产品礼品策略判断是否展示特效; 以及增加用户活动积分，增加互动积极性；&lt;/p&gt;
 &lt;p&gt;异步更新观众和主播数据库落地资产信息：为了减少对数据库的行锁的并发压力，可采用CAS的方式来更新数据库的数据，前提是单个用户资产操作，如果想单个事务单个事务处理，可以通过消息队列事务消息方式串起来(pipeline)；如果是多个用户资产操作在同一服务事物里操作的话，则不能使用CAS的方式处理了，只能以整体事务方式处理(默认RR级别)；&lt;/p&gt;
 &lt;p&gt;消息队列：涉及到金钱，为了提高吞吐，需要保证数据准确，数据最终一致(&lt;a href=&#34;https://www.allthingsdistributed.com/2008/12/eventually_consistent.html&#34;&gt;&lt;strong&gt;BASE&lt;/strong&gt;&lt;/a&gt;)，采用支持事务消息的分布式消息队列，比如：&lt;a href=&#34;https://rocketmq.apache.org/zh/docs/featureBehavior/04transactionmessage/&#34;&gt;rocketMQ&lt;strong&gt;事务消息&lt;/strong&gt;&lt;/a&gt;，这里可能有个疑问如果刚开始发送事务消息就失败了，可能是网络抖动,或者服务负载高等原因，一般是启用failover权重&lt;a href=&#34;https://en.wikipedia.org/wiki/Exponential_backoff&#34;&gt;指数退避&lt;/a&gt;策略重试到不同机房的rocketMQ集群，可以查看&lt;a href=&#34;https://rocketmq.apache.org/zh/docs/featureBehavior/05sendretrypolicy#%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6&#34;&gt;消息发送重试机制&lt;/a&gt; 和 &lt;a href=&#34;https://rocketmq.apache.org/zh/docs/bestPractice/15bestpractice&#34;&gt;最佳实践&lt;/a&gt;, &lt;a href=&#34;https://aws.amazon.com/cn/builders-library/timeouts-retries-and-backoff-with-jitter/&#34;&gt;timeouts-retries-and-backoff-with-jitter&lt;/a&gt;；如果重试还是失败打印错误日志记录发送详情，通过实时数据流将异常行为写入db中，以便后续补发；&lt;/p&gt;
-&lt;p&gt;Tips: 如果使用阿里云rocketMQ, 需要注意支持版本提供的SDK，5.0 版本 &lt;a href=&#34;https://github.com/apache/rocketmq-clients&#34;&gt;client SDK&lt;/a&gt; ; 4.0相关版本有些开发语言不支持tcp方式，仅提供http的方式(会少了一些功能，比如批量发送普通消息)；选用新版的5.0版本的SDK开发; 如果有自建运维能力，直接使用开源方案来搭建一套，比如用&lt;a href=&#34;https://www.amazonaws.cn/solutions/apache-rocketmq-on-aws/&#34;&gt;rocketMQ on aws&lt;/a&gt;，并且使用5.0可以实现一层mq-proxy;&lt;/p&gt;
+&lt;p&gt;Tips: 如果使用阿里云rocketMQ, 需要注意支持版本提供的SDK，5.0 版本 &lt;a href=&#34;https://github.com/apache/rocketmq-clients&#34;&gt;client SDK&lt;/a&gt; ; 4.0相关版本有些开发语言不支持tcp方式，仅提供http的方式(会少了一些功能，比如批量发送普通消息)；选用新版的5.0版本的SDK开发(golang版client SDK可以用来生产消息，对应消息类型都已支持); 如果有自建运维能力，直接使用开源方案来搭建一套，比如用&lt;a href=&#34;https://www.amazonaws.cn/solutions/apache-rocketmq-on-aws/&#34;&gt;rocketMQ on aws&lt;/a&gt;，并且使用5.0可以实现一层mq-proxy;&lt;/p&gt;
 &lt;p&gt;题外话: 现在分布式消息队列&lt;a href=&#34;https://kafka.apache.org/33/documentation/streams/architecture&#34;&gt;kafka-streams&lt;/a&gt;, &lt;a href=&#34;https://github.com/apache/rocketmq-streams&#34;&gt;rocketmq-streams&lt;/a&gt; 支持数据流(stream)处理大数据实时场景，支持一些简单算子操作和SQL(&lt;a href=&#34;https://github.com/confluentinc/ksql&#34;&gt;ksql&lt;/a&gt;, &lt;a href=&#34;https://github.com/alibaba/rsqldb&#34;&gt;rsql&lt;/a&gt;)；这个和flink对应功能是重合了，flink也在往table store上发力满足数据堆积的能力; 一波流～&lt;/p&gt;
 &lt;h3 id=&#34;调研&#34;&gt;调研&lt;/h3&gt;
 &lt;p&gt;以pc端抓http包为例，手机端接口一样，传输格式可能不同，pb/json&lt;/p&gt;
@@ -392,7 +392,7 @@
 &lt;td&gt;user_asset(json)&lt;/td&gt;
 &lt;td&gt;1 d&lt;/td&gt;
 &lt;td&gt;Y&lt;/td&gt;
-&lt;td&gt;type: String vs Hash tradeoff &lt;!-- raw HTML omitted --&gt;1. String 对于redis读详情数据效率高，但是写操作资产数目需要json decode/encode get/set，如果操作是在业务应用逻辑服务器上操作可以使用(有对应优化json库)，结合watch+事务的cas方式; &lt;!-- raw HTML omitted --&gt;2. Hash 相对string读详情数据效率低些，但是写操作资产数目仅需hincrby(hget/hset)操作即可，如果操作是在数据中心redis上执行lu a脚本原子操作可以使用，redis lua 使用cjson库相对解析效率低些，特别是大json，参考&lt;a href=&#34;https://blog.codingnow.com/2014/07/sproto.html&#34;&gt;sproto&lt;/a&gt;，并发量大容易增加redis数据中心负载，降低吞吐； 结合具体场景使用&lt;/td&gt;
+&lt;td&gt;type: String vs Hash tradeoff &lt;!-- raw HTML omitted --&gt;1. String 对于redis读详情数据效率高，但是写操作资产数目需要json decode/encode get/set，如果操作是在业务应用逻辑服务器上操作可以使用(有对应优化json库)，结合watch+事务cas方式; &lt;!-- raw HTML omitted --&gt;2. Hash 相对string读详情数据效率低些，但是写操作资产数目仅需hincrby(hget/hset)操作即可，如果操作是在数据中心redis上执行lua脚本原子操作可以使用，redis lua 使用cjson库相对解析效率低些，特别是大json，参考&lt;a href=&#34;https://blog.codingnow.com/2014/07/sproto.html&#34;&gt;sproto&lt;/a&gt;，并发量大容易增加redis数据中心负载，降低吞吐； 结合具体场景使用(尽量计算存储分离)&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;礼物信息&lt;/td&gt;
@@ -479,6 +479,7 @@
 &lt;thead&gt;
 &lt;tr&gt;
 &lt;th&gt;名称&lt;/th&gt;
+&lt;th&gt;读/写队列数&lt;/th&gt;
 &lt;th&gt;消息类型&lt;/th&gt;
 &lt;th&gt;消息key&lt;/th&gt;
 &lt;th&gt;消息tag&lt;/th&gt;
@@ -488,12 +489,14 @@
 &lt;tbody&gt;
 &lt;tr&gt;
 &lt;td&gt;TOPIC_ASSET_CHANGE_EVENT&lt;/td&gt;
+&lt;td&gt;default: 16/16&lt;/td&gt;
 &lt;td&gt;事务消息&lt;/td&gt;
 &lt;td&gt;eventId&lt;/td&gt;
-&lt;td&gt;TAG_GIFT&lt;/td&gt;
-&lt;td&gt;用户赠送礼物互动资产变更&lt;/td&gt;
+&lt;td&gt;TAG_SEND_GIFT (`&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
+&lt;td&gt;&lt;/td&gt;
 &lt;td&gt;&lt;/td&gt;
 &lt;td&gt;&lt;/td&gt;
 &lt;td&gt;&lt;/td&gt;
@@ -534,7 +537,8 @@
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;consumer GroupID: GID_GIFT_ASSET_CHANGE&lt;/p&gt;
+&lt;p&gt;producer GroupName/GroupID: P_GID_GIFT_ASSET_CHANGE&lt;/p&gt;
+&lt;p&gt;consumer GroupName/GroupID: C_GID_GIFT_ASSET_CHANGE   5.0版本尽量采用POP consumer模式&lt;/p&gt;
 &lt;h4 id=&#34;api&#34;&gt;API&lt;/h4&gt;
 &lt;p&gt;前台统一入口接口参数安全验证&lt;/p&gt;
 &lt;p&gt;互动中台：&lt;/p&gt;
@@ -590,8 +594,15 @@ sh build-image.sh 5.0.0 alpine
 &lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; ..
 sh stage.sh 5.0.0
 &lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; stages/5.0.0
+&lt;span class=&#34;c1&#34;&gt;# change data/broker/conf/broker.conf add brokerIP1={localIp}&lt;/span&gt;
+&lt;span class=&#34;c1&#34;&gt;# docker run -d -v `pwd`/data/broker/logs:/home/rocketmq/logs -v `pwd`/data/broker/store:/home/rocketmq/store -v `pwd`/data/broker/conf/broker.conf:/opt/rocketmq-5.0.0/conf/broker.conf --name rmqbroker --link rmqnamesrv:namesrv -e &amp;#34;NAMESRV_ADDR=namesrv:9876&amp;#34; -p 10909:10909 -p 10911:10911 -p 10912:10912 apache/rocketmq:5.0.0${TAG_SUFFIX} sh mqbroker -c /opt/rocketmq-5.0.0/conf/broker.conf&lt;/span&gt;
 &lt;span class=&#34;c1&#34;&gt;# run simple single node docker&lt;/span&gt;
 ./play-docker.sh alpine
+
+&lt;span class=&#34;c1&#34;&gt;# rocketmq dashboard local deploy&lt;/span&gt;
+docker pull apacherocketmq/rocketmq-dashboard:latest
+docker run -d --name rocketmq-dashboard -e &lt;span class=&#34;s2&#34;&gt;&amp;#34;JAVA_OPTS=-Drocketmq.namesrv.addr={localIp}:9876&amp;#34;&lt;/span&gt; -p 8181:8080 -t apacherocketmq/rocketmq-dashboard:latest
+&lt;span class=&#34;c1&#34;&gt;# view http://127.0.0.1:8181/&lt;/span&gt;
 
 &lt;span class=&#34;c1&#34;&gt;#tidb local deploy&lt;/span&gt;
 &lt;span class=&#34;c1&#34;&gt;# notice:&lt;/span&gt;
@@ -677,13 +688,13 @@ pxd tryout
 &lt;p&gt;业务功能调优：优先业务功能大方向调优，索引效率&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;profiling调优：通过trace/prof工具关注耗时，使用系统内核优化的调用函数，以及系统参数调整，内存(减少gc，频繁操作小对象池化复用，内存分配管理，局部性原则)，cpu(亲和性)，I/O(网络，磁盘I/O 尽量异步处理,) ，buff(缓冲，batch)等&lt;/p&gt;
+&lt;p&gt;profiling调优：通过相关trace/perf工具关注耗时，使用系统内核优化的调用函数，以及系统参数调整，内存(减少gc，频繁操作小对象池化复用，内存分配管理，局部性原则)，cpu(亲和性)，I/O(网络，磁盘I/O 尽量异步处理,) ，buff(缓冲，batch)等&lt;/p&gt;
 &lt;p&gt;tips: 业务整体设计方案ok的情况下，整体性能优化收益： 硬件(cpu/GPU浮点运算/TPU，内存/nvm，磁盘/ssd，网卡带宽拆解包校验) &amp;gt; 内核系统调用 &amp;gt; 业务代码(数据结构,语言层面编译优化)&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
 &lt;p&gt;面对大量并发请求的用户交互场景，涉及到用户金额等事务场景，整体思路是预热快速路径响应用户的交互请求行为，然后异步队列解耦，执行慢路径，慢路径上通过本地事务(同服务多表更新)，或者分布式事务(多服务对应表更新)，来保证数据整体一致，尽量通过批量处理提高吞吐；快路径尽量使用原子操作(服务主逻辑单线程执行)或者乐观锁用户程序自旋执行事务，按用户维度切分减少block；对于数据并发同步获取至缓存，则需要加分布式互斥锁自旋block一段时间，防止并发操作加锁尽量前置处理(warm up to run fast~),减少block；本质上都是将并行变成串行，只不过存内存IO比磁盘,网络IO操作要快很多(理论上，lua脚本在master主线程内存中原子执行相对watch+事务方式处理效率要高些)；还有服务异常时的降级措施，以及服务过载时的限流，以及消息数据流的反压措施。&lt;/p&gt;
-&lt;p&gt;题外话：没有银弹，充分利用开源 ☁️红利； &lt;em&gt;纸上得来终觉浅，绝知此事要躬行&lt;/em&gt;， step by step, maybe day day up~  hope expand your horizons&lt;/p&gt;
+&lt;p&gt;题外话：没有银弹，充分利用开源 ☁️红利(硬件计算存储资源)； &lt;em&gt;纸上得来终觉浅，绝知此事要躬行&lt;/em&gt;， step by step, maybe day day up~  hope expand your horizons&lt;/p&gt;
 &lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;
