@@ -371,7 +371,7 @@
 &lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/weedge/fd731ce8549cd99ccfc9491f6025ae8e.js&#34;&gt;&lt;/script&gt;
 
 &lt;h4 id=&#34;cache&#34;&gt;Cache&lt;/h4&gt;
-&lt;p&gt;key设计：&lt;/p&gt;
+&lt;h5 id=&#34;key设计&#34;&gt;key设计：&lt;/h5&gt;
 &lt;table&gt;
 &lt;thead&gt;
 &lt;tr&gt;
@@ -474,7 +474,7 @@
 &lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/weedge/c2d830dceef4163acc6dd749a05493db.js&#34;&gt;&lt;/script&gt;
 
 &lt;h4 id=&#34;消息队列&#34;&gt;消息队列&lt;/h4&gt;
-&lt;p&gt;Topic&lt;/p&gt;
+&lt;h5 id=&#34;topic&#34;&gt;Topic&lt;/h5&gt;
 &lt;table&gt;
 &lt;thead&gt;
 &lt;tr&gt;
@@ -489,7 +489,7 @@
 &lt;tbody&gt;
 &lt;tr&gt;
 &lt;td&gt;TOPIC_ASSET_CHANGE_EVENT&lt;/td&gt;
-&lt;td&gt;default: 16/16&lt;/td&gt;
+&lt;td&gt;default: 8/8&lt;/td&gt;
 &lt;td&gt;事务消息&lt;/td&gt;
 &lt;td&gt;eventId&lt;/td&gt;
 &lt;td&gt;TAG_SEND_GIFT ( || 间隔多个tag)&lt;/td&gt;
@@ -505,8 +505,14 @@
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;Tips: &lt;a href=&#34;https://github.com/apache/rocketmq/wiki/RIP-50-RocketMQ-Transaction-Message-Improvement&#34;&gt;RocketMQ事务消息改进&lt;/a&gt; 这个改进提案展示还未发布&lt;/p&gt;
-&lt;p&gt;messageBody&lt;/p&gt;
+&lt;p&gt;Tips:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;topic tag: 长度不能超过 127 (Byte.MAX_VALUE )；&lt;/li&gt;
+&lt;li&gt;读写队列数由消费集群和生产集群吞吐量决定，开发可以使用默认8/8；&lt;/li&gt;
+&lt;li&gt;事务消息不支持批量生产和延时生产，即使在生产侧设置延时发送事务消息，rocketmq 4.7.0之后的不会生效，&lt;a href=&#34;https://github.com/GenerousMan/rocketmq/commit/5a584d056a07350911954dd269bb1ee5c80dfd11&#34;&gt;commit&lt;/a&gt; ;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/apache/rocketmq/wiki/RIP-50-RocketMQ-Transaction-Message-Improvement&#34;&gt;RocketMQ事务消息改进&lt;/a&gt; 这个改进提案暂时还未发布；&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h5 id=&#34;message&#34;&gt;Message&lt;/h5&gt;
 &lt;table&gt;
 &lt;thead&gt;
 &lt;tr&gt;
@@ -518,7 +524,7 @@
 &lt;tbody&gt;
 &lt;tr&gt;
 &lt;td&gt;eventId&lt;/td&gt;
-&lt;td&gt;int64&lt;/td&gt;
+&lt;td&gt;string&lt;/td&gt;
 &lt;td&gt;变更事件id&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
@@ -532,14 +538,75 @@
 &lt;td&gt;变更事件类型，interactGift&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td&gt;msgData&lt;/td&gt;
+&lt;td&gt;messageBody&lt;/td&gt;
 &lt;td&gt;string&lt;/td&gt;
-&lt;td&gt;消息数据，user_asset信息&lt;/td&gt;
+&lt;td&gt;消息数据，更具消息事件类型定义，格式可以为json 以便跟踪查看&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;producer GroupName/GroupID: P_GID_GIFT_ASSET_CHANGE&lt;/p&gt;
 &lt;p&gt;consumer GroupName/GroupID: C_GID_GIFT_ASSET_CHANGE   5.0版本尽量采用&lt;a href=&#34;https://mp.weixin.qq.com/s/UFWULymSblrs1hIGP5e7YQ&#34;&gt;POP consumer模式&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;消息大小不能超过4M, 可参考 &lt;a href=&#34;https://help.aliyun.com/document_detail/440347.html&#34;&gt;5.0版限制&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;消息重试默认16次, 设置重试延迟级别(level)，设置的延迟级别下标(level-1)如下延迟数组&lt;code&gt;delayLevelArray&lt;/code&gt;：&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;[1s, 5s, 10s, 30s, 1m, 2m, 3m, 4m, 5m, 6m, 7m, 8m, 9m, 10m, 20m, 30m, 1h, 2h]&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;如果不在指定延迟级别内，使用默认 &lt;code&gt;delayLevelArray[2:]&lt;/code&gt;延迟数组依次重试16次；&lt;/p&gt;
+&lt;h5 id=&#34;rocketmq-系统topic&#34;&gt;RocketMQ 系统Topic&lt;/h5&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;名称&lt;/th&gt;
+&lt;th&gt;说明&lt;/th&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;%RETRY%C_GID_GIFT_ASSET_CHANGE&lt;/td&gt;
+&lt;td&gt;对应消费组重试topic，重试次数默认16次&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;%DLQ%C_GID_GIFT_ASSET_CHANGE&lt;/td&gt;
+&lt;td&gt;对应消费组死信队列topic, 超过重试次数放入该队列中&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;SCHEDULE_TOPIC_XXXX&lt;/td&gt;
+&lt;td&gt;延迟消息队列topic&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;em&gt;TBW102&lt;/em&gt;&lt;/td&gt;
+&lt;td&gt;默认用于创建不存在topic时使用这个默认topic来创建&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;RMQ_SYS_TRACE_TOPIC&lt;/td&gt;
+&lt;td&gt;开启消息跟踪的topic 用于消息轨迹&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;RMQ_SYS_TRANS_HALF_TOPIC&lt;/td&gt;
+&lt;td&gt;记录所有的半事务消息，消费端不可见&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;RMQ_SYS_TRANS_OP_HALF_TOPIC&lt;/td&gt;
+&lt;td&gt;记录已经COMMIT或ROLLBACK的半事务消息，tags是&amp;quot;d&amp;quot; 逻辑删除&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;TRANS_CHECK_MAX_TIME_TOPIC&lt;/td&gt;
+&lt;td&gt;未知状态的事务消息超过最大回查次数，默认15次，会存在这个队列&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;具体生产，消费用户资产事务消息demo如下: (demo中使用 &lt;a href=&#34;https://github.com/apache/rocketmq-client-go&#34;&gt;rocketmq-client-go&lt;/a&gt; 客户端生产消费配置了 trace，rocketmq broker也需要配置traceTopicEnable=true，可以查看消息轨迹)&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/weedge/fcbc8e4a2889c6230d62f6f35de6862d.js&#34;&gt;&lt;/script&gt;
+
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/weedge/37839a2fcb3c11f77228ce43a713dee7.js&#34;&gt;&lt;/script&gt;
+
 &lt;h4 id=&#34;api&#34;&gt;API&lt;/h4&gt;
 &lt;p&gt;前台统一入口接口参数安全验证&lt;/p&gt;
 &lt;p&gt;互动中台：&lt;/p&gt;
@@ -595,7 +662,7 @@ sh build-image.sh 5.0.0 alpine
 &lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; ..
 sh stage.sh 5.0.0
 &lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; stages/5.0.0
-&lt;span class=&#34;c1&#34;&gt;# change data/broker/conf/broker.conf add brokerIP1={localIp}&lt;/span&gt;
+&lt;span class=&#34;c1&#34;&gt;# change data/broker/conf/broker.conf add brokerIP1={localIp}, add traceTopicEnable=true&lt;/span&gt;
 &lt;span class=&#34;c1&#34;&gt;# docker run -d -v `pwd`/data/broker/logs:/home/rocketmq/logs -v `pwd`/data/broker/store:/home/rocketmq/store -v `pwd`/data/broker/conf/broker.conf:/opt/rocketmq-5.0.0/conf/broker.conf --name rmqbroker --link rmqnamesrv:namesrv -e &amp;#34;NAMESRV_ADDR=namesrv:9876&amp;#34; -p 10909:10909 -p 10911:10911 -p 10912:10912 apache/rocketmq:5.0.0${TAG_SUFFIX} sh mqbroker -c /opt/rocketmq-5.0.0/conf/broker.conf&lt;/span&gt;
 &lt;span class=&#34;c1&#34;&gt;# run simple single node docker&lt;/span&gt;
 ./play-docker.sh alpine
