@@ -545,8 +545,9 @@
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;producer GroupName/GroupID: P_GID_GIFT_ASSET_CHANGE&lt;/p&gt;
-&lt;p&gt;consumer GroupName/GroupID: C_GID_GIFT_ASSET_CHANGE   5.0版本尽量采用&lt;a href=&#34;https://mp.weixin.qq.com/s/UFWULymSblrs1hIGP5e7YQ&#34;&gt;POP consumer模式&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;消息大小不能超过4M, 可参考 &lt;a href=&#34;https://help.aliyun.com/document_detail/440347.html&#34;&gt;5.0版限制&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;consumer GroupName/GroupID: C_GID_GIFT_ASSET_CHANGE   5.0版本尽量采用&lt;a href=&#34;https://mp.weixin.qq.com/s/UFWULymSblrs1hIGP5e7YQ&#34;&gt;POP consumer模式&lt;/a&gt; , 比如执行如下命令切换成&lt;code&gt;POP&lt;/code&gt;模式：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;./mqadmin setConsumeMode -c DefaultCluster -t &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -g testGroup -m POP -n namesrv:9876
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;消息大小不能超过4M, 可参考 &lt;a href=&#34;https://help.aliyun.com/document_detail/440347.html&#34;&gt;5.0版限制&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;消息重试默认16次, 设置重试延迟级别(level)，设置的延迟级别下标(level-1)如下延迟数组&lt;code&gt;delayLevelArray&lt;/code&gt;：&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;[1s, 5s, 10s, 30s, 1m, 2m, 3m, 4m, 5m, 6m, 7m, 8m, 9m, 10m, 20m, 30m, 1h, 2h]&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;如果不在指定延迟级别内，使用默认 &lt;code&gt;delayLevelArray[2:]&lt;/code&gt;延迟数组依次重试16次；&lt;/p&gt;
