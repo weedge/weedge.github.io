@@ -602,7 +602,7 @@
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;具体生产，消费用户资产事务消息demo如下: (demo中使用 &lt;a href=&#34;https://github.com/apache/rocketmq-client-go&#34;&gt;rocketmq-client-go&lt;/a&gt; 客户端生产消费配置了 trace，rocketmq broker也需要配置traceTopicEnable=true，用于查看消息轨迹；可以在消息属性中加上全链路追踪的traceId，用于整体系统服务进行串联)&lt;/p&gt;
+&lt;p&gt;具体生产，消费用户资产事务消息demo如下: (demo中使用 &lt;a href=&#34;https://github.com/apache/rocketmq-client-go&#34;&gt;rocketmq-client-go&lt;/a&gt; &lt;strong&gt;客户端生产消费配置了 trace，rocketmq broker也需要配置traceTopicEnable=true，用于查看消息轨迹&lt;/strong&gt;；除此之外，可以在消息属性中加上全链路追踪的traceId，用于整体系统服务进行串联)&lt;/p&gt;
 &lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/weedge/fcbc8e4a2889c6230d62f6f35de6862d.js&#34;&gt;&lt;/script&gt;
 
 &lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/weedge/37839a2fcb3c11f77228ce43a713dee7.js&#34;&gt;&lt;/script&gt;
