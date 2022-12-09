@@ -550,6 +550,53 @@
 &lt;p&gt;消息重试默认16次, 设置重试延迟级别(level)，设置的延迟级别下标(level-1)如下延迟数组&lt;code&gt;delayLevelArray&lt;/code&gt;：&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;[1s, 5s, 10s, 30s, 1m, 2m, 3m, 4m, 5m, 6m, 7m, 8m, 9m, 10m, 20m, 30m, 1h, 2h]&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;如果不在指定延迟级别内，使用默认 &lt;code&gt;delayLevelArray[2:]&lt;/code&gt;延迟数组依次重试16次；&lt;/p&gt;
+&lt;h5 id=&#34;消费侧需要关注的参数&#34;&gt;消费侧需要关注的参数&lt;/h5&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;名称&lt;/th&gt;
+&lt;th&gt;默认&lt;/th&gt;
+&lt;th&gt;说明&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;pullBatchSize&lt;/td&gt;
+&lt;td&gt;32&lt;/td&gt;
+&lt;td&gt;每次发起pull请求到broker，客户端需要指定一个最大batch size，表示这一次拉取消息最多批量拉取多少条；范围在 [1,1024]; 为了提高吞吐，一般都大于1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;consumeMessageBatchMaxSize&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;批量消费的最大消息条数；范围在 [1,1024]；如果消费逻辑支持批量处理，可以设置值大于1； 处理业务逻辑的批量msgs的最大大小是consumeMessageBatchMaxSize和pullBatchSize的较小值。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;maxReconsumeTimes&lt;/td&gt;
+&lt;td&gt;-1&lt;/td&gt;
+&lt;td&gt;-1 默认16次重试；0或者小于-1 不重试；大于0，则为设置的重试次数&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;消费侧从broker pull message流程：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;NewPushConsumer -&amp;gt; GetOrNewRocketMQClient -&amp;gt; GetOrNewRocketMQClient-&amp;gt; 注册RegisterRequestFunc  ReqResetConsumerOffset事件的回调func -&amp;gt; 触发 resetOffset -&amp;gt; ResetOffset-&amp;gt; resume -&amp;gt; doBalance -&amp;gt; updateProcessQueueTable写入拉去请求到prCH中
+
+Start -&amp;gt; RegisterConsumer -&amp;gt; start
+异步 select 轮训从prCh中获取拉去请求pr -&amp;gt; 异步 pullMessage(pr)-&amp;gt;
+	异步 select 轮训处理pr中的处理队列和消息队列 submitToConsume(pr.pq, pr.mq) (一个是顺序orderly处理，一个是普通currently处理)
+	
+	-&amp;gt;pq.putMessage(msgs)从broker中请求的消息放入处理队列中的msgCh中
+	
+	-&amp;gt;普通处理consumeMessageCurrently() -&amp;gt; pq.getMessages 从处理队列中的msgCh中获取消息-&amp;gt; 
+		拉取到的一批消息会拆分成N（取决于consumeMessageBatchMaxSize）个小批消息subMsgs -&amp;gt; 
+		异步 consumeInner(ctx,subMsgs) -&amp;gt; 调用业务定义的回调业务函数callback.f(ctx, subMsgs...)-&amp;gt;
+	处理完成返回响应
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;对于普通消息的处理，可以看出批量拉去拆分成N个批量msgs, 每次获取批量msgs处理都是并发的，不会相互等待；拉完一批触发偏移事件继续拉去下一批到本地pr队列中，直到broker队列中没有可消费的数据；重试有对应topic重试队列不会阻塞当前topic队列的正常消费；&lt;/p&gt;
+&lt;p&gt;其他参考：&lt;a href=&#34;https://zhuanlan.zhihu.com/p/27397055&#34;&gt;客户端配置详解&lt;/a&gt;&lt;/p&gt;
 &lt;h5 id=&#34;rocketmq-系统topic&#34;&gt;RocketMQ 系统Topic&lt;/h5&gt;
 &lt;table&gt;
 &lt;thead&gt;
