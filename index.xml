@@ -210,7 +210,7 @@
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;&lt;strong&gt;user_asset 用户拥有的虚拟资产表&lt;/strong&gt;：  用户当前拥有的虚拟币余额&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;user_asset 用户拥有的虚拟资产表&lt;/strong&gt;：  用户当前拥有的虚拟币余额， 建库建表按照userId进行partition 分库分表 (写更新热点)&lt;/p&gt;
 &lt;table&gt;
 &lt;thead&gt;
 &lt;tr&gt;
@@ -303,7 +303,7 @@
 &lt;p&gt;如果使用mongodb来存放，直接使用findAndModify incr 来操作即可，当然防止重复数据，需要加唯一索引&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;strong&gt;user_asset_record 用户虚拟币交易流水表&lt;/strong&gt;：记录虚拟币增加和减少数据详情，这个提供后台查看，用于重复请求幂等处理， 建库建表按照userId进行partition 分库分表；&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;user_asset_record 用户虚拟币交易流水表&lt;/strong&gt;：记录虚拟币增加和减少数据详情，这个提供后台查看，用于重复请求幂等处理， 建库建表按照userId进行partition 分库分表； (写插入热点)&lt;/p&gt;
 &lt;table&gt;
 &lt;thead&gt;
 &lt;tr&gt;
