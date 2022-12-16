@@ -252,7 +252,7 @@
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span class=&#34;k&#34;&gt;UNIQUE&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;KEY&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ind_user_assert&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;userId&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;assetType&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span class=&#34;k&#34;&gt;UNIQUE&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;KEY&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;uniq_user_assert&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;userId&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;assetType&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;对于&lt;strong&gt;单个用户资产修改&lt;/strong&gt;；如果存在 &lt;strong&gt;select 资产，然后根据不同产品策略进行业务逻辑计算出更新后资产，最后update 更新&lt;/strong&gt; 场景，在并发场景下，三种方式：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
@@ -376,6 +376,7 @@
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;资源评估：用抖音看下卡塔尔世界杯，支持下梅老板的阿根廷🇦🇷队直播，去估算下吧～～&lt;/p&gt;
+&lt;p&gt;Tips: 资源评估，建表；请参考规范和最佳实践：&lt;a href=&#34;https://docs.pingcap.com/zh/tidb/stable/tidb-best-practices&#34;&gt;tibd 最佳实践&lt;/a&gt; &lt;a href=&#34;https://cn.pingcap.com/best-practice-detail/best-practices-for-developing-applications-with-tidb&#34;&gt;tidb开发规范&lt;/a&gt; &lt;a href=&#34;https://help.aliyun.com/document_detail/308293.html&#34;&gt;palordb-x最佳实践&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;在支付中台，某个互动涉及到多个用户资产的变更，需要把多个写操作关联到一个本地事务进行处理，保证数据扣减和增减一致，需要开启本地事务来处理多表数据；以下gist为并发mysql本地事务处理测试demo&lt;/p&gt;
 &lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/weedge/1700dd7053a87a4ab35ba4fce0ebea6a.js&#34;&gt;&lt;/script&gt;
 
@@ -1094,7 +1095,7 @@ pxd tryout
 &lt;p&gt;&lt;a href=&#34;https://kvrocks.apache.org/zh-CN/docs/Cluster/kvrocks-cluster-introduction&#34;&gt;https://kvrocks.apache.org/zh-CN/docs/Cluster/kvrocks-cluster-introduction&lt;/a&gt;   &lt;a href=&#34;https://www.qin.news/kvrocks-qian-xi/&#34;&gt;https://www.qin.news/kvrocks-qian-xi/&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://tidb.net/blog/09cc69f4&#34;&gt;https://tidb.net/blog/09cc69f4&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://tidb.net/blog/09cc69f4&#34;&gt;https://tidb.net/blog/09cc69f4&lt;/a&gt; , &lt;a href=&#34;https://cn.pingcap.com/best-practice-detail/best-practices-for-developing-applications-with-tidb&#34;&gt;https://cn.pingcap.com/best-practice-detail/best-practices-for-developing-applications-with-tidb&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/UFWULymSblrs1hIGP5e7YQ&#34;&gt;https://mp.weixin.qq.com/s/UFWULymSblrs1hIGP5e7YQ&lt;/a&gt; , &lt;a href=&#34;https://github.com/apache/rocketmq/wiki/RIP-50-RocketMQ-Transaction-Message-Improvement&#34;&gt;https://github.com/apache/rocketmq/wiki/RIP-50-RocketMQ-Transaction-Message-Improvement&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
