@@ -1044,7 +1044,7 @@ pxd tryout
 &lt;p&gt;模块测试&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;加上服务监控，日志，报警，重点关注核心链路指标：资源U.S.E, 应用R.E.D  参考: &lt;a href=&#34;http://www.infoq.com/articles/monitoring-SRE-golden-signals&#34;&gt;&lt;strong&gt;Monitoring SRE’s Golden Signals&lt;/strong&gt;&lt;/a&gt;, &lt;a href=&#34;https://sre.google/sre-book/monitoring-distributed-systems/#xref_monitoring_golden-signals&#34;&gt;monitoring_golden-signals&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;加上服务监控，日志，报警，重点关注核心链路指标：资源U.S.E, 应用R.E.D  参考: &lt;a href=&#34;http://www.infoq.com/articles/monitoring-SRE-golden-signals&#34;&gt;&lt;strong&gt;Monitoring SRE’s Golden Signals&lt;/strong&gt;&lt;/a&gt;, &lt;a href=&#34;https://sre.google/sre-book/monitoring-distributed-systems/#xref_monitoring_golden-signals&#34;&gt;monitoring_golden-signals L.E.T.S&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;接口压测&lt;/p&gt;
