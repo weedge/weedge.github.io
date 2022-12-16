@@ -252,7 +252,8 @@
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;对于&lt;strong&gt;单个用户资产修改&lt;/strong&gt;；如果存在 &lt;strong&gt;select 资产，然后根据不同产品策略进行业务逻辑计算出更新后资产，最后update 更新&lt;/strong&gt; 场景，在并发场景下，三种方式：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span class=&#34;k&#34;&gt;UNIQUE&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;KEY&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ind_user_assert&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;userId&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;assetType&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;对于&lt;strong&gt;单个用户资产修改&lt;/strong&gt;；如果存在 &lt;strong&gt;select 资产，然后根据不同产品策略进行业务逻辑计算出更新后资产，最后update 更新&lt;/strong&gt; 场景，在并发场景下，三种方式：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
 &lt;p&gt;服务直接通过分布式锁来处理，这种方式不能防住其他其他服务或者脚本直接操作数据库的情况，除非在操作之前也去获取一次锁，而且引入外部依赖；可以考虑自举方式，服务资源实例自己来上锁；&lt;/p&gt;
@@ -315,7 +316,7 @@
 &lt;tr&gt;
 &lt;td&gt;recordId&lt;/td&gt;
 &lt;td&gt;int64&lt;/td&gt;
-&lt;td&gt;PK  用户资产流水记录id&lt;/td&gt;
+&lt;td&gt;PK  用户资产流水记录id ，不做关联，仅作为单个流水分表id&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;opUserId&lt;/td&gt;
@@ -340,7 +341,7 @@
 &lt;tr&gt;
 &lt;td&gt;eventId&lt;/td&gt;
 &lt;td&gt;string&lt;/td&gt;
-&lt;td&gt;事件Id: 直播互动场景下，互动事件id 用于贯彻整个送礼物流水链路,进行幂等处理; 用户充值场景下，订单事件id, 唯一&lt;/td&gt;
+&lt;td&gt;事件Id: 直播互动场景下，互动事件id 用于贯彻整个送礼物流水链路,进行幂等处理; 用户充值场景下，订单事件id, 唯一 UK&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;eventType&lt;/td&gt;
@@ -1044,16 +1045,16 @@ pxd tryout
 &lt;p&gt;模块测试&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;加上服务监控，日志，报警，重点关注核心链路指标：资源U.S.E, 应用R.E.D  参考: &lt;a href=&#34;http://www.infoq.com/articles/monitoring-SRE-golden-signals&#34;&gt;&lt;strong&gt;Monitoring SRE’s Golden Signals&lt;/strong&gt;&lt;/a&gt;, &lt;a href=&#34;https://sre.google/sre-book/monitoring-distributed-systems/#xref_monitoring_golden-signals&#34;&gt;monitoring_golden-signals L.E.T.S&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;加上服务监控，日志，报警，重点关注核心链路指标：资源U.S.E, 应用R.E.D; 参考: &lt;a href=&#34;http://www.infoq.com/articles/monitoring-SRE-golden-signals&#34;&gt;&lt;strong&gt;Monitoring SRE’s Golden Signals&lt;/strong&gt;&lt;/a&gt;, &lt;a href=&#34;https://sre.google/sre-book/monitoring-distributed-systems/#xref_monitoring_golden-signals&#34;&gt;monitoring_golden-signals L.E.T.S&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;接口压测&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;核心前端接口整体压测&lt;/p&gt;
+&lt;p&gt;核心前端接口整体压测, 需要流量和数据存储环境隔离，整体通过服务治理框架进行流控，打上stress标签染色，请求流量和数据流通过stress标签将数据存放于影子逻辑存储(cache KV, 表/集合/索引，队列)中; 参考：&lt;a href=&#34;https://mp.weixin.qq.com/s/vofrpFGvnptj3MNAv1hQ-w&#34;&gt;Rhino&lt;/a&gt; &lt;a href=&#34;https://tech.meituan.com/2018/09/27/quake-introduction.html&#34;&gt;Quake&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;混沌测试，尽量覆盖触发边界场景，面向故障编程，测试&lt;/p&gt;
+&lt;p&gt;混沌测试，尽量覆盖触发边界场景，面向故障编程，测试; 参考：&lt;a href=&#34;https://mp.weixin.qq.com/s/kZ_sDdrbc-_trVLNCWXyYw&#34;&gt;混沌工程实践&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;业务功能调优：优先业务功能大方向调优，索引效率&lt;/p&gt;
