@@ -376,7 +376,7 @@
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;资源评估：用抖音看下卡塔尔世界杯，支持下梅老板的阿根廷🇦🇷队直播，去估算下吧～～&lt;/p&gt;
-&lt;p&gt;Tips: 资源评估，建表；请参考规范和最佳实践：&lt;a href=&#34;https://docs.pingcap.com/zh/tidb/stable/tidb-best-practices&#34;&gt;tibd 最佳实践&lt;/a&gt; &lt;a href=&#34;https://cn.pingcap.com/best-practice-detail/best-practices-for-developing-applications-with-tidb&#34;&gt;tidb开发规范&lt;/a&gt; &lt;a href=&#34;https://help.aliyun.com/document_detail/308293.html&#34;&gt;palordb-x最佳实践&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Tips: 资源评估，建表，索引，事务，查询优化等操作；请参考规范和最佳实践：&lt;a href=&#34;https://docs.pingcap.com/zh/tidb/stable/tidb-best-practices&#34;&gt;tibd 最佳实践&lt;/a&gt; &lt;a href=&#34;https://cn.pingcap.com/best-practice-detail/best-practices-for-developing-applications-with-tidb&#34;&gt;tidb开发规范&lt;/a&gt; &lt;a href=&#34;https://help.aliyun.com/document_detail/308293.html&#34;&gt;palordb-x最佳实践&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;在支付中台，某个互动涉及到多个用户资产的变更，需要把多个写操作关联到一个本地事务进行处理，保证数据扣减和增减一致，需要开启本地事务来处理多表数据；以下gist为并发mysql本地事务处理测试demo&lt;/p&gt;
 &lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/weedge/1700dd7053a87a4ab35ba4fce0ebea6a.js&#34;&gt;&lt;/script&gt;
 
