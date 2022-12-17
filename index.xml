@@ -315,7 +315,7 @@
 &lt;p&gt;如果使用mongodb来存放，直接使用findAndModify incr 来操作即可，当然防止重复数据，需要加唯一索引&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;strong&gt;user_asset_record 用户虚拟币交易流水表&lt;/strong&gt;：记录虚拟币增加和减少数据详情，这个提供后台查看，用于重复请求幂等处理， 建库建表按照userId进行hash 分库分表分区 / 分片(Region)； (写插入热点)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;user_asset_record 用户虚拟币交易流水表&lt;/strong&gt;：记录虚拟币增加和减少数据详情，这个提供后台查看，用于重复请求幂等处理， 建库建表按照userId进行hash 分库分表分区 / 分片(Region)； (写插入热点) , notice: 这里冗余设计了，可以按照第三范式，一个事件有多人参与，一个人可以参与多个事件，分出一个用户事件关联表(user_event)，一个事件表(event_record)；主要是方便按用户维度获取流水记录；&lt;/p&gt;
 &lt;table&gt;
 &lt;thead&gt;
 &lt;tr&gt;
