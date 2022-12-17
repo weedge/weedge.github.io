@@ -77,7 +77,7 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 直播线上互动，已成为当下生活的一部分，特别是受疫情影响，成为互联网的主要流量入口；研究了下各个平台直播间送礼物的功能，发现大同小异，在礼物分组，一些定制化的礼物有区分，整体交互流程大致相同，主要是直播间主播上播，用户通过礼物打赏给主播们(一个直播间可能有多名主播在互动)，礼物是通过虚拟币(**币) 换算，早期互联网用户线上互动礼物，玩家最多的应该是QQ币了，只不过以前的打赏赠送场景是在web2.0刚开始的时候，交互的大多是文字和图片，相关产品场景，虚拟空间(个人空间，博客，种菜等娱乐互动场景)；随着底层网络基建的发展，4G之后出现了大量的视频网站，用户可以录一些视频内容来互动；到后来音视频流媒体的发展，相关的在线直播间开始涌现，用户之间享受一波直播红利带来的互动，当然影响相对于前面的形式更加实时和直接；现在的5G和未来6G，以及物联网都会给直播形式带来新的互动场景,比如：虚拟会场，人机互动；其中早期培养起来的打赏送礼行为功能经常用于有主播的娱乐互动直播中，也是增值盈利的一部分；
 tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦，电商带货商品，没有主播，节目直播/转播，会议直播，自习室，基本的点赞，计数，聊天基础服务功能；还有些抽奖功能，答题功能(教育类直播居多)，投票，红包这些功能服务可在开播时设置，是否启用；有用户基础的流量平台可能还会以竞价排名的方式推荐一波；这些功能可以作为一个可管理的插件，通过组合的方式应用于直播中，方便管理，后续可以添加新功能满足某类型直播场景。"><meta itemprop="datePublished" content="2022-11-21T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2022-11-21T10:26:23+08:00" />
-<meta itemprop="wordCount" content="12436">
+<meta itemprop="wordCount" content="13633">
 <meta itemprop="keywords" content="直播," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="设计草稿-直播间赠送礼物功能"/>
 <meta name="twitter:description" content="背景
@@ -610,7 +610,7 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 <p>如果使用mongodb来存放，直接使用findAndModify incr 来操作即可，当然防止重复数据，需要加唯一索引</p>
 </li>
 </ol>
-<p><strong>user_asset_record 用户虚拟币交易流水表</strong>：记录虚拟币增加和减少数据详情，这个提供后台查看，用于重复请求幂等处理， 建库建表按照userId进行hash 分库分表分区 / 分片(Region)； (写插入热点) , notice: 这里冗余设计了，可以按照第三范式，一个事件有多人参与，一个人可以参与多个事件，分出一个用户事件关联表(user_event)，一个事件表(event_record)；主要是方便按用户维度获取流水记录；</p>
+<p><strong>user_asset_record 用户虚拟币交易流水表</strong>：记录虚拟币增加和减少数据详情，这个提供后台查看，用于重复请求幂等处理， 建库建表按照userId进行hash 分库分表分区 / 分片(Region)； (写插入热点) , notice: 这里冗余设计了，可以按照第三范式，一个事件有多人参与，一个人可以参与多个事件，分出一个用户事件关联表(user_event)，一个事件表(event_record)；主要是方便按用户维度获取流水记录；这里如果标准字段换成存放操作用户opUser和接受用户toUser，如果按照opUser维度拆分，查询toUser的流水数据就不方便，虽然polardb-x可以使用<a href="https://help.aliyun.com/document_detail/311522.html">全局二级索引</a>来解决这个问题，但是换个建表维度思路既可以满足当前这个业务场景，同时也通用统一使用userId进行拆分，如果是ToB场景，可以使用租户id(tenantId)分库，用户userId分表，这里ToC场景用户维度，直接userId分区即可。</p>
 <table>
 <thead>
 <tr>
@@ -699,8 +699,25 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 </span><span class="w"></span><span class="cm">/* eg: partitions*2^min(SHARD_ROW_ID_BITS,PRE_SPLIT_REGIONS) = 256 regions, echo regions 96MB(compressed) */</span><span class="w">
 </span><span class="w"></span><span class="cm">/*T! SHARD_ROW_ID_BITS=4 PRE_SPLIT_REGIONS=5 */</span><span class="w">
 </span><span class="w"></span><span class="k">show</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="n">user_asset_record</span><span class="w"> </span><span class="n">regions</span><span class="p">;</span><span class="w">
+</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="cm">/* create db table for polardb-x innodb(index B+TREE) */</span><span class="w">
+</span><span class="w"></span><span class="cm">/* PARTITION_MODE sharding (db,table)/partitioning use partitioning */</span><span class="w">
+</span><span class="w"></span><span class="k">create</span><span class="w"> </span><span class="k">database</span><span class="w"> </span><span class="o">`</span><span class="n">pay</span><span class="o">`</span><span class="w"> </span><span class="n">PARTITION_MODE</span><span class="o">=</span><span class="n">partitioning</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="o">`</span><span class="n">pay</span><span class="o">`</span><span class="p">.</span><span class="o">`</span><span class="n">user_asset</span><span class="o">`</span><span class="w">
+</span><span class="w"></span><span class="p">(</span><span class="w">
+</span><span class="w">    </span><span class="o">`</span><span class="n">userId</span><span class="o">`</span><span class="w"> </span><span class="nb">bigint</span><span class="w"> </span><span class="n">unsigned</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="s1">&#39;0&#39;</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="o">`</span><span class="n">assetCn</span><span class="o">`</span><span class="w"> </span><span class="nb">bigint</span><span class="w"> </span><span class="n">unsigned</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="s1">&#39;0&#39;</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="o">`</span><span class="n">assetType</span><span class="o">`</span><span class="w"> </span><span class="n">tinyint</span><span class="w"> </span><span class="n">unsigned</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="s1">&#39;0&#39;</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="o">`</span><span class="k">version</span><span class="o">`</span><span class="w"> </span><span class="nb">bigint</span><span class="w"> </span><span class="n">unsigned</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="s1">&#39;0&#39;</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="o">`</span><span class="n">createdAt</span><span class="o">`</span><span class="w"> </span><span class="k">timestamp</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">CURRENT_TIMESTAMP</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="o">`</span><span class="n">updatedAt</span><span class="o">`</span><span class="w"> </span><span class="k">timestamp</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">CURRENT_TIMESTAMP</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">UPDATE</span><span class="w"> </span><span class="k">CURRENT_TIMESTAMP</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="k">UNIQUE</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="o">`</span><span class="n">uk_user_assetType</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">userId</span><span class="o">`</span><span class="p">,</span><span class="o">`</span><span class="n">assetType</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span><span class="w"></span><span class="p">)</span><span class="w"> </span><span class="n">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="n">CHARSET</span><span class="o">=</span><span class="n">utf8mb4</span><span class="w"> </span><span class="n">partition</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">hash</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="o">`</span><span class="n">userId</span><span class="o">`</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="n">partitions</span><span class="w"> </span><span class="mi">256</span><span class="p">;</span><span class="w">
+</span><span class="w">
 </span></code></pre></div><p>资源评估：用抖音看下卡塔尔世界杯，支持下梅老板的阿根廷🇦🇷队直播，去估算下吧～～</p>
-<p>Tips: 采用分布式数据库，对其资源评估，建表，索引，事务，查询优化等操作；请参考规范和最佳实践：<a href="https://docs.pingcap.com/zh/tidb/stable/tidb-best-practices">tibd 最佳实践</a> <a href="https://docs.pingcap.com/zh/tidb/stable/high-concurrency-best-practices">TiDB 高并发写入场景最佳实践</a> <a href="https://cn.pingcap.com/best-practice-detail/best-practices-for-developing-applications-with-tidb">tidb开发规范</a> <a href="https://help.aliyun.com/document_detail/308293.html">palordb-x最佳实践</a></p>
+<p>Tips: 采用分布式数据库，对其资源评估，建表，索引，事务，查询优化等操作；请参考规范和最佳实践：<a href="https://docs.pingcap.com/zh/tidb/stable/tidb-best-practices">tibd 最佳实践</a> <a href="https://docs.pingcap.com/zh/tidb/stable/high-concurrency-best-practices">TiDB 高并发写入场景最佳实践</a> <a href="https://cn.pingcap.com/best-practice-detail/best-practices-for-developing-applications-with-tidb">tidb开发规范</a> <a href="https://help.aliyun.com/document_detail/308293.html">palordb-x最佳实践</a> ;</p>
+<p>题外话：Tidb 底层存储tikv分片采用的范围分片，如果没有指定分片数，默认1个，当tikv上一个region写满了，会动态分裂出一个新的region, 可以提前分配好分片数，以防潮汐流量热点写入，比如这里的热门主播资产信息，以及资产流水记录，通过配置 SHARD_ROW_ID_BITS 参数通过tidb自身服务隐藏ROW_ID hash打散写入热点，类似mr任务数据倾斜时的再次hash打散，与redis/程序中的map rehash不同，redis rehash解决碰撞查找效率低和空间使用率低问题，通过loadFactor阈值，触发扩容和缩容，golang中map rehash仅触发扩容，这里所谈的是流量倾斜导致负载不均衡重新rehash； 而polardb-x的负载扩容 则类似于redis的rehash机制扩容，数据倾斜的问题是不能通过扩容来解决，可参考<a href="https://help.aliyun.com/document_detail/309469.html">polardb-x如何分析数据分布不均衡</a>。</p>
 <p>在支付中台，某个互动涉及到多个用户资产的变更，需要把多个写操作关联到一个本地事务进行处理，保证数据扣减和增减一致，需要开启本地事务来处理多表数据；以下gist为并发mysql本地事务处理测试demo</p>
 <script type="application/javascript" src="https://gist.github.com/weedge/1700dd7053a87a4ab35ba4fce0ebea6a.js"></script>
 
@@ -764,7 +781,7 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 <td>token</td>
 <td>60 s</td>
 <td>N</td>
-<td>AP型锁，加锁单个线程从db中获取数据写入缓存，初始化送礼用户资产信息，锁的是热更新资源；<strong>从follower读取数据必须是强一致性读，否则从leader/master上读取</strong>；<!-- raw HTML omitted -->这里使用redlock，如果运行锁失效多次读写入缓存幂等操作,竞争条件是可以接受，直接用单集群实例redlock就行；否则需要多集群redlock加锁，具体详情：<a href="https://redis.io/docs/manual/patterns/distributed-locks/">distributed-locks</a> PS: 类似使用数据库锁也可以使用redlock算法来实现分布式可靠加锁;  锁的粒度，可以先分散到本地锁(需要加等待超时时间，防止夯主服务，超时上游可以重试)，然后分布式锁只有单个线程获取数据去设置缓存，降低分布式锁的竞争，最多部署进程实例数目竞争,高并发场景下很大幅度减少网络IO。 如下场景：<strong>很多观众给热门女主播送礼物，这个女主播同时给热门男主播送礼物</strong></td>
+<td>AP型锁，加锁单个线程从db中获取数据写入缓存，初始化送礼用户资产信息，锁的是热更新资源；存在数据复制的延迟可能带来的数据写后读（read-after-write）不一致问题，所以<strong>从follower读取数据必须是强一致性读(tidb支持)/全局一致性读(polardb-x支持)，否则从leader/master上读取</strong>；<!-- raw HTML omitted -->这里使用redlock，如果运行锁失效多次读写入缓存幂等操作,竞争条件是可以接受，直接用单集群实例redlock就行；否则需要多集群redlock加锁，具体详情：<a href="https://redis.io/docs/manual/patterns/distributed-locks/">distributed-locks</a> PS: 类似使用数据库锁也可以使用redlock算法来实现分布式可靠加锁;  锁的粒度，可以先分散到本地锁(需要加等待超时时间，防止夯主服务，超时上游可以重试)，然后分布式锁只有单个线程获取数据去设置缓存，降低分布式锁的竞争，最多部署进程实例数目竞争,高并发场景下很大幅度减少网络IO。 如下场景：<strong>很多观众给热门女主播送礼物，这个女主播同时给热门男主播送礼物</strong></td>
 </tr>
 <tr>
 <td>资产变更消息</td>
@@ -1382,7 +1399,7 @@ pxd tryout
 <p>混沌测试，尽量覆盖触发边界场景，面向故障编程，测试; 参考：<a href="https://mp.weixin.qq.com/s/kZ_sDdrbc-_trVLNCWXyYw">混沌工程实践</a></p>
 </li>
 <li>
-<p>业务功能调优：优先业务功能大方向调优，索引效率 (空间换时间，k/v 操作 B+tree,LSM-tree)</p>
+<p>业务功能调优：优先业务功能大方向调优，分布式数据库下的查询语句，算子下推，索引效率 (空间换时间，k/v 操作 B+tree,LSM-tree)</p>
 </li>
 <li>
 <p>profiling调优：通过相关trace/perf工具关注耗时，使用系统内核优化的调用函数，以及系统参数调整，内存(减少gc，频繁操作小对象池化复用，内存分配管理，局部性原则)，cpu(亲和性)，I/O(网络，磁盘I/O 尽量异步处理,) ，buff(缓冲，batch)等</p>
@@ -1390,7 +1407,7 @@ pxd tryout
 </li>
 </ol>
 <h2 id="总结">总结</h2>
-<p>面对大量并发请求的用户交互场景，涉及到用户金额等事务场景，整体思路是预热快速路径响应用户的交互请求行为，然后异步队列解耦，执行慢路径，慢路径上通过本地事务(同服务多表更新)，或者分布式事务(多服务对应表更新)，来保证数据整体一致，尽量通过批量处理提高吞吐；快路径尽量使用原子操作(服务主逻辑单线程执行)或者乐观锁用户程序自旋执行事务，按用户维度切分减少block, 以及通过提前规划分布式存储均匀打散读写热点(分库分表分区分片/槽Region/Slot)，规避节点负载倾斜不均衡问题(大流量,大数据),多维度查询的话可以采用数据异构方式(空间换时间)，如果涉及到跨数据中心则需要考虑数据同构迁移问题(比如国际化数据隐私<em>PIPL</em> <em>GDPR</em>)；对于数据并发同步获取至缓存，则需要加分布式互斥锁自旋block一段时间，防止并发操作加锁尽量前置处理(warm up to run fast~),减少block；本质上都是将并行变成串行，只不过内存IO比磁盘,网络IO操作要快很多(理论上，lua脚本在master主线程内存中原子执行相对watch+事务方式处理效率要高些)；还有服务异常时的降级措施，以及服务过载时的限流，以及消息数据流的反压措施。</p>
+<p>面对大量并发请求的用户交互场景，涉及到用户金额等事务场景，整体思路是预热快速路径响应用户的交互请求行为，然后异步队列解耦，执行慢路径，慢路径上通过本地事务(同服务多表更新)，或者分布式事务(多服务对应表更新)，来保证数据整体一致，尽量通过批量处理(单分片事务组提交)提高吞吐；快路径尽量使用原子操作(服务主逻辑单线程执行)或者乐观锁用户程序自旋执行事务，按用户维度切分减少block, 以及通过提前规划分布式存储均匀打散读写热点(分库分表分区分片/槽Region/Slot)，规避节点负载倾斜不均衡问题(大流量,大数据),多维度查询的话可以采用数据异构方式(空间换时间)，如果涉及到跨数据中心则需要考虑数据同构迁移问题(比如国际化数据隐私<em>PIPL</em> <em>GDPR</em>)；对于数据并发同步获取至缓存，则需要加分布式互斥锁自旋block一段时间，防止并发操作加锁尽量前置处理(warm up to run fast~),减少block；本质上都是将并行变成串行，只不过内存IO比磁盘,网络IO操作要快很多(理论上，lua脚本在master主线程内存中原子执行相对watch+事务方式处理效率要高些)；还有服务异常时的降级措施，以及服务过载时的限流，以及消息数据流的反压措施。</p>
 <p>题外话：没有银弹，充分利用开源 ☁️红利(硬件计算存储资源)； <em>纸上得来终觉浅，绝知此事要躬行</em>， step by step, maybe day day up~  hope expand your horizons</p>
 <h2 id="参考">参考</h2>
 <ol>
