@@ -781,7 +781,33 @@
 
   
 
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/%E8%AE%BE%E8%AE%A1/%E5%8A%9F%E8%83%BD%E9%9C%80%E6%B1%82%E8%AE%BE%E8%AE%A1/%E7%9B%B4%E6%92%AD%E9%97%B4%E6%89%93%E8%B5%8F%E5%8A%9F%E8%83%BD%E8%AE%BE%E8%AE%A1/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
   
+  </div>
 
     
 
@@ -924,7 +950,7 @@
 
 
 
-  <script id="dsq-count-scr" src="//.disqus.com/count.js" async></script>
+  <script id="dsq-count-scr" src="//weedge.disqus.com/count.js" async></script>
 
 
 
