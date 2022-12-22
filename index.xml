@@ -1125,7 +1125,7 @@ pxd tryout
 &lt;p&gt;k8s/istio operator&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;开源开发框架和组件选择&lt;/p&gt;
+&lt;p&gt;开源开发框架和组件选择(在标准化，规范模块化的前提下，尽量自动化，提高研发效能，focus on 核心业务逻辑)&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
 &lt;p&gt;开发语言：golang + lua5.1(&lt;a href=&#34;https://redis.io/docs/manual/programmability/lua-debugging/&#34;&gt;redis lua debugging&lt;/a&gt;) + shell&lt;/p&gt;
@@ -1158,6 +1158,9 @@ pxd tryout
 &lt;p&gt;RocketMQ-operator on k8s: &lt;a href=&#34;https://github.com/apache/rocketmq-operator&#34;&gt;https://github.com/apache/rocketmq-operator&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;题外话：或者进一步的直接使用无服务serverless 函数计算，开源方案 &lt;a href=&#34;https://docs.openfaas.com/deployment/kubernetes/&#34;&gt;&lt;strong&gt;openfaas on k8s&lt;/strong&gt;&lt;/a&gt;, 或者使用云服务比如&lt;a href=&#34;https://aws.amazon.com/cn/campaigns/lambda/&#34;&gt;aws lambda&lt;/a&gt;(transform, not transport data), 专注于业务逻辑，减少&amp;rsquo;胶水&amp;rsquo;代码，缺少了开发框架的依赖，常用于数据事件处理,比如直播音视频离线/实时处理（DevOps-&amp;gt;AppOps)， &lt;strong&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=PiQ_eZFO2GU&amp;amp;list=PL2yQDdvlhXf_lYR5Ntvr9V5iVYv5rcbNc&amp;amp;index=6&#34;&gt;AWS re:Invent 2022 - Best practices for advanced serverless developers&lt;/a&gt;&lt;/strong&gt;, &lt;strong&gt;&lt;a href=&#34;https://catalog.workshops.aws/complete-aws-sam/en-US&#34;&gt;The Complete AWS SAM workshop&lt;/a&gt;&lt;/strong&gt;。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;代码地址&lt;/strong&gt;： &lt;a href=&#34;https://github.com/weedge/craftsman/tree/main/cloudwego&#34;&gt;https://github.com/weedge/craftsman/tree/main/cloudwego&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;代码结构：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;服务可以通过多个service组合成一个单体server，也可以从一个单体server拆分成多个微服务server，以便公司内部组织架构来调整服务(基于上下文软件架构原则 &lt;a href=&#34;https://martinfowler.com/bliki/ConwaysLaw.html&#34;&gt;Conway&amp;rsquo;s law&lt;/a&gt;)&lt;/p&gt;
 &lt;h3 id=&#34;测试&#34;&gt;测试&lt;/h3&gt;
 &lt;p&gt;基本功能逻辑测试，并发场景下的扣减和新增数据一致；然后加上 业务/基础服务/中间件服务监控，日志，在开始压测，给出性能报告，调优；最终给出接口/整体服务吞吐和延时上限，采用服务流控对服务接口加上接口/服务限流，以及超时重试，服务相关降级策略；然后模拟线上场景继续压测，触发对应报警和限流，降级策略；&lt;/p&gt;
 &lt;ol&gt;
@@ -1180,13 +1183,13 @@ pxd tryout
 &lt;p&gt;业务功能调优：优先业务功能大方向调优，分布式数据库下的查询语句，算子下推，索引效率 (空间换时间，k/v 操作 B+tree,LSM-tree)&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;profiling调优：通过相关trace/perf工具关注耗时，使用系统内核优化的调用函数，以及系统参数调整，内存(减少gc，频繁操作小对象池化复用，内存分配管理，局部性原则)，cpu(亲和性)，I/O(网络，磁盘I/O 尽量异步处理,) ，buff(缓冲，batch)等&lt;/p&gt;
+&lt;p&gt;C调优：通过相关trace/perf工具关注耗时，使用系统内核优化的调用函数，以及系统参数调整，内存(减少gc，频繁操作小对象池化复用，内存分配管理，局部性原则)，cpu(亲和性)，I/O(网络，磁盘I/O 尽量异步处理,) ，buff(缓冲，batch)等&lt;/p&gt;
 &lt;p&gt;tips: 业务整体设计方案ok的情况下，整体性能优化收益： 硬件(cpu/GPU浮点运算/TPU，内存/nvm，磁盘/ssd，网卡带宽拆解包校验) &amp;gt; 内核系统调用 &amp;gt; 业务代码(数据结构,语言层面编译优化opcode)&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
-&lt;p&gt;面对大量并发请求的用户交互场景，涉及到用户金额等事务场景，整体思路是预热快速路径响应用户的交互请求行为，然后异步队列解耦，执行慢路径，慢路径上通过本地事务(同服务多表更新)，或者分布式事务(多服务对应表更新)，来保证数据整体一致，尽量通过批量处理(单分片事务组提交)提高吞吐；快路径尽量使用原子操作(服务主逻辑单线程执行)或者乐观锁用户程序自旋执行事务，按用户维度切分减少block, 以及通过提前规划分布式存储均匀打散读写热点(分库分表分区分片/槽Region/Slot)，规避节点负载倾斜不均衡问题(大流量,大数据),多维度查询的话可以采用数据异构方式(空间换时间)，如果涉及到跨数据中心则需要考虑数据同构迁移问题(比如国际化数据隐私&lt;em&gt;PIPL&lt;/em&gt; &lt;em&gt;GDPR&lt;/em&gt;)；对于数据并发同步获取至缓存，则需要加分布式互斥锁自旋block一段时间，防止并发操作加锁尽量前置处理(warm up to run fast~),减少block；本质上都是将并行变成串行，只不过内存IO比磁盘,网络IO操作要快很多(理论上，lua脚本在master主线程内存中原子执行相对watch+事务方式处理效率要高些)；还有服务异常时的降级措施，以及服务过载时的限流，以及消息数据流的反压措施。&lt;/p&gt;
-&lt;p&gt;题外话：没有银弹，充分利用开源 ☁️红利(硬件计算存储资源)； &lt;em&gt;纸上得来终觉浅，绝知此事要躬行&lt;/em&gt;， step by step, maybe day day up~  hope expand your horizons&lt;/p&gt;
+&lt;p&gt;面对大量并发请求的用户交互场景，涉及到用户金额等事务场景，整体思路是预热快速路径响应用户的交互请求行为，然后异步队列解耦，执行慢路径，慢路径上通过本地事务(同服务多表更新)，或者分布式事务(多服务对应表更新)，来保证数据整体一致，尽量通过批量处理(单分片事务组提交)提高吞吐；快路径尽量使用原子操作(服务主逻辑单线程执行)或者乐观锁用户程序自旋执行事务，按用户维度切分减少block, 以及通过提前规划分布式存储均匀打散读写热点(分库分表分区分片/槽Region/Slot)，规避节点负载倾斜不均衡问题(大流量,大数据),多维度查询的话可以采用数据异构方式(空间换时间)，如果涉及到跨数据中心则需要考虑数据同构迁移问题(比如国际化数据隐私&lt;em&gt;PIPL&lt;/em&gt; &lt;em&gt;GDPR&lt;/em&gt;)；对于数据并发同步获取至缓存，则需要加分布式互斥锁自旋block一段时间，防止并发操作加锁尽量前置处理(warm up to run fast~),减少block；本质上都是将并行变成串行，只不过内存操作比磁盘,网络IO操作要快很多(理论上，lua脚本在master主线程内存中原子执行相对watch+事务方式处理效率要高些)；还有服务异常时的降级措施，以及服务过载时的限流，以及消息数据流的反压措施。&lt;/p&gt;
+&lt;p&gt;题外话：没有银弹，充分利用开源(工程规范) ☁️红利(硬件计算存储资源)； &lt;em&gt;纸上得来终觉浅，绝知此事要躬行&lt;/em&gt;， step by step, maybe day day up~  hope expand your horizons&lt;/p&gt;
 &lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;
