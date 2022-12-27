@@ -517,7 +517,7 @@
 &lt;tbody&gt;
 &lt;tr&gt;
 &lt;td&gt;用户虚拟资产信息&lt;/td&gt;
-&lt;td&gt;I.asset.{userId}&lt;/td&gt;
+&lt;td&gt;I.asset.{userId}.{assetType}&lt;/td&gt;
 &lt;td&gt;string/hash&lt;/td&gt;
 &lt;td&gt;user_asset(json)&lt;/td&gt;
 &lt;td&gt;1 d&lt;/td&gt;
@@ -1159,9 +1159,82 @@ pxd tryout
 &lt;p&gt;题外话：或者进一步的直接使用无服务serverless 函数计算，开源方案&lt;a href=&#34;https://www.cncf.io/online-programs/event-driven-architecture-with-knative-events/&#34;&gt;&lt;strong&gt;Knative&lt;/strong&gt;&lt;/a&gt; &lt;a href=&#34;https://docs.openfaas.com/deployment/kubernetes/&#34;&gt;openfaas on k8s&lt;/a&gt;, 或者使用云服务比如&lt;a href=&#34;https://aws.amazon.com/cn/campaigns/lambda/&#34;&gt;aws lambda&lt;/a&gt;(transform, not transport data), 专注于业务逻辑，减少&amp;rsquo;胶水&amp;rsquo;代码，缺少了开发框架的依赖，常用于数据事件处理,比如直播音视频离线/实时处理（DevOps-&amp;gt;AppOps)， &lt;strong&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=PiQ_eZFO2GU&amp;amp;list=PL2yQDdvlhXf_lYR5Ntvr9V5iVYv5rcbNc&amp;amp;index=6&#34;&gt;AWS re:Invent 2022 - Best practices for advanced serverless developers&lt;/a&gt;&lt;/strong&gt;, &lt;strong&gt;&lt;a href=&#34;https://catalog.workshops.aws/complete-aws-sam/en-US&#34;&gt;The Complete AWS SAM workshop&lt;/a&gt;&lt;/strong&gt;。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;代码地址&lt;/strong&gt;： &lt;a href=&#34;https://github.com/weedge/craftsman/tree/main/cloudwego&#34;&gt;https://github.com/weedge/craftsman/tree/main/cloudwego&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;代码结构：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;├── aws	-------------- use aws cloud develop, focus on biz logic by use lambda / step functions
+│   └── cdk ------ deploy infrastructure ECS, VPC, EKS, S3, cache,db, mq etc for severless 
+├── cloudwego		----------------- use cloudwego framwork develop
+│   ├── common	----------------- biz common for idl, pkg
+│   │   ├── idl
+│   │   ├── kitex_gen
+│   │   │   ├── base
+│   │   │   ├── common
+│   │   │   └── payment
+│   │   │       ├── base
+│   │   │       ├── da
+│   │   │       │   └── paymentservice
+│   │   │       └── station
+│   │   │           └── paymentservice
+│   │   └── pkg
+│   │       └── constants
+│   ├── kitex-contrib ------------------------ kitex rpc framwork contrib (add new/change commit pr)
+│   │   ├── gorm
+│   │   └── obs-opentelemetry
+│   │       └── logging
+│   │           └── zap
+│   └── payment		---------------------------- app payment have http ui/gateway, rpc station,da service/server
+│       ├── bin		---- go build cmd output to bin
+│       ├── cmd		---- main.go to load da/station/gw cmd to run
+│       │   ├── da
+│       │   ├── gw
+│       │   └── station
+│       ├── conf	---------- env biz config for local/dev/test/stress/gray/prod 
+│       │   ├── dev
+│       │   ├── gray
+│       │   ├── local
+│       │   ├── prod
+│       │   ├── stress
+│       │   └── test
+│       ├── data	-------------- sql data, encode/decode meta data
+│       ├── docs	-------------- app help doc
+│       ├── internal ----------- internal don&amp;#39;t be used by out package, code biz logic
+│       │   ├── da	------------------------ dal 
+│       │   │   ├── consumer ---- event drive consumer
+│       │   │   ├── dao			 ---- db table data persistence op
+│       │   │   ├── domain   ---- domain interface 
+│       │   │   │   └── mocks ---- mock for test
+│       │   │   ├── model 	 ---- table entry model 
+│       │   │   ├── repository ---- impl domain db repository interface
+│       │   │   │   ├── mysql
+│       │   │   │   └── redis
+│       │   │   └── usecase ----- biz logic use repositories 
+│       │   ├── gw	------------------------ ui/gateway
+│       │   │   └── middleware -------- middleware handle
+│       │   └── station -------------------- biz logic station by using cache 
+│       │       └── consumer ---- event drive consumer for cache
+│       ├── manifests -------------------- k8s/istio  deployment resource workload and traffic/flow control
+│       │   ├── traffic
+│       │   │   └── istio
+│       │   └── workloads
+│       └── pkg --------------------- app common pkg
+│           ├── configparser
+│           ├── constants
+│           ├── injectors
+│           ├── subscriber
+│           ├── utils
+│           │   ├── logutils
+│           │   └── netutils
+│           └── version
+└── kratos  ----------------- use kratos framwork develop
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;服务可以通过多个service组合成一个单体server，也可以从一个单体server拆分成多个微服务server，以便公司内部组织架构来调整服务(基于上下文软件架构原则 &lt;a href=&#34;https://martinfowler.com/bliki/ConwaysLaw.html&#34;&gt;Conway&amp;rsquo;s law&lt;/a&gt;)&lt;/p&gt;
-&lt;h3 id=&#34;测试&#34;&gt;测试&lt;/h3&gt;
+&lt;p&gt;服务内部各个模块组件采用DDD &lt;a href=&#34;https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html&#34;&gt;clean-architecture&lt;/a&gt; 架构，接口隔离实现，既方便mock，也方便组装，golang都是以组合方式来构建，尽量使用工具来生成规范化，结构化的代码; 常用工具如下：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://gorm.io/gen/index.html&#34;&gt;gorm-gen&lt;/a&gt; diy生成数据库持久访问层模型,可以用sql来推演业务逻辑，然后直接生成对应dao操作model/entry读写方法，提供上层repository来接口实例化注入，如果业务逻辑非简单的CURD, 提供一层usecase来分离业务具体实现，以及组合repository来实现具体业务场景逻辑，实现 domain领域驱动 满足 业务对内对外的api接口 以及 事件驱动；&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/google/wire/blob/main/docs/guide.md&#34;&gt;wire&lt;/a&gt;依赖注入，将db/cache client -&amp;gt; dao, repository  -&amp;gt; usecase -&amp;gt; api/consumer  -&amp;gt; service  =&amp;gt; server 依次注入实体组装成server，提供服务；&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/golang/mock&#34;&gt;GoMock mockgen&lt;/a&gt;(golang官方出品)，可以结合 &lt;a href=&#34;github.com/vektra/mockery&#34;&gt;mockery&lt;/a&gt; (相对开发友好)工具来mock 接口 ， 这样在前期不用实现具体场景实体类，直接可以测试驱动(BDD/TDD)进行业务逻辑推演；可以认为前期搭开发框架架子，不仅需要满足现在需求，而且需要对后续易变需求可进行扩展开发，无需改动以往逻辑(业务逻辑实体合理抽象以及对应方法接口)；&lt;/li&gt;
+&lt;li&gt;其他工具待发现&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;总之保持 &lt;strong&gt;KISS&lt;/strong&gt; 姿势，让工具来解放生产力。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;Keep it simple stupid “K.I.S.S”
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;测试&#34;&gt;测试&lt;/h3&gt;
 &lt;p&gt;基本功能逻辑测试，并发场景下的扣减和新增数据一致；然后加上 业务/基础服务/中间件服务监控，日志，在开始压测，给出性能报告，调优；最终给出接口/整体服务吞吐和延时上限，采用服务流控对服务接口加上接口/服务限流，以及超时重试，服务相关降级策略；然后模拟线上场景继续压测，触发对应报警和限流，降级策略；&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;

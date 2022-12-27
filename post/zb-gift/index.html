@@ -77,7 +77,7 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 直播线上互动，已成为当下生活的一部分，特别是受疫情影响，成为互联网的主要流量入口；研究了下各个平台直播间送礼物的功能，发现大同小异，在礼物分组，一些定制化的礼物有区分，整体交互流程大致相同，主要是直播间主播上播，用户通过礼物打赏给主播们(一个直播间可能有多名主播在互动)，礼物是通过虚拟币(**币) 换算，早期互联网用户线上互动礼物，玩家最多的应该是QQ币了，只不过以前的打赏赠送场景是在web2.0刚开始的时候，交互的大多是文字和图片，相关产品场景，虚拟空间(个人空间，博客，种菜等娱乐互动场景)；随着底层网络基建的发展，4G之后出现了大量的视频网站，用户可以录一些视频内容来互动；到后来音视频流媒体的发展，相关的在线直播间开始涌现，用户之间享受一波直播红利带来的互动，当然影响相对于前面的形式更加实时和直接；现在的5G和未来6G，以及物联网都会给直播形式带来新的互动场景,比如：虚拟会场，人机互动；其中早期培养起来的打赏送礼行为功能经常用于有主播的娱乐互动直播中，也是增值盈利的一部分；
 tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦，电商带货商品，没有主播，节目直播/转播，会议直播，自习室，基本的点赞，计数，聊天基础服务功能；还有些抽奖功能，答题功能(教育类直播居多)，投票，红包这些功能服务可在开播时设置，是否启用；有用户基础的流量平台可能还会以竞价排名的方式推荐一波；这些功能可以作为一个可管理的插件，通过组合的方式应用于直播中，方便管理，后续可以添加新功能满足某类型直播场景。"><meta itemprop="datePublished" content="2022-11-21T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2022-11-21T10:26:23+08:00" />
-<meta itemprop="wordCount" content="13585">
+<meta itemprop="wordCount" content="14652">
 <meta itemprop="keywords" content="直播," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="设计草稿-直播间赠送礼物功能"/>
 <meta name="twitter:description" content="背景
@@ -807,7 +807,7 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 <tbody>
 <tr>
 <td>用户虚拟资产信息</td>
-<td>I.asset.{userId}</td>
+<td>I.asset.{userId}.{assetType}</td>
 <td>string/hash</td>
 <td>user_asset(json)</td>
 <td>1 d</td>
@@ -1449,9 +1449,82 @@ pxd tryout
 <p>题外话：或者进一步的直接使用无服务serverless 函数计算，开源方案<a href="https://www.cncf.io/online-programs/event-driven-architecture-with-knative-events/"><strong>Knative</strong></a> <a href="https://docs.openfaas.com/deployment/kubernetes/">openfaas on k8s</a>, 或者使用云服务比如<a href="https://aws.amazon.com/cn/campaigns/lambda/">aws lambda</a>(transform, not transport data), 专注于业务逻辑，减少&rsquo;胶水&rsquo;代码，缺少了开发框架的依赖，常用于数据事件处理,比如直播音视频离线/实时处理（DevOps-&gt;AppOps)， <strong><a href="https://www.youtube.com/watch?v=PiQ_eZFO2GU&amp;list=PL2yQDdvlhXf_lYR5Ntvr9V5iVYv5rcbNc&amp;index=6">AWS re:Invent 2022 - Best practices for advanced serverless developers</a></strong>, <strong><a href="https://catalog.workshops.aws/complete-aws-sam/en-US">The Complete AWS SAM workshop</a></strong>。</p>
 <p><strong>代码地址</strong>： <a href="https://github.com/weedge/craftsman/tree/main/cloudwego">https://github.com/weedge/craftsman/tree/main/cloudwego</a></p>
 <p>代码结构：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">├── aws	-------------- use aws cloud develop, focus on biz logic by use lambda / step functions
+│   └── cdk ------ deploy infrastructure ECS, VPC, EKS, S3, cache,db, mq etc for severless 
+├── cloudwego		----------------- use cloudwego framwork develop
+│   ├── common	----------------- biz common for idl, pkg
+│   │   ├── idl
+│   │   ├── kitex_gen
+│   │   │   ├── base
+│   │   │   ├── common
+│   │   │   └── payment
+│   │   │       ├── base
+│   │   │       ├── da
+│   │   │       │   └── paymentservice
+│   │   │       └── station
+│   │   │           └── paymentservice
+│   │   └── pkg
+│   │       └── constants
+│   ├── kitex-contrib ------------------------ kitex rpc framwork contrib (add new/change commit pr)
+│   │   ├── gorm
+│   │   └── obs-opentelemetry
+│   │       └── logging
+│   │           └── zap
+│   └── payment		---------------------------- app payment have http ui/gateway, rpc station,da service/server
+│       ├── bin		---- go build cmd output to bin
+│       ├── cmd		---- main.go to load da/station/gw cmd to run
+│       │   ├── da
+│       │   ├── gw
+│       │   └── station
+│       ├── conf	---------- env biz config for local/dev/test/stress/gray/prod 
+│       │   ├── dev
+│       │   ├── gray
+│       │   ├── local
+│       │   ├── prod
+│       │   ├── stress
+│       │   └── test
+│       ├── data	-------------- sql data, encode/decode meta data
+│       ├── docs	-------------- app help doc
+│       ├── internal ----------- internal don&#39;t be used by out package, code biz logic
+│       │   ├── da	------------------------ dal 
+│       │   │   ├── consumer ---- event drive consumer
+│       │   │   ├── dao			 ---- db table data persistence op
+│       │   │   ├── domain   ---- domain interface 
+│       │   │   │   └── mocks ---- mock for test
+│       │   │   ├── model 	 ---- table entry model 
+│       │   │   ├── repository ---- impl domain db repository interface
+│       │   │   │   ├── mysql
+│       │   │   │   └── redis
+│       │   │   └── usecase ----- biz logic use repositories 
+│       │   ├── gw	------------------------ ui/gateway
+│       │   │   └── middleware -------- middleware handle
+│       │   └── station -------------------- biz logic station by using cache 
+│       │       └── consumer ---- event drive consumer for cache
+│       ├── manifests -------------------- k8s/istio  deployment resource workload and traffic/flow control
+│       │   ├── traffic
+│       │   │   └── istio
+│       │   └── workloads
+│       └── pkg --------------------- app common pkg
+│           ├── configparser
+│           ├── constants
+│           ├── injectors
+│           ├── subscriber
+│           ├── utils
+│           │   ├── logutils
+│           │   └── netutils
+│           └── version
+└── kratos  ----------------- use kratos framwork develop
 </code></pre></div><p>服务可以通过多个service组合成一个单体server，也可以从一个单体server拆分成多个微服务server，以便公司内部组织架构来调整服务(基于上下文软件架构原则 <a href="https://martinfowler.com/bliki/ConwaysLaw.html">Conway&rsquo;s law</a>)</p>
-<h3 id="测试">测试</h3>
+<p>服务内部各个模块组件采用DDD <a href="https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html">clean-architecture</a> 架构，接口隔离实现，既方便mock，也方便组装，golang都是以组合方式来构建，尽量使用工具来生成规范化，结构化的代码; 常用工具如下：</p>
+<ol>
+<li><a href="https://gorm.io/gen/index.html">gorm-gen</a> diy生成数据库持久访问层模型,可以用sql来推演业务逻辑，然后直接生成对应dao操作model/entry读写方法，提供上层repository来接口实例化注入，如果业务逻辑非简单的CURD, 提供一层usecase来分离业务具体实现，以及组合repository来实现具体业务场景逻辑，实现 domain领域驱动 满足 业务对内对外的api接口 以及 事件驱动；</li>
+<li><a href="https://github.com/google/wire/blob/main/docs/guide.md">wire</a>依赖注入，将db/cache client -&gt; dao, repository  -&gt; usecase -&gt; api/consumer  -&gt; service  =&gt; server 依次注入实体组装成server，提供服务；</li>
+<li><a href="https://github.com/golang/mock">GoMock mockgen</a>(golang官方出品)，可以结合 <a href="github.com/vektra/mockery">mockery</a> (相对开发友好)工具来mock 接口 ， 这样在前期不用实现具体场景实体类，直接可以测试驱动(BDD/TDD)进行业务逻辑推演；可以认为前期搭开发框架架子，不仅需要满足现在需求，而且需要对后续易变需求可进行扩展开发，无需改动以往逻辑(业务逻辑实体合理抽象以及对应方法接口)；</li>
+<li>其他工具待发现</li>
+</ol>
+<p>总之保持 <strong>KISS</strong> 姿势，让工具来解放生产力。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">Keep it simple stupid “K.I.S.S”
+</code></pre></div><h3 id="测试">测试</h3>
 <p>基本功能逻辑测试，并发场景下的扣减和新增数据一致；然后加上 业务/基础服务/中间件服务监控，日志，在开始压测，给出性能报告，调优；最终给出接口/整体服务吞吐和延时上限，采用服务流控对服务接口加上接口/服务限流，以及超时重试，服务相关降级策略；然后模拟线上场景继续压测，触发对应报警和限流，降级策略；</p>
 <ol>
 <li>
