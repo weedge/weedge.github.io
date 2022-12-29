@@ -78,7 +78,7 @@
 &lt;p&gt;观众赠送礼物： 礼物是通过虚拟货币进行等价交换的，通过礼物id获取到对应消费的虚拟资产，对中心远端缓存分片中的观众虚拟资产进行事务扣除处理，事务提交之后，发送事务消息；这里采用cas方式处理，一种是watch key(string 读写io是O(1), 不用hash是因为读取全部资产信息io是O(n))+事务方式，一种是lua的形式直接写业务提交脚本给redis核心主线程去处理；这里可能会想到直接用 hash incr原子操作，但是这里不行，因为需要读出key对应的虚拟资产，用于判断虚拟资源是否充足，读出来在扣除写入，需要一起执行，保证事务原子性；除了核心流程，还有发送礼物成功后，需要推送消息到直播间，根据产品礼品策略判断是否展示特效; 以及增加用户活动积分，增加互动积极性；&lt;/p&gt;
 &lt;p&gt;异步更新观众和主播数据库落地资产信息：为了减少对数据库的行锁的并发压力，可采用CAS的方式来更新数据库的数据，前提是单个用户资产操作，如果想单个事务单个事务处理，可以通过消息队列事务消息方式串起来(pipeline)；如果是多个用户资产操作在同一服务事物里操作的话，则不能使用CAS的方式处理了，只能以整体事务方式处理(默认RR级别)；&lt;/p&gt;
 &lt;p&gt;消息队列：涉及到金钱，为了提高吞吐，需要保证数据准确，数据最终一致(&lt;a href=&#34;https://www.allthingsdistributed.com/2008/12/eventually_consistent.html&#34;&gt;&lt;strong&gt;BASE&lt;/strong&gt;&lt;/a&gt;)，采用支持事务消息的分布式消息队列，比如：&lt;a href=&#34;https://rocketmq.apache.org/zh/docs/featureBehavior/04transactionmessage/&#34;&gt;rocketMQ&lt;strong&gt;事务消息&lt;/strong&gt;&lt;/a&gt;，这里可能有个疑问如果刚开始发送事务消息就失败了，可能是网络抖动,或者服务负载高等原因，一般是启用failover权重&lt;a href=&#34;https://en.wikipedia.org/wiki/Exponential_backoff&#34;&gt;指数退避&lt;/a&gt;策略重试到不同机房的rocketMQ集群，可以查看&lt;a href=&#34;https://rocketmq.apache.org/zh/docs/featureBehavior/05sendretrypolicy#%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6&#34;&gt;消息发送重试机制&lt;/a&gt; 和 &lt;a href=&#34;https://rocketmq.apache.org/zh/docs/bestPractice/15bestpractice&#34;&gt;最佳实践&lt;/a&gt;, &lt;a href=&#34;https://aws.amazon.com/cn/builders-library/timeouts-retries-and-backoff-with-jitter/&#34;&gt;timeouts-retries-and-backoff-with-jitter&lt;/a&gt;；如果重试还是失败打印错误日志记录发送详情，通过实时数据流将异常行为写入db中，以便后续补发；&lt;/p&gt;
-&lt;p&gt;Tips: 如果使用阿里云rocketMQ, 需要注意支持版本提供的SDK，5.0 版本 &lt;a href=&#34;https://github.com/apache/rocketmq-clients&#34;&gt;client SDK&lt;/a&gt; ; 4.0相关版本有些开发语言不支持tcp方式，仅提供http的方式(会少了一些功能，比如批量发送普通消息)；选用新版的5.0版本的SDK开发(golang版client SDK可以用来生产消息，对应消息类型都已支持); 如果有自建运维能力，直接使用开源方案来搭建一套，比如用&lt;a href=&#34;https://www.amazonaws.cn/solutions/apache-rocketmq-on-aws/&#34;&gt;rocketMQ on aws&lt;/a&gt;，并且使用5.0可以实现一层mq-proxy(本地代理和中心代理)，计算存储分离;&lt;/p&gt;
+&lt;p&gt;Tips: 如果使用阿里云rocketMQ, 需要注意支持版本提供的SDK，5.0 版本 &lt;a href=&#34;https://github.com/apache/rocketmq-clients&#34;&gt;client SDK&lt;/a&gt; ; 4.0相关版本有些开发语言不支持tcp方式，仅提供http的方式(会少了一些功能，比如批量发送普通消息)；选用新版的5.0版本的SDK开发(golang版client SDK可以用来生产消息，对应消息类型都已支持); 如果有自建运维能力，直接使用开源方案来搭建一套，比如用&lt;a href=&#34;https://www.amazonaws.cn/solutions/apache-rocketmq-on-aws/&#34;&gt;rocketMQ on aws&lt;/a&gt;，然后可以基于OTEL的metric标准采集到Promethues中，通过Grafana加上监控报警(监控系统也可以自建，或者用云服务比如aliyun ARMS)；并且使用5.0可以实现一层mq-proxy(本地代理和中心代理)，计算存储分离;&lt;/p&gt;
 &lt;p&gt;题外话: 现在分布式消息队列&lt;a href=&#34;https://kafka.apache.org/33/documentation/streams/architecture&#34;&gt;kafka-streams&lt;/a&gt;, &lt;a href=&#34;https://github.com/apache/rocketmq-streams&#34;&gt;rocketmq-streams&lt;/a&gt; 支持数据流(stream)处理大数据实时场景，支持一些简单算子操作和SQL(&lt;a href=&#34;https://github.com/confluentinc/ksql&#34;&gt;ksql&lt;/a&gt;, &lt;a href=&#34;https://github.com/alibaba/rsqldb&#34;&gt;rsql&lt;/a&gt;)；这个和flink对应功能是重合了，flink也在往table store上发力满足数据堆积的能力; 一波流～&lt;/p&gt;
 &lt;h3 id=&#34;调研&#34;&gt;调研&lt;/h3&gt;
 &lt;p&gt;以pc端抓http包为例，手机端接口一样，传输格式可能不同，pb/json&lt;/p&gt;
@@ -780,7 +780,7 @@ Start -&amp;gt; RegisterConsumer -&amp;gt; start
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;具体生产，消费用户资产事务消息demo如下: (demo中使用 &lt;a href=&#34;https://github.com/apache/rocketmq-client-go&#34;&gt;rocketmq-client-go&lt;/a&gt; &lt;strong&gt;客户端生产消费配置了 trace，rocketmq broker也需要配置traceTopicEnable=true，用于查看消息轨迹&lt;/strong&gt;；除此之外，可以在消息属性中加上全链路追踪的traceId，用于整体系统服务进行串联)&lt;/p&gt;
+&lt;p&gt;具体生产，消费用户资产事务消息demo如下: (demo中使用 &lt;a href=&#34;https://github.com/apache/rocketmq-client-go&#34;&gt;rocketmq-client-go&lt;/a&gt; &lt;strong&gt;客户端生产消费配置了 trace，rocketmq broker也需要配置traceTopicEnable=true，用于查看消息轨迹&lt;/strong&gt;；除此之外，可以在消息属性中加上全链路追踪的traceId，用于整体系统服务进行串联，如果想把rocketmq客户端生产和消费加入OTEL进行全链路追踪, 可以参考**&lt;a href=&#34;https://github.com/open-telemetry/opentelemetry-go-contrib/tree/main/instrumentation/github.com/Shopify/sarama/otelsarama&#34;&gt;kafka-otel-sarama&lt;/a&gt;** 实现不难)&lt;/p&gt;
 &lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/weedge/fcbc8e4a2889c6230d62f6f35de6862d.js&#34;&gt;&lt;/script&gt;
 
 &lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/weedge/37839a2fcb3c11f77228ce43a713dee7.js&#34;&gt;&lt;/script&gt;
@@ -1298,7 +1298,7 @@ pxd tryout
 &lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://tidb.net/blog/09cc69f4&#34;&gt;https://tidb.net/blog/09cc69f4&lt;/a&gt; , &lt;a href=&#34;https://cn.pingcap.com/best-practice-detail/best-practices-for-developing-applications-with-tidb&#34;&gt;https://cn.pingcap.com/best-practice-detail/best-practices-for-developing-applications-with-tidb&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/UFWULymSblrs1hIGP5e7YQ&#34;&gt;https://mp.weixin.qq.com/s/UFWULymSblrs1hIGP5e7YQ&lt;/a&gt; , &lt;a href=&#34;https://github.com/apache/rocketmq/wiki/RIP-50-RocketMQ-Transaction-Message-Improvement&#34;&gt;https://github.com/apache/rocketmq/wiki/RIP-50-RocketMQ-Transaction-Message-Improvement&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/UFWULymSblrs1hIGP5e7YQ&#34;&gt;https://mp.weixin.qq.com/s/UFWULymSblrs1hIGP5e7YQ&lt;/a&gt; , &lt;a href=&#34;https://github.com/apache/rocketmq/wiki/RIP-50-RocketMQ-Transaction-Message-Improvement&#34;&gt;https://github.com/apache/rocketmq/wiki/RIP-50-RocketMQ-Transaction-Message-Improvement&lt;/a&gt;&lt;/strong&gt; , &lt;strong&gt;&lt;a href=&#34;https://xie.infoq.cn/article/ad16bac16b4c172e268225cfa&#34;&gt;https://xie.infoq.cn/article/ad16bac16b4c172e268225cfa&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;a href=&#34;https://www.youtube.com/playlist?list=PLy7NrYWoggjziYQIDorlXjTvvwweTYoNC&#34;&gt;https://www.youtube.com/playlist?list=PLy7NrYWoggjziYQIDorlXjTvvwweTYoNC&lt;/a&gt; , &lt;a href=&#34;https://www.youtube.com/watch?v=vgPFzblBh7w&amp;amp;list=PL8t1FdN2Tj3ZVAzTY-FvsS0qy-mEfRdoj&amp;amp;index=5&#34;&gt;https://www.youtube.com/watch?v=vgPFzblBh7w&amp;amp;list=PL8t1FdN2Tj3ZVAzTY-FvsS0qy-mEfRdoj&amp;amp;index=5&lt;/a&gt; , &lt;a href=&#34;https://www.youtube.com/watch?v=-U9E1PhrM3o&#34;&gt;https://www.youtube.com/watch?v=-U9E1PhrM3o&lt;/a&gt;&lt;/p&gt;
@@ -1308,6 +1308,9 @@ pxd tryout
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://github.com/istio/istio/tree/master/samples/bookinfo&#34;&gt;https://github.com/istio/istio/tree/master/samples/bookinfo&lt;/a&gt; , &lt;a href=&#34;https://github.com/cloudwego/biz-demo&#34;&gt;https://github.com/cloudwego/biz-demo&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/n4eVf2KZRIp2yKACk88qJA&#34;&gt;https://mp.weixin.qq.com/s/n4eVf2KZRIp2yKACk88qJA&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;</description>
       
