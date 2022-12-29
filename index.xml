@@ -1238,7 +1238,7 @@ pxd tryout
 &lt;blockquote&gt;
 &lt;p&gt;Keep it simple stupid “K.I.S.S”&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;附：&lt;a href=&#34;https://google.github.io/styleguide/go/best-practices&#34;&gt;google golang style guide best practices&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;附：&lt;a href=&#34;https://google.github.io/styleguide/go/&#34;&gt;google golang style&lt;/a&gt;&lt;/p&gt;
 &lt;h3 id=&#34;测试&#34;&gt;测试&lt;/h3&gt;
 &lt;p&gt;基本功能逻辑测试，并发场景下的扣减和新增数据一致；然后加上 业务/基础服务/中间件服务监控，日志，在开始压测，给出性能报告，调优；最终给出接口/整体服务吞吐和延时上限，采用服务流控对服务接口加上接口/服务限流，以及超时重试，服务相关降级策略；然后模拟线上场景继续压测，触发对应报警和限流，降级策略；&lt;/p&gt;
 &lt;ol&gt;
