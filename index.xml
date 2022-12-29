@@ -1161,7 +1161,7 @@ pxd tryout
 &lt;p&gt;代码结构：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;├── aws	-------------- use aws cloud develop, focus on biz logic by use lambda / step functions
 │   └── cdk ------ deploy infrastructure ECS, VPC, EKS, S3, cache,db, mq etc for severless 
-├── cloudwego		----------------- use cloudwego framwork develop
+├── cloudwego	----------------- use cloudwego framwork develop
 │   ├── common	----------------- biz common for idl, rpc service/client, pkg
 │   │   ├── idl
 │   │   ├── kitex_gen
@@ -1182,7 +1182,7 @@ pxd tryout
 │   │           └── zap
 │   └── payment		---------------------------- app payment have http ui/gateway, rpc station,da service/server
 │       ├── bin		---- go build cmd output to bin
-│       ├── build	---- makefile, dockerfile to build, run
+│       ├── build	---- makefile, dockerfile,docker-compose.yml to build, run
 │       ├── cmd		---- main.go to load da/station/gw cmd to run
 │       │   ├── da
 │       │   ├── gw
@@ -1199,10 +1199,10 @@ pxd tryout
 │       ├── internal ----------- internal don&amp;#39;t be used by out package, code biz logic
 │       │   ├── da	------------------------ dal 
 │       │   │   ├── consumer ---- event drive consumer
-│       │   │   ├── dao			 ---- db table data persistence op
+│       │   │   ├── dao      ---- db table data persistence op
 │       │   │   ├── domain   ---- domain interface 
 │       │   │   │   └── mocks ---- mock for test
-│       │   │   ├── model 	 ---- table entry model 
+│       │   │   ├── model    ---- table entry model 
 │       │   │   ├── repository ---- impl domain db repository interface
 │       │   │   │   └── mysql
 │       │   │   └── usecase ----- biz logic use repositories 
@@ -1210,7 +1210,7 @@ pxd tryout
 │       │   │   └── middleware -------- middleware handle
 │       │   └── station -------------------- biz logic station by using cache 
 │       │       └── consumer ---- event drive consumer for cache
-│       ├── manifests -------------------- k8s/istio configmap,secret,deployment+service,ingress resource workload and traffic/flow control
+│       ├── manifests -------------- k8s/istio configmap,secret,deployment+service,ingress resource workload and traffic/flow control
 │       │   ├── traffic
 │       │   │   └── istio
 │       │   └── workloads

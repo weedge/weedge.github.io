@@ -1451,7 +1451,7 @@ pxd tryout
 <p>代码结构：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">├── aws	-------------- use aws cloud develop, focus on biz logic by use lambda / step functions
 │   └── cdk ------ deploy infrastructure ECS, VPC, EKS, S3, cache,db, mq etc for severless 
-├── cloudwego		----------------- use cloudwego framwork develop
+├── cloudwego	----------------- use cloudwego framwork develop
 │   ├── common	----------------- biz common for idl, rpc service/client, pkg
 │   │   ├── idl
 │   │   ├── kitex_gen
@@ -1472,7 +1472,7 @@ pxd tryout
 │   │           └── zap
 │   └── payment		---------------------------- app payment have http ui/gateway, rpc station,da service/server
 │       ├── bin		---- go build cmd output to bin
-│       ├── build	---- makefile, dockerfile to build, run
+│       ├── build	---- makefile, dockerfile,docker-compose.yml to build, run
 │       ├── cmd		---- main.go to load da/station/gw cmd to run
 │       │   ├── da
 │       │   ├── gw
@@ -1489,10 +1489,10 @@ pxd tryout
 │       ├── internal ----------- internal don&#39;t be used by out package, code biz logic
 │       │   ├── da	------------------------ dal 
 │       │   │   ├── consumer ---- event drive consumer
-│       │   │   ├── dao			 ---- db table data persistence op
+│       │   │   ├── dao      ---- db table data persistence op
 │       │   │   ├── domain   ---- domain interface 
 │       │   │   │   └── mocks ---- mock for test
-│       │   │   ├── model 	 ---- table entry model 
+│       │   │   ├── model    ---- table entry model 
 │       │   │   ├── repository ---- impl domain db repository interface
 │       │   │   │   └── mysql
 │       │   │   └── usecase ----- biz logic use repositories 
@@ -1500,7 +1500,7 @@ pxd tryout
 │       │   │   └── middleware -------- middleware handle
 │       │   └── station -------------------- biz logic station by using cache 
 │       │       └── consumer ---- event drive consumer for cache
-│       ├── manifests -------------------- k8s/istio configmap,secret,deployment+service,ingress resource workload and traffic/flow control
+│       ├── manifests -------------- k8s/istio configmap,secret,deployment+service,ingress resource workload and traffic/flow control
 │       │   ├── traffic
 │       │   │   └── istio
 │       │   └── workloads
