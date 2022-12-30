@@ -77,7 +77,7 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
 直播线上互动，已成为当下生活的一部分，特别是受疫情影响，成为互联网的主要流量入口；研究了下各个平台直播间送礼物的功能，发现大同小异，在礼物分组，一些定制化的礼物有区分，整体交互流程大致相同，主要是直播间主播上播，用户通过礼物打赏给主播们(一个直播间可能有多名主播在互动)，礼物是通过虚拟币(**币) 换算，早期互联网用户线上互动礼物，玩家最多的应该是QQ币了，只不过以前的打赏赠送场景是在web2.0刚开始的时候，交互的大多是文字和图片，相关产品场景，虚拟空间(个人空间，博客，种菜等娱乐互动场景)；随着底层网络基建的发展，4G之后出现了大量的视频网站，用户可以录一些视频内容来互动；到后来音视频流媒体的发展，相关的在线直播间开始涌现，用户之间享受一波直播红利带来的互动，当然影响相对于前面的形式更加实时和直接；现在的5G和未来6G，以及物联网都会给直播形式带来新的互动场景,比如：虚拟会场，人机互动；其中早期培养起来的打赏送礼行为功能经常用于有主播的娱乐互动直播中，也是增值盈利的一部分；
 tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦，电商带货商品，没有主播，节目直播/转播，会议直播，自习室，基本的点赞，计数，聊天基础服务功能；还有些抽奖功能，答题功能(教育类直播居多)，投票，红包这些功能服务可在开播时设置，是否启用；有用户基础的流量平台可能还会以竞价排名的方式推荐一波；这些功能可以作为一个可管理的插件，通过组合的方式应用于直播中，方便管理，后续可以添加新功能满足某类型直播场景。"><meta itemprop="datePublished" content="2022-11-21T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2022-11-21T10:26:23+08:00" />
-<meta itemprop="wordCount" content="15454">
+<meta itemprop="wordCount" content="15451">
 <meta itemprop="keywords" content="直播," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="设计-直播间赠送礼物功能"/>
 <meta name="twitter:description" content="背景
@@ -433,7 +433,7 @@ tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦�
   <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div><p>快手给端上的接口使用的<a href="https://spec.graphql.org/draft/">graphql</a>统一中心化了入口，方便后续规范化管理接口；整体交互也有些差别，一个是后置判断，一个是前置判断礼物是否可以赠送，但是对于赠送礼物接口还是需要判断是否满足赠送的金额；前置对于用户体验会好些，少了些交互吧; 接口数据都有token加密验证，防止三方黑产中途拦截，后者对整体赠送数据也是压缩加密了(用户行为打点数据也是压缩上报的)；</p>
-<p>Tips: 貌似礼物的价格在各个直播平台都一样的，不像商品价格有相对波动，只是会有些直播场景定制化的礼物，有种非理性情感冲动消费的感觉，搞直播类用户产品，心理学貌似挺重要的，老铁带一波 666～</p>
+<p>Tips: 貌似礼物的价格在各个直播平台都一样的，不像商品价格有相对波动，只是会有些直播场景定制化的礼物，有种非理性情感冲动消费的感觉，搞直播类用户产品，社会心理学貌似挺重要的，老铁带一波 666～</p>
 <h3 id="设计">设计</h3>
 <h4 id="整体设计服务模块流程">整体设计服务模块流程</h4>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/%E7%9B%B4%E6%92%AD%E4%BA%92%E5%8A%A8-%E8%B5%A0%E9%80%81%E7%A4%BC%E7%89%A9%E8%AE%BE%E8%AE%A1.drawio.png" alt=""></p>
@@ -1335,7 +1335,7 @@ Start -&gt; RegisterConsumer -&gt; start
 </ol>
 <p>消息服务： <a href="https://weedge.github.io/post/jxzbim/">https://weedge.github.io/post/jxzbim/</a></p>
 <h3 id="开发">开发</h3>
-<p>按服务模块进行并行开发，联调；给出对应排期</p>
+<p>从0到1开始搭建蓝图，&gt;1由业务驱动</p>
 <ol>
 <li>
 <p>搭建本地基础环境，tidb/polardb-x, redis, rocketmq 1d</p>
@@ -1397,19 +1397,19 @@ tiup playground
 pxd tryout
 </code></pre></div></li>
 <li>
-<p>测试demo, redis cluster集群下的缓存事务和 tidb分布式缓存事务，rocketmq 分布式消息事务；1d</p>
+<p>测试demo, redis cluster集群下的缓存事务和 tidb分布式缓存事务，rocketmq 分布式消息事务；</p>
 </li>
 <li>
-<p>核心服务模块开发支付中台接口 1d</p>
+<p>核心服务模块开发支付中台接口</p>
 </li>
 <li>
-<p>编写makefile, dockerfile, 打包成docker镜像， 整体解决方案依赖组件也可以通过docker-compose部署至docker容器中 1d</p>
+<p>编写makefile, dockerfile, 打包成docker镜像， 整体解决方案依赖组件也可以通过docker-compose部署至docker容器中</p>
 </li>
 <li>
-<p>编写相关k8s资源 (configmap,secret,deployment+service,ingress)通过minikube/kind 部署至本地k8s集群 1d</p>
+<p>编写相关k8s资源 (configmap,secret,deployment+service,ingress)通过minikube/kind 部署至本地k8s集群</p>
 </li>
 <li>
-<p>将服务网格化istio(xds流控, 可用于全链路监控, A/B测试，特别是产品新特性/模型策略场景)  2d (like this: <a href="https://mp.weixin.qq.com/s/SAn-H5p53IfvSy_Y3Mcz_Q">https://mp.weixin.qq.com/s/SAn-H5p53IfvSy_Y3Mcz_Q</a>)</p>
+<p>将服务网格化istio(xds流控, 可用于全链路监控, A/B测试，特别是产品新特性/模型策略场景)  (like this: <a href="https://mp.weixin.qq.com/s/SAn-H5p53IfvSy_Y3Mcz_Q">https://mp.weixin.qq.com/s/SAn-H5p53IfvSy_Y3Mcz_Q</a>)</p>
 </li>
 <li>
 <p>k8s/istio operator</p>
@@ -1528,10 +1528,9 @@ pxd tryout
 <li><a href="https://gorm.io/gen/index.html">gorm-gen</a> diy生成数据库持久访问层模型,可以用sql来推演业务逻辑，然后直接生成对应dao操作model/entry读写方法，提供给上层repository 进行接口实例化注入，如果业务逻辑非简单的CURD, 提供一层usecase来分离业务具体实现，以及组合repository来实现具体业务场景逻辑，实现 domain领域驱动 满足 业务对内对外的api接口 以及 事件驱动；</li>
 <li><a href="https://github.com/google/wire/blob/main/docs/guide.md">wire</a>依赖注入，将db/cache/mq/rpc/http client -&gt; dao, repository  -&gt; usecase -&gt; api/subscribe handler  -&gt; service  =&gt; server 依次注入实体组装成server，提供服务；</li>
 <li><a href="https://github.com/golang/mock">GoMock mockgen</a>(golang官方出品)，可以结合 <a href="github.com/vektra/mockery">mockery</a> (相对开发友好)工具来mock 接口 ， 这样在前期不用实现具体场景实体类，直接可以测试驱动(BDD/TDD)进行业务逻辑推演；可以认为前期搭开发框架架子，不仅需要满足现在需求，而且需要对后续易变需求可进行扩展开发，无需改动以往逻辑(业务逻辑实体合理抽象以及对应方法接口)；也可以使用hack的方式 通过 <a href="https://bou.ke/blog/monkey-patching-in-go/">gomonkey</a> 进行打桩注入进行mock，虽然简单直接，但是依赖底层编译硬件平台架构,有限制不推荐；</li>
-<li><a href="https://onsi.github.io/ginkgo/">ginkgo</a> 编写公有函数测试用例，覆盖业务逻辑分支；</li>
-<li>其他开发工具待发现;  （好的工具可以规范化写代码流程）</li>
+<li><a href="https://onsi.github.io/ginkgo/">ginkgo</a> 编写公有函数测试用例，覆盖业务逻辑分支</li>
 </ol>
-<p>总之保持 <strong>KISS</strong> 姿势，让工具来解放生产力。</p>
+<p>总之保持 <strong>KISS</strong> 姿势，让工具来解放生产力（好的工具可以规范化写代码流程, 前提是工程最佳实践沉淀）。</p>
 <blockquote>
 <p>Keep it simple stupid “K.I.S.S”</p>
 </blockquote>

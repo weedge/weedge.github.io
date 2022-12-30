@@ -143,7 +143,7 @@
   &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;快手给端上的接口使用的&lt;a href=&#34;https://spec.graphql.org/draft/&#34;&gt;graphql&lt;/a&gt;统一中心化了入口，方便后续规范化管理接口；整体交互也有些差别，一个是后置判断，一个是前置判断礼物是否可以赠送，但是对于赠送礼物接口还是需要判断是否满足赠送的金额；前置对于用户体验会好些，少了些交互吧; 接口数据都有token加密验证，防止三方黑产中途拦截，后者对整体赠送数据也是压缩加密了(用户行为打点数据也是压缩上报的)；&lt;/p&gt;
-&lt;p&gt;Tips: 貌似礼物的价格在各个直播平台都一样的，不像商品价格有相对波动，只是会有些直播场景定制化的礼物，有种非理性情感冲动消费的感觉，搞直播类用户产品，心理学貌似挺重要的，老铁带一波 666～&lt;/p&gt;
+&lt;p&gt;Tips: 貌似礼物的价格在各个直播平台都一样的，不像商品价格有相对波动，只是会有些直播场景定制化的礼物，有种非理性情感冲动消费的感觉，搞直播类用户产品，社会心理学貌似挺重要的，老铁带一波 666～&lt;/p&gt;
 &lt;h3 id=&#34;设计&#34;&gt;设计&lt;/h3&gt;
 &lt;h4 id=&#34;整体设计服务模块流程&#34;&gt;整体设计服务模块流程&lt;/h4&gt;
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/%E7%9B%B4%E6%92%AD%E4%BA%92%E5%8A%A8-%E8%B5%A0%E9%80%81%E7%A4%BC%E7%89%A9%E8%AE%BE%E8%AE%A1.drawio.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
@@ -1045,7 +1045,7 @@ Start -&amp;gt; RegisterConsumer -&amp;gt; start
 &lt;/ol&gt;
 &lt;p&gt;消息服务： &lt;a href=&#34;https://weedge.github.io/post/jxzbim/&#34;&gt;https://weedge.github.io/post/jxzbim/&lt;/a&gt;&lt;/p&gt;
 &lt;h3 id=&#34;开发&#34;&gt;开发&lt;/h3&gt;
-&lt;p&gt;按服务模块进行并行开发，联调；给出对应排期&lt;/p&gt;
+&lt;p&gt;从0到1开始搭建蓝图，&amp;gt;1由业务驱动&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
 &lt;p&gt;搭建本地基础环境，tidb/polardb-x, redis, rocketmq 1d&lt;/p&gt;
@@ -1107,19 +1107,19 @@ tiup playground
 pxd tryout
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;测试demo, redis cluster集群下的缓存事务和 tidb分布式缓存事务，rocketmq 分布式消息事务；1d&lt;/p&gt;
+&lt;p&gt;测试demo, redis cluster集群下的缓存事务和 tidb分布式缓存事务，rocketmq 分布式消息事务；&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;核心服务模块开发支付中台接口 1d&lt;/p&gt;
+&lt;p&gt;核心服务模块开发支付中台接口&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;编写makefile, dockerfile, 打包成docker镜像， 整体解决方案依赖组件也可以通过docker-compose部署至docker容器中 1d&lt;/p&gt;
+&lt;p&gt;编写makefile, dockerfile, 打包成docker镜像， 整体解决方案依赖组件也可以通过docker-compose部署至docker容器中&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;编写相关k8s资源 (configmap,secret,deployment+service,ingress)通过minikube/kind 部署至本地k8s集群 1d&lt;/p&gt;
+&lt;p&gt;编写相关k8s资源 (configmap,secret,deployment+service,ingress)通过minikube/kind 部署至本地k8s集群&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;将服务网格化istio(xds流控, 可用于全链路监控, A/B测试，特别是产品新特性/模型策略场景)  2d (like this: &lt;a href=&#34;https://mp.weixin.qq.com/s/SAn-H5p53IfvSy_Y3Mcz_Q&#34;&gt;https://mp.weixin.qq.com/s/SAn-H5p53IfvSy_Y3Mcz_Q&lt;/a&gt;)&lt;/p&gt;
+&lt;p&gt;将服务网格化istio(xds流控, 可用于全链路监控, A/B测试，特别是产品新特性/模型策略场景)  (like this: &lt;a href=&#34;https://mp.weixin.qq.com/s/SAn-H5p53IfvSy_Y3Mcz_Q&#34;&gt;https://mp.weixin.qq.com/s/SAn-H5p53IfvSy_Y3Mcz_Q&lt;/a&gt;)&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;k8s/istio operator&lt;/p&gt;
@@ -1238,10 +1238,9 @@ pxd tryout
 &lt;li&gt;&lt;a href=&#34;https://gorm.io/gen/index.html&#34;&gt;gorm-gen&lt;/a&gt; diy生成数据库持久访问层模型,可以用sql来推演业务逻辑，然后直接生成对应dao操作model/entry读写方法，提供给上层repository 进行接口实例化注入，如果业务逻辑非简单的CURD, 提供一层usecase来分离业务具体实现，以及组合repository来实现具体业务场景逻辑，实现 domain领域驱动 满足 业务对内对外的api接口 以及 事件驱动；&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/google/wire/blob/main/docs/guide.md&#34;&gt;wire&lt;/a&gt;依赖注入，将db/cache/mq/rpc/http client -&amp;gt; dao, repository  -&amp;gt; usecase -&amp;gt; api/subscribe handler  -&amp;gt; service  =&amp;gt; server 依次注入实体组装成server，提供服务；&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/golang/mock&#34;&gt;GoMock mockgen&lt;/a&gt;(golang官方出品)，可以结合 &lt;a href=&#34;github.com/vektra/mockery&#34;&gt;mockery&lt;/a&gt; (相对开发友好)工具来mock 接口 ， 这样在前期不用实现具体场景实体类，直接可以测试驱动(BDD/TDD)进行业务逻辑推演；可以认为前期搭开发框架架子，不仅需要满足现在需求，而且需要对后续易变需求可进行扩展开发，无需改动以往逻辑(业务逻辑实体合理抽象以及对应方法接口)；也可以使用hack的方式 通过 &lt;a href=&#34;https://bou.ke/blog/monkey-patching-in-go/&#34;&gt;gomonkey&lt;/a&gt; 进行打桩注入进行mock，虽然简单直接，但是依赖底层编译硬件平台架构,有限制不推荐；&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://onsi.github.io/ginkgo/&#34;&gt;ginkgo&lt;/a&gt; 编写公有函数测试用例，覆盖业务逻辑分支；&lt;/li&gt;
-&lt;li&gt;其他开发工具待发现;  （好的工具可以规范化写代码流程）&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://onsi.github.io/ginkgo/&#34;&gt;ginkgo&lt;/a&gt; 编写公有函数测试用例，覆盖业务逻辑分支&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;总之保持 &lt;strong&gt;KISS&lt;/strong&gt; 姿势，让工具来解放生产力。&lt;/p&gt;
+&lt;p&gt;总之保持 &lt;strong&gt;KISS&lt;/strong&gt; 姿势，让工具来解放生产力（好的工具可以规范化写代码流程, 前提是工程最佳实践沉淀）。&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Keep it simple stupid “K.I.S.S”&lt;/p&gt;
 &lt;/blockquote&gt;
