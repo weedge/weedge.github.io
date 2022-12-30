@@ -622,8 +622,8 @@
 &lt;td&gt;default: 8/8&lt;/td&gt;
 &lt;td&gt;事务消息&lt;/td&gt;
 &lt;td&gt;eventId&lt;/td&gt;
-&lt;td&gt;TAG_SEND_GIFT ( || 间隔多个tag)&lt;/td&gt;
-&lt;td&gt;用户赠送礼物互动资产变更&lt;/td&gt;
+&lt;td&gt;{eventType} ( || 间隔多个tag)&lt;/td&gt;
+&lt;td&gt;用户事件资产变更&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;/td&gt;
@@ -1231,12 +1231,12 @@ pxd tryout
 │           └── version 
 ├── kratos	----------------- use kratos framwork develop
 └── opentelemetry-go-contrib ----- otel go contrib
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;服务可以通过多个service组合成一个单体server，也可以从一个单体server拆分成多个微服务server，以便企业内部组织架构来调整服务(基于上下文软件架构原则 &lt;a href=&#34;https://martinfowler.com/bliki/ConwaysLaw.html&#34;&gt;Conway&amp;rsquo;s law&lt;/a&gt;)&lt;/p&gt;
-&lt;p&gt;服务内部各个模块组件采用DDD &lt;a href=&#34;https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html&#34;&gt;clean-architecture&lt;/a&gt; 架构，接口隔离实现，既方便mock，也方便组装，golang都是以组合方式来构建，面向对象编程语言 java/c++ 通过接口/继承来实现多态，golang则没有继承通过接口的方式来实现多态，前者是运行时查找函数表(itable/vtable)进行动态绑定，后者则是编译时指针直接进行绑定(实现接口分指针类型和结构体类型，后者有参数拷贝操作，开发中使用前者指针类型；编译时非空interface iface中的itab.inter指向对应接口名, itab._type 指向对应实例对象以及函数数组指针fun指向对应结构实体中的实现方法；运行时将初始化实例对象分配在堆中，然后将实例化对象指针赋给itab._type, 调用对应实体的函数方法时在分配的栈空间中进行运行；通过 &lt;a href=&#34;https://golang.google.cn/src/cmd/compile/doc.go?h=go+tool+compile&#34;&gt;go tool complie&lt;/a&gt; 在对应硬件平台查看编译的Plan9汇编代码为准)，后者运行效率更高，而且以组合的方式构建项目(原则: &lt;strong&gt;任何构造函数都不应调用另一个构造函数&lt;/strong&gt;, 在程序初始化时进行构造注入实体)，以防类继承过度抽象设计；可参考：&lt;a href=&#34;https://www.toptal.com/go/golang-oop-tutorial&#34;&gt;golang-oop-tutorial&lt;/a&gt; &lt;a href=&#34;https://halfrost.com/go_interface/&#34;&gt;go-interface&lt;/a&gt; &lt;a href=&#34;https://github.com/cch123/golang-notes/blob/master/assembly.md&#34;&gt;golang-assembly&lt;/a&gt;&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;服务可以通过多个service组合成一个单体server，也可以从一个单体server拆分成多个微服务server，以便企业内部组织架构来调整服务(基于上下文软件架构原则 &lt;strong&gt;&lt;a href=&#34;https://martinfowler.com/bliki/ConwaysLaw.html&#34;&gt;Conway&amp;rsquo;s law&lt;/a&gt;&lt;/strong&gt;)&lt;/p&gt;
+&lt;p&gt;服务内部各个模块组件采用DDD &lt;a href=&#34;https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html&#34;&gt;clean-architecture&lt;/a&gt; 架构，接口隔离实现，依赖反转(&lt;strong&gt;&lt;a href=&#34;http://en.wikipedia.org/wiki/Dependency_inversion_principle&#34;&gt;Dependency Inversion Principle&lt;/a&gt;&lt;/strong&gt;)，木有循环依赖，既方便mock，也方便组装，golang都是以组合方式来构建，面向对象编程语言 java/c++ 通过接口/继承来实现多态，golang则没有继承通过接口的方式来实现多态，前者是运行时查找函数表(itable/vtable)进行动态绑定，后者则是编译时指针直接进行绑定(实现接口分指针类型和结构体类型，后者有参数拷贝操作，开发中使用前者指针类型；编译时非空interface iface中的itab.inter指向对应接口名, itab._type 指向对应实例对象以及函数数组指针fun指向对应结构实体中的实现方法；运行时将初始化实例对象分配在堆中，然后将实例化对象指针赋给itab._type, 调用对应实体的函数方法时在分配的栈空间中进行运行；通过 &lt;a href=&#34;https://golang.google.cn/src/cmd/compile/doc.go?h=go+tool+compile&#34;&gt;go tool complie&lt;/a&gt; 在对应硬件平台查看编译的Plan9汇编代码为准)，后者运行效率更高，而且以组合的方式构建项目(原则: &lt;strong&gt;任何构造函数都不应调用另一个构造函数&lt;/strong&gt;, 在程序初始化时进行构造注入实体)，以防类继承过度抽象设计；interface相关可参考：&lt;a href=&#34;https://www.toptal.com/go/golang-oop-tutorial&#34;&gt;golang-oop-tutorial&lt;/a&gt; &lt;a href=&#34;https://halfrost.com/go_interface/&#34;&gt;go-interface&lt;/a&gt; &lt;a href=&#34;https://github.com/cch123/golang-notes/blob/master/assembly.md&#34;&gt;golang-assembly&lt;/a&gt; &lt;strong&gt;&lt;a href=&#34;https://github.com/teh-cmc/go-internals/blob/master/chapter2_interfaces/README.md&#34;&gt;go-internals-interfaces&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;尽量使用工具来生成规范化，结构化的代码; 常用工具如下：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://gorm.io/gen/index.html&#34;&gt;gorm-gen&lt;/a&gt; diy生成数据库持久访问层模型,可以用sql来推演业务逻辑，然后直接生成对应dao操作model/entry读写方法，提供给上层repository 进行接口实例化注入，如果业务逻辑非简单的CURD, 提供一层usecase来分离业务具体实现，以及组合repository来实现具体业务场景逻辑，实现 domain领域驱动 满足 业务对内对外的api接口 以及 事件驱动；&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/google/wire/blob/main/docs/guide.md&#34;&gt;wire&lt;/a&gt;依赖注入，将db/cache/mq/rpc/http client -&amp;gt; dao, repository  -&amp;gt; usecase -&amp;gt; api/subscribe handler  -&amp;gt; service  =&amp;gt; server 依次注入实体组装成server，提供服务；&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/google/wire/blob/main/docs/guide.md&#34;&gt;wire &lt;/a&gt;依赖注入，将db/cache/mq/rpc/http client -&amp;gt; dao, repository  -&amp;gt; usecase -&amp;gt; api/subscribe handler  -&amp;gt; service  =&amp;gt; server 依次注入实体组装成server，提供服务；&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/golang/mock&#34;&gt;GoMock mockgen&lt;/a&gt;(golang官方出品)，可以结合 &lt;a href=&#34;github.com/vektra/mockery&#34;&gt;mockery&lt;/a&gt; (相对开发友好)工具来mock 接口 ， 这样在前期不用实现具体场景实体类，直接可以测试驱动(BDD/TDD)进行业务逻辑推演；可以认为前期搭开发框架架子，不仅需要满足现在需求，而且需要对后续易变需求可进行扩展开发，无需改动以往逻辑(业务逻辑实体合理抽象以及对应方法接口)；也可以使用hack的方式 通过 &lt;a href=&#34;https://bou.ke/blog/monkey-patching-in-go/&#34;&gt;gomonkey&lt;/a&gt; 进行打桩注入进行mock，虽然简单直接，但是依赖底层编译硬件平台架构,有限制不推荐；&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://onsi.github.io/ginkgo/&#34;&gt;ginkgo&lt;/a&gt; 编写公有函数测试用例，覆盖业务逻辑分支&lt;/li&gt;
 &lt;/ol&gt;
