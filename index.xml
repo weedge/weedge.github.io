@@ -143,7 +143,7 @@
   &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;快手给端上的接口使用的&lt;a href=&#34;https://spec.graphql.org/draft/&#34;&gt;graphql&lt;/a&gt;统一中心化了入口，方便后续规范化管理接口；整体交互也有些差别，一个是后置判断，一个是前置判断礼物是否可以赠送，但是对于赠送礼物接口还是需要判断是否满足赠送的金额；前置对于用户体验会好些，少了些交互吧; 接口数据都有token加密验证，防止三方黑产中途拦截，后者对整体赠送数据也是压缩加密了(用户行为打点数据也是压缩上报的)；&lt;/p&gt;
-&lt;p&gt;Tips: 貌似礼物的价格在各个直播平台都一样的，不像商品价格有相对波动，只是会有些直播场景定制化的礼物，有种非理性情感冲动消费的感觉，搞直播类用户产品，社会心理学貌似挺重要的，老铁带一波 666～&lt;/p&gt;
+&lt;p&gt;Tips: 貌似礼物的价格在各个直播平台都一样的，不像商品价格有相对波动，只是会有些直播场景定制化的礼物，有种非理性情感冲动消费的感觉，搞直播类用户产品，社会心理学貌似挺重要的，老铁带一波节奏 666～&lt;/p&gt;
 &lt;h3 id=&#34;设计&#34;&gt;设计&lt;/h3&gt;
 &lt;h4 id=&#34;整体设计服务模块流程&#34;&gt;整体设计服务模块流程&lt;/h4&gt;
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/%E7%9B%B4%E6%92%AD%E4%BA%92%E5%8A%A8-%E8%B5%A0%E9%80%81%E7%A4%BC%E7%89%A9%E8%AE%BE%E8%AE%A1.drawio.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
@@ -1045,7 +1045,7 @@ Start -&amp;gt; RegisterConsumer -&amp;gt; start
 &lt;/ol&gt;
 &lt;p&gt;消息服务： &lt;a href=&#34;https://weedge.github.io/post/jxzbim/&#34;&gt;https://weedge.github.io/post/jxzbim/&lt;/a&gt;&lt;/p&gt;
 &lt;h3 id=&#34;开发&#34;&gt;开发&lt;/h3&gt;
-&lt;p&gt;借助开源工具，从0到1开始搭建蓝图，&amp;gt;1由业务驱动&lt;/p&gt;
+&lt;p&gt;借助开源工具，从0到1开始搭建蓝图，&amp;gt;1由业务驱动宏图&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
 &lt;p&gt;搭建本地基础环境，tidb/polardb-x, redis, rocketmq 1d&lt;/p&gt;
@@ -1134,7 +1134,7 @@ pxd tryout
 &lt;p&gt;开发框架：&lt;a href=&#34;https://www.cloudwego.io/zh/docs/kitex/overview/&#34;&gt;kitex&lt;/a&gt;(统一规范化了gRPC和thrift的脚手架，常支持内部微服务，泛化调用+ proxyless xds流控, 参考&lt;a href=&#34;https://mp.weixin.qq.com/s/G8vmlJyaimux_K-548kFbA&#34;&gt;brpc&lt;/a&gt;) + &lt;a href=&#34;https://www.cloudwego.io/zh/docs/hertz/overview/&#34;&gt;hertz&lt;/a&gt;(http协议框架，常支持外部业务前/后台, 数据渲染,请求校验)&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;DB：mysql, 高可用集群方案：不推荐自建sharding+proxy的方式；推荐使用支持mysql协议的分布式数据库，且无需在业务中考虑分库分表操作，以及分库分表的分布式事务；比如：开源方案 &lt;a href=&#34;https://docs.pingcap.com/zh/&#34;&gt;tidb&lt;/a&gt;(shared nothing,scale out)，云厂商：&lt;a href=&#34;https://polardbx.com/document&#34;&gt;polardb-x&lt;/a&gt; (shared nothing, scale out)/&lt;a href=&#34;https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.html&#34;&gt;aurora mysql&lt;/a&gt; (shared disk, scale up, aurora相关解读可以看下&lt;a href=&#34;youtube.com/watch?v=jJSh54J1s5o&#34;&gt;mit 6.824 Cloud Replicated DB, Aurora&lt;/a&gt;),   &lt;a href=&#34;https://gorm.io/&#34;&gt;gorm&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;DB：mysql, 高可用集群方案：不推荐自建sharding+proxy的方式；推荐使用支持mysql协议的分布式数据库，且无需在业务代码中考虑分库分表操作，以及分库分表的分布式事务；比如：开源方案 &lt;a href=&#34;https://docs.pingcap.com/zh/&#34;&gt;tidb&lt;/a&gt;(shared nothing,scale out)，云厂商：&lt;a href=&#34;https://polardbx.com/document&#34;&gt;polardb-x&lt;/a&gt; (shared nothing, scale out)/&lt;a href=&#34;https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.html&#34;&gt;aurora mysql&lt;/a&gt; (shared disk, scale up, aurora相关解读可以看下&lt;a href=&#34;youtube.com/watch?v=jJSh54J1s5o&#34;&gt;mit 6.824 Cloud Replicated DB, Aurora&lt;/a&gt;),   &lt;a href=&#34;https://gorm.io/&#34;&gt;gorm&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;Tips: 对应分布式事务操作tidb有所不同，tidb和原生的mysql innodb引擎事务操作sql语句有些区别: &lt;a href=&#34;https://docs.pingcap.com/zh/tidb/dev/transaction-overview&#34;&gt;tidb transaction&lt;/a&gt;, &lt;a href=&#34;https://docs.pingcap.com/zh/tidb/dev/dev-guide-sample-application-golang&#34;&gt;tidb-gorm-sample&lt;/a&gt;；&lt;a href=&#34;https://doc.polardbx.com/features/topics/distributed-transaction.html&#34;&gt;polardb-x 分布式事务&lt;/a&gt; 和 aurora 则原生支持事务操作sql语句;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
@@ -1158,11 +1158,11 @@ pxd tryout
 &lt;p&gt;RocketMQ-operator on k8s: &lt;a href=&#34;https://github.com/apache/rocketmq-operator&#34;&gt;https://github.com/apache/rocketmq-operator&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;题外话：或者进一步的直接使用无服务serverless 函数计算，开源方案&lt;a href=&#34;https://www.cncf.io/online-programs/event-driven-architecture-with-knative-events/&#34;&gt;&lt;strong&gt;Knative&lt;/strong&gt;&lt;/a&gt; &lt;a href=&#34;https://docs.openfaas.com/deployment/kubernetes/&#34;&gt;openfaas on k8s&lt;/a&gt;, 或者使用云服务比如&lt;a href=&#34;https://aws.amazon.com/cn/campaigns/lambda/&#34;&gt;aws lambda&lt;/a&gt;(transform, not transport data), 专注于业务逻辑，减少&amp;rsquo;胶水&amp;rsquo;代码，缺少了开发框架的依赖，常用于数据事件处理,比如直播音视频离线/实时处理（DevOps-&amp;gt;AppOps)， &lt;strong&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=PiQ_eZFO2GU&amp;amp;list=PL2yQDdvlhXf_lYR5Ntvr9V5iVYv5rcbNc&amp;amp;index=6&#34;&gt;AWS re:Invent 2022 - Best practices for advanced serverless developers&lt;/a&gt;&lt;/strong&gt;, &lt;strong&gt;&lt;a href=&#34;https://catalog.workshops.aws/complete-aws-sam/en-US&#34;&gt;The Complete AWS SAM workshop&lt;/a&gt;&lt;/strong&gt;。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;代码地址&lt;/strong&gt;： &lt;a href=&#34;https://github.com/weedge/craftsman/tree/main/cloudwego&#34;&gt;https://github.com/weedge/craftsman/tree/main/cloudwego&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;代码结构：(放在一个git仓库(svn)中主要是为了方便提交开发查看整体开发框架哈，如果想多人玩可以建个组织拆分哈)&lt;/p&gt;
+&lt;p&gt;代码结构：(放在一个git仓库(svn)中主要是为了方便提交开发查看整体开发框架哈，如果想多人玩可以建个组织拆分哈,通过submodule组合在一起)&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;├── aws	-------------- use aws cloud develop, focus on biz logic by use lambda / step functions
-│   └── cdk ------ deploy infrastructure ECS, VPC, EKS, S3, cache,db, mq etc for severless 
+│   └── cdk ------ deploy infrastructure ECS, VPC, EKS, S3, cache,db/search,mq etc for severless 
 ├── cloudwego	----------------- use cloudwego framwork develop
-│   ├── common	----------------- biz common for idl, rpc service/client, pkg
+│   ├── common	----------------- biz common for idl,dto,dict enum; rpc service/client, pkg
 │   │   ├── idl
 │   │   ├── kitex_gen
 │   │   │   ├── base
