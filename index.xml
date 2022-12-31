@@ -726,7 +726,7 @@ Start -&amp;gt; RegisterConsumer -&amp;gt; start
 		拉取到的一批消息会拆分成N（取决于consumeMessageBatchMaxSize）个小批消息subMsgs -&amp;gt; 
 		异步 consumeInner(ctx,subMsgs) -&amp;gt; 调用业务定义的回调业务函数callback.f(ctx, subMsgs...)-&amp;gt;
 	处理完成返回响应
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;对于普通消息的处理，可以看出批量拉去拆分成N个批量msgs, 每次获取批量msgs处理都是并发的，不会相互等待；拉完一批触发偏移事件继续拉去下一批到本地pr队列中，直到broker队列中没有可消费的数据；重试有对应topic重试队列不会阻塞当前topic队列的正常消费；&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;对于普通消息的处理，可以看出批量拉去拆分成N(PullBatchSize/min(ConsumeMessageBatchMaxSize,PullBatchSize))个批量msgs, 每次获取批量msgs处理都是并发的，不会相互等待；拉完一批触发偏移事件继续拉去下一批到本地pr队列中，直到broker队列中没有可消费的数据；重试有对应topic重试队列不会阻塞当前topic队列的正常消费；&lt;/p&gt;
 &lt;p&gt;其他参考：&lt;a href=&#34;https://zhuanlan.zhihu.com/p/27397055&#34;&gt;客户端配置详解&lt;/a&gt;&lt;/p&gt;
 &lt;h5 id=&#34;rocketmq-重试-死信-系统-topic&#34;&gt;RocketMQ 重试, 死信, 系统 Topic&lt;/h5&gt;
 &lt;table&gt;
