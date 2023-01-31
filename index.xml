@@ -1131,7 +1131,7 @@ pxd tryout
 &lt;p&gt;开发语言：golang + lua5.1(&lt;a href=&#34;https://redis.io/docs/manual/programmability/lua-debugging/&#34;&gt;redis lua debugging&lt;/a&gt;) + shell&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;开发框架：&lt;a href=&#34;https://www.cloudwego.io/zh/docs/kitex/overview/&#34;&gt;kitex&lt;/a&gt;(统一规范化了gRPC和thrift的脚手架，常支持内部微服务，泛化调用+ proxyless xds流控, 参考&lt;a href=&#34;https://mp.weixin.qq.com/s/G8vmlJyaimux_K-548kFbA&#34;&gt;brpc&lt;/a&gt;) + &lt;a href=&#34;https://www.cloudwego.io/zh/docs/hertz/overview/&#34;&gt;hertz&lt;/a&gt;(http协议框架，常支持外部业务前/后台, 数据渲染,请求校验)&lt;/p&gt;
+&lt;p&gt;开发框架：&lt;a href=&#34;https://www.cloudwego.io/zh/docs/kitex/overview/&#34;&gt;kitex&lt;/a&gt;(统一规范化了RPC框架，支持gRPC和thrift的脚手架，常支持内部微服务，泛化调用+ proxyless xds流控, 参考&lt;a href=&#34;https://mp.weixin.qq.com/s/G8vmlJyaimux_K-548kFbA&#34;&gt;brpc&lt;/a&gt;) + &lt;a href=&#34;https://www.cloudwego.io/zh/docs/hertz/overview/&#34;&gt;hertz&lt;/a&gt;(http协议框架，常支持外部业务前/后台, 数据渲染,请求校验)&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;DB：mysql, 高可用集群方案：不推荐自建sharding+proxy的方式；推荐使用支持mysql协议的分布式数据库，且无需在业务代码中考虑分库分表操作，以及分库分表的分布式事务；比如：开源方案 &lt;a href=&#34;https://docs.pingcap.com/zh/&#34;&gt;tidb&lt;/a&gt;(shared nothing,scale out)，云厂商：&lt;a href=&#34;https://polardbx.com/document&#34;&gt;polardb-x&lt;/a&gt; (shared nothing, scale out)/&lt;a href=&#34;https://docs.aws.amazon.com/zh_cn/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.html&#34;&gt;aurora mysql&lt;/a&gt; (shared disk, scale up, aurora相关解读可以看下&lt;a href=&#34;youtube.com/watch?v=jJSh54J1s5o&#34;&gt;mit 6.824 Cloud Replicated DB, Aurora&lt;/a&gt;),   &lt;a href=&#34;https://gorm.io/&#34;&gt;gorm&lt;/a&gt;&lt;/p&gt;
@@ -1299,7 +1299,7 @@ pxd tryout
 &lt;p&gt;&lt;a href=&#34;https://martinfowler.com/articles/serverless.html&#34;&gt;https://martinfowler.com/articles/serverless.html&lt;/a&gt;  &lt;a href=&#34;https://jimmysong.io/kubernetes-handbook/usecases/serverless.html&#34;&gt;https://jimmysong.io/kubernetes-handbook/usecases/serverless.html&lt;/a&gt; , &lt;a href=&#34;https://www.youtube.com/playlist?list=PL2yQDdvlhXf_lYR5Ntvr9V5iVYv5rcbNc&#34;&gt;https://www.youtube.com/playlist?list=PL2yQDdvlhXf_lYR5Ntvr9V5iVYv5rcbNc&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://kvrocks.apache.org/zh-CN/docs/Cluster/kvrocks-cluster-introduction&#34;&gt;https://kvrocks.apache.org/zh-CN/docs/Cluster/kvrocks-cluster-introduction&lt;/a&gt;   &lt;a href=&#34;https://www.qin.news/kvrocks-qian-xi/&#34;&gt;https://www.qin.news/kvrocks-qian-xi/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/apache/incubator-kvrocks/wiki/Kvrocks-%E9%9B%86%E7%BE%A4%E6%96%B9%E6%A1%88%E7%AE%80%E4%BB%8B&#34;&gt;https://github.com/apache/incubator-kvrocks/wiki/Kvrocks-%E9%9B%86%E7%BE%A4%E6%96%B9%E6%A1%88%E7%AE%80%E4%BB%8B&lt;/a&gt;  &lt;a href=&#34;https://www.qin.news/kvrocks-qian-xi/&#34;&gt;https://www.qin.news/kvrocks-qian-xi/&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://tidb.net/blog/09cc69f4&#34;&gt;https://tidb.net/blog/09cc69f4&lt;/a&gt; , &lt;a href=&#34;https://cn.pingcap.com/best-practice-detail/best-practices-for-developing-applications-with-tidb&#34;&gt;https://cn.pingcap.com/best-practice-detail/best-practices-for-developing-applications-with-tidb&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
