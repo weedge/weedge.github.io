@@ -544,7 +544,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v -bench&lt;span class=&#34
 &lt;p&gt;Mark setup (func Stack scan) → Make (concurrent make and assist make, make  termination) → concurrent Sweep ； 其中 开始Mark setup的时候会有非常短暂的STW(平均每 10 到 30 微秒),  标记终止(make  termination) 也会有STW, 进行收尾工作时间稍长，可以简单认为，STW发生在mark的开始和结束(开始时找到扫描开始的初始位置，开启写屏障；结束时关闭写屏障，进行收尾)&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;p&gt;Mark 标记阶段：遍历堆的所有对象，采用&lt;a href=&#34;https://github.com/rubinius/rubinius-website-archive/blob/cf54187d421275eec7d2db0abd5d4c059755b577/_posts/2013-06-22-concurrent-garbage-collection.markdown&#34;&gt;**三色标记算法 **&lt;/a&gt;(Go 1.5引入)，标记是否还在使用。&lt;/p&gt;
+&lt;p&gt;Mark 标记阶段：遍历堆的所有对象，采用 &lt;a href=&#34;https://github.com/rubinius/rubinius-website-archive/blob/cf54187d421275eec7d2db0abd5d4c059755b577/_posts/2013-06-22-concurrent-garbage-collection.markdown&#34;&gt;&lt;strong&gt;三色标记算法&lt;/strong&gt;&lt;/a&gt; (Go 1.5引入)，标记是否还在使用。&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;mark setup:  即mark开始前的准备工作，找到goroutine中函数栈帧中的扫描位置， 打开写屏障(write barrier，前面已经介绍过)，允许在垃圾回收期间在堆上保持数据完整性，因为回收器和应用程序的 goroutine 将同时运行。要打开写保护，必须停止运行的每个应用程序 goroutine，产生STW,通常非常快，平均每 10 到 30 微秒；但是有特殊情况，紧密循环比如一个死循环或者循环时间长，没有调用函数触发，进而可能导致垃圾回收无法开始；&lt;/li&gt;
 &lt;li&gt;concurrent mark: 在开启写保护器后，开始并发标记阶段。首先，回收器为其自身保留了 25% 可用 CPU 容量 。使用 Goroutine 执行回收工作，并需要应用程序 Goroutine 使用的相同的 P 和 M。开始标记堆内存中仍在使用的值。该工作首先通过检查所有现有 Goroutine 的栈帧以找到指向堆内存的根指针。然后从这些根指针遍历对象图 进行标记。&lt;/li&gt;
