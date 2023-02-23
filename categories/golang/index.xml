@@ -2,11 +2,11 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Golang on 时间飘过</title>
-    <link>https://weedge.github.io/tags/golang/</link>
+    <link>https://weedge.github.io/categories/golang/</link>
     <description>Recent content in Golang on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Thu, 23 Feb 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/golang/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 23 Feb 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/golang/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Go tips-笔记: 优化 91-100 mistakes</title>
       <link>https://weedge.github.io/post/go-tips-12-optimizations/</link>
@@ -20,15 +20,6 @@
 &lt;/blockquote&gt;
 &lt;p&gt;并不意味着禁止为速度和效率优化应用程序, 了解并掌握这些优化点，以备不时之需；文中给出了常见的优化技术；有些特定于 Go 内存模型，内存分配，GPM调度模型；有些是关于了解硬件有助于写出好的代码(适用于不同语言)，其中会有硬件方面的术语，可以结合wiki进行学习；&lt;/p&gt;
 &lt;p&gt;tips: 学习一些和编程优化相关的底层计算机组成原理，并且结合相关硬件进行基准压测实践。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>网络模型</title>
-      <link>https://weedge.github.io/post/poller/</link>
-      <pubDate>Thu, 02 Sep 2021 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/poller/</guid>
-      <description>&lt;p&gt;看了一些开源的网络I/O模型框架库，尝试着按照理解简单实现一个相对简单的网络I/O模型框架，类似netty的reactor模型。&lt;/p&gt;</description>
     </item>
     
   </channel>

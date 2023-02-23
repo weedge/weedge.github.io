@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>leveled on 时间飘过</title>
+    <link>https://weedge.github.io/tags/leveled/</link>
+    <description>Recent content in leveled on 时间飘过</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Tue, 07 Feb 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/leveled/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>源码阅读草稿-leveldb</title>
+      <link>https://weedge.github.io/todo/leveldb-viewcode/</link>
+      <pubDate>Tue, 07 Feb 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/todo/leveldb-viewcode/</guid>
+      <description>安装 leveldb源码使用tag 1.23, 在本地macOS 下通过vscode查看源码，编译debug如下： git clone --recurse-submodules https://github.com/google/leveldb.git &amp;amp;&amp;amp; cd leveldb &amp;amp;&amp;amp; git checkout 1.23 brew install gflags brew install snappy mkdir -p build &amp;amp;&amp;amp;</description>
+    </item>
+    
+  </channel>
+</rss>

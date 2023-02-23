@@ -6,7 +6,22 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 21 Nov 2022 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 23 Feb 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Go tips-笔记: 优化 91-100 mistakes</title>
+      <link>https://weedge.github.io/post/go-tips-12-optimizations/</link>
+      <pubDate>Thu, 23 Feb 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/go-tips-12-optimizations/</guid>
+      <description>&lt;h1 id=&#34;前言&#34;&gt;前言&lt;/h1&gt;
+&lt;p&gt;在大多数情况下，编写可读、清晰的代码比编写经过优化但更复杂、更难理解的代码要好，不要过早的优化。建议遵循软件工程师 Wes Dyer 的这句名言：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;em&gt;Make it correct, make it clear, make it concise, make it fast, in that order.&lt;/em&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;并不意味着禁止为速度和效率优化应用程序, 了解并掌握这些优化点，以备不时之需；文中给出了常见的优化技术；有些特定于 Go 内存模型，内存分配，GPM调度模型；有些是关于了解硬件有助于写出好的代码(适用于不同语言)，其中会有硬件方面的术语，可以结合wiki进行学习；&lt;/p&gt;
+&lt;p&gt;tips: 学习一些和编程优化相关的底层计算机组成原理，并且结合相关硬件进行基准压测实践。&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>设计-直播间赠送礼物功能</title>
       <link>https://weedge.github.io/post/zb-gift/</link>
@@ -223,15 +238,6 @@
       <guid>https://weedge.github.io/post/idgen/</guid>
       <description>&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
 &lt;p&gt;  用户业务数据增长过快，比如文章评论系统，feed流系统，订单系统；数据的存放模型需要从主从的单机单库 演变成 分布式集群数据库； 分库分表的数据查询需用到全局唯一标识的id来查询业务，比如莫个feed的评论数据、推送消息、购物订单、活动优惠劵等等都需要进行唯一ID标识；以便分布式存储(mysql,nosql,newsql)索引(b+tree, LSMtree,inverted index)快速查询；至于数据一致性通过约定规范协议保证(强：类Paxos算法/raft算法，弱: mq) 。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>golang学习笔记</title>
-      <link>https://weedge.github.io/post/golang/</link>
-      <pubDate>Wed, 01 Nov 2017 01:16:30 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/golang/</guid>
-      <description>&lt;p&gt;刚开始接触golang的时候是在大学时候，当时大概是2010年左右，对这门新语言比较好奇，但是没有深入去了解，只是道听途说这门语言在并发处理上很方便，对于协程这个东西也是第一次听说。自从工作之后，就一直没有接触过这门语言,最近公司想往golang上转，开发新的项目平台，毕竟golang运行效率和开发效率都要比其他语言要简单方便很多(听说c++都快20了)。&lt;/p&gt;</description>
     </item>
     
   </channel>
