@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Golang · 时间飘过</title>
+  <title>Go tips-笔记: 函数和方法 42-47 mistakes - 时间飘过</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -23,7 +23,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="记录工作和生活" />
+  <meta name="description" content="笔记 42.结构体方法不知道使用哪种类型的接收者 文中说了很多，感觉为了凑数，主要就是围绕着值传递还是指针传递，值传递给接收者，如果结构体中没有" />
+
   <meta name="keywords" content="工作, 技术, 生活" />
 
 
@@ -34,8 +35,8 @@
 <meta name="generator" content="Hugo 0.88.1" />
 
 
-<link rel="canonical" href="https://weedge.github.io/categories/golang/" />
-<link href="/categories/golang/index.xml" rel="alternate" type="application/rss+xml" title="时间飘过" />
+<link rel="canonical" href="https://weedge.github.io/post/notions/go-tips/go-tips-06-functions-methods/" />
+
 
 
 
@@ -60,15 +61,20 @@
 <link rel="stylesheet" href="/css/copy-to-clipboard.css">
 
 
-<meta property="og:title" content="Golang" />
-<meta property="og:description" content="记录工作和生活" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://weedge.github.io/categories/golang/" />
+<meta property="og:title" content="Go tips-笔记: 函数和方法 42-47 mistakes" />
+<meta property="og:description" content="笔记 42.结构体方法不知道使用哪种类型的接收者 文中说了很多，感觉为了凑数，主要就是围绕着值传递还是指针传递，值传递给接收者，如果结构体中没有" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/notions/go-tips/go-tips-06-functions-methods/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-02-15T14:26:23+08:00" />
+<meta property="article:modified_time" content="2023-02-15T14:26:23+08:00" />
 
-<meta itemprop="name" content="Golang">
-<meta itemprop="description" content="记录工作和生活"><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Golang"/>
-<meta name="twitter:description" content="记录工作和生活"/>
+<meta itemprop="name" content="Go tips-笔记: 函数和方法 42-47 mistakes">
+<meta itemprop="description" content="笔记 42.结构体方法不知道使用哪种类型的接收者 文中说了很多，感觉为了凑数，主要就是围绕着值传递还是指针传递，值传递给接收者，如果结构体中没有"><meta itemprop="datePublished" content="2023-02-15T14:26:23+08:00" />
+<meta itemprop="dateModified" content="2023-02-15T14:26:23+08:00" />
+<meta itemprop="wordCount" content="1528">
+<meta itemprop="keywords" content="Golang," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Go tips-笔记: 函数和方法 42-47 mistakes"/>
+<meta name="twitter:description" content="笔记 42.结构体方法不知道使用哪种类型的接收者 文中说了很多，感觉为了凑数，主要就是围绕着值传递还是指针传递，值传递给接收者，如果结构体中没有"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -285,76 +291,190 @@
     <main id="main" class="main bg-llight">
       <div class="content-wrapper">
         <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">Go tips-笔记: 函数和方法 42-47 mistakes</h1>
+      
+      <div class="post-meta">
+        <time datetime="2023-02-15" class="post-time">
+          2023-02-15
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            <a href="https://weedge.github.io/categories/golang/"> Golang </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#42结构体方法不知道使用哪种类型的接收者">42.结构体方法不知道使用哪种类型的接收者</a></li>
+    <li><a href="#43从不使用命名结果参数--建议">43.从不使用命名结果参数  (建议)</a></li>
+    <li><a href="#44具有命名结果参数的意外副作用-建议">44.具有命名结果参数的意外副作用 （建议）</a></li>
+    <li><a href="#45返回一个-nil-接口-重要">45.返回一个 nil 接口 (重要)</a></li>
+    <li><a href="#46使用文件名作为函数输入">46.使用文件名作为函数输入</a></li>
+    <li><a href="#47忽略defer参数和接收者的计算方式-重要">47.忽略defer参数和接收者的计算方式 (重要)</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <h1 id="笔记">笔记</h1>
+<h2 id="42结构体方法不知道使用哪种类型的接收者">42.结构体方法不知道使用哪种类型的接收者</h2>
+<p>文中说了很多，感觉为了凑数，主要就是围绕着值传递还是指针传递，值传递给接收者，如果结构体中没有指针类型成员，则不会改变接收者的数据；如有指针传递，则会改变。选择哪种传递方式，主要取决于结构体中的成员是否都是只读操作，如果是只读，使用值传递，否则使用指针传递。至于是否大结构体数据，这个由结构体中的成员来决定，是否有指针成员；</p>
+<h2 id="43从不使用命名结果参数--建议">43.从不使用命名结果参数  (建议)</h2>
+<p>主要是为了函数/结构体方法返回的值，更具代码可读性，数据类型本身不能表示具体含义，除非type 别名； 在大多数情况下，在接口定义的上下文中使用命名结果参数可以提高可读性而不会导致任何副作用。但是在方法实现的上下文中没有严格的规则。 当有明显的好处时，应该谨慎使用命名结果参数。</p>
+<h2 id="44具有命名结果参数的意外副作用-建议">44.具有命名结果参数的意外副作用 （建议）</h2>
+<p>如果使用命名的结构参数，声明了结果的变量名，在函数方法体内进行初始定义，使用时注意不用被同名覆盖，特别是在处理错误逻辑时，错误的返回情况，所以 使用命名结果参数时保持谨慎，以避免潜在的副作用 。</p>
+<h2 id="45返回一个-nil-接口-重要">45.返回一个 nil 接口 (重要)</h2>
+<p>在处理自定义实现error接口的错误体结构，判断错误时需要主要的地方，如果接口error 为未赋值的自定义错误体结构，虽然错误体结构为nil，但是interface error不为nil, 其interface error 内部指向的错误体结构为nil， 所以需要判断erro为nil时， 直接返回nil值, 而不是为nil的错误体结构体指针；这个是Go中经常会遇到的坑。这种情况也可能发生在任何使用指针接收者实现的接口，需要保持谨慎。</p>
+<h2 id="46使用文件名作为函数输入">46.使用文件名作为函数输入</h2>
+<p>这个是属于设计问题了，函数操作的是共性数据时，应该采用接口作为函数的输入，以便解耦具体实现，方便测试和扩展，比如文中所提到扫描数据内容的行数，属于读操作，可以使用<code>io.Reader</code> 接口作为参数，如果是写操作，使用io.Writer 等等，io包中封装了不同接口组合; bufio包中有对应方法接受接口参数进行读写操作；这样数据源只要实现对应读写接口方法即可。</p>
+<h2 id="47忽略defer参数和接收者的计算方式-重要">47.忽略defer参数和接收者的计算方式 (重要)</h2>
+<p>在传递defer 函数参数时，函数的参数是值拷贝传递，传入的值为当前值，比如defer f(a) 在f的定义中,传入参数对a值进行了值拷贝，所以外部a值怎么变，已经和defer函数中的参数值已经没有关系了，如果想继续使用的话， 提供了两种方案：</p>
+<ol>
+<li>defer 函数参数采用指针传递，比如f(&amp;a)，这样指向同一地址空间，需要函数传入指针类型，这个对于已有封装好的函数是不可行的。</li>
+<li>使用闭包函数，defer func(){f(a)}() 这样可以引用到在return之前a的最终值，如果改成 defer func(a int){f(a)}(a), 则和原来值传递的情况一样。</li>
+</ol>
+<p>注意的地方，如果defer的是结构体实例的方法，比如 defer s.f() ，如果s是指针传递，则后续结构体实例s中的成员有变化，也会影响到defer s.f(); 如果采用值传递给接受者s, 则是当前s的值拷贝，后续怎么变都不影响；</p>
+<h1 id="概括">概括</h1>
+<ul>
+<li>应该根据类型、是否必须改变、是否包含无法复制的字段以及对象有多大等因素来决定是使用值还是指针接收器。如有疑问，请使用指针接收器。</li>
+<li>使用命名结果参数是提高函数/方法可读性的有效方法，尤其是在多个结果参数具有相同类型的情况下。在某些情况下，这种方法也很方便，因为命名的结果参数被初始化为它们的零值。但要注意潜在的副作用。</li>
+<li>返回接口时，注意不要返回一个 nil 指针，而是一个显式的 nil 值。否则，可能会导致意想不到的后果，因为调用者将收到一个非零值。</li>
+<li>将函数设计为接收<code>io.Reader</code>类型而不是文件名可以提高函数的可重用性并使测试更容易。</li>
+<li>传递指向函数的指针<code>defer</code>和将调用封装在闭包中是克服接收者参数立即求值的两种解决方案。</li>
+</ul>
+
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2023-02-15
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/golang/">Golang</a>
           
+        </div>
 
-<section id="archive" class="archive">
-  
-
-  
-    <div class="archive-post">
-      <time datetime="2023-02-13" class="archive-post-time">
-        2023-02-13
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/notions/go-tips/go-tips-02-code-project-organization/" class="archive-post-link">
-          Go tips-笔记: 代码和项目组织 1-16 mistakes
-        </a>
-      </span>
-    </div>
-  
-    <div class="archive-post">
-      <time datetime="2017-11-01" class="archive-post-time">
-        2017-11-01
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/golang/" class="archive-post-link">
-          golang学习笔记
-        </a>
-      </span>
-    </div>
-  
-</section>
-
-
-
-
-
-
-  
-  
-  
-
-  
-  
-
-  
-  
-
-  
-  
-
-  
-  
-  <nav class="pagination">
-    <ul>
       
-      <li >
-        <a href="/categories/golang/">1</a>
-      </li>
-      
-      <li  class="active" >
-        <a href="/categories/golang/page/2/">2</a>
-      </li>
-      
-    </ul>
-  </nav>
+      <nav class="post-nav">
+        
+          <a class="prev" href="/post/notions/go-tips/go-tips-07-error-management/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">Go tips-笔记: 错误管理 48-54 mistakes</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        
+          <a class="next" href="/post/notions/go-tips/go-tips-05-strings/">
+            <span class="next-text nav-default">Go tips-笔记: string 36-41 mistakes</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
 
   
   
 
+  
+  
 
+  
 
+  
+  
 
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/post/notions/go-tips/go-tips-06-functions-methods/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+    
+
+  
 
         </div>
       </div>

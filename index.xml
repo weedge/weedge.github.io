@@ -53,10 +53,10 @@
     
     <item>
       <title>Go tips-笔记: 优化 91-100 mistakes</title>
-      <link>https://weedge.github.io/post/go-tips/go-tips-12-optimizations/</link>
+      <link>https://weedge.github.io/post/notions/go-tips/go-tips-12-optimizations/</link>
       <pubDate>Thu, 23 Feb 2023 10:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/go-tips/go-tips-12-optimizations/</guid>
+      <guid>https://weedge.github.io/post/notions/go-tips/go-tips-12-optimizations/</guid>
       
         <description>&lt;h1 id=&#34;引言&#34;&gt;引言&lt;/h1&gt;
 &lt;p&gt;在大多数情况下，编写可读、清晰的代码比编写经过优化但更复杂、更难理解的代码要好，不要过早的优化。建议遵循软件工程师 Wes Dyer 的这句名言：&lt;/p&gt;
@@ -160,7 +160,7 @@
 &lt;li&gt;因为有8 Way，于是会每一Way 有 512 / 8 = 64 条 Cache Line。&lt;/li&gt;
 &lt;li&gt;于是每一路就有 64 x 64 = 4096 Byts 的内存。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;回到前面#89 真实示例中，使用两个函数&lt;code&gt;calculateSum512&lt;/code&gt;和&lt;code&gt;calculateSum513&lt;/code&gt;。基准测试在 32 KB 8-way set-associative L1D cache上执行，总共 64 组。因为缓存行是 64 字节，所以每一路步长等于 64 × 64 字节 = 4 KB；代表512 个&lt;code&gt;int64&lt;/code&gt;类型元素。因此，达到了 512 列矩阵的&lt;em&gt;临界步幅critical stride&lt;/em&gt;，缓存分布很差(&lt;em&gt;冲突未命中conflict miss&lt;/em&gt;)。同时，如果矩阵包含 513 列，则不会导致&lt;em&gt;临界步幅&lt;/em&gt;。这就是为什么观察到两个基准之间存在如此巨大差异的原因。这个同样适用于在intel CPU架构上运行的其他语言。&lt;/p&gt;
+&lt;p&gt;回到前面&lt;a href=&#34;https://weedge.github.io/post/go-tips/go-tips-11-testing/#89%E7%BC%96%E5%86%99%E4%B8%8D%E5%87%86%E7%A1%AE%E7%9A%84%E5%9F%BA%E5%87%86&#34;&gt;#89&lt;/a&gt; 真实示例中，使用两个函数&lt;code&gt;calculateSum512&lt;/code&gt;和&lt;code&gt;calculateSum513&lt;/code&gt;。基准测试在 32 KB 8-way set-associative L1D cache上执行，总共 64 组。因为缓存行是 64 字节，所以每一路步长等于 64 × 64 字节 = 4 KB；代表512 个&lt;code&gt;int64&lt;/code&gt;类型元素。因此，达到了 512 列矩阵的&lt;em&gt;临界步幅critical stride&lt;/em&gt;，缓存分布很差(&lt;em&gt;冲突未命中conflict miss&lt;/em&gt;)。同时，如果矩阵包含 513 列，则不会导致&lt;em&gt;临界步幅&lt;/em&gt;。这就是为什么观察到两个基准之间存在如此巨大差异的原因。这个同样适用于在intel CPU架构上运行的其他语言。&lt;/p&gt;
 &lt;p&gt;总之，必须意识到现代缓存是分区的。根据步幅，在某些情况下只使用一组，这可能会损害应用程序性能并导致冲突未命中。这种步幅称为临界步幅。对于性能密集型应用程序，应该避免关键步骤来充分利用 CPU 缓存。&lt;/p&gt;
 &lt;p&gt;tips: 应该注意基准测试的结果在不同底层CPU架构而有所不同。注意开发测试 和 生产环境下的CPU架构一致，如果有对计算密集型的调优，最好在生产环境待部署的机器上都进行基准测试一下。&lt;/p&gt;
 &lt;h2 id=&#34;92编写导致伪共享false-sharding的并发代码&#34;&gt;92.编写导致伪共享(false sharding)的并发代码&lt;/h2&gt;
@@ -315,10 +315,10 @@
 &lt;h2 id=&#34;96不知道如何减少分配&#34;&gt;96.不知道如何减少分配&lt;/h2&gt;
 &lt;p&gt;减少分配是加速 Go 应用程序的常见优化技术。已经涵盖了一些减少堆分配数量的方法：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;未优化的字符串连接（错误 #39）：使用&lt;code&gt;strings.Builder&lt;/code&gt;替代&lt;code&gt;+&lt;/code&gt;运算符来连接字符串。&lt;/li&gt;
-&lt;li&gt;无用的字符串转换（错误 #40）：尽可能避免转换&lt;code&gt;[]byte&lt;/code&gt;成字符串。&lt;/li&gt;
-&lt;li&gt;切片和映射初始化效率低下（错误 #21 和 #27）：如果长度已知，则预分配切片和映射。&lt;/li&gt;
-&lt;li&gt;更好的数据结构对齐以减少结构大小（错误 #94）。&lt;/li&gt;
+&lt;li&gt;未优化的字符串连接（错误 &lt;a href=&#34;https://weedge.github.io/post/notions/go-tips/go-tips-05-strings/#39%E4%BC%98%E5%8C%96%E4%B8%8D%E8%B6%B3%E7%9A%84%E5%AD%97%E7%AC%A6%E4%B8%B2%E8%BF%9E%E6%8E%A5&#34;&gt;#39&lt;/a&gt;）：使用&lt;code&gt;strings.Builder&lt;/code&gt;替代&lt;code&gt;+&lt;/code&gt;运算符来连接字符串。&lt;/li&gt;
+&lt;li&gt;无用的字符串转换（错误 &lt;a href=&#34;https://weedge.github.io/post/notions/go-tips/go-tips-05-strings/#40%E6%97%A0%E7%94%A8%E7%9A%84%E5%AD%97%E7%AC%A6%E4%B8%B2%E8%BD%AC%E6%8D%A2&#34;&gt;#40&lt;/a&gt;）：尽可能避免转换&lt;code&gt;[]byte&lt;/code&gt;成字符串。&lt;/li&gt;
+&lt;li&gt;切片和映射初始化效率低下（错误 &lt;a href=&#34;https://weedge.github.io/post/notions/go-tips/go-tips-03-data-types/#21%E5%88%87%E7%89%87%E5%88%9D%E5%A7%8B%E5%8C%96%E6%95%88%E7%8E%87%E4%BD%8E%E4%B8%8B&#34;&gt;#21&lt;/a&gt; 和 &lt;a href=&#34;https://weedge.github.io/post/notions/go-tips/go-tips-03-data-types/#27%E4%BD%8E%E6%95%88%E7%9A%84map%E5%88%9D%E5%A7%8B%E5%8C%96&#34;&gt;#27&lt;/a&gt;）：如果长度已知，则预分配切片和映射。&lt;/li&gt;
+&lt;li&gt;更好的数据结构对齐以减少结构大小（错误 &lt;a href=&#34;https://weedge.github.io/post/notions/go-tips/go-tips-12-optimizations/#94%E4%B8%8D%E7%9F%A5%E9%81%93%E6%95%B0%E6%8D%AE%E5%AF%B9%E9%BD%90&#34;&gt;#94&lt;/a&gt;）。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;另外还有三种减少内存分配的常见方式：&lt;/p&gt;
 &lt;h3 id=&#34;api-设计&#34;&gt;API 设计&lt;/h3&gt;
@@ -634,10 +634,10 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v -bench&lt;span class=&#34
     
     <item>
       <title>Go tips-笔记: 测试 82-90 mistakes</title>
-      <link>https://weedge.github.io/post/go-tips/go-tips-11-testing/</link>
+      <link>https://weedge.github.io/post/notions/go-tips/go-tips-11-testing/</link>
       <pubDate>Mon, 20 Feb 2023 14:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/go-tips/go-tips-11-testing/</guid>
+      <guid>https://weedge.github.io/post/notions/go-tips/go-tips-11-testing/</guid>
       
         <description>&lt;h1 id=&#34;引言&#34;&gt;引言&lt;/h1&gt;
 &lt;p&gt;测试是项目生命周期的一个重要方面。它提供了无数的好处，例如建立对应用程序的信心、充当代码文档以及使重构更容易。与其他一些语言相比，Go 具有强大的编写测试原语。主要讨论测试过程变得脆弱、效率低下和准确性低的常见错误。这类问题属于工程规范实践，有些case同样适用于其他语言。&lt;/p&gt;
@@ -796,10 +796,10 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
     
     <item>
       <title>Go tips-笔记: 标准库 75-81 mistakes</title>
-      <link>https://weedge.github.io/post/go-tips/go-tips-10-standard-lib/</link>
+      <link>https://weedge.github.io/post/notions/go-tips/go-tips-10-standard-lib/</link>
       <pubDate>Sun, 19 Feb 2023 14:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/go-tips/go-tips-10-standard-lib/</guid>
+      <guid>https://weedge.github.io/post/notions/go-tips/go-tips-10-standard-lib/</guid>
       
         <description>&lt;h1 id=&#34;引言&#34;&gt;引言&lt;/h1&gt;
 &lt;p&gt;从程序中产生的错误中大多是使用姿势的不对，以及没有仔细阅读标准库相关包的开发文档，未查看源码导致，但是没有实践过这些问题，即使熟读文档和源码也可能避免不了。笔记中会以书中的mistake为切入点，结合源码升入分析其背后产生的原因，以及提出解决方案来避免。&lt;/p&gt;
@@ -960,10 +960,10 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
     
     <item>
       <title>Go tips-笔记: 并发实践 61-74 mistakes</title>
-      <link>https://weedge.github.io/post/go-tips/go-tips-09-concurrency-practice/</link>
+      <link>https://weedge.github.io/post/notions/go-tips/go-tips-09-concurrency-practice/</link>
       <pubDate>Sat, 18 Feb 2023 14:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/go-tips/go-tips-09-concurrency-practice/</guid>
+      <guid>https://weedge.github.io/post/notions/go-tips/go-tips-09-concurrency-practice/</guid>
       
         <description>&lt;h1 id=&#34;引言&#34;&gt;引言&lt;/h1&gt;
 &lt;p&gt;这里主要介绍并发实践中遇到的问题，这些问题在golang开源项目中也经常会出现，如果编写并发也会一直伴随在开发当中出现，也有工程实践相关的论文进行统计归纳总结(PS: 用这种方式发个论文还是比较轻松的~)：&lt;/p&gt;
@@ -1160,10 +1160,10 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
     
     <item>
       <title>Go tips-笔记: 并发概念 55-60 mistakes</title>
-      <link>https://weedge.github.io/post/go-tips/go-tips-08-concurrency-foundations/</link>
+      <link>https://weedge.github.io/post/notions/go-tips/go-tips-08-concurrency-foundations/</link>
       <pubDate>Fri, 17 Feb 2023 14:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/go-tips/go-tips-08-concurrency-foundations/</guid>
+      <guid>https://weedge.github.io/post/notions/go-tips/go-tips-08-concurrency-foundations/</guid>
       
         <description>&lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
 &lt;h2 id=&#34;55混淆并发和并行&#34;&gt;55.混淆并发和并行&lt;/h2&gt;
@@ -1228,10 +1228,10 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
     
     <item>
       <title>Go tips-笔记: 错误管理 48-54 mistakes</title>
-      <link>https://weedge.github.io/post/go-tips/go-tips-07-error-management/</link>
+      <link>https://weedge.github.io/post/notions/go-tips/go-tips-07-error-management/</link>
       <pubDate>Thu, 16 Feb 2023 14:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/go-tips/go-tips-07-error-management/</guid>
+      <guid>https://weedge.github.io/post/notions/go-tips/go-tips-07-error-management/</guid>
       
         <description>&lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
 &lt;h2 id=&#34;48panic&#34;&gt;48.panic&lt;/h2&gt;
@@ -1271,10 +1271,10 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
     
     <item>
       <title>Go tips-笔记: 函数和方法 42-47 mistakes</title>
-      <link>https://weedge.github.io/post/go-tips/go-tips-06-functions-methods/</link>
+      <link>https://weedge.github.io/post/notions/go-tips/go-tips-06-functions-methods/</link>
       <pubDate>Wed, 15 Feb 2023 14:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/go-tips/go-tips-06-functions-methods/</guid>
+      <guid>https://weedge.github.io/post/notions/go-tips/go-tips-06-functions-methods/</guid>
       
         <description>&lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
 &lt;h2 id=&#34;42结构体方法不知道使用哪种类型的接收者&#34;&gt;42.结构体方法不知道使用哪种类型的接收者&lt;/h2&gt;
@@ -1308,10 +1308,10 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
     
     <item>
       <title>Go tips-笔记: string 36-41 mistakes</title>
-      <link>https://weedge.github.io/post/go-tips/go-tips-05-strings/</link>
+      <link>https://weedge.github.io/post/notions/go-tips/go-tips-05-strings/</link>
       <pubDate>Tue, 14 Feb 2023 14:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/go-tips/go-tips-05-strings/</guid>
+      <guid>https://weedge.github.io/post/notions/go-tips/go-tips-05-strings/</guid>
       
         <description>&lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
 &lt;p&gt;在 Go 中，string是一种不可变的数据结构，包含以下内容：&lt;/p&gt;
@@ -1414,10 +1414,10 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
     
     <item>
       <title>Go tips-笔记: 控制语句 30-35 mistakes</title>
-      <link>https://weedge.github.io/post/go-tips/go-tips-04-control-structures/</link>
+      <link>https://weedge.github.io/post/notions/go-tips/go-tips-04-control-structures/</link>
       <pubDate>Tue, 14 Feb 2023 10:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/go-tips/go-tips-04-control-structures/</guid>
+      <guid>https://weedge.github.io/post/notions/go-tips/go-tips-04-control-structures/</guid>
       
         <description>&lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
 &lt;h2 id=&#34;30忽略了元素在-for-range循环中被复制-重要&#34;&gt;30.忽略了元素在 for range循环中被复制 (重要)&lt;/h2&gt;
@@ -1484,10 +1484,10 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
     
     <item>
       <title>Go tips-笔记: 数据类型 17-29 mistakes</title>
-      <link>https://weedge.github.io/post/go-tips/go-tips-03-data-types/</link>
+      <link>https://weedge.github.io/post/notions/go-tips/go-tips-03-data-types/</link>
       <pubDate>Mon, 13 Feb 2023 20:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/go-tips/go-tips-03-data-types/</guid>
+      <guid>https://weedge.github.io/post/notions/go-tips/go-tips-03-data-types/</guid>
       
         <description>&lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
 &lt;h2 id=&#34;17与八进制文字混淆&#34;&gt;17.与八进制文字混淆&lt;/h2&gt;
@@ -1588,16 +1588,16 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
     
     <item>
       <title>Go tips-笔记: 代码和项目组织 1-16 mistakes</title>
-      <link>https://weedge.github.io/post/go-tips/go-tips-02-code-project-organization/</link>
+      <link>https://weedge.github.io/post/notions/go-tips/go-tips-02-code-project-organization/</link>
       <pubDate>Mon, 13 Feb 2023 14:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/go-tips/go-tips-02-code-project-organization/</guid>
+      <guid>https://weedge.github.io/post/notions/go-tips/go-tips-02-code-project-organization/</guid>
       
         <description>&lt;h1 id=&#34;引言&#34;&gt;引言&lt;/h1&gt;
 &lt;p&gt;从错误中学习效率更高，而且从错误失败的场景下学习，往往比直接交代正确性的理论知识，没有上下文的结果去 记忆巩固知识，在错误失败场景下往往印象更深刻；可以帮助我们更好地避免错误并做出更明智、更有意识的决定，因为我们现在了解了错误背后的基本原理，有种该死的，恍然大悟的感觉，拨开雨雾见月明；&lt;/p&gt;
 &lt;p&gt;涵盖了可能导致各种软件错误的案例，包括数据竞争、泄漏、逻辑错误和其他缺陷。虽然准确的测试应该是尽早发现此类错误的一种方式，但有时可能会因为时间限制或复杂性等不同因素而错过案例。因此，使用Golang开发，确保避免常见错误至关重要。&lt;/p&gt;
 &lt;p&gt;有些坑可能曾经踩过，通过这些mistakes产生共鸣，加深印象，同时可以继续追加一些新的坑来填充,比如系统性能调优，包括IO,  网络，数据编解码压缩，分布式系统，业务系统组织架构，逐步学习实践试错过程。学习笔记开个头。&lt;/p&gt;
-&lt;p&gt;代码地址：https://github.com/teivah/100-go-mistakes ; 可以直接查看里面的示例，进行CR，如果知道坑的缘由，说明已经避坑了 :）&lt;/p&gt;
+&lt;p&gt;代码地址：&lt;a href=&#34;https://github.com/teivah/100-go-mistakes&#34;&gt;https://github.com/teivah/100-go-mistakes&lt;/a&gt; ; 可以直接查看里面的示例，进行CR，如果知道坑的缘由，说明已经避坑了 :）&lt;/p&gt;
 &lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
 &lt;h2 id=&#34;1变量隐藏&#34;&gt;1.变量隐藏&lt;/h2&gt;
 &lt;p&gt;需要理解golang中变量的作用域，在块中声明的变量名可以在内部块中重新声明(:=)；常见于err变量名的重用的情况，需要考虑是否需要重新命名；使用 vet lint工具进行检测&lt;/p&gt;

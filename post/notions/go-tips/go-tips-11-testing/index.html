@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-cn" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Go tips-笔记: 测试 82-90 mistakes - 时间飘过</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="weedge" />
+  <meta name="description" content="引言 测试是项目生命周期的一个重要方面。它提供了无数的好处，例如建立对应用程序的信心、充当代码文档以及使重构更容易。与其他一些语言相比，Go 具有强大的编写测试原语。主要讨论测试过程变得脆弱、效率低下和准确性低的常见错误。这类问题属于工程规范实践，有些case同样适用于其他语言。
+Go 中提供 go test 工具来执行测试，可以查看具体的开发文档： https://pkg.go.dev/cmd/go#hdr-Testing_flags 里面介绍了每个模式的具体使用方式，使用好这些测试模式flag，可以更快执行或更好地发现可能错误，进而保证代码质量，工程代码稳定性建设上的重要一环。Go中支持4种测试函数：单测函数，基准压测函数，模糊测试，以及打印输出样例测试。
+func TestXxx(t *testing.T) { ... } func BenchmarkXxx(b *testing.B) { ... } func FuzzXxx(f *testing.F) { ... } func ExampleXxx() { Println(&amp;#34;The output of\\nthis example.&amp;#34;) // Output: The output of 	// this example. } " />
+
+  <meta name="keywords" content="工作, 技术, 生活" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.88.1" />
+
+
+<link rel="canonical" href="https://weedge.github.io/post/notions/go-tips/go-tips-11-testing/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css" integrity="sha256-&#43;ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
+
+<meta property="og:title" content="Go tips-笔记: 测试 82-90 mistakes" />
+<meta property="og:description" content="引言
+测试是项目生命周期的一个重要方面。它提供了无数的好处，例如建立对应用程序的信心、充当代码文档以及使重构更容易。与其他一些语言相比，Go 具有强大的编写测试原语。主要讨论测试过程变得脆弱、效率低下和准确性低的常见错误。这类问题属于工程规范实践，有些case同样适用于其他语言。
+Go 中提供 go test 工具来执行测试，可以查看具体的开发文档： https://pkg.go.dev/cmd/go#hdr-Testing_flags  里面介绍了每个模式的具体使用方式，使用好这些测试模式flag，可以更快执行或更好地发现可能错误，进而保证代码质量，工程代码稳定性建设上的重要一环。Go中支持4种测试函数：单测函数，基准压测函数，模糊测试，以及打印输出样例测试。
+func TestXxx(t *testing.T) { ... }
+func BenchmarkXxx(b *testing.B) { ... }
+func FuzzXxx(f *testing.F) { ... }
+func ExampleXxx() {
+	Println(&#34;The output of\\nthis example.&#34;)
+	// Output: The output of
+	// this example.
+}
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/notions/go-tips/go-tips-11-testing/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-02-20T14:26:23+08:00" />
+<meta property="article:modified_time" content="2023-02-20T14:26:23+08:00" />
+
+<meta itemprop="name" content="Go tips-笔记: 测试 82-90 mistakes">
+<meta itemprop="description" content="引言
+测试是项目生命周期的一个重要方面。它提供了无数的好处，例如建立对应用程序的信心、充当代码文档以及使重构更容易。与其他一些语言相比，Go 具有强大的编写测试原语。主要讨论测试过程变得脆弱、效率低下和准确性低的常见错误。这类问题属于工程规范实践，有些case同样适用于其他语言。
+Go 中提供 go test 工具来执行测试，可以查看具体的开发文档： https://pkg.go.dev/cmd/go#hdr-Testing_flags  里面介绍了每个模式的具体使用方式，使用好这些测试模式flag，可以更快执行或更好地发现可能错误，进而保证代码质量，工程代码稳定性建设上的重要一环。Go中支持4种测试函数：单测函数，基准压测函数，模糊测试，以及打印输出样例测试。
+func TestXxx(t *testing.T) { ... }
+func BenchmarkXxx(b *testing.B) { ... }
+func FuzzXxx(f *testing.F) { ... }
+func ExampleXxx() {
+	Println(&#34;The output of\\nthis example.&#34;)
+	// Output: The output of
+	// this example.
+}
+"><meta itemprop="datePublished" content="2023-02-20T14:26:23+08:00" />
+<meta itemprop="dateModified" content="2023-02-20T14:26:23+08:00" />
+<meta itemprop="wordCount" content="5933">
+<meta itemprop="keywords" content="Golang," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Go tips-笔记: 测试 82-90 mistakes"/>
+<meta name="twitter:description" content="引言
+测试是项目生命周期的一个重要方面。它提供了无数的好处，例如建立对应用程序的信心、充当代码文档以及使重构更容易。与其他一些语言相比，Go 具有强大的编写测试原语。主要讨论测试过程变得脆弱、效率低下和准确性低的常见错误。这类问题属于工程规范实践，有些case同样适用于其他语言。
+Go 中提供 go test 工具来执行测试，可以查看具体的开发文档： https://pkg.go.dev/cmd/go#hdr-Testing_flags  里面介绍了每个模式的具体使用方式，使用好这些测试模式flag，可以更快执行或更好地发现可能错误，进而保证代码质量，工程代码稳定性建设上的重要一环。Go中支持4种测试函数：单测函数，基准压测函数，模糊测试，以及打印输出样例测试。
+func TestXxx(t *testing.T) { ... }
+func BenchmarkXxx(b *testing.B) { ... }
+func FuzzXxx(f *testing.F) { ... }
+func ExampleXxx() {
+	Println(&#34;The output of\\nthis example.&#34;)
+	// Output: The output of
+	// this example.
+}
+"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">时间飘过</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      时间飘过
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">Go tips-笔记: 测试 82-90 mistakes</h1>
+      
+      <div class="post-meta">
+        <time datetime="2023-02-20" class="post-time">
+          2023-02-20
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            <a href="https://weedge.github.io/categories/golang/"> Golang </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#82不对测试进行分类">82.不对测试进行分类</a>
+      <ul>
+        <li><a href="#build-tags">Build tags</a></li>
+        <li><a href="#环境变量">环境变量</a></li>
+        <li><a href="#short-模式">Short 模式</a></li>
+      </ul>
+    </li>
+    <li><a href="#83不启用--race">83.不启用 -race</a></li>
+    <li><a href="#84不使用测试执行模式">84.不使用测试执行模式</a>
+      <ul>
+        <li><a href="#-parallel">-parallel</a></li>
+        <li><a href="#-shuffle">-shuffle</a></li>
+      </ul>
+    </li>
+    <li><a href="#85不使用表驱动测试">85.不使用表驱动测试</a></li>
+    <li><a href="#86在单元测试中使用timesleep">86.在单元测试中使用time.Sleep</a></li>
+    <li><a href="#87没有有效地处理时间-api">87.没有有效地处理时间 API</a></li>
+    <li><a href="#88不使用测试实用程序包">88.不使用测试实用程序包</a>
+      <ul>
+        <li><a href="#httptest">httptest</a></li>
+        <li><a href="#iotest">iotest</a></li>
+      </ul>
+    </li>
+    <li><a href="#89编写不准确的基准">89.编写不准确的基准</a>
+      <ul>
+        <li><a href="#不重置或暂停定时器">不重置或暂停定时器</a></li>
+        <li><a href="#对微基准做出错误的假设">对微基准做出错误的假设</a></li>
+        <li><a href="#不注意编译器优化">不注意编译器优化</a></li>
+        <li><a href="#被观察者效应愚弄">被观察者效应愚弄</a></li>
+      </ul>
+    </li>
+    <li><a href="#90没有探索所有的-go-测试功能">90.没有探索所有的 Go 测试功能</a>
+      <ul>
+        <li><a href="#代码覆盖率">代码覆盖率</a></li>
+        <li><a href="#从不同的包进行测试">从不同的包进行测试</a></li>
+        <li><a href="#helper功能函数">helper功能函数</a></li>
+        <li><a href="#安装setup和拆卸teardown">安装(setup)和拆卸(teardown)</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <h1 id="引言">引言</h1>
+<p>测试是项目生命周期的一个重要方面。它提供了无数的好处，例如建立对应用程序的信心、充当代码文档以及使重构更容易。与其他一些语言相比，Go 具有强大的编写测试原语。主要讨论测试过程变得脆弱、效率低下和准确性低的常见错误。这类问题属于工程规范实践，有些case同样适用于其他语言。</p>
+<p>Go 中提供 go test 工具来执行测试，可以查看具体的开发文档： <strong><a href="https://pkg.go.dev/cmd/go#hdr-Testing_flags">https://pkg.go.dev/cmd/go#hdr-Testing_flags</a></strong>  里面介绍了每个模式的具体使用方式，使用好这些测试模式flag，可以更快执行或更好地发现可能错误，进而保证代码质量，工程代码稳定性建设上的重要一环。Go中支持4种测试函数：单测函数，基准压测函数，模糊测试，以及打印输出样例测试。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestXxx</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+<span class="kd">func</span> <span class="nf">BenchmarkXxx</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+<span class="kd">func</span> <span class="nf">FuzzXxx</span><span class="p">(</span><span class="nx">f</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">F</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+<span class="kd">func</span> <span class="nf">ExampleXxx</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nf">Println</span><span class="p">(</span><span class="s">&#34;The output of\\nthis example.&#34;</span><span class="p">)</span>
+	<span class="c1">// Output: The output of
+</span><span class="c1"></span>	<span class="c1">// this example.
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></div><h1 id="笔记">笔记</h1>
+<h2 id="82不对测试进行分类">82.不对测试进行分类</h2>
+<p>功能测试大致分为单元测试，集成测试，以及端到端的测试，单元测试则是程序测试case覆盖率的保障，列举Go中3种常见的测试分类方法</p>
+<h3 id="build-tags">Build tags</h3>
+<p>build tags 的一些使用场景：</p>
+<ul>
+<li>测试环境使用 mock 服务；而正式环境使用真实数据</li>
+<li>免费版、专业版和企业版提供不同的功能</li>
+<li>不同操作系统的兼容性处理。通常用于跨平台，例如 windows，linux，mac 不同兼容处理逻辑。</li>
+<li>go 低版本的兼容处理</li>
+<li>对测试用例进行分类测试</li>
+</ul>
+<p>通过在测试文件中加上对应的测试分类标签，在测试的时候方便对一类tag进行测试，而不需要跑全部测试用例, 比如打上 mock 标签进行用于 mock 一类测试</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">//go:build !<span class="o">(</span>mock1 <span class="o">&amp;&amp;</span> mock2<span class="o">)</span> <span class="o">||</span> mock3 <span class="o">||</span> !<span class="o">(</span>mock4 <span class="o">&amp;&amp;</span> mock5<span class="o">)</span>
+// +build !mock1 !mock2 mock3 !mock4 !mock5
+</code></pre></div><p>tips: 这个是为了举个例子，具体测试tag需要因场景逻辑打上，确保测试文件tag无歧义。</p>
+<p>从 Go 1.17 开始，语法<code>//+build foo</code>被替换为<code>//go:build foo</code>. 目前<code>gofmt</code>同步两种形式以帮助迁移。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 默认仅运行包中tag为空的测试case</span>
+go <span class="nb">test</span> -v .
+<span class="c1"># 仅运行包中 mock3 的测试case</span>
+go <span class="nb">test</span> --tags<span class="o">=</span>mock3 -v .
+<span class="c1"># 仅运行包中 mock1 &amp;&amp; mock2 的测试case</span>
+go <span class="nb">test</span> --tags<span class="o">=</span>mock1,mock2 -v .
+</code></pre></div><h3 id="环境变量">环境变量</h3>
+<p>使用build tag方式构建测试用，随着tag的增加，可能会隐藏掉其中的错误，而且需要去查看测试文件中的tag有哪些。环境变量这种方式是build tags 的补充吧，对于没有设置环境变量的情况下，明确显示哪些测试是跳过的测试，比如</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="k">if</span> os.Getenv<span class="o">(</span><span class="s2">&#34;INTEGRATION&#34;</span><span class="o">)</span> !<span class="o">=</span> <span class="s2">&#34;true&#34;</span> <span class="o">{</span>
+		t.Skip<span class="o">(</span><span class="s2">&#34;skipping integration test&#34;</span><span class="o">)</span>
+	<span class="o">}</span>
+</code></pre></div><p>tips: tag是测试文件粒度分类(Go 构建工具支持)，环境变量是测试代码粒度分类(手动代码逻辑)</p>
+<h3 id="short-模式">Short 模式</h3>
+<p>另一种对测试进行分类的方法与它们的速度有关。可能不得不将短期运行的测试与长期运行的测试区分开来。</p>
+<p>作为说明，假设有一组单元测试，其中一个是出了名的慢。想对慢速测试进行分类，这样就不必每次都运行它（尤其是在保存文件后触发），使用testing.Short区分如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestLongRunning</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="nx">testing</span><span class="p">.</span><span class="nf">Short</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nx">t</span><span class="p">.</span><span class="nf">Skip</span><span class="p">(</span><span class="s">&#34;skipping long-running test&#34;</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="c1">// ...
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></div><p>运行测试是，通过-short 参数来执行跳过</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">go <span class="nb">test</span> -v -short .
+</code></pre></div><p>这三种方式可以组合使用，例如，项目包含长时间运行的单元测试，则使用构建标记或环境变量对测试进行分类（例如，作为单元测试，mock测试，或者集成测试）和使用短模式来跳过长时间运行的测试。</p>
+<h2 id="83不启用--race">83.不启用 -race</h2>
+<p>对于并发程序代码的测试，需要检测是否存在data race， 需要使用 -race 模式来构建测试，比如</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="k">go</span> <span class="nx">test</span> <span class="o">-</span><span class="nx">race</span> <span class="p">.</span><span class="o">/...</span>
+</code></pre></div><p>这种方法使启用竞争检测器，它可以检测代码以捕获潜在的数据竞争(没有打上!race标记的文件)。启用时，它对内存和性能有显着影响，因此必须在特定条件下使用，例如本地测试或 CI。在生产中，应该避免它（或者只在金丝雀发布的情况下使用)。</p>
+<p>竞争检测器无法捕捉到误报（明显的数据竞争并不是真实的）。因此，如果收到警告，就知道代码包含数据竞争。相反，它有时会导致漏报（缺少实际的数据竞争）。对于漏报的情况，可以尽可能多的迭代来检测。</p>
+<h2 id="84不使用测试执行模式">84.不使用测试执行模式</h2>
+<h3 id="-parallel">-parallel</h3>
+<p>默认情况下 go test 在不同的 package 之间是并行执行测试，在每个 package 内部是串行执行测试。如果想要在 package 内部开启并行测试，需要在测试函数中显式执行 t.Parallel() 告诉 go test 这个函数可以与其他测试并行执行，一旦开启并行测试，一定要确保测试函数之间的资源竞争的问题已经得到正确的解决。执行 go test -parallel n 来制定n个测试函数并行执行(需要再显示调用了t.Parrallel)。对于执行慢的测试函数，相互之间没有资源竞争，可以加入t.Parrallel 来同时执行，提高测试的执行速度。</p>
+<h3 id="-shuffle">-shuffle</h3>
+<p>从 Go 1.17 开始引入，可以随机化测试和基准测试的执行顺序， 设置为<code>on</code>或<code>off</code>启用或禁用随机测试；编写测试时的最佳做法是将它们隔离开来。例如，它们不应依赖于执行顺序或共享变量。这些隐藏的依赖关系可能意味着一个可能的测试错误，或者更糟的是，一个在测试期间不会被捕获的错误。</p>
+<p>应该对现有的测试标志保持谨慎，并随时了解最新 Go 版本的新功能。运行parallel测试或者将测试分再不同的包中，可以减少运行所有测试的总体执行时间。shuffle测试可以帮助发现隐藏的依赖关系，这些依赖关系可能意味着在以相同顺序运行测试时出现测试错误，甚至不可见的错误。</p>
+<h2 id="85不使用表驱动测试">85.不使用表驱动测试</h2>
+<p>这个在vscode, goland IDE中已经集成了，对应函数生成对应单测函数时，会自动给出表驱动测试模版，编写测试用例，用于覆盖函数分支场景；如果不是用表驱动测试的话， 会出现大量的冗余函数，而且表达含义也会相对模糊，直接放入一个测试函数中来编写用例测试即可，也便于对整个函数的测试覆盖。通过t.Run来执行这些测试用例，进行期望值比较，同时也可以使用t.Parallel() 通过parallel 模式来加速测试，以及通过shuffle来随机测试。</p>
+<h2 id="86在单元测试中使用timesleep">86.在单元测试中使用time.Sleep</h2>
+<p>在测试并发编程时，可能存在竞争条件race condition 的场景，导致程序的执行顺序不同，进入影响测试的准确性，如果使用time.Sleep 之后来断言值， 可能会有不同的结果，是不确定性的，所以，尽量使用管道同步的方式来进行断言测试；如果同步不可能做到的话， 可以重试进行断言，比如常用的testify 测试包，使用Eventually函数实现了最终应该成功的断言，这比使用被动睡眠更好的选择来消除测试中的非确定性。</p>
+<h2 id="87没有有效地处理时间-api">87.没有有效地处理时间 API</h2>
+<p>对于函数中有time.Now()获取当前时间，而测试是也依赖当前时间的处理，导致那个时间点可能会存在差异，一种方式是提供全局共享变量，如果使用并行测试的，全部共享变量会引入数据竞争，导致无法并行测试，所以最好的方式，修改下所要测试的函数，去掉time.Now()的依赖，使用time.Time类型作为传入参数，有函数使用方一起来定义，这样可方便测试。</p>
+<h2 id="88不使用测试实用程序包">88.不使用测试实用程序包</h2>
+<p>httptest 和 iotest 是两个常用的包，应该利用起来，构造于http 和 io 相关函数的测试。</p>
+<h3 id="httptest">httptest</h3>
+<p>httptest 包不需要通过建立网络连接就可以进行测试，主要用来测试服务端的http api handler 函数 以及 客户端的http caller函数。具体查看开发文档：https://pkg.go.dev/net/http/httptest</p>
+<p>对于测试服务中api Handler的场景，只需要通过httptest.NewRequest 来构建api的请求数据的Reader，以及使用httptest.NewRecorder 来创建一个往请求api中写入响应数据的Writer, 这样在写测试用例时候， 直接模拟接口请求数据，编写相关的测试case,  测试的api handler 返回的数据 可以从Writer中获取到，进而可以做接口响应数据的断言假设，比如 返回状态码，响应body数据， 响应头中的数据。</p>
+<p>对于测试客户端中相关的http client caller函数， 通过httptest.NewServer建立对应api handler服务, 客户端相关的http client <a href="http://xn--callerhttp-uh4py1d60ohkhow7ewtwc.Client.Do">caller函数可以使用http.Client.Do</a> 对server.URL进行调用了，进而可以对返回的值进行断言测试。还可以使用httptest.NewTLSServer 建立一个TLS的测试服务。</p>
+<p>grpc也有对应的测试库grpc/test 库，无需建立网络连接即可测试，具体查看开发文档：https://pkg.go.dev/google.golang.org/grpc/test</p>
+<h3 id="iotest">iotest</h3>
+<p>该iotest包 ( <a href="https://pkg.go.dev/testing/iotest">https://pkg.go.dev/testing/iotest</a> ) 实现了io Reader ，Writer， Closer 等接口， 用于测试使用io 相关接口的方法测试；</p>
+<h2 id="89编写不准确的基准">89.编写不准确的基准</h2>
+<p>对于性能优化，不能盲猜，需要编写基准压测来 分析评估 具体性能，然而编写基准测试并不简单。编写不准确的基准并根据它们做出错误的假设可能非常简单。使用go test -bench <code>regexp</code> 匹配对应BenchmarkXxxx函数进行基准压测，默认运行1s, 运行时间通过-benchtime 来调整，其他性能分析的参数见开发文档。以下几种常见编写不准确基准压测的情况：</p>
+<h3 id="不重置或暂停定时器">不重置或暂停定时器</h3>
+<p>在基准压测时，可能会执行一个耗时长的初始准备逻辑，比如准备大量的数据用于基准压测，这个时候需要引入 testing.B.ResetTimer() 来重置时间，在开始基准压测，从测试结果中丢弃这部分耗时设置； 还有一种情况是在基准压测的循环里，这需要使用testing.B.StopTimer()停止时间，处理完准备逻辑，在使用testing.B.StartTimer()开始时间来处理基准测试函数。</p>
+<h3 id="对微基准做出错误的假设">对微基准做出错误的假设</h3>
+<p>对于基准测试，不能只用一轮或几轮基准实验，就做出了假设；基准测试受当前机器运行时环境的影响，cpu，内存负载情况等；所以在进行基准压测试，如果测试的值有所偏失，应该按照概率论中的大数定律，将压测的时间放长(-benchtime 调整)，而且测试的次数可以增加些(-count 调整)， 将这些性能数据，通过benchstat <a href="https://pkg.go.dev/golang.org/x/perf/cmd/benchstat">https://pkg.go.dev/golang.org/x/perf/cmd/benchstat</a> 工具来 对比分析 前后benchmark的统计数据, 如果对比结果误差很小，则说明性能无差异。基准测试必须基于在合理环境中通过多次样本取证进行A/B 比较之后才能给出比较正确的结果。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="k">go</span> <span class="nx">install</span> <span class="nx">golang</span><span class="p">.</span><span class="nx">org</span><span class="o">/</span><span class="nx">x</span><span class="o">/</span><span class="nx">perf</span><span class="o">/</span><span class="nx">cmd</span><span class="o">/</span><span class="nx">benchstat</span><span class="err">@</span><span class="nx">latest</span>
+<span class="k">go</span> <span class="nx">test</span> <span class="o">-</span><span class="nx">run</span><span class="p">=</span><span class="nx">NONE</span> <span class="o">-</span><span class="nx">bench</span><span class="p">=</span><span class="nx">BenchmarkAtomicStoreInt32</span> <span class="o">-</span><span class="nx">count</span><span class="p">=</span><span class="mi">10</span> <span class="o">-</span><span class="nx">benchtime</span><span class="p">=</span><span class="mi">3</span><span class="nx">s</span> <span class="o">-</span><span class="nx">benchmem</span> <span class="p">.</span><span class="o">/</span><span class="mi">11</span><span class="o">-</span><span class="nx">testing</span><span class="o">/</span><span class="mi">89</span><span class="o">-</span><span class="nx">benchmark</span><span class="o">/</span><span class="nx">wrong</span><span class="o">-</span><span class="nx">assumptions</span> <span class="p">|</span> <span class="nx">tee</span> <span class="o">-</span><span class="nx">a</span> <span class="nx">smp1</span><span class="p">.</span><span class="nx">txt</span>
+<span class="k">go</span> <span class="nx">test</span> <span class="o">-</span><span class="nx">run</span><span class="p">=</span><span class="nx">NONE</span> <span class="o">-</span><span class="nx">bench</span><span class="p">=</span><span class="nx">BenchmarkAtomicStoreInt32</span> <span class="o">-</span><span class="nx">count</span><span class="p">=</span><span class="mi">10</span> <span class="o">-</span><span class="nx">benchtime</span><span class="p">=</span><span class="mi">3</span><span class="nx">s</span> <span class="o">-</span><span class="nx">benchmem</span> <span class="p">.</span><span class="o">/</span><span class="mi">11</span><span class="o">-</span><span class="nx">testing</span><span class="o">/</span><span class="mi">89</span><span class="o">-</span><span class="nx">benchmark</span><span class="o">/</span><span class="nx">wrong</span><span class="o">-</span><span class="nx">assumptions</span> <span class="p">|</span> <span class="nx">tee</span> <span class="o">-</span><span class="nx">a</span> <span class="nx">smp2</span><span class="p">.</span><span class="nx">txt</span>
+<span class="nx">benchstat</span> <span class="nx">smp1</span><span class="p">.</span><span class="nx">txt</span> <span class="nx">smp2</span><span class="p">.</span><span class="nx">txt</span>
+
+<span class="k">go</span> <span class="nx">test</span> <span class="o">-</span><span class="nx">run</span><span class="p">=</span><span class="nx">NONE</span> <span class="o">-</span><span class="nx">bench</span><span class="p">=</span><span class="nx">BenchmarkAtomicStore</span><span class="p">.</span> <span class="o">-</span><span class="nx">count</span><span class="p">=</span><span class="mi">10</span> <span class="o">-</span><span class="nx">benchtime</span><span class="p">=</span><span class="mi">3</span><span class="nx">s</span> <span class="o">-</span><span class="nx">benchmem</span> <span class="p">.</span><span class="o">/</span><span class="mi">11</span><span class="o">-</span><span class="nx">testing</span><span class="o">/</span><span class="mi">89</span><span class="o">-</span><span class="nx">benchmark</span><span class="o">/</span><span class="nx">wrong</span><span class="o">-</span><span class="nx">assumptions</span> <span class="p">|</span> <span class="nx">tee</span>  <span class="nx">smp</span><span class="p">.</span><span class="nx">txt</span>
+<span class="nx">benchstat</span> <span class="nx">smp</span><span class="p">.</span><span class="nx">txt</span>
+</code></pre></div><h3 id="不注意编译器优化">不注意编译器优化</h3>
+<p>这个case 在Go中有对应issue（https://github.com/golang/go/issues/14813）; benchmark的函数代码比较简单，被内联到基准压测文件中，导致测试为空的，这样导致空的基准压测在执行，每次op时间相当于一个时钟周期时间，如何避免编译器优化欺骗基准测试结果的模式：</p>
+<p>将被测函数的结果分配给局部变量，然后将最新结果分配给全局变量，先分配局部变量在栈上，不影响测试，而将局部变量复制给全局变量，分配在堆上，以防编译器优化进行inline 处理。</p>
+<p>还有一种方式是直接使用//go:noinline 标记函数，在编译阶段防止inline。</p>
+<h3 id="被观察者效应愚弄">被观察者效应愚弄</h3>
+<p>在基准压测一个CPU-Bound的函数时，需要注意cpu cache 局部性原理对基准压测的影响；为了防止cpu cache对基准压测的影响，可以在每次测试前，创建一个新的测试数据用于测试，比如基准压测矩阵运算函数，在每次测试前，新建一个测试矩阵数据。</p>
+<h2 id="90没有探索所有的-go-测试功能">90.没有探索所有的 Go 测试功能</h2>
+<p>工欲善其事必先利其器，充分掌握go test工具有助于写出高质量的代码。</p>
+<h3 id="代码覆盖率">代码覆盖率</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 输出测试覆盖文件</span>
+go <span class="nb">test</span> -coverprofile<span class="o">=</span>coverage.out ./...
+<span class="c1"># 分析测试覆盖文件</span>
+go tool cover -html<span class="o">=</span>coverage.out
+<span class="c1"># 一个包在另外一个包中会测试到，需要表明测试覆盖到的包</span>
+go <span class="nb">test</span> -coverpkg<span class="o">=</span>./... -coverprofile<span class="o">=</span>coverage.out ./...
+</code></pre></div><p>tips: 在追踪代码覆盖率时要保持谨慎。拥有 100% 的测试覆盖率并不意味着应用程序没有错误；需正确推理测试涵盖的内容。</p>
+<h3 id="从不同的包进行测试">从不同的包进行测试</h3>
+<p>这种在业务功能函数测试，或者对外部进行测试， 关注包的公开api行为而不是内部的具体实现细节，专注于测试暴露的行为。 常用的测试如BDD 开发， 只关注包的公开行为， 比如<a href="https://onsi.github.io/ginkgo/">ginkgo</a> ；编写的测试用例文件可以不用和测试函数在同一个包内，可以单独定义测试文件夹，对不同包来进行测试用例的开发。</p>
+<h3 id="helper功能函数">helper功能函数</h3>
+<p>在进行测试是，需要测试前的准备，这些准备工作逻辑helper功能函数，用于初始化一些对象来测试，参数需要传入*testing.T,  在初始逻辑中判读初始的错误情况，如果错误直接调用t.Fatal退出即可，只返回对应测试对象，这样可以方便复用，无需在处理错误，方便其他测试场景使用。这个属于代码质量问题啦。</p>
+<h3 id="安装setup和拆卸teardown">安装(setup)和拆卸(teardown)</h3>
+<p>如果单个测试初始执行完测试后需要清理一些初始资源，可以使用 testing.T.Cleanup函数来做单测的收尾工作；多个调用入栈操作，单测完出栈执行。</p>
+<p>如果测试文件都依赖于初始化之后才开始测试的话， 可以放在全部测试开始之前的位置进行测试的setup；在全部测试结束后对初始化的资源进行释放teardown； 可以通过在TestMain中定义整体逻辑如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestMain</span><span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">M</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nf">setupHelper</span><span class="p">()</span>
+	<span class="nx">code</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nf">Run</span><span class="p">()</span> <span class="c1">// run all test func
+</span><span class="c1"></span>	<span class="nf">teardownHelper</span><span class="p">()</span> 
+	<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="nx">code</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="kd">func</span> <span class="nf">initHelper</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">t</span><span class="p">.</span><span class="nf">Cleanup</span><span class="p">(</span><span class="kd">func</span><span class="p">()</span> <span class="p">{</span> <span class="nb">println</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">})</span>
+	<span class="nx">t</span><span class="p">.</span><span class="nf">Cleanup</span><span class="p">(</span><span class="kd">func</span><span class="p">()</span> <span class="p">{</span> <span class="nb">println</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="p">})</span> <span class="c1">// first to cleanup
+</span><span class="c1"></span>	<span class="c1">// init
+</span><span class="c1"></span>	<span class="k">return</span> 
+<span class="p">}</span>
+</code></pre></div><p>这种方式在测试开发框架包中经常使用到，比如ginkgo中的BeforeSuite和AfterSuite函数，在测试前后执行。</p>
+<h1 id="概括">概括</h1>
+<ul>
+<li>使用构建标志、环境变量或 -short模式对测试进行分类可以使测试过程更加高效。可以使用构建标志或环境变量（例如，单元测试与集成测试）创建测试类别，并区分短期运行测试和长期运行测试以确定要执行的测试类型。</li>
+<li><code>race</code>强烈建议在编写并发应用程序时启用该标志。这样做可以捕捉到可能导致软件错误的潜在数据竞争；开启race检测会消耗内存，一般在开发测试，CI, 金丝雀发布(预发环境)的时候使用。</li>
+<li>使用<code>parallel</code>标志是加速测试的有效方法，尤其是长时间运行的测试。</li>
+<li>使用<code>shuffle</code>标志帮助确保测试套件不依赖于可能隐藏错误的错误假设。</li>
+<li>表驱动测试是将一组类似测试分组以防止代码重复并使未来更新更易于处理的有效方法。</li>
+<li>避免time.Sleep使用同步来使测试更稳定、更健壮。使用channel来进行同步，如果无法同步，请考虑重试方法。</li>
+<li>了解如何使用时间 API 处理函数是使测试不那么不稳定的另一种方法。可以使用标准技术，例如将时间作为隐藏依赖项的一部分处理或要求客户提供时间。</li>
+<li><code>httptest</code>包有助于处理 HTTP 应用程序。它提供了一组实用程序来测试客户端和服务器。</li>
+<li><code>iotest</code>包有助于编写<code>io.Reader</code>和测试应用程序是否容错。</li>
+<li>关于基准：
+<ul>
+<li>使用时间方法来保持基准的准确性。</li>
+<li>在处理微基准时，增加<code>benchtime</code>或使用诸如<code>benchstat</code>此类的工具会有所帮助。</li>
+<li>如果最终运行应用程序的系统与运行微基准测试的系统不同，请注意微基准测试的结果。</li>
+<li>确保被测函数会产生副作用，以防止编译器优化导致基准测试结果上有误差。</li>
+<li>为防止观察者效应，强制基准重新创建 CPU-Bound函数使用的数据。</li>
+</ul>
+</li>
+<li>使用带标志的代码覆盖率<code>coverprofile</code>可以快速查看代码的哪一部分需要更多关注。</li>
+<li>将单元测试放在不同的包中，以强制编写专注于暴露行为而非内部的测试。</li>
+<li>使用<code>testing.T</code>变量而不是经典变量来处理错误<code>if err != nil</code>使代码更短且更易于阅读。</li>
+<li>可以使用设置安装和拆卸功能来配置复杂的环境，例如在集成测试的情况下。</li>
+</ul>
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2023-02-20
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/golang/">Golang</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/post/notions/go-tips/go-tips-12-optimizations/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">Go tips-笔记: 优化 91-100 mistakes</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        
+          <a class="next" href="/post/notions/go-tips/go-tips-10-standard-lib/">
+            <span class="next-text nav-default">Go tips-笔记: 标准库 75-81 mistakes</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/post/notions/go-tips/go-tips-11-testing/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:weege007@gmail.com" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/weedge" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://weibo.com/weedge" rel="me noopener" class="iconfont"
+      title="weibo"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M385.714286 733.714286q12-19.428571 6.285714-39.428571t-25.714286-28.571429q-19.428571-8-41.714286-0.571429t-34.285714 26.285714q-12.571429 19.428571-7.428571 39.142857t24.571429 28.857143 42.571429 1.428571 35.714286-27.142857zm53.714286-69.142857q4.571429-7.428571 2-15.142857t-10-10.571429q-8-2.857143-16.285714 2.857143t-12.285714 10.571429q-9.714286 17.714286 7.428571 25.714286 8 2.857143 16.571429 2.857143t12.571429-10.571429zm99.428571 61.142857q-25.714286 58.285714-90.285714 85.714286t-128 6.857143q-61.142857-19.428571-84.285714-72.285714t3.714286-107.142857q26.857143-53.142857 86.571429-79.428571t120.285714-10.857143q63.428571 16.571429 90.571429 68.285714t1.428571 108.857143zm178.285714-91.428571q-5.142857-54.857143-50.857143-97.142857t-119.142857-62.285714-156.857143-12q-127.428571 13.142857-211.142857 80.857143t-75.714286 151.142857q5.142857 54.857143 50.857143 97.142857t119.142857 62.285714 156.857143 12q127.428571-13.142857 211.142857-80.857143t75.714286-151.142857zm176 2.285714q0 38.857143-21.142857 79.714286t-62.285714 78.285714-96.285714 67.142857-129.142857 47.428571-154.571429 17.714286-157.142857-19.142857-137.428571-53.142857-98-86.285714-37.142857-114q0-65.714286 39.714286-140t112.857143-147.428571q96.571429-96.571429 195.142857-134.857143t140.857143 4q37.142857 36.571429 11.428571 119.428571-2.285714 8-0.571429 11.428571t5.714286 4 8.285714 2.857143 7.714286-2l3.428571-1.142857q79.428571-33.714286 140.571429-33.714286t87.428571 34.857143q25.714286 36 0 101.714286-1.142857 7.428571-2.571429 11.428571t2.571429 7.142857 6.857143 4.285714 9.714286 3.428571q32.571429 10.285714 58.857143 26.857143t45.714286 46.571429 19.428571 66.571429zm-42.285714-356.571429q24 26.857143 31.142857 62t-3.714286 67.142857q-4.571429 13.142857-16.857143 19.428571t-25.428571 2.285714q-13.142857-4.571429-19.428571-16.857143t-2.285714-25.428571q11.428571-36-13.714286-63.428571t-61.142857-20q-13.714286 2.857143-25.714286-4.571429t-14.285714-21.142857q-2.857143-13.714286 4.571429-25.428571t21.142857-14.571429q34.285714-7.428571 68 3.142857t57.714286 37.428571zm103.428571-93.142857q49.714286 54.857143 64.285714 127.142857t-7.714286 138q-5.142857 15.428571-19.428571 22.857143t-29.714286 2.285714-22.857143-19.428571-2.857143-29.714286q16-46.857143 5.714286-98.285714t-45.714286-90.285714q-35.428571-39.428571-84.571429-54.571429t-98.857143-4.857143q-16 3.428571-29.714286-5.428571t-17.142857-24.857143 5.428571-29.428571 24.857143-16.857143q70.285714-14.857143 139.428571 6.571429t118.857143 76.857143z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://weedge.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2013 -
+    2023
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        weedge
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//weedge.disqus.com/count.js" async></script>
+
+
+
+
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
+
+
+</body>
+</html>
