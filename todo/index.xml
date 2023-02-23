@@ -54,15 +54,6 @@
     
     <item>
       <title></title>
-      <link>https://weedge.github.io/todo/go-tips-02-code-project-organization/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://weedge.github.io/todo/go-tips-02-code-project-organization/</guid>
-      <description>Go tips - 笔记: 代码和项目组织 1-16 mistakes 笔记 1. 变量隐藏 需要理解golang中变量的作用域，在块中声明的变量名可以在内部块中重新声明(:=)；常见于er</description>
-    </item>
-    
-    <item>
-      <title></title>
       <link>https://weedge.github.io/todo/goroutine/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       

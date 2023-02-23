@@ -16,7 +16,7 @@
   </url>
   
   <url>
-    <loc>https://weedge.github.io/post/go-tips-12-optimizations/</loc>
+    <loc>https://weedge.github.io/post/go-tips/go-tips-12-optimizations/</loc>
     <lastmod>2023-02-23T10:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
@@ -60,6 +60,76 @@
   <url>
     <loc>https://weedge.github.io/</loc>
     <lastmod>2023-02-23T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/go-tips/go-tips-11-testing/</loc>
+    <lastmod>2023-02-20T14:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/go-tips/go-tips-10-standard-lib/</loc>
+    <lastmod>2023-02-19T14:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/go-tips/go-tips-09-concurrency-practice/</loc>
+    <lastmod>2023-02-18T14:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/go-tips/go-tips-08-concurrency-foundations/</loc>
+    <lastmod>2023-02-17T14:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/go-tips/go-tips-07-error-management/</loc>
+    <lastmod>2023-02-16T14:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/go-tips/go-tips-06-functions-methods/</loc>
+    <lastmod>2023-02-15T14:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/go-tips/go-tips-05-strings/</loc>
+    <lastmod>2023-02-14T14:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/go-tips/go-tips-04-control-structures/</loc>
+    <lastmod>2023-02-14T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/go-tips/go-tips-03-data-types/</loc>
+    <lastmod>2023-02-13T20:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/go-tips/go-tips-02-code-project-organization/</loc>
+    <lastmod>2023-02-13T14:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -415,20 +485,6 @@
   </url>
   
   <url>
-    <loc>https://weedge.github.io/tags/go/</loc>
-    <lastmod>2018-10-03T00:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/categories/go/</loc>
-    <lastmod>2018-10-03T00:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
     <loc>https://weedge.github.io/post/golang/</loc>
     <lastmod>2018-10-03T00:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
@@ -563,12 +619,6 @@
   
   <url>
     <loc>https://weedge.github.io/todo/bitset/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/todo/go-tips-02-code-project-organization/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>

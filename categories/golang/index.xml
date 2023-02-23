@@ -9,17 +9,156 @@
     <lastBuildDate>Thu, 23 Feb 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/golang/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Go tips-笔记: 优化 91-100 mistakes</title>
-      <link>https://weedge.github.io/post/go-tips-12-optimizations/</link>
+      <link>https://weedge.github.io/post/go-tips/go-tips-12-optimizations/</link>
       <pubDate>Thu, 23 Feb 2023 10:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/post/go-tips-12-optimizations/</guid>
-      <description>&lt;h1 id=&#34;前言&#34;&gt;前言&lt;/h1&gt;
+      <guid>https://weedge.github.io/post/go-tips/go-tips-12-optimizations/</guid>
+      <description>&lt;h1 id=&#34;引言&#34;&gt;引言&lt;/h1&gt;
 &lt;p&gt;在大多数情况下，编写可读、清晰的代码比编写经过优化但更复杂、更难理解的代码要好，不要过早的优化。建议遵循软件工程师 Wes Dyer 的这句名言：&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;&lt;em&gt;Make it correct, make it clear, make it concise, make it fast, in that order.&lt;/em&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;并不意味着禁止为速度和效率优化应用程序, 了解并掌握这些优化点，以备不时之需；文中给出了常见的优化技术；有些特定于 Go 内存模型，内存分配，GPM调度模型；有些是关于了解硬件有助于写出好的代码(适用于不同语言)，其中会有硬件方面的术语，可以结合wiki进行学习；&lt;/p&gt;
 &lt;p&gt;tips: 学习一些和编程优化相关的底层计算机组成原理，并且结合相关硬件进行基准压测实践。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Go tips-笔记: 测试 82-90 mistakes</title>
+      <link>https://weedge.github.io/post/go-tips/go-tips-11-testing/</link>
+      <pubDate>Mon, 20 Feb 2023 14:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/go-tips/go-tips-11-testing/</guid>
+      <description>&lt;h1 id=&#34;引言&#34;&gt;引言&lt;/h1&gt;
+&lt;p&gt;测试是项目生命周期的一个重要方面。它提供了无数的好处，例如建立对应用程序的信心、充当代码文档以及使重构更容易。与其他一些语言相比，Go 具有强大的编写测试原语。主要讨论测试过程变得脆弱、效率低下和准确性低的常见错误。这类问题属于工程规范实践，有些case同样适用于其他语言。&lt;/p&gt;
+&lt;p&gt;Go 中提供 go test 工具来执行测试，可以查看具体的开发文档： &lt;strong&gt;&lt;a href=&#34;https://pkg.go.dev/cmd/go#hdr-Testing_flags&#34;&gt;https://pkg.go.dev/cmd/go#hdr-Testing_flags&lt;/a&gt;&lt;/strong&gt;  里面介绍了每个模式的具体使用方式，使用好这些测试模式flag，可以更快执行或更好地发现可能错误，进而保证代码质量，工程代码稳定性建设上的重要一环。Go中支持4种测试函数：单测函数，基准压测函数，模糊测试，以及打印输出样例测试。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestXxx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;...&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;BenchmarkXxx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;b&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;B&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;...&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;FuzzXxx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;f&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;F&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;...&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;ExampleXxx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;nf&#34;&gt;Println&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;The output of\\nthis example.&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+	&lt;span class=&#34;c1&#34;&gt;// Output: The output of
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;	&lt;span class=&#34;c1&#34;&gt;// this example.
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
+    </item>
+    
+    <item>
+      <title>Go tips-笔记: 标准库 75-81 mistakes</title>
+      <link>https://weedge.github.io/post/go-tips/go-tips-10-standard-lib/</link>
+      <pubDate>Sun, 19 Feb 2023 14:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/go-tips/go-tips-10-standard-lib/</guid>
+      <description>引言 从程序中产生的错误中大多是使用姿势的不对，以及没有仔细阅读标准库相关包的开发文档，未查看源码导致，但是没有实践过这些问题，即使熟读文档和</description>
+    </item>
+    
+    <item>
+      <title>Go tips-笔记: 并发实践 61-74 mistakes</title>
+      <link>https://weedge.github.io/post/go-tips/go-tips-09-concurrency-practice/</link>
+      <pubDate>Sat, 18 Feb 2023 14:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/go-tips/go-tips-09-concurrency-practice/</guid>
+      <description>&lt;h1 id=&#34;引言&#34;&gt;引言&lt;/h1&gt;
+&lt;p&gt;这里主要介绍并发实践中遇到的问题，这些问题在golang开源项目中也经常会出现，如果编写并发也会一直伴随在开发当中出现，也有工程实践相关的论文进行统计归纳总结(PS: 用这种方式发个论文还是比较轻松的~)：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://songlh.github.io/paper/go-study.pdf&#34;&gt;Understanding Real-World Concurrency Bugs in Go&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;tips: 作者对golang和rust都有研究，结合相关的代码都可以一起学习下, 语言方面的小细节&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://arxiv.org/pdf/2204.00764.pdf&#34;&gt;&lt;strong&gt;A Study of Real-World Data Races in Golang&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Go 官方提供race工具来检查并发场景下的数据竞争问题： &lt;a href=&#34;https://go.dev/doc/articles/race_detector&#34;&gt;https://go.dev/doc/articles/race_detector&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/google/sanitizers/wiki/ThreadSanitizerGoManual&#34;&gt;https://github.com/google/sanitizers/wiki/ThreadSanitizerGoManual&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;注：Go要使用-race，需启用CGO，依赖sanitizers；一般用于开发测试进行检测&lt;/p&gt;
+&lt;p&gt;如果想更加深入的了解并发并行，可以一起学习这本书： &lt;a href=&#34;https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/perfbook/perfbook.html&#34;&gt;&lt;strong&gt;Is Parallel Programming Hard, And, If So, What Can You Do About It?&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Go tips-笔记: 并发概念 55-60 mistakes</title>
+      <link>https://weedge.github.io/post/go-tips/go-tips-08-concurrency-foundations/</link>
+      <pubDate>Fri, 17 Feb 2023 14:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/go-tips/go-tips-08-concurrency-foundations/</guid>
+      <description>笔记 55.混淆并发和并行 这个在处理大数据的场景中经常可以看到，可以这么抽象，比如将一个job 分成 很多的 task 事件， 比如 读取文件 task, 切割文件task</description>
+    </item>
+    
+    <item>
+      <title>Go tips-笔记: 错误管理 48-54 mistakes</title>
+      <link>https://weedge.github.io/post/go-tips/go-tips-07-error-management/</link>
+      <pubDate>Thu, 16 Feb 2023 14:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/go-tips/go-tips-07-error-management/</guid>
+      <description>笔记 48.panic Go 新手对错误处理感到困惑是很常见的。在 Go 中，错误通常由返回的函数或方法管理类型error作为最后一个参数（这个是代码风格，error可</description>
+    </item>
+    
+    <item>
+      <title>Go tips-笔记: 函数和方法 42-47 mistakes</title>
+      <link>https://weedge.github.io/post/go-tips/go-tips-06-functions-methods/</link>
+      <pubDate>Wed, 15 Feb 2023 14:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/go-tips/go-tips-06-functions-methods/</guid>
+      <description>笔记 42.结构体方法不知道使用哪种类型的接收者 文中说了很多，感觉为了凑数，主要就是围绕着值传递还是指针传递，值传递给接收者，如果结构体中没有</description>
+    </item>
+    
+    <item>
+      <title>Go tips-笔记: string 36-41 mistakes</title>
+      <link>https://weedge.github.io/post/go-tips/go-tips-05-strings/</link>
+      <pubDate>Tue, 14 Feb 2023 14:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/go-tips/go-tips-05-strings/</guid>
+      <description>&lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
+&lt;p&gt;在 Go 中，string是一种不可变的数据结构，包含以下内容：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;指向不可变字节序列的指针，指向一个byte类型的数组&lt;/li&gt;
+&lt;li&gt;此序列中的总字节数&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;string在Go中的内部结构是&lt;code&gt;reflect.StringHeader&lt;/code&gt;位于&lt;code&gt;reflect/value.go&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// StringHeader is the runtime representation of a string.
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// It cannot be used safely or portably and its representation may
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// change in a later release.
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// Moreover, the Data field is not sufficient to guarantee the data
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// it references will not be garbage collected, so programs must keep
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// a separate, correctly typed pointer to the underlying data.
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;type&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;StringHeader&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;nx&#34;&gt;Data&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;uintptr&lt;/span&gt;
+	&lt;span class=&#34;nx&#34;&gt;Len&lt;/span&gt;  &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;c1&#34;&gt;//uintptr  an unsigned integer large enough to store the uninterpreted bits of a pointer value
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
+    </item>
+    
+    <item>
+      <title>Go tips-笔记: 控制语句 30-35 mistakes</title>
+      <link>https://weedge.github.io/post/go-tips/go-tips-04-control-structures/</link>
+      <pubDate>Tue, 14 Feb 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/go-tips/go-tips-04-control-structures/</guid>
+      <description>笔记 30.忽略了元素在 for range循环中被复制 (重要) 需要注意，range循环中的值元素是一个复制的副本。因此，如果值是需要改变结构，只会更</description>
+    </item>
+    
+    <item>
+      <title>Go tips-笔记: 数据类型 17-29 mistakes</title>
+      <link>https://weedge.github.io/post/go-tips/go-tips-03-data-types/</link>
+      <pubDate>Mon, 13 Feb 2023 20:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/go-tips/go-tips-03-data-types/</guid>
+      <description>笔记 17.与八进制文字混淆 Go 可以处理二进制、十六进制、虚数和八进制数。八进制数字以 0 开头。但是，为了提高可读性并避免未来代码阅读器可能犯的错</description>
+    </item>
+    
+    <item>
+      <title>Go tips-笔记: 代码和项目组织 1-16 mistakes</title>
+      <link>https://weedge.github.io/post/go-tips/go-tips-02-code-project-organization/</link>
+      <pubDate>Mon, 13 Feb 2023 14:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/go-tips/go-tips-02-code-project-organization/</guid>
+      <description>&lt;h1 id=&#34;引言&#34;&gt;引言&lt;/h1&gt;
+&lt;p&gt;从错误中学习效率更高，而且从错误失败的场景下学习，往往比直接交代正确性的理论知识，没有上下文的结果去 记忆巩固知识，在错误失败场景下往往印象更深刻；可以帮助我们更好地避免错误并做出更明智、更有意识的决定，因为我们现在了解了错误背后的基本原理，有种该死的，恍然大悟的感觉，拨开雨雾见月明；&lt;/p&gt;
+&lt;p&gt;涵盖了可能导致各种软件错误的案例，包括数据竞争、泄漏、逻辑错误和其他缺陷。虽然准确的测试应该是尽早发现此类错误的一种方式，但有时可能会因为时间限制或复杂性等不同因素而错过案例。因此，使用Golang开发，确保避免常见错误至关重要。&lt;/p&gt;
+&lt;p&gt;有些坑可能曾经踩过，通过这些mistakes产生共鸣，加深印象，同时可以继续追加一些新的坑来填充,比如系统性能调优，包括IO,  网络，数据编解码压缩，分布式系统，业务系统组织架构，逐步学习实践试错过程。学习笔记开个头。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>golang学习笔记</title>
+      <link>https://weedge.github.io/post/golang/</link>
+      <pubDate>Wed, 01 Nov 2017 01:16:30 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/golang/</guid>
+      <description>&lt;p&gt;刚开始接触golang的时候是在大学时候，当时大概是2010年左右，对这门新语言比较好奇，但是没有深入去了解，只是道听途说这门语言在并发处理上很方便，对于协程这个东西也是第一次听说。自从工作之后，就一直没有接触过这门语言,最近公司想往golang上转，开发新的项目平台，毕竟golang运行效率和开发效率都要比其他语言要简单方便很多(听说c++都快20了)。&lt;/p&gt;</description>
     </item>
     
   </channel>

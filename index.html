@@ -297,7 +297,7 @@
   <header class="post-header">
     <h1 class="post-title">
       
-      <a class="post-link" href="/post/go-tips-12-optimizations/">Go tips-笔记: 优化 91-100 mistakes</a>
+      <a class="post-link" href="/post/go-tips/go-tips-12-optimizations/">Go tips-笔记: 优化 91-100 mistakes</a>
     </h1>
     
     <div class="post-meta">
@@ -318,7 +318,7 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <h1 id="前言">前言</h1>
+      <h1 id="引言">引言</h1>
 <p>在大多数情况下，编写可读、清晰的代码比编写经过优化但更复杂、更难理解的代码要好，不要过早的优化。建议遵循软件工程师 Wes Dyer 的这句名言：</p>
 <blockquote>
 <p><em>Make it correct, make it clear, make it concise, make it fast, in that order.</em></p>
@@ -327,7 +327,7 @@
 <p>tips: 学习一些和编程优化相关的底层计算机组成原理，并且结合相关硬件进行基准压测实践。</p>
     </div>
     <div class="read-more">
-      <a href="/post/go-tips-12-optimizations/" class="read-more-link">阅读全文</a>
+      <a href="/post/go-tips/go-tips-12-optimizations/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
@@ -338,15 +338,16 @@
   <header class="post-header">
     <h1 class="post-title">
       
-      <a class="post-link" href="/post/zb-gift/">设计-直播间赠送礼物功能</a>
+      <a class="post-link" href="/post/go-tips/go-tips-11-testing/">Go tips-笔记: 测试 82-90 mistakes</a>
     </h1>
     
     <div class="post-meta">
-      <time datetime="2022-11-21" class="post-time">
-        2022-11-21
+      <time datetime="2023-02-20" class="post-time">
+        2023-02-20
       </time>
       <div class="post-category">
           <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
           
         </div>
       
@@ -358,12 +359,21 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <h2 id="背景">背景</h2>
-<p>直播线上互动，已成为当下生活的一部分，特别是受疫情影响，成为互联网的主要流量入口；研究了下各个平台直播间送礼物的功能，发现大同小异，在礼物分组，一些定制化的礼物有区分，整体交互流程大致相同，主要是直播间主播上播，用户通过礼物打赏给主播们(一个直播间可能有多名主播在互动)，礼物是通过虚拟币(**币) 换算，早期互联网用户线上互动礼物，玩家最多的应该是QQ币了，只不过以前的打赏赠送场景是在web2.0刚开始的时候，交互的大多是文字和图片，相关产品场景，虚拟空间(个人空间，博客，种菜等娱乐互动场景)；随着底层网络基建的发展，4G之后出现了大量的视频网站，用户可以录一些视频内容来互动；到后来音视频流媒体的发展，相关的在线直播间开始涌现，用户之间享受一波直播红利带来的互动，当然影响相对于前面的形式更加实时和直接；现在的5G和未来6G，以及物联网都会给直播形式带来新的互动场景,比如：虚拟会场，人机互动；其中早期培养起来的打赏送礼行为功能经常用于有主播的娱乐互动直播中，也是增值盈利的一部分；</p>
-<p>tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦，电商带货商品，没有主播，节目直播/转播，会议直播，自习室，基本的点赞，计数，聊天基础服务功能；还有些抽奖功能，答题功能(教育类直播居多)，投票，红包这些功能服务可在开播时设置，是否启用；有用户基础的流量平台可能还会以竞价排名的方式推荐一波；这些功能可以作为一个可管理的插件，通过组合的方式应用于直播中，方便管理，后续可以添加新功能满足某类型直播场景。</p>
+      <h1 id="引言">引言</h1>
+<p>测试是项目生命周期的一个重要方面。它提供了无数的好处，例如建立对应用程序的信心、充当代码文档以及使重构更容易。与其他一些语言相比，Go 具有强大的编写测试原语。主要讨论测试过程变得脆弱、效率低下和准确性低的常见错误。这类问题属于工程规范实践，有些case同样适用于其他语言。</p>
+<p>Go 中提供 go test 工具来执行测试，可以查看具体的开发文档： <strong><a href="https://pkg.go.dev/cmd/go#hdr-Testing_flags">https://pkg.go.dev/cmd/go#hdr-Testing_flags</a></strong>  里面介绍了每个模式的具体使用方式，使用好这些测试模式flag，可以更快执行或更好地发现可能错误，进而保证代码质量，工程代码稳定性建设上的重要一环。Go中支持4种测试函数：单测函数，基准压测函数，模糊测试，以及打印输出样例测试。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestXxx</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+<span class="kd">func</span> <span class="nf">BenchmarkXxx</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+<span class="kd">func</span> <span class="nf">FuzzXxx</span><span class="p">(</span><span class="nx">f</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">F</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+<span class="kd">func</span> <span class="nf">ExampleXxx</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nf">Println</span><span class="p">(</span><span class="s">&#34;The output of\\nthis example.&#34;</span><span class="p">)</span>
+	<span class="c1">// Output: The output of
+</span><span class="c1"></span>	<span class="c1">// this example.
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></div>
     </div>
     <div class="read-more">
-      <a href="/post/zb-gift/" class="read-more-link">阅读全文</a>
+      <a href="/post/go-tips/go-tips-11-testing/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
@@ -374,15 +384,16 @@
   <header class="post-header">
     <h1 class="post-title">
       
-      <a class="post-link" href="/post/let-ml-go/">让ML跑起来</a>
+      <a class="post-link" href="/post/go-tips/go-tips-10-standard-lib/">Go tips-笔记: 标准库 75-81 mistakes</a>
     </h1>
     
     <div class="post-meta">
-      <time datetime="2022-11-08" class="post-time">
-        2022-11-08
+      <time datetime="2023-02-19" class="post-time">
+        2023-02-19
       </time>
       <div class="post-category">
           <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
           
         </div>
       
@@ -394,12 +405,10 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <h3 id="介绍">介绍</h3>
-<p>上文提到通过用户的行为数据存放在S3中，这些数据包括结构化和非结构化数据，怎么让这些数据变得有价值呢？一种是人为进行数据挖掘，对相关指标转化率进行评估；还有一种是通过这些数据来训练模型，然后将预测模型用于生产环境中进行A/B测试，选出适合的模型，这个模型需要不断更新迭代，并且自动化半自动化运行起来；</p>
-<p><img src="https://docs.aws.amazon.com/zh_cn/sagemaker/latest/dg/images/ml-concepts-10.png" alt="img"></p>
+      引言 从程序中产生的错误中大多是使用姿势的不对，以及没有仔细阅读标准库相关包的开发文档，未查看源码导致，但是没有实践过这些问题，即使熟读文档和
     </div>
     <div class="read-more">
-      <a href="/post/let-ml-go/" class="read-more-link">阅读全文</a>
+      <a href="/post/go-tips/go-tips-10-standard-lib/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
@@ -410,15 +419,16 @@
   <header class="post-header">
     <h1 class="post-title">
       
-      <a class="post-link" href="/post/user-behavior-analytics-solution/">用户行为分析方案设计</a>
+      <a class="post-link" href="/post/go-tips/go-tips-09-concurrency-practice/">Go tips-笔记: 并发实践 61-74 mistakes</a>
     </h1>
     
     <div class="post-meta">
-      <time datetime="2022-11-02" class="post-time">
-        2022-11-02
+      <time datetime="2023-02-18" class="post-time">
+        2023-02-18
       </time>
       <div class="post-category">
           <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
           
         </div>
       
@@ -430,21 +440,18 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <h2 id="背景">背景</h2>
-<p>用户在手机和pc端使用客户业务产品，比如浏览网页，购买商品，查看文档，观看视频，直播，IOT场景；会产生大量的用户行为数据，主要包括：</p>
-<ol>
-<li>非结构化数据：日志(前端事件埋点日志，服务端处理事件日志)，还有些非结构化的图片，音视频数据等等，主要存放在文件存储系统中；</li>
-<li>结构化和半结构化数据： 用户操作产品写入的结构化数据存放于数据库表中，将文档型半结构化的数据放入文档数据库中；</li>
-</ol>
-<p>需要分析用户的行为数据，进行决策；分为实时流式处理和离线批处理：</p>
-<ol>
-<li>实时流处理，主要用于实时展现客户端看板，后台BI实时分析，实时风控/推荐，异常报警等场景；</li>
-<li>离线批处理，分析用户历史数据，进行推荐算法等机器学习算法模型训练使用，数据仓库中根据不同维度对数据过滤聚合，进行上卷下钻分析，比如计算DAU,WAU,MAU，转化率(购买率，注册率)分析等，通常对数据建设投入多的话， 会把用户产生的结构化非结构化的数据都存下，放在一个大的池子里待使用时进行分析，即所谓的数据湖，围湖而建挖掘数据价值；而数仓相对精细化的分析，前置建模建表分析；</li>
-</ol>
-<p>对此进行方案分析，本文将介绍一种实时离线处理分析用户行为数据方案，即能帮助企业低成本地使用海量数据，又能更快速地响应业务需求，同时借助亚马逊云科技的托管服务，能够快速实施和轻松运维。</p>
+      <h1 id="引言">引言</h1>
+<p>这里主要介绍并发实践中遇到的问题，这些问题在golang开源项目中也经常会出现，如果编写并发也会一直伴随在开发当中出现，也有工程实践相关的论文进行统计归纳总结(PS: 用这种方式发个论文还是比较轻松的~)：</p>
+<p><strong><a href="https://songlh.github.io/paper/go-study.pdf">Understanding Real-World Concurrency Bugs in Go</a></strong></p>
+<p>tips: 作者对golang和rust都有研究，结合相关的代码都可以一起学习下, 语言方面的小细节</p>
+<p><a href="https://arxiv.org/pdf/2204.00764.pdf"><strong>A Study of Real-World Data Races in Golang</strong></a></p>
+<p>Go 官方提供race工具来检查并发场景下的数据竞争问题： <a href="https://go.dev/doc/articles/race_detector">https://go.dev/doc/articles/race_detector</a></p>
+<p><a href="https://github.com/google/sanitizers/wiki/ThreadSanitizerGoManual">https://github.com/google/sanitizers/wiki/ThreadSanitizerGoManual</a></p>
+<p>注：Go要使用-race，需启用CGO，依赖sanitizers；一般用于开发测试进行检测</p>
+<p>如果想更加深入的了解并发并行，可以一起学习这本书： <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/perfbook/perfbook.html"><strong>Is Parallel Programming Hard, And, If So, What Can You Do About It?</strong></a></p>
     </div>
     <div class="read-more">
-      <a href="/post/user-behavior-analytics-solution/" class="read-more-link">阅读全文</a>
+      <a href="/post/go-tips/go-tips-09-concurrency-practice/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
@@ -455,15 +462,16 @@
   <header class="post-header">
     <h1 class="post-title">
       
-      <a class="post-link" href="/post/shop/">全栈开发</a>
+      <a class="post-link" href="/post/go-tips/go-tips-08-concurrency-foundations/">Go tips-笔记: 并发概念 55-60 mistakes</a>
     </h1>
     
     <div class="post-meta">
-      <time datetime="2022-01-02" class="post-time">
-        2022-01-02
+      <time datetime="2023-02-17" class="post-time">
+        2023-02-17
       </time>
       <div class="post-category">
           <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
           
         </div>
       
@@ -475,12 +483,10 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <h2 id="介绍">介绍</h2>
-<p>以前工作中有过前端的开发经验，使用后端模版Smarty(主要是外部需求，现在新项目中应该很少使用这个了)，前端模版Mustache，页面中使用 js jquery交互逻辑，直接服用一些开源的UI组件Bootstrap，开源的后台UI系统，主要是建设内部后台的时候使用，自动生成CRUD页面；前端的技术栈更新迭代相对后端快些，通过以全栈技术栈为切入点，通过一个简单的系统，学习下最新技术栈工具，主要目的如下：</p>
-<p>根据需求，实现一个简单功能的购物系统，目的是为了学习ts-&gt;js on node.js全栈开发，了解整体开发构建工具，熟悉下工具开发流程，主要还是了解前端框架工具的使用，以及熟悉通过js运行时环境运行在后端服务上的应用开发工具，以便在后续开发后台系统的时候可以熟练使用这些技术进行开发，这些工具的设计思想可以借鉴到其他后端业务开发语言中。</p>
+      笔记 55.混淆并发和并行 这个在处理大数据的场景中经常可以看到，可以这么抽象，比如将一个job 分成 很多的 task 事件， 比如 读取文件 task, 切割文件task
     </div>
     <div class="read-more">
-      <a href="/post/shop/" class="read-more-link">阅读全文</a>
+      <a href="/post/go-tips/go-tips-08-concurrency-foundations/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
@@ -491,15 +497,16 @@
   <header class="post-header">
     <h1 class="post-title">
       
-      <a class="post-link" href="/post/crdt/">CRDT</a>
+      <a class="post-link" href="/post/go-tips/go-tips-07-error-management/">Go tips-笔记: 错误管理 48-54 mistakes</a>
     </h1>
     
     <div class="post-meta">
-      <time datetime="2021-12-28" class="post-time">
-        2021-12-28
+      <time datetime="2023-02-16" class="post-time">
+        2023-02-16
       </time>
       <div class="post-category">
           <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
           
         </div>
       
@@ -511,19 +518,10 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <h2 id="介绍">介绍</h2>
-<p><strong>无冲突复制数据类型</strong>(CRDT: <strong>conflict-free replicated data type</strong>) 是一种简化分布式数据存储系统和多用户应用程序的数据结构。</p>
-<p>在许多系统中，某些数据的副本需要存储在多台计算机上。此类系统的示例包括：</p>
-<ul>
-<li>在本地设备上存储数据，并且需要将该数据同步到属于同一用户的其他设备（同一用户多端设备同步，例如日历、笔记、联系人或提醒）的移动应用程序；</li>
-<li>分布式数据库，维护数据的多个副本（在同一数据中心或不同位置,一般是不同数据中心的多活场景），以便在某些副本离线时系统继续正常工作；</li>
-<li>协作软件，例如 Google Docs、Trello、Figma 或许多其他软件，其中多个用户可以同时更改同一文件或数据；</li>
-<li><a href="https://docs.microsoft.com/en-us/shows/tech-exceptions/concordant-always-know-what-to-expect-from-your-data">边缘计算场景</a>，比如多个手机/车载app 在无信号的森林中，产生的本地离线协同数据，多个设备同步到云上处理;</li>
-<li>大规模数据存储和处理系统，复制数据以实现全球可扩展性。</li>
-</ul>
+      笔记 48.panic Go 新手对错误处理感到困惑是很常见的。在 Go 中，错误通常由返回的函数或方法管理类型error作为最后一个参数（这个是代码风格，error可
     </div>
     <div class="read-more">
-      <a href="/post/crdt/" class="read-more-link">阅读全文</a>
+      <a href="/post/go-tips/go-tips-07-error-management/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
@@ -573,6 +571,14 @@
       
       <li >
         <a href="/page/5/">5</a>
+      </li>
+      
+      <li >
+        <a href="/page/6/">6</a>
+      </li>
+      
+      <li >
+        <a href="/page/7/">7</a>
       </li>
       
     </ul>

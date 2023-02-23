@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="zh-cn" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Go tips-笔记: 并发概念 55-60 mistakes - 时间飘过</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="weedge" />
+  <meta name="description" content="笔记 55.混淆并发和并行 这个在处理大数据的场景中经常可以看到，可以这么抽象，比如将一个job 分成 很多的 task 事件， 比如 读取文件 task, 切割文件task" />
+
+  <meta name="keywords" content="工作, 技术, 生活" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.88.1" />
+
+
+<link rel="canonical" href="https://weedge.github.io/post/go-tips/go-tips-08-concurrency-foundations/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css" integrity="sha256-&#43;ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
+
+<meta property="og:title" content="Go tips-笔记: 并发概念 55-60 mistakes" />
+<meta property="og:description" content="笔记 55.混淆并发和并行 这个在处理大数据的场景中经常可以看到，可以这么抽象，比如将一个job 分成 很多的 task 事件， 比如 读取文件 task, 切割文件task" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/go-tips/go-tips-08-concurrency-foundations/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-02-17T14:26:23+08:00" />
+<meta property="article:modified_time" content="2023-02-17T14:26:23+08:00" />
+
+<meta itemprop="name" content="Go tips-笔记: 并发概念 55-60 mistakes">
+<meta itemprop="description" content="笔记 55.混淆并发和并行 这个在处理大数据的场景中经常可以看到，可以这么抽象，比如将一个job 分成 很多的 task 事件， 比如 读取文件 task, 切割文件task"><meta itemprop="datePublished" content="2023-02-17T14:26:23+08:00" />
+<meta itemprop="dateModified" content="2023-02-17T14:26:23+08:00" />
+<meta itemprop="wordCount" content="4633">
+<meta itemprop="keywords" content="Golang," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Go tips-笔记: 并发概念 55-60 mistakes"/>
+<meta name="twitter:description" content="笔记 55.混淆并发和并行 这个在处理大数据的场景中经常可以看到，可以这么抽象，比如将一个job 分成 很多的 task 事件， 比如 读取文件 task, 切割文件task"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">时间飘过</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      时间飘过
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">Go tips-笔记: 并发概念 55-60 mistakes</h1>
+      
+      <div class="post-meta">
+        <time datetime="2023-02-17" class="post-time">
+          2023-02-17
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            <a href="https://weedge.github.io/categories/golang/"> Golang </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#55混淆并发和并行">55.混淆并发和并行</a></li>
+    <li><a href="#56认为并发总是更快">56.认为并发总是更快</a></li>
+    <li><a href="#57对何时使用channel或mutex感到困惑">57.对何时使用channel或mutex感到困惑</a></li>
+    <li><a href="#58不理解竞争race问题">58.不理解竞争race问题</a>
+      <ul>
+        <li><a href="#go-内存模型">Go 内存模型</a></li>
+      </ul>
+    </li>
+    <li><a href="#59不了解工作负载类型的并发影响">59.不了解工作负载类型的并发影响</a></li>
+    <li><a href="#60误解-go-context">60.误解 Go Context</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <h1 id="笔记">笔记</h1>
+<h2 id="55混淆并发和并行">55.混淆并发和并行</h2>
+<p>这个在处理大数据的场景中经常可以看到，可以这么抽象，比如将一个job 分成 很多的 task 事件， 比如 读取文件 task, 切割文件task, map key task, shuffle key task，reduce key task，sink task 等等，如果这个job 串行执行，同步处理task, 效率会很低，cpu资源也不会充分利用，比如文件io,网络io，系统缺页中断都会反生系统调用，这样cpu就空闲出来了，串行执行的话， 需要等待这次系统调用处理完之后才能继续使用cpu, 所以处理起来很慢，吞吐量很低； 如果改成并发(取决于操作系统调度，基于时间片轮训抢占式调度)，将job进程分成的多个task事件一同工作，如果某个task发生了系统中断，则可以让出cpu给另外一个task来执行，比如读取文件io.Reader，sink io.Writer写入文件时产生了系统中断，则可以保存上下文让出cpu给其他task来执行，这样可以充分利用cpu资源，提高吞吐(这里task不能太多,涉及到上下文切换，反而会降低吞吐，需要需要用户合理编排运行时结构)；当cpu利用上了，那就使用多核cpu来同时处理，进一步提高吞吐(多核涉及到底层**<a href="https://fgiesen.wordpress.com/2014/07/07/cache-coherency/">cpu cache一致性</a>**问题)；单机吞吐上来了，如果数据量非常大，单机优化已经无法存放这么多数据了，那就copy多台机器分布式进行处理(单机变多机，协同和网络问题)；第一次提升使用的就是将job切成多个task一起来处理，就是使用并发机制充分cpu资源；第二次提升则是使用多核，增加cpu资源，将多个task分配到cpu上同时一起做(执行)，即所谓的并行，这样可以单机垂直扩容提升吞吐了；即使存在摩尔定律，但是单机还是有限制；数据无极限，那处理也需要无极限，copy多台机器，组成集群，将单机任务分发到多集群上进行调度执行，充分利用并发并行，利用计算和存储资源，水平扩容，这样机会没有资源上的限制了(需要考虑资源的充分利用，因为成本上去了嘛；当然<a href="https://www.intel.com/content/www/us/en/products/docs/processors/what-is-a-gpu.html">GPU</a>的利用应该同样适用，并行能力更强，但是单核计算能力相对cpu弱)。在并发并行处理时，task之间必然会存在协同关系，彼此分工合作，则需要沟通，共同处理共享资源，存在竞争，CSP理论中提倡通过沟通来共享资源，在Go中通过channel来协同，也有相关sync库来处理同步；分布式多机沟通则通过rpc和消息队列；其中涉及到分布式调度和计算。 这种并发和并行模式在开店做生意，银行排队，工厂流水线中都可以看到相同的处理模式。</p>
+<p>回到正题，引用Go设计者的一句话概括：</p>
+<blockquote>
+<p><em>Concurrency is about dealing with lots of things at once. Parallelism is about doing lots of things at once.</em></p>
+<p>—Rob Pike</p>
+</blockquote>
+<p>并发是一次处理很多事情，并行是一次执行做很多事情；</p>
+<p>并发和并行是不同的。并发是关于结构的，可以通过引入分离并发线程可以处理的不同步骤，将顺序实现更改为并发实现。同时，并行性是关于执行的，可以通过添加更多并行线程在步骤级别使用它。理解这两个概念是成为一名熟练的 Gopher 的基础。</p>
+<p>附：<strong><a href="https://go.dev/blog/waza-talk">Concurrency is not parallelism</a></strong></p>
+<h2 id="56认为并发总是更快">56.认为并发总是更快</h2>
+<p>在考虑并发性时，有两种类型的工作负载需要理解。</p>
+<ul>
+<li>**CPU-Bound：**这是一种永远不会造成 Goroutines 自然地进入和退出等待状态的情况的工作负载。这是不断进行计算的job。将 Pi 计算到第 N 位的线程将受 CPU-Bound。</li>
+<li>**IO-Bound：**这是一种导致 Goroutines 自然进入等待状态的工作负载。这项工作包括请求通过网络访问资源，或对操作系统进行系统调用(同步/异步)，或等待事件发生。需要读取文件的 Goroutine 是 IO-Bound。将导致 Goroutine 等待的同步事件（互斥锁、原子）包含在该类别中。</li>
+</ul>
+<p>对于受CPU-Bound的工作负载，需要并行性来利用并发性。处理多个 Goroutines 的单个操作系统/硬件线程效率不高，因为 Goroutines 不会作为其工作负载的一部分进入和退出等待状态。拥有比操作系统/硬件线程更多的 Goroutine 会减慢工作负载的执行速度，因为将 Goroutine 移入和移出操作系统线程会产生延迟成本（花费的时间）。上下文切换正在为工作负载创建一个“Stop The World”事件，因为在切换期间任何工作负载都没有被执行，否则它可能会被执行。</p>
+<p>对于受IO-Bound的工作负载，不需要并行性来使用并发。单个操作系统/硬件线程可以高效地处理多个 Goroutines，因为 Goroutines 作为其工作负载的一部分自然地进入和退出等待状态。拥有比操作系统/硬件线程更多的 Goroutine 可以加快工作负载的执行速度，因为将 Goroutine 移入和移出操作系统线程的延迟成本不会产生“Stop The World”事件。工作负载自然停止，这允许不同的 Goroutine 有效地利用相同的操作系统/硬件线程，而不是让操作系统/硬件线程闲置。</p>
+<p>怎么知道每个硬件线程有多少 Goroutines 提供最佳吞吐量？Goroutines 太少，有更多的空闲时间；太多的 Goroutines 有更多的上下文切换延迟时间。如果不确定是否并发会更快，正确的方法可能是从一个简单的顺序版本开始，然后使用分析和基准测试，进行调优。</p>
+<p>附： ****<a href="https://www.ardanlabs.com/blog/2018/12/scheduling-in-go-part3.html">Scheduling In Go : Part III - Concurrency</a></p>
+<h2 id="57对何时使用channel或mutex感到困惑">57.对何时使用channel或mutex感到困惑</h2>
+<p>channel最适合Goroutine之间传递数据所有权、分配工作单元和传达异步结果等情况，通过沟通来共享资源；</p>
+<p>想要共享状态或访问共享资源时，sync包中的mutex互斥锁同步原语会确保对该资源的独占访问。虽然channel也可以保证共享资源的互斥访问，但是与mutex相比，channel 会导致性能下降；当只需要锁定少量共享资源时，使用 mutex 非常有用。</p>
+<h2 id="58不理解竞争race问题">58.不理解竞争race问题</h2>
+<p>当则编写的并发应用程序中工作时，了解数据争用不同于争用条件是很重要的。当多个 goroutine 同时访问同一内存位置并且其中至少一个正在写入时，就会发生数据竞争。数据竞争意味着意外行为。但是，无数据争用的应用程序并不一定意味着确定性结果。一个应用程序可以没有数据竞争，但仍然有依赖于不受控制的事件的行为（例如 goroutine 执行，消息发布到通道的速度，或者对数据库的调用持续多长时间）；这是一个竞争条件。理解这两个概念对于精通并发应用程序的设计至关重要。</p>
+<h3 id="go-内存模型">Go 内存模型</h3>
+<p>Go 内存模型是一种规范，它定义了在不同的 goroutine 中写入相同变量后可以保证从一个 goroutine 中的变量读取的条件. 换句话说，Go开发人员应牢记内存模型规范，避免做出可能导致数据竞争、竞争条件的错误假设。具体细节：https://research.swtch.com/gomm</p>
+<p>tips: 由于多核处理器cpu之间独立的L1/L2 cache，会出现cache line不一致的问题，为了解决这个问题，有相关协议模型，比如MESI协议来保证cache数据一致，同时由于CPU对「缓存一致性协议」进行的异步优化，对写和读分别引入了「store buffer」和「invalid queue」，很可能导致后面的指令查不到前面指令的执行结果（各个指令的执行顺序非代码执行顺序），这种现象很多时候被称作「CPU乱序执行」，为了解决乱序问题（也可以理解为可见性问题，修改完没有及时同步到其他的CPU），又引出了「内存屏障」的概念；内存屏障可以分为三种类型：写屏障，读屏障以及全能屏障（包含了读写屏障），屏障可以简单理解为：在操作数据的时候，往数据插入一条”特殊的指令”。只要遇到这条指令，那前面的操作都得「完成」。CPU当发现写屏障的指令时，会把该指令「之前」存在于「store Buffer」所有写指令刷入高速缓存。就可以让CPU修改的数据可以马上暴露给其他CPU，达到「写操作」可见性的效果。读屏障也是类似的：CPU当发现读屏障的指令时，会把该指令「之前」存在于「invalid queue」所有的指令都处理掉。通过这种方式就可以确保当前CPU的缓存状态是准确的，达到「读操作」一定是读取最新的效果。由于不同CPU架构的缓存体系不一样、缓存一致性协议不一样、重排序的策略不一样、所提供的内存屏障指令也有差异，所以一些语言c++/java/go/rust 都有实现自己的内存模型，应该相互都有些借鉴吧。</p>
+<h2 id="59不了解工作负载类型的并发影响">59.不了解工作负载类型的并发影响</h2>
+<p>上文提到到工作负载分两种：CPU-Bound 和 IO-Bound 已经说明了一些问题，文中使用的工作池，也是依赖于使用场景的工作负载类型是CPU-Bound还是 IO-Bound ; 如果 worker 执行的工作负载是 I/O-bound，则该值主要取决于外部系统。相反，如果工作量是受 CPU 限制，goroutine 的最佳数量接近于可用线程的数量。在设计并发应用程序时，了解工作负载类型（I/O 或 CPU）至关重要。</p>
+<p>大多数情况下，应该通过基准来验证假设。并发不是直截了当的，很容易做出草率的假设，结果证明是无效的。</p>
+<h2 id="60误解-go-context">60.误解 Go Context</h2>
+<p>文中主要是介绍了各种context的使用场景，<code>WithCancel</code> ，<code>WithTimeout</code>，<code>WithDeadline</code>，<code>WithValue</code>，以及1.20新加入的 <code>WithCancelCause</code>返回CancelCauseFunc 可以记录Cancel导致的错误原因，通过<code>Cause</code>获取到；具体可以在开发文档中学习即可： <a href="https://pkg.go.dev/context">https://pkg.go.dev/context</a> ;</p>
+<p>使用Context的程序应该遵循这些规则，以保持接口在包之间的一致性，并启用静态分析工具来检查context传播：</p>
+<ul>
+<li>传递 Context 时，而应该显式地传入函数，并且放在参数列表第一个位置，通常命名为 ctx；</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">DoSomething</span><span class="p">(</span><span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span> <span class="nx">arg</span> <span class="nx">Arg</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+	<span class="c1">// ... use ctx ...
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></div><ul>
+<li>不要传递 nil 的 Context，在不确定的时候应该传递 <code>context.TODO()</code>；而不是传递空上下文<code>context.Background</code>。<code>context.TODO()</code>返回一个空上下文，但在语义上，它表示要使用的上下文不清楚或尚不可用（例如，尚未由父级传播）。</li>
+<li>使用 context 的 Value 相关方法时只应该用于传递和请求相关的元数据(metadata)，不要用它传递一些可选参数；比如traceId, spanId, 建设微服务经常会用到。</li>
+<li>WithValue中的key, 必须可比较的，并且不应是字符串类型或任何其他内置类型，以避免使用context的包之间发生冲突；最佳做法是创建一个未导出的自定义类型；比如在包中定义 <code>type favContextKey string</code> ，即使另一个包也用<code>favContextKey</code> 这个名字，不是同一个key了。这个在http中间件里经常出现，记录在访问日志中记录相关信息。</li>
+<li>同一个 context 可以传递到不同的 goroutine 中，且在多个 goroutine 可以安全访问。</li>
+</ul>
+<h1 id="概括">概括</h1>
+<ul>
+<li>了解并发和并行之间的根本区别是 Go 开发人员知识的基石。并发是关于结构的，而并行是关于执行的。</li>
+<li>要成为熟练的开发人员，必须承认并发并不总是更快。涉及最小工作负载并行化的解决方案不一定比顺序实施更快。对顺序解决方案与并发解决方案进行基准测试应该是验证假设的方法。</li>
+<li>在channel和mutex之间做出决定时，了解 goroutine 交互也很有帮助。通常，对于共享资源变量， goroutine竞争访问时， 需要同步，使用同步机制sync包中mutex；对于 goroutine之间需要协调和编排，则使用channel。</li>
+<li>精通并发也意味着理解数据竞争和竞争条件是不同的概念。当多个 goroutine 同时访问同一内存位置并且其中至少一个正在写入时，就会发生数据竞争。同时，无数据竞争并不一定意味着确定性执行。当行为取决于无法控制的事件的顺序或时间时，这就是竞争条件。</li>
+<li>了解 Go 内存模型以及在排序和同步方面的底层保证对于防止可能的数据竞争和竞争条件至关重要。</li>
+<li>创建一定数量的 goroutine 时，请考虑工作负载类型。创建 CPU-bound goroutines 意味着将这个数字限制在变量附近<code>GOMAXPROCS</code>（默认情况下基于主机上的 CPU 核心数）。创建 I/O-bound goroutines 取决于其他因素，例如外部系统。</li>
+<li>Go Context也是 Go 并发的基石之一。Context允许携带截止日期、取消信号、键值元数据列表(metadata)。</li>
+</ul>
+
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2023-02-17
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/golang/">Golang</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/post/go-tips/go-tips-09-concurrency-practice/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">Go tips-笔记: 并发实践 61-74 mistakes</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        
+          <a class="next" href="/post/go-tips/go-tips-07-error-management/">
+            <span class="next-text nav-default">Go tips-笔记: 错误管理 48-54 mistakes</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/post/go-tips/go-tips-08-concurrency-foundations/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:weege007@gmail.com" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/weedge" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://weibo.com/weedge" rel="me noopener" class="iconfont"
+      title="weibo"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M385.714286 733.714286q12-19.428571 6.285714-39.428571t-25.714286-28.571429q-19.428571-8-41.714286-0.571429t-34.285714 26.285714q-12.571429 19.428571-7.428571 39.142857t24.571429 28.857143 42.571429 1.428571 35.714286-27.142857zm53.714286-69.142857q4.571429-7.428571 2-15.142857t-10-10.571429q-8-2.857143-16.285714 2.857143t-12.285714 10.571429q-9.714286 17.714286 7.428571 25.714286 8 2.857143 16.571429 2.857143t12.571429-10.571429zm99.428571 61.142857q-25.714286 58.285714-90.285714 85.714286t-128 6.857143q-61.142857-19.428571-84.285714-72.285714t3.714286-107.142857q26.857143-53.142857 86.571429-79.428571t120.285714-10.857143q63.428571 16.571429 90.571429 68.285714t1.428571 108.857143zm178.285714-91.428571q-5.142857-54.857143-50.857143-97.142857t-119.142857-62.285714-156.857143-12q-127.428571 13.142857-211.142857 80.857143t-75.714286 151.142857q5.142857 54.857143 50.857143 97.142857t119.142857 62.285714 156.857143 12q127.428571-13.142857 211.142857-80.857143t75.714286-151.142857zm176 2.285714q0 38.857143-21.142857 79.714286t-62.285714 78.285714-96.285714 67.142857-129.142857 47.428571-154.571429 17.714286-157.142857-19.142857-137.428571-53.142857-98-86.285714-37.142857-114q0-65.714286 39.714286-140t112.857143-147.428571q96.571429-96.571429 195.142857-134.857143t140.857143 4q37.142857 36.571429 11.428571 119.428571-2.285714 8-0.571429 11.428571t5.714286 4 8.285714 2.857143 7.714286-2l3.428571-1.142857q79.428571-33.714286 140.571429-33.714286t87.428571 34.857143q25.714286 36 0 101.714286-1.142857 7.428571-2.571429 11.428571t2.571429 7.142857 6.857143 4.285714 9.714286 3.428571q32.571429 10.285714 58.857143 26.857143t45.714286 46.571429 19.428571 66.571429zm-42.285714-356.571429q24 26.857143 31.142857 62t-3.714286 67.142857q-4.571429 13.142857-16.857143 19.428571t-25.428571 2.285714q-13.142857-4.571429-19.428571-16.857143t-2.285714-25.428571q11.428571-36-13.714286-63.428571t-61.142857-20q-13.714286 2.857143-25.714286-4.571429t-14.285714-21.142857q-2.857143-13.714286 4.571429-25.428571t21.142857-14.571429q34.285714-7.428571 68 3.142857t57.714286 37.428571zm103.428571-93.142857q49.714286 54.857143 64.285714 127.142857t-7.714286 138q-5.142857 15.428571-19.428571 22.857143t-29.714286 2.285714-22.857143-19.428571-2.857143-29.714286q16-46.857143 5.714286-98.285714t-45.714286-90.285714q-35.428571-39.428571-84.571429-54.571429t-98.857143-4.857143q-16 3.428571-29.714286-5.428571t-17.142857-24.857143 5.428571-29.428571 24.857143-16.857143q70.285714-14.857143 139.428571 6.571429t118.857143 76.857143z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://weedge.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2013 -
+    2023
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        weedge
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//weedge.disqus.com/count.js" async></script>
+
+
+
+
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
+
+
+</body>
+</html>

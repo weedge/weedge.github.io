@@ -297,15 +297,16 @@
   <header class="post-header">
     <h1 class="post-title">
       
-      <a class="post-link" href="/post/pool/">pool</a>
+      <a class="post-link" href="/post/go-tips/go-tips-06-functions-methods/">Go tips-笔记: 函数和方法 42-47 mistakes</a>
     </h1>
     
     <div class="post-meta">
-      <time datetime="2021-12-02" class="post-time">
-        2021-12-02
+      <time datetime="2023-02-15" class="post-time">
+        2023-02-15
       </time>
       <div class="post-category">
           <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
           
         </div>
       
@@ -317,11 +318,10 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <h2 id="介绍">介绍</h2>
-<p>平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(<a href="https://en.wikipedia.org/wiki/Pool_(computer_science)">pool</a>)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，<a href="https://zh.wikipedia.org/wiki/%E8%A1%8C%E7%A8%8B">进程</a>(process <a href="https://en.wikipedia.org/wiki/Process_control_block">PCB</a> 内核态)、<a href="https://zh.wikipedia.org/wiki/%E5%9F%B7%E8%A1%8C%E7%B7%92">线程</a>(thread <a href="https://en.wikipedia.org/wiki/Thread_control_block">TCB </a> 内核态)、<a href="https://zh.wikipedia.org/zh-hans/%E5%8D%8F%E7%A8%8B">协程</a>(coroutine 用户态协作式调度,尽量减少内核调度)为载体的工作任务(work task 在用户态分配栈空间)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。</p>
+      笔记 42.结构体方法不知道使用哪种类型的接收者 文中说了很多，感觉为了凑数，主要就是围绕着值传递还是指针传递，值传递给接收者，如果结构体中没有
     </div>
     <div class="read-more">
-      <a href="/post/pool/" class="read-more-link">阅读全文</a>
+      <a href="/post/go-tips/go-tips-06-functions-methods/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
@@ -332,15 +332,16 @@
   <header class="post-header">
     <h1 class="post-title">
       
-      <a class="post-link" href="/post/wal/">WAL</a>
+      <a class="post-link" href="/post/go-tips/go-tips-05-strings/">Go tips-笔记: string 36-41 mistakes</a>
     </h1>
     
     <div class="post-meta">
-      <time datetime="2021-11-21" class="post-time">
-        2021-11-21
+      <time datetime="2023-02-14" class="post-time">
+        2023-02-14
       </time>
       <div class="post-category">
           <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
           
         </div>
       
@@ -352,11 +353,28 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <h2 id="序言">序言</h2>
-<p>​	数据落地之前，如果出现持久化存储引擎实例重启，或者服务当机重启，如何进行故障恢复（Crash Recovery）呢？数据写操作增删改，这些操作状态数据，是如何保证事务中原子性和持久性的呢？ 这些问题数据大拿们提出了<a href="https://en.wikipedia.org/wiki/Algorithms_for_Recovery_and_Isolation_Exploiting_Semantics">Algorithms for Recovery and Isolation Exploiting Semantics</a> ，基于语义的恢复与隔离算法,现代数据库的基础理论；当前主流关系型数据在事务实现上都受到该理论的影响，其中有两种故障恢复的方法： 预写日志(write-ahead logging (WAL) ) 和shadow-page technique；shadow-page 方法简单介绍就是每次事务操作，以page为单位，写时复制的方式，分为Current和Shadow，类似主备的形式，如果commit成功，Current中的page合并到 Shadow中; 如果abort不成功丢弃Current的page; 如果Crash了，从Shadow中的page恢复，对所有未提交事务的回滚操作； 由于shadow-page技术的实现以page为单位，page内无法并发操作，commit/回滚时会有大量垃圾回收操作；本文主要介绍WAL，以及对应持久化存储引擎的实现机制介绍。</p>
+      <h1 id="笔记">笔记</h1>
+<p>在 Go 中，string是一种不可变的数据结构，包含以下内容：</p>
+<ul>
+<li>指向不可变字节序列的指针，指向一个byte类型的数组</li>
+<li>此序列中的总字节数</li>
+</ul>
+<p>string在Go中的内部结构是<code>reflect.StringHeader</code>位于<code>reflect/value.go</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// StringHeader is the runtime representation of a string.
+</span><span class="c1">// It cannot be used safely or portably and its representation may
+</span><span class="c1">// change in a later release.
+</span><span class="c1">// Moreover, the Data field is not sufficient to guarantee the data
+</span><span class="c1">// it references will not be garbage collected, so programs must keep
+</span><span class="c1">// a separate, correctly typed pointer to the underlying data.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">StringHeader</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">Data</span> <span class="kt">uintptr</span>
+	<span class="nx">Len</span>  <span class="kt">int</span>
+<span class="p">}</span>
+<span class="c1">//uintptr  an unsigned integer large enough to store the uninterpreted bits of a pointer value
+</span></code></pre></div>
     </div>
     <div class="read-more">
-      <a href="/post/wal/" class="read-more-link">阅读全文</a>
+      <a href="/post/go-tips/go-tips-05-strings/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
@@ -367,15 +385,16 @@
   <header class="post-header">
     <h1 class="post-title">
       
-      <a class="post-link" href="/post/conf/">设计-配置平台</a>
+      <a class="post-link" href="/post/go-tips/go-tips-04-control-structures/">Go tips-笔记: 控制语句 30-35 mistakes</a>
     </h1>
     
     <div class="post-meta">
-      <time datetime="2021-11-18" class="post-time">
-        2021-11-18
+      <time datetime="2023-02-14" class="post-time">
+        2023-02-14
       </time>
       <div class="post-category">
           <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
           
         </div>
       
@@ -387,11 +406,10 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <h3 id="介绍">介绍</h3>
-<p>业务服务在启动时加载配置，配置分为静态配置和动态配置，静态配置如服务监听的端口，日志路径，访问依赖服务单元不同云(region / zone) 域名地址等；动态配置包括业务配置，流程管理配置，策略配置等；静态配置服务启动之后不会更改，而动态配置在服务启动运行时可以动态热加载；将配置的内容和版本进行分离，关注配置的管理而无需关注配置的内容，配置内容用户可以自定义配置内容，使用json-schema进行校验，提供自定义配置内容json给后台ui前端进行单个整体配置的交互，配置后台只需加载json-schema进行校验提交内容，json-schema由用户上传提供地址即可。</p>
+      笔记 30.忽略了元素在 for range循环中被复制 (重要) 需要注意，range循环中的值元素是一个复制的副本。因此，如果值是需要改变结构，只会更
     </div>
     <div class="read-more">
-      <a href="/post/conf/" class="read-more-link">阅读全文</a>
+      <a href="/post/go-tips/go-tips-04-control-structures/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
@@ -402,15 +420,16 @@
   <header class="post-header">
     <h1 class="post-title">
       
-      <a class="post-link" href="/post/ping/">工具盒子-ping/traceroute</a>
+      <a class="post-link" href="/post/go-tips/go-tips-03-data-types/">Go tips-笔记: 数据类型 17-29 mistakes</a>
     </h1>
     
     <div class="post-meta">
-      <time datetime="2021-11-15" class="post-time">
-        2021-11-15
+      <time datetime="2023-02-13" class="post-time">
+        2023-02-13
       </time>
       <div class="post-category">
           <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
           
         </div>
       
@@ -422,14 +441,10 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <h2 id="序言">序言</h2>
-<p>在访问网络是否ok, 通常喜欢用ping 命令来访问<code>ping www.baidu.com</code> 看是否出现超时；ping在不同的操作系统平台实现方式差不多，底层都是用ICMP协议，每次发ICMP ECHO_REQUEST packet (IP地址/Host, ttl，icmp_seq序列号，<a href="https://en.wikipedia.org/wiki/Round-trip_delay">RTD/RTT</a>(往返延时)记录 ),  运行结束后统计每个RTT, 最大RTT, 最小RTT, 平均RTT, <a href="https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford">标准偏差</a>RTT, 发送/接受packets总数，丢包率 等数据，ping工具在PING(8)中的定义如下：</p>
-<blockquote>
-<p>The ping utility uses the ICMP protocol&rsquo;s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.  ECHO_REQUEST datagrams  (&ldquo;pings'') have an IP and ICMP header, followed by a &ldquo;struct timeval'' and then an arbitrary number of &ldquo;pad&rdquo; bytes used to fill out the packet.</p>
-</blockquote>
+      笔记 17.与八进制文字混淆 Go 可以处理二进制、十六进制、虚数和八进制数。八进制数字以 0 开头。但是，为了提高可读性并避免未来代码阅读器可能犯的错
     </div>
     <div class="read-more">
-      <a href="/post/ping/" class="read-more-link">阅读全文</a>
+      <a href="/post/go-tips/go-tips-03-data-types/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
@@ -440,15 +455,16 @@
   <header class="post-header">
     <h1 class="post-title">
       
-      <a class="post-link" href="/post/lru/">缓存淘汰策略-LRU</a>
+      <a class="post-link" href="/post/go-tips/go-tips-02-code-project-organization/">Go tips-笔记: 代码和项目组织 1-16 mistakes</a>
     </h1>
     
     <div class="post-meta">
-      <time datetime="2021-11-08" class="post-time">
-        2021-11-08
+      <time datetime="2023-02-13" class="post-time">
+        2023-02-13
       </time>
       <div class="post-category">
           <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
           
         </div>
       
@@ -460,11 +476,13 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <h2 id="序言">序言</h2>
-<p>​	在计算机硬件中缓/内存设计是用来机器启动的时候加载程序，分配运行空间数据，停机，缓/内存中的数据会丢失；磁盘用来持久化存储，提供数据加载到内存中，内存的读写速度比磁盘快很多，以下是<a href="https://research.google/people/jeff/">Jeff Dean</a>  &ldquo;<a href="http://brenocon.com/dean_perf.html">Numbers Everyone Should Know</a>&rdquo; 中提供的数据(虽然过去10多年了)， 读取1MB数据，从内存中读比从磁盘中读取快100+倍；但是缓/内存的空间比磁盘空间少，为了加快数据的访问，减少缓存/磁盘io，大概分为三种：1. 可以提前将数据从磁盘加载到内/缓存中(page)、2. 内/缓存miss从下层存储获取数据(cache,pool,page)、3. 无需加载，直接内/缓存evict；如果提供给进程的最大内/缓存资源到了最大限制，需要对存储资源进行evict操作，常用的evict策略可以从<a href="https://en.wikipedia.org/wiki/Cache_replacement_policies">Cache_replacement_policies</a>中了解；有关特定于分页的详细算法，请参阅<a href="https://en.wikipedia.org/wiki/Page_replacement_algorithm">页面替换算法</a>；有关特定于 CPU 和 RAM 之间缓存的详细算法，请参阅<a href="https://en.wikipedia.org/wiki/CPU_cache">CPU 缓存</a>。这里主要关注LRU evict相关策略。</p>
+      <h1 id="引言">引言</h1>
+<p>从错误中学习效率更高，而且从错误失败的场景下学习，往往比直接交代正确性的理论知识，没有上下文的结果去 记忆巩固知识，在错误失败场景下往往印象更深刻；可以帮助我们更好地避免错误并做出更明智、更有意识的决定，因为我们现在了解了错误背后的基本原理，有种该死的，恍然大悟的感觉，拨开雨雾见月明；</p>
+<p>涵盖了可能导致各种软件错误的案例，包括数据竞争、泄漏、逻辑错误和其他缺陷。虽然准确的测试应该是尽早发现此类错误的一种方式，但有时可能会因为时间限制或复杂性等不同因素而错过案例。因此，使用Golang开发，确保避免常见错误至关重要。</p>
+<p>有些坑可能曾经踩过，通过这些mistakes产生共鸣，加深印象，同时可以继续追加一些新的坑来填充,比如系统性能调优，包括IO,  网络，数据编解码压缩，分布式系统，业务系统组织架构，逐步学习实践试错过程。学习笔记开个头。</p>
     </div>
     <div class="read-more">
-      <a href="/post/lru/" class="read-more-link">阅读全文</a>
+      <a href="/post/go-tips/go-tips-02-code-project-organization/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
@@ -475,12 +493,12 @@
   <header class="post-header">
     <h1 class="post-title">
       
-      <a class="post-link" href="/post/servicetransformation/">服务改造简述</a>
+      <a class="post-link" href="/post/zb-gift/">设计-直播间赠送礼物功能</a>
     </h1>
     
     <div class="post-meta">
-      <time datetime="2021-10-26" class="post-time">
-        2021-10-26
+      <time datetime="2022-11-21" class="post-time">
+        2022-11-21
       </time>
       <div class="post-category">
           <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
@@ -496,10 +514,11 @@
     
     <div class="post-summary">
       <h2 id="背景">背景</h2>
-<p>随着前期业务迭代不断增多，会留下一些技术债务；用户不断累计增加，整体DAU,MAU,PV/UV的不断上升，为了符合根据组织结构和业务需求更加稳定健康的发展，需要对业务服务进行改造/重构；采用团队适合的语言开发，将服务进行分层，抽象底层模型，分离出不变/易变业务逻辑；业务改造和基础建设服务升级（整体系统认知的改变）</p>
+<p>直播线上互动，已成为当下生活的一部分，特别是受疫情影响，成为互联网的主要流量入口；研究了下各个平台直播间送礼物的功能，发现大同小异，在礼物分组，一些定制化的礼物有区分，整体交互流程大致相同，主要是直播间主播上播，用户通过礼物打赏给主播们(一个直播间可能有多名主播在互动)，礼物是通过虚拟币(**币) 换算，早期互联网用户线上互动礼物，玩家最多的应该是QQ币了，只不过以前的打赏赠送场景是在web2.0刚开始的时候，交互的大多是文字和图片，相关产品场景，虚拟空间(个人空间，博客，种菜等娱乐互动场景)；随着底层网络基建的发展，4G之后出现了大量的视频网站，用户可以录一些视频内容来互动；到后来音视频流媒体的发展，相关的在线直播间开始涌现，用户之间享受一波直播红利带来的互动，当然影响相对于前面的形式更加实时和直接；现在的5G和未来6G，以及物联网都会给直播形式带来新的互动场景,比如：虚拟会场，人机互动；其中早期培养起来的打赏送礼行为功能经常用于有主播的娱乐互动直播中，也是增值盈利的一部分；</p>
+<p>tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦，电商带货商品，没有主播，节目直播/转播，会议直播，自习室，基本的点赞，计数，聊天基础服务功能；还有些抽奖功能，答题功能(教育类直播居多)，投票，红包这些功能服务可在开播时设置，是否启用；有用户基础的流量平台可能还会以竞价排名的方式推荐一波；这些功能可以作为一个可管理的插件，通过组合的方式应用于直播中，方便管理，后续可以添加新功能满足某类型直播场景。</p>
     </div>
     <div class="read-more">
-      <a href="/post/servicetransformation/" class="read-more-link">阅读全文</a>
+      <a href="/post/zb-gift/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
@@ -549,6 +568,14 @@
       
       <li >
         <a href="/page/5/">5</a>
+      </li>
+      
+      <li >
+        <a href="/page/6/">6</a>
+      </li>
+      
+      <li >
+        <a href="/page/7/">7</a>
       </li>
       
     </ul>
