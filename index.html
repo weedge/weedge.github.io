@@ -406,6 +406,130 @@
 </article>
 
   
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
+      <a class="post-link" href="/post/user-behavior-analytics-solution/">用户行为分析方案设计</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2022-11-02" class="post-time">
+        2022-11-02
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <h2 id="背景">背景</h2>
+<p>用户在手机和pc端使用客户业务产品，比如浏览网页，购买商品，查看文档，观看视频，直播，IOT场景；会产生大量的用户行为数据，主要包括：</p>
+<ol>
+<li>非结构化数据：日志(前端事件埋点日志，服务端处理事件日志)，还有些非结构化的图片，音视频数据等等，主要存放在文件存储系统中；</li>
+<li>结构化和半结构化数据： 用户操作产品写入的结构化数据存放于数据库表中，将文档型半结构化的数据放入文档数据库中；</li>
+</ol>
+<p>需要分析用户的行为数据，进行决策；分为实时流式处理和离线批处理：</p>
+<ol>
+<li>实时流处理，主要用于实时展现客户端看板，后台BI实时分析，实时风控/推荐，异常报警等场景；</li>
+<li>离线批处理，分析用户历史数据，进行推荐算法等机器学习算法模型训练使用，数据仓库中根据不同维度对数据过滤聚合，进行上卷下钻分析，比如计算DAU,WAU,MAU，转化率(购买率，注册率)分析等，通常对数据建设投入多的话， 会把用户产生的结构化非结构化的数据都存下，放在一个大的池子里待使用时进行分析，即所谓的数据湖，围湖而建挖掘数据价值；而数仓相对精细化的分析，前置建模建表分析；</li>
+</ol>
+<p>对此进行方案分析，本文将介绍一种实时离线处理分析用户行为数据方案，即能帮助企业低成本地使用海量数据，又能更快速地响应业务需求，同时借助亚马逊云科技的托管服务，能够快速实施和轻松运维。</p>
+    </div>
+    <div class="read-more">
+      <a href="/post/user-behavior-analytics-solution/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
+      <a class="post-link" href="/post/shop/">全栈开发</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2022-01-02" class="post-time">
+        2022-01-02
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <h2 id="介绍">介绍</h2>
+<p>以前工作中有过前端的开发经验，使用后端模版Smarty(主要是外部需求，现在新项目中应该很少使用这个了)，前端模版Mustache，页面中使用 js jquery交互逻辑，直接服用一些开源的UI组件Bootstrap，开源的后台UI系统，主要是建设内部后台的时候使用，自动生成CRUD页面；前端的技术栈更新迭代相对后端快些，通过以全栈技术栈为切入点，通过一个简单的系统，学习下最新技术栈工具，主要目的如下：</p>
+<p>根据需求，实现一个简单功能的购物系统，目的是为了学习ts-&gt;js on node.js全栈开发，了解整体开发构建工具，熟悉下工具开发流程，主要还是了解前端框架工具的使用，以及熟悉通过js运行时环境运行在后端服务上的应用开发工具，以便在后续开发后台系统的时候可以熟练使用这些技术进行开发，这些工具的设计思想可以借鉴到其他后端业务开发语言中。</p>
+    </div>
+    <div class="read-more">
+      <a href="/post/shop/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
+      <a class="post-link" href="/post/crdt/">CRDT</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2021-12-28" class="post-time">
+        2021-12-28
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <h2 id="介绍">介绍</h2>
+<p><strong>无冲突复制数据类型</strong>(CRDT: <strong>conflict-free replicated data type</strong>) 是一种简化分布式数据存储系统和多用户应用程序的数据结构。</p>
+<p>在许多系统中，某些数据的副本需要存储在多台计算机上。此类系统的示例包括：</p>
+<ul>
+<li>在本地设备上存储数据，并且需要将该数据同步到属于同一用户的其他设备（同一用户多端设备同步，例如日历、笔记、联系人或提醒）的移动应用程序；</li>
+<li>分布式数据库，维护数据的多个副本（在同一数据中心或不同位置,一般是不同数据中心的多活场景），以便在某些副本离线时系统继续正常工作；</li>
+<li>协作软件，例如 Google Docs、Trello、Figma 或许多其他软件，其中多个用户可以同时更改同一文件或数据；</li>
+<li><a href="https://docs.microsoft.com/en-us/shows/tech-exceptions/concordant-always-know-what-to-expect-from-your-data">边缘计算场景</a>，比如多个手机/车载app 在无信号的森林中，产生的本地离线协同数据，多个设备同步到云上处理;</li>
+<li>大规模数据存储和处理系统，复制数据以实现全球可扩展性。</li>
+</ul>
+    </div>
+    <div class="read-more">
+      <a href="/post/crdt/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
 </section>
 
 
@@ -449,26 +573,6 @@
       
       <li >
         <a href="/page/5/">5</a>
-      </li>
-      
-      <li >
-        <a href="/page/6/">6</a>
-      </li>
-      
-      <li >
-        <a href="/page/7/">7</a>
-      </li>
-      
-      <li >
-        <a href="/page/8/">8</a>
-      </li>
-      
-      <li >
-        <a href="/page/9/">9</a>
-      </li>
-      
-      <li >
-        <a href="/page/10/">10</a>
       </li>
       
     </ul>
