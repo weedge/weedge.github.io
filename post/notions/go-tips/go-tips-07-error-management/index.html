@@ -71,7 +71,7 @@
 <meta itemprop="name" content="Go tips-笔记: 错误管理 48-54 mistakes">
 <meta itemprop="description" content="笔记 48.panic Go 新手对错误处理感到困惑是很常见的。在 Go 中，错误通常由返回的函数或方法管理类型error作为最后一个参数（这个是代码风格，error可"><meta itemprop="datePublished" content="2023-02-16T14:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-02-16T14:26:23+08:00" />
-<meta itemprop="wordCount" content="1812">
+<meta itemprop="wordCount" content="1814">
 <meta itemprop="keywords" content="Golang," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Go tips-笔记: 错误管理 48-54 mistakes"/>
 <meta name="twitter:description" content="笔记 48.panic Go 新手对错误处理感到困惑是很常见的。在 Go 中，错误通常由返回的函数或方法管理类型error作为最后一个参数（这个是代码风格，error可"/>
@@ -324,10 +324,10 @@
   <ul>
     <li><a href="#48panic">48.panic</a></li>
     <li><a href="#49忽略何时error-wrap">49.忽略何时error wrap</a></li>
-    <li><a href="#50不准确地检查error类型-凑数">50.不准确地检查error类型 (凑数)</a></li>
-    <li><a href="#51检查error值不准确-凑数">51.检查error值不准确 （凑数）</a></li>
+    <li><a href="#50不准确地检查error类型-重要">50.不准确地检查error类型 (重要)</a></li>
+    <li><a href="#51检查error值不准确-重要">51.检查error值不准确 （重要）</a></li>
     <li><a href="#52处理error两次">52.处理error两次</a></li>
-    <li><a href="#53不处理错误-凑数">53.不处理错误 (凑数）</a></li>
+    <li><a href="#53不处理错误-工程规范">53.不处理错误 (工程规范）</a></li>
     <li><a href="#54不处理延迟错误">54.不处理延迟错误</a></li>
   </ul>
 </nav>
@@ -348,13 +348,13 @@
 <li>如果只想添加额外的上下文，应该使用<code>fmt.Errorf %w</code>格式指令生成wrapError类型错误，因为它不需要创建新的错误类型；wrapError会产生潜在的耦合，它使源错误通过Unwrap可供调用者使用。</li>
 <li>如果不想使用源错误追溯，不应该使用wrapError，而是错误转换，例如使用<code>fmt.Errorf %v</code>格式指令生成新的errorString类型错误</li>
 </ul>
-<h2 id="50不准确地检查error类型-凑数">50.不准确地检查error类型 (凑数)</h2>
-<p>这个其实就是弄懂Go1.13引入的wrapError类型错误，这个错误类型因为是层层包裹源错误，如果将以前老的代码返回的错误重构成wrapError的话，在调用的地方判断err的时候 需要用 <a href="http://error.Is">error.Is</a> 错误值和 <a href="http://error.As">error.As</a> 错误类型 函数进行判断，Is是从error 链中递归地Unwrap err遍历是否有对应目标error值,  As是从error 链中递归地Unwrap err并查看其中一个错误是否是特定error类型；这两个函数都是用了反射，如果错误链路长的话，会有一些性能折损。</p>
-<h2 id="51检查error值不准确-凑数">51.检查error值不准确 （凑数）</h2>
+<h2 id="50不准确地检查error类型-重要">50.不准确地检查error类型 (重要)</h2>
+<p>这个其实就是弄懂Go1.13引入的wrapError类型错误，这个错误类型因为是层层包裹源错误，如果将以前老的代码返回的错误重构成wrapError的话，在调用的地方判断err的时候 需要用 error.Is 错误值和 error.As 错误类型 函数进行判断，Is是从error 链中递归地Unwrap err遍历是否有对应目标error值,  As是从error 链中递归地Unwrap err并查看其中一个错误是否是特定error类型；这两个函数都是用了反射，如果错误链路长的话，会有一些性能折损。</p>
+<h2 id="51检查error值不准确-重要">51.检查error值不准确 （重要）</h2>
 <p>这里介绍的是wrapError类型错误在==比较错误值时，应该采用error.Is来判断。</p>
 <h2 id="52处理error两次">52.处理error两次</h2>
 <p>这个在工程项目中，使用Go开发，打日志经常出现错误打印多条的情况，对于并发服务，如果不用logId,traceId来辅助定位，一般很难定位到一次逻辑交互的多条日志信息。这里的处理方式将多条错误通过wrap的方式 一条打印出整条逻辑链路的错误信息出来。工程实践小细节吧，如果考虑性能影响，需要折中考虑了。</p>
-<h2 id="53不处理错误-凑数">53.不处理错误 (凑数）</h2>
+<h2 id="53不处理错误-工程规范">53.不处理错误 (工程规范）</h2>
 <p>忽略错误都应该使用_标识符显式标示，在不处理错误的函数调用地方，加上对应注释上下文逻辑说明为什么可以忽略。。。</p>
 <h2 id="54不处理延迟错误">54.不处理延迟错误</h2>
 <p>如果函数返回的错误需要考虑defer函数中的函数调用是否返回错误，则在defer闭包函数中先判断函数中的err是否不为nil, 是则直接闭包函数返回，否则将defer 闭包函数中处理的逻辑函数错误赋值给err。如果想忽略它，使用_标识符标示。</p>
