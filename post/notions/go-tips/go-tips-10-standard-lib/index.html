@@ -23,7 +23,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="引言 从程序中产生的错误中大多是使用姿势的不对，以及没有仔细阅读标准库相关包的开发文档，未查看源码导致，但是没有实践过这些问题，即使熟读文档和" />
+  <meta name="description" content="引言 从程序中产生的错误中大多是使用姿势的不对，以及没有仔细阅读标准库相关包的开发文档，未查看源码导致，但是没有实践过这些问题，即使熟读文档和源码也可能避免不了。笔记中会以书中的mistake为切入点，结合源码升入分析其背后产生的原因，以及提出解决方案来避免。
+" />
 
   <meta name="keywords" content="工作, 技术, 生活" />
 
@@ -62,19 +63,22 @@
 
 
 <meta property="og:title" content="Go tips-笔记: 标准库 75-81 mistakes" />
-<meta property="og:description" content="引言 从程序中产生的错误中大多是使用姿势的不对，以及没有仔细阅读标准库相关包的开发文档，未查看源码导致，但是没有实践过这些问题，即使熟读文档和" />
+<meta property="og:description" content="引言
+从程序中产生的错误中大多是使用姿势的不对，以及没有仔细阅读标准库相关包的开发文档，未查看源码导致，但是没有实践过这些问题，即使熟读文档和源码也可能避免不了。笔记中会以书中的mistake为切入点，结合源码升入分析其背后产生的原因，以及提出解决方案来避免。" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://weedge.github.io/post/notions/go-tips/go-tips-10-standard-lib/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2023-02-19T14:26:23+08:00" />
 <meta property="article:modified_time" content="2023-02-19T14:26:23+08:00" />
 
 <meta itemprop="name" content="Go tips-笔记: 标准库 75-81 mistakes">
-<meta itemprop="description" content="引言 从程序中产生的错误中大多是使用姿势的不对，以及没有仔细阅读标准库相关包的开发文档，未查看源码导致，但是没有实践过这些问题，即使熟读文档和"><meta itemprop="datePublished" content="2023-02-19T14:26:23+08:00" />
+<meta itemprop="description" content="引言
+从程序中产生的错误中大多是使用姿势的不对，以及没有仔细阅读标准库相关包的开发文档，未查看源码导致，但是没有实践过这些问题，即使熟读文档和源码也可能避免不了。笔记中会以书中的mistake为切入点，结合源码升入分析其背后产生的原因，以及提出解决方案来避免。"><meta itemprop="datePublished" content="2023-02-19T14:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-02-19T14:26:23+08:00" />
-<meta itemprop="wordCount" content="7871">
+<meta itemprop="wordCount" content="8016">
 <meta itemprop="keywords" content="Golang," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Go tips-笔记: 标准库 75-81 mistakes"/>
-<meta name="twitter:description" content="引言 从程序中产生的错误中大多是使用姿势的不对，以及没有仔细阅读标准库相关包的开发文档，未查看源码导致，但是没有实践过这些问题，即使熟读文档和"/>
+<meta name="twitter:description" content="引言
+从程序中产生的错误中大多是使用姿势的不对，以及没有仔细阅读标准库相关包的开发文档，未查看源码导致，但是没有实践过这些问题，即使熟读文档和源码也可能避免不了。笔记中会以书中的mistake为切入点，结合源码升入分析其背后产生的原因，以及提出解决方案来避免。"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -401,7 +405,7 @@
 <p>首先需要弄清楚操作系统处理两种不同的时钟类型：wall clock(挂钟)和 monotonic clock(单调时钟)。挂钟用于确定一天中的当前时间。此时钟可能会有所变化。例如，如果时钟使用同步网络时间协议 (NTP)，它可以及时向后或向前跳转。不应该使用挂钟测量持续时间，因为可能会遇到奇怪的行为，例如负持续时间(润秒重置的情况)。这就是操作系统提供第二种时钟类型的原因：单调时钟。单调时钟保证时间总是向前移动并且不受时间跳跃的影响。它可能会受到频率调整的影响（例如，如果服务器检测到本地石英钟的移动速度与 NTP 服务器不同），但不会受到时间跳跃的影响。</p>
 <p>以前Go Time包的相关时间读取函数实现仅读取系统挂钟，从不读取单调时钟，从而在时钟重置时导致测量不正确。比如 一个 Go 程序在闰秒期间测量负的经过时间导致<a href="https://blog.cloudflare.com/how-and-why-the-leap-second-affected-cloudflare-dns/">CloudFlare 最近的 DNS 中断</a>. 维基百科<a href="https://en.wikipedia.org/wiki/Leap_second#Examples_of_problems_associated_with_the_leap_second">与闰秒相关的问题示例列表</a>现在包括 CloudFlare 的中断，并将 Go 的时间 API 列为根本原因。除了闰秒问题之外，Go 还扩展到非生产环境中的系统，这些环境中的时钟可能不太好调节，因此时钟重置更频繁。Go 必须优雅地处理时钟重置。Go语言作者Russ Cox提出了提案设计**<a href="https://github.com/golang/proposal/blob/master/design/12914-monotonic.md">Proposal: Monotonic Elapsed Time Measurements in Go</a>**  (golang的开发规范和提案设计文档值得借鉴学习的，背景原因，验证评估影响面，尽量向前兼容，提案通过，再安排开发计划)； 将monotonic clock 单调时钟引入time.Time结构体中，具体CR: <a href="https://go-review.googlesource.com/c/go/+/36255">https://go-review.googlesource.com/c/go/+/36255</a> ， HN也有对应讨论： <a href="https://news.ycombinator.com/item?id=13566110">https://news.ycombinator.com/item?id=13566110</a> ;</p>
 <p>tips： 测量持续时间，使用单调时钟；仅对<strong>本地持续时间测量</strong>有效；两个不同服务器的单调时钟根据定义是不同步的。因此，基于这些时钟测量分布式执行将不准确；这就涉及到分布式时钟同步的问题了。</p>
-<p>ok了解了背景，回归正题，比如对一个结构体有time.Time类型成员，time.Time可能同时包含一个挂钟和一个单调时间，使用time.Now方法返回的时间就包括挂钟读数和单调时钟读数，具体见time包开发文档：https://pkg.go.dev/time#section-documentation; 以及查看源码客观分析：<a href="https://github.com/golang/go/blob/go1.20/src/time/time.go">go1.20/src/time/time.go</a> （Now→time.now→runtime.now in assembly → 如果可以使用vdso 调用 runtime·vdsoClockgettimeSym 减少系统调用提升性能，否则执行系统调用SYSCALL SYS_clock_gettime(228) 指令，见：<strong>l<a href="https://github.com/torvalds/linux/blob/master/arch/x86/entry/syscalls/syscall_64.tbl">inux系统调用指令集</a></strong>）。time.Now返回的Duration值打印如下：</p>
+<p>ok了解了背景，回归正题，比如对一个结构体有time.Time类型成员，time.Time可能同时包含一个挂钟和一个单调时间，使用time.Now方法返回的时间就包括挂钟读数和单调时钟读数，具体见time包开发文档：https://pkg.go.dev/time#section-documentation; 以及查看源码客观分析：<a href="https://github.com/golang/go/blob/go1.20/src/time/time.go">go1.20/src/time/time.go</a> （Now→time.now→runtime.now in assembly → 如果可以使用vdso 调用 runtime·vdsoClockgettimeSym 减少系统调用提升性能，否则执行系统调用SYSCALL SYS_clock_gettime(228) 指令，见：<strong><a href="https://github.com/torvalds/linux/blob/master/arch/x86/entry/syscalls/syscall_64.tbl">linux系统调用指令集</a></strong>）。time.Now返回的Duration值打印如下：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="mi">2023</span><span class="o">-</span><span class="mo">02</span><span class="o">-</span><span class="mi">19</span> <span class="mi">15</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">08.218505</span> <span class="o">+</span><span class="mi">0800</span> <span class="nx">CST</span> <span class="nx">m</span><span class="p">=</span><span class="o">+</span><span class="mf">0.000118444</span>
 <span class="o">------------------------------------</span> <span class="o">--------------</span>
              <span class="nx">Wall</span> <span class="nx">time</span>               <span class="nx">Monotonic</span> <span class="nx">time</span>
@@ -413,7 +417,7 @@
 <p>tips：在设计通用中台和平台项目中的模块时，经常需要将抽象与实现分离，驱动化设计，方便具体领域场景的定制化开发。</p>
 <p>具体查看开发文档：https://pkg.go.dev/database/sql；在使用这个包时看到一些模式或错误也很常见；深入研究五个常见错误case。</p>
 <h3 id="case1-忘记-sqlopen-不一定建立到数据库的连接-工程规范">case1 忘记 sql.Open 不一定建立到数据库的连接 (工程规范)</h3>
-<p>Open 可能只是验证其参数而不创建与数据库的连接。要验证数据源名称是否有效，请调用 Ping。在使用的时候，和数据库进行交互的时候才建立连接。</p>
+<p>Open 可能只是验证其参数而不创建与数据库的连接。要验证数据源名称是否有效，请调用 Ping。在使用的时候，和数据库进行交互的时候才建立连接。比如go-redis <a href="https://github.com/redis/go-redis/issues/2085">issues-2085</a> , 这个issue是因为使用go-redis v8 版本 通过ping请求访问 7.0 redis redis-cluster， v8版本还不支持新的协议返回的数据导致，需要升级使用go-redis v9版本来支持，所以使用ping功能即可以测试生成有效连接，而且可以验证客户端和服务端协议的一致性。</p>
 <h3 id="case2-忘记使用连接池-工程规范">case2 忘记使用连接池 (工程规范)</h3>
 <p>应为数据库是底层存储数据资源，如果不限制使用有限的底层数据库连接资源，会增加底层数据库服务的负载；需要设置连接池，进行连接复用，以及结合数据库服务能力限制设置最大连接数，具体参数：</p>
 <ul>
@@ -509,7 +513,6 @@
 <li><code>return</code>为避免 HTTP 处理程序实现中的意外行为，如果您希望处理程序在 之后停止，请确保您没有错过该语句<code>http.Error</code>。</li>
 <li>对于生产级应用程序，不要使用默认的 HTTP 客户端和服务器实现。这些实现缺少在生产中应该强制执行的超时和行为。</li>
 </ul>
-
     </div>
 
     
