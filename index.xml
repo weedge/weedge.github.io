@@ -74,10 +74,10 @@
 &lt;p&gt;简而言之，当了解系统的设计用途时，无论是 F1 赛车、飞机还是计算机，都可以与设计保持一致以获得最佳性能。对 CPU 缓存工作方式的机械同情可以帮助优化 Go 应用程序。&lt;/p&gt;
 &lt;h3 id=&#34;cpu架构-cpu-architecture&#34;&gt;CPU架构 CPU architecture&lt;/h3&gt;
 &lt;p&gt;&lt;img src=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F01_Harsanyi.png&#34; alt=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F01_Harsanyi.png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;上图为简单的Intel Core i5-7300u cpu架构图；https://en.wikichip.org/wiki/intel/core_i5/i5-7300u&lt;/p&gt;
+&lt;p&gt;上图为简单的Intel Core i5-7300u cpu架构图；&lt;a href=&#34;https://en.wikichip.org/wiki/intel/core_i5/i5-7300u&#34;&gt;https://en.wikichip.org/wiki/intel/core_i5/i5-7300u&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;每个物理核心（Core0和Core1）被分成两个逻辑核心Hyper-Threading（T0和T1）。&lt;/p&gt;
 &lt;p&gt;L1 缓存分为两个子缓存：用于数据的 L1D 和用于指令的 L1I（每个 32 KB）。当 CPU 执行应用程序时，缓存不仅仅与数据相关，它还可以缓存一些指令，L2, L3其原理相同：加快整体执行速度。&lt;/p&gt;
-&lt;p&gt;内存位置离逻辑核心越近，访问速度越快（参见http://mng.bz/o29v）：&lt;/p&gt;
+&lt;p&gt;内存位置离逻辑核心越近，访问速度越快（参见&lt;a href=&#34;http://mng.bz/o29v&#34;&gt;http://mng.bz/o29v&lt;/a&gt;）：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;L1：约1ns&lt;/li&gt;
 &lt;li&gt;L2：比L1慢约4倍&lt;/li&gt;
@@ -85,10 +85,14 @@
 &lt;/ul&gt;
 &lt;p&gt;CPU 缓存的物理位置也可以解释这些差异。L1 和 L2 是称为&lt;em&gt;on-die(片上)&lt;/em&gt;，这意味着它们与处理器的其余部分属于同一块硅片。相反，L3 是&lt;em&gt;off-die(片外)。&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;对于主存储器（RAM），平均访问速度比 L1 慢 50 到 100 倍。可以访问存储在 L1 上的多达 100 个变量，只需访问一次主内存的价格。因此，作为 Go 开发人员，改进的一种途径是确保应用程序使用 CPU 缓存。进一不了解可以查看以下视频：&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=vgPFzblBh7w&amp;amp;list=PL8t1FdN2Tj3ZVAzTY-FvsS0qy-mEfRdoj&amp;amp;index=6&#34;&gt;https://www.youtube.com/watch?v=vgPFzblBh7w&amp;amp;list=PL8t1FdN2Tj3ZVAzTY-FvsS0qy-mEfRdoj&amp;amp;index=6&lt;/a&gt;&lt;/p&gt;
+
+&lt;div style=&#34;position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;&#34;&gt;
+  &lt;iframe src=&#34;https://www.youtube.com/embed/vgPFzblBh7w&#34; style=&#34;position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;&#34; allowfullscreen title=&#34;YouTube Video&#34;&gt;&lt;/iframe&gt;
+&lt;/div&gt;
+
 &lt;h3 id=&#34;缓存行-cache-line&#34;&gt;缓存行 Cache Line&lt;/h3&gt;
 &lt;p&gt;缓存行的概念对于理解至关重要。但在介绍它们是什么之前，了解为什么需要它们。&lt;/p&gt;
-&lt;p&gt;当访问特定的内存位置时（例如，通过读取变量），在不久的将来可能会发生以下情况之一：&lt;/p&gt;
+&lt;p&gt;当访问特定的内存位置时(例如 通过读取变量)，在不久的将来可能会发生以下情况之一：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;将再次引用相同的位置；时间局部性。&lt;/li&gt;
 &lt;li&gt;附近的内存位置将被引用；空间局部性。&lt;/li&gt;
@@ -113,9 +117,9 @@
 &lt;h3 id=&#34;可预测性-predictability&#34;&gt;可预测性 Predictability&lt;/h3&gt;
 &lt;p&gt;要理解这一点，必须了解跨步striding的概念。跨步与 CPU 如何处理数据有关。共有三种不同类型的步幅(stride)&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;*单位步幅Unit stride：*全部想要访问的值是连续分配的：例如，切片[]int64元素。这个步幅对于 CPU 来说是可预测的并且是最有效的，因为它需要最少数量的缓存行来遍历元素。&lt;/li&gt;
-&lt;li&gt;*恒定步幅Constant stride：*对于 CPU 来说仍然是可预测的：例如，一个切片每两个元素迭代一次。此步幅需要更多缓存行来遍历数据，因此它的效率低于单位步幅。&lt;/li&gt;
-&lt;li&gt;*非单位步幅Non-unit stride：*CPU 无法预测的跨步：例如，链表或指针切片。因为 CPU 不知道数据是否连续分配，所以它不会获取任何缓存行。&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;单位步幅Unit stride&lt;/em&gt;：全部想要访问的值是连续分配的：例如，切片[]int64元素。这个步幅对于 CPU 来说是可预测的并且是最有效的，因为它需要最少数量的缓存行来遍历元素。&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;恒定步幅Constant stride&lt;/em&gt;：对于 CPU 来说仍然是可预测的：例如，一个切片每两个元素迭代一次。此步幅需要更多缓存行来遍历数据，因此它的效率低于单位步幅。&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;非单位步幅Non-unit stride&lt;/em&gt; ：CPU 无法预测的跨步：例如，链表或指针切片。因为 CPU 不知道数据是否连续分配，所以它不会获取任何缓存行。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;&lt;img src=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F06_Harsanyi.png&#34; alt=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F06_Harsanyi.png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;由于不同的步幅和相似的空间局部性，迭代链表比值的切片要慢得多。由于更好的空间局部性，通常应该支持单位步幅而不是恒定步幅。但是当CPU 都无法预测非单位步长，无论数据如何分配，都会有性能上的影响。&lt;/p&gt;
@@ -203,7 +207,7 @@
 &lt;p&gt;当 Go 进入一个函数时，会创建一个栈帧，代表内存中只有当前函数才能访问的一个区间。&lt;/p&gt;
 &lt;p&gt;通过一个简单示例来介绍stack的指令执行过程&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F27_Harsanyi.png&#34; alt=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F27_Harsanyi.png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;为了简化，图中stack没有使用汇编指令来表明，执行了&lt;code&gt;main&lt;/code&gt;，所以为这个函数创建了一个栈帧，&lt;code&gt;a&lt;/code&gt;和&lt;code&gt;b&lt;/code&gt;都分配在栈上，valid为有效地址，invalid为无效地址。栈从高地址往地址空间增长，其中基准指针寄存器BP 来维护栈基地址 ，栈指针寄存器SP **&lt;strong&gt;指向栈顶地址，； 至于汇编相关的细节见官方文档查阅解释：&lt;a href=&#34;https://go.dev/doc/asm&#34;&gt;**&lt;/a&gt;&lt;a href=&#34;https://go.dev/doc/asm&#34;&gt;https://go.dev/doc/asm&lt;/a&gt;&lt;/strong&gt;。查看命令如下：&lt;/p&gt;
+&lt;p&gt;为了简化，图中stack没有使用汇编指令来表明，执行了&lt;code&gt;main&lt;/code&gt;，所以为这个函数创建了一个栈帧，&lt;code&gt;a&lt;/code&gt;和&lt;code&gt;b&lt;/code&gt;都分配在栈上，valid为有效地址，invalid为无效地址。栈从高地址往地址空间增长，其中基准指针寄存器BP 来维护栈基地址 ，栈指针寄存器SP 指向栈顶地址； 至于汇编相关的细节见官方文档查阅解释：&lt;strong&gt;&lt;a href=&#34;https://go.dev/doc/asm&#34;&gt;https://go.dev/doc/asm&lt;/a&gt;&lt;/strong&gt;。查看命令如下：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;GOOS=linux GOARCH=amd64 go tool compile -S -L -N -l -m 12-optimizations/95-stack-heap/main.go | less
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F28_Harsanyi.png&#34; alt=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F28_Harsanyi.png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;调用&lt;code&gt;sumValue&lt;/code&gt;创建一个新的栈帧。x,y为值传递分别赋值，x+y后(简单起见，操作指令未给出)，z赋值; 先前的栈帧&lt;code&gt;(main)&lt;/code&gt;包含仍被视为有效的地址，但无法访问a和b对其操作，如果是指针传递则可以获取地址对其操作。&lt;/p&gt;
@@ -226,8 +230,7 @@
 &lt;p&gt;由于Go中的用户栈空间是自动扩缩容的，需要注意每个协程goroutine栈扩容对内存空间的影响，特别是在长连接的场景，单机连接数在100w级别的时候，尽量保持每个goroutine 处理函数的逻辑在2kb内(功能职责分离)，防止栈扩容，导致内存指数级暴涨。&lt;/p&gt;
 &lt;p&gt;栈扩容了，长时间没有运行，为了提高内存利用率，在GC触发的时候，计算当前栈使用的空间，小于栈空间的1/4，会触发栈缩容操作到原来的1/2，最小到2kb，不会再缩容；但在缩容过程中会存在栈拷贝和写屏障(write barrier)，对于一些准实时应用可能会存在一些影响。 好在go提供了可设置的参数，可以通过设置环境变量 GODEBUG=gcshrinkstackoff=1 来关闭栈缩容。关闭栈缩容后， 需要承担栈持续增长的风险，在关闭前需要慎重考虑。&lt;/p&gt;
 &lt;h3 id=&#34;逃逸分析-重要&#34;&gt;逃逸分析 (重要)&lt;/h3&gt;
-&lt;p&gt;**&lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/cmd/compile/internal/escape/escape.go&#34;&gt;逃逸分析（escape analysis）&lt;/a&gt;**就是在程序编译阶段根据程序代码中的数据流，对代码中哪些变量需要在栈上分配，哪些变量需要在堆上分配进行静态分析的方法&lt;/p&gt;
-&lt;p&gt;Go 语言的逃逸分析遵循以下两个不变性：&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/cmd/compile/internal/escape/escape.go&#34;&gt;逃逸分析(escape analysis)&lt;/a&gt; 在程序编译阶段根据程序代码中的数据变量，对代码中哪些变量需要在栈上分配，哪些变量需要在堆上分配进行静态分析的方法；Go 语言的逃逸分析遵循以下两个不变性：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;指向栈对象的指针不能存储在堆中（pointers to stack objects cannot be stored in the heap）；&lt;/li&gt;
 &lt;li&gt;指向栈对象的指针不能超过该栈对象的存活期（pointers to a stack object cannot outlive that object）。&lt;/li&gt;
@@ -359,8 +362,8 @@
 	&lt;span class=&#34;nx&#34;&gt;private&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;any&lt;/span&gt;       &lt;span class=&#34;c1&#34;&gt;// Can be used only by the respective P.
 &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;	&lt;span class=&#34;nx&#34;&gt;shared&lt;/span&gt;  &lt;span class=&#34;nx&#34;&gt;poolChain&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// Local P can pushHead/popHead; any P can popTail.
 &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;private:  仅被本地P使用，互斥 Put/Get&lt;/p&gt;
-&lt;p&gt;shared poolChain(lock-free queue)： 一个本地的 P 作为生产者（Producer）pushHead/popHead (Put/Get)，多个 P 作为消费者（Consumer）popTail (Get)&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;private: 仅被本地P使用，互斥 Put/Get&lt;/p&gt;
+&lt;p&gt;shared: poolChain(lock-free queue)： 一个本地的 P 作为生产者（Producer）pushHead/popHead (Put/Get)，多个 P 作为消费者（Consumer）popTail (Get)&lt;/p&gt;
 &lt;p&gt;具体见源码分析：&lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/sync/pool.go&#34;&gt;go1.20/src/sync/pool.go&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;在频繁读写IO场景下，sync.Pool  常用作 buffer pool（缓冲池）来提升读写性能。类似这种封装：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;bufferPool&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;sync&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Pool&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
@@ -458,7 +461,7 @@ go tool pprof -http&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;cpu分析&#34;&gt;CPU分析&lt;/h3&gt;
 &lt;p&gt;CPU 分析器依赖于操作系统和信号。当它被激活时，应用程序默认要求操作系统每 10 毫秒中断一次，通过一个&lt;code&gt;SIGPROF&lt;/code&gt;信号。当应用程序收到一个 时&lt;code&gt;SIGPROF&lt;/code&gt;，它会暂停当前活动并将执行转移到探查器。探查器收集诸如当前 goroutine 活动之类的数据，并汇总可以检索的执行统计信息。然后它停止，并继续执行直到下一个&lt;code&gt;SIGPROF&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;可以访问 /debug/pprof/profile 端点来激活 CPU 分析。默认情况下，访问此端点会执行 30 秒的 CPU 分析。在 30 秒内，应用程序每 10 毫秒中断一次。请注意，可以更改这两个默认值：可以使用参数&lt;code&gt;seconds&lt;/code&gt;将分析应该持续多长时间传递给端点（例如，/debug/pprof/profile?seconds=15），可以更改中断率（甚至小于 10 毫秒）。但在大多数情况下，10 毫秒应该足够了，在减小这个值（意味着增加速率）时，应该注意不要损害性能。30 秒后，下载 CPU 分析器的结果。&lt;/p&gt;
-&lt;p&gt;可以为不同的函数附加标签。例如，想象一个从不同客户端调用的通用函数。要跟踪两个客户花费的时间，可以使用&lt;code&gt;pprof.Labels&lt;/code&gt;.Go 1.9 开始引入 &lt;strong&gt;&lt;a href=&#34;https://github.com/golang/proposal/blob/master/design/17280-profile-labels.md&#34;&gt;profiler labels&lt;/a&gt;，&lt;/strong&gt; 对于特殊调优性能，比如某个算法模型，或者线上特殊场景触发的性能问题，在这些特殊逻辑段，单独打上一个tag label 进行profiling的收集，通过pprof 工具分析，可以通过tag相关命令来过滤出样本数据分析。使用**&lt;a href=&#34;http://godoc.org/github.com/rakyll/goutil/pprofutil&#34;&gt;pprofutil&lt;/a&gt;**包自动将 HTTP 路径标签添加到处理程序。&lt;/p&gt;
+&lt;p&gt;可以为不同的函数附加标签。例如，想象一个从不同客户端调用的通用函数。要跟踪两个客户花费的时间，可以使用&lt;code&gt;pprof.Labels&lt;/code&gt;.Go 1.9 开始引入 &lt;strong&gt;&lt;a href=&#34;https://github.com/golang/proposal/blob/master/design/17280-profile-labels.md&#34;&gt;profiler labels&lt;/a&gt;，&lt;/strong&gt; 对于特殊调优性能，比如某个算法模型，或者线上特殊场景触发的性能问题，在这些特殊逻辑段，单独打上一个tag label 进行profiling的收集，通过pprof 工具分析，可以通过tag相关命令来过滤出样本数据分析。使用 &lt;strong&gt;&lt;a href=&#34;http://godoc.org/github.com/rakyll/goutil/pprofutil&#34;&gt;pprofutil&lt;/a&gt;&lt;/strong&gt; 包自动将 HTTP 路径标签添加到处理程序。&lt;/p&gt;
 &lt;h3 id=&#34;heap堆分析&#34;&gt;Heap堆分析&lt;/h3&gt;
 &lt;p&gt;堆分析可以获得有关当前堆使用情况的统计信息。与 CPU 分析一样，堆分析也是基于样本的。可以更改此速率，但不应该过于细化，因为降低速率越多，堆分析收集数据所需的工作就越多。默认情况下，样本在每 512 KB 堆分配的一次分配中进行分析。&lt;/p&gt;
 &lt;p&gt;堆分析还可以查看不同的样本类型：&lt;/p&gt;
