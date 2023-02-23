@@ -1236,7 +1236,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
         <description>&lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
 &lt;h2 id=&#34;48panic&#34;&gt;48.panic&lt;/h2&gt;
 &lt;p&gt;Go 新手对错误处理感到困惑是很常见的。在 Go 中，错误通常由返回的函数或方法管理类型&lt;code&gt;error&lt;/code&gt;作为最后一个参数（这个是代码风格，error可以作为第一个参数）；先了解下panic调用时的情况：&lt;/p&gt;
-&lt;p&gt;一旦&lt;code&gt;panic&lt;/code&gt;被调用，它就会停止当前函数的执行并向上调用堆栈，直到当前 goroutine 返回或被&lt;code&gt;panic&lt;/code&gt;捕获&lt;code&gt;recover&lt;/code&gt;，用&lt;code&gt;recover()&lt;/code&gt;以捕获 当前goroutine panic ，在内部有用一个&lt;code&gt;defer&lt;/code&gt;函数来执行；否则，该函数将返回&lt;code&gt;nil&lt;/code&gt;并且没有其他效果。这是因为&lt;code&gt;defer&lt;/code&gt;当周围的函数发生恐慌时，函数也会被执行。&lt;/p&gt;
+&lt;p&gt;一旦&lt;code&gt;panic&lt;/code&gt;被调用，它就会停止当前函数的执行并向上调用栈，直到当前 goroutine 出栈返回或被&lt;code&gt;recover&lt;/code&gt;捕获；值得注意点是当前协程函数中panic了，如果有defer函数还是会执行，所以一般使用defer func(){recover()} 的形式来防止协程panic,  而且只能recover住当前协程panic, 这是因为当前协程未使用recover时已经出栈返回，函数栈帧已经无效了，调用者是没法recover的。&lt;/p&gt;
 &lt;p&gt;panic一般使用在程序启动时，一个依赖项未能初始化它时，可以使用，但是一般的做法是打印fatal日志退出；在服务启动之后，不能panic，一般记录错误日志，并且在服务运行过程中，需要对当前协程 panic recover住，以防常见的空指针访问数据，服务down掉的情况。&lt;/p&gt;
 &lt;h2 id=&#34;49忽略何时error-wrap&#34;&gt;49.忽略何时error wrap&lt;/h2&gt;
 &lt;p&gt;在处理错误时，需要向错误添加额外的上下文和/或将错误标记为特定类型。分为三种error情况进行使用：&lt;/p&gt;
