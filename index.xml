@@ -920,11 +920,11 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;生产环境中，使用tcp连接资源都是需要根据调用 资源服务放的系统负载吞吐能力来配置的。也是需要配置化。&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;如果在没有读取的情况下也没有关闭Body，会发送协程泄露，同时tcp连接也不会复用,本质上是连接资源未释放至连接池中，存在连接泄露。&lt;/li&gt;
+&lt;li&gt;如果在没有读取的情况下也没有关闭Body，会发生协程泄露，同时tcp连接也不会复用,本质上是连接资源未释放至连接池中，存在连接泄露。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;还需要记住的重要事情是，如开发文档net/http中提到的，当关闭 Response Body时，是否复用连接，这取决于是否从中读取完body中的值：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;如果在没有读取的情况下关闭Body，虽然不会发送协程泄露，但是默认的 HTTP 传输可能会关闭连接。&lt;/li&gt;
+&lt;li&gt;如果在没有读取的情况下关闭Body，虽然不会发生协程泄露，但是默认的 HTTP 传输可能会关闭连接。&lt;/li&gt;
 &lt;li&gt;如果在读取后关闭Body，默认的 HTTP 传输不会关闭连接；因此，它可以重复使用。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;所以不管如何，最好的方式是都应该关闭Response Body,  尽管Body没有数据，或者已经读取完了，都应该关闭。&lt;/p&gt;
