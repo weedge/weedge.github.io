@@ -1641,7 +1641,7 @@ go vet --vettool&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;
 &lt;p&gt;any(interface{})如果确实需要接受或返回任何可能的类型（例如，当涉及到marshaling or formatting时），它会很有帮助。一般来说，应该不惜一切代价避免过度概括编写的代码。如果能提高其他方面（例如代码表达能力），也许一点点重复代码偶尔会更好。&lt;/p&gt;
 &lt;h2 id=&#34;9对何时使用泛型感到困惑&#34;&gt;9.对何时使用泛型感到困惑&lt;/h2&gt;
 &lt;p&gt;尽管泛型在特定情况下会有所帮助，但是应该谨慎选择何时使用它们以及何时不使用它们。一般来说，如果要回答何时不使用泛型，可以找到与何时不使用接口的相似之处。事实上，泛型引入了一种抽象形式，必须记住，不必要的抽象会带来复杂性。&lt;/p&gt;
-&lt;p&gt;同样，不要用不必要的抽象污染代码，专注于解决具体问题。这意味着不应该过早地使用类型参数。等到即将编写样板代码时再考虑使用泛型。而且泛型现在还存在一些性能上的问题，可以参考： &lt;a href=&#34;https://planetscale.com/blog/generics-can-make-your-go-code-slower&#34;&gt;https://planetscale.com/blog/generics-can-make-your-go-code-slower&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;同样，不要用不必要的抽象污染代码，专注于解决具体问题。这意味着不应该过早地使用类型参数。等到即将编写样板代码时再考虑使用泛型。而且泛型现在还存在一些性能上的问题，可以参考： &lt;a href=&#34;https://planetscale.com/blog/generics-can-make-your-go-code-slower&#34;&gt;&lt;strong&gt;&lt;!-- raw HTML omitted --&gt;Generics can make your Go code slower&lt;!-- raw HTML omitted --&gt;&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&#34;10没有意识到类型嵌入可能存在的问题&#34;&gt;10.没有意识到类型嵌入可能存在的问题&lt;/h2&gt;
 &lt;p&gt;想要封装在结构中并使外部客户端不可见的东西，在这种情况下不应该将其设为嵌入字段；&lt;/p&gt;
 &lt;p&gt;如果决定使用类型嵌入，需要牢记两个主要约束：&lt;/p&gt;
