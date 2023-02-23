@@ -540,7 +540,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v -bench&lt;span class=&#34
 &lt;p&gt;Mark setup (func Stack scan) → Make (concurrent make and assist make, make  termination) → concurrent Sweep ； 其中 开始Mark setup的时候会有非常短暂的STW(平均每 10 到 30 微秒),  标记终止(make  termination) 也会有STW, 进行收尾工作时间稍长，可以简单认为，STW发生在mark的开始和结束(开始时找到扫描开始的初始位置，开启写屏障；结束时关闭写屏障，进行收尾)&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;p&gt;Mark 标记阶段：遍历堆的所有对象，采用&lt;strong&gt;三色标记算法&lt;/strong&gt;(Go 1.5引入)，标记是否还在使用。&lt;/p&gt;
+&lt;p&gt;Mark 标记阶段：遍历堆的所有对象，采用&lt;a href=&#34;https://github.com/rubinius/rubinius-website-archive/blob/cf54187d421275eec7d2db0abd5d4c059755b577/_posts/2013-06-22-concurrent-garbage-collection.markdown&#34;&gt;**三色标记算法 **&lt;/a&gt;(Go 1.5引入)，标记是否还在使用。&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;mark setup:  即mark开始前的准备工作，找到goroutine中函数栈帧中的扫描位置， 打开写屏障(write barrier，前面已经介绍过)，允许在垃圾回收期间在堆上保持数据完整性，因为回收器和应用程序的 goroutine 将同时运行。要打开写保护，必须停止运行的每个应用程序 goroutine，产生STW,通常非常快，平均每 10 到 30 微秒；但是有特殊情况，紧密循环比如一个死循环或者循环时间长，没有调用函数触发，进而可能导致垃圾回收无法开始；&lt;/li&gt;
 &lt;li&gt;concurrent mark: 在开启写保护器后，开始并发标记阶段。首先，回收器为其自身保留了 25% 可用 CPU 容量 。使用 Goroutine 执行回收工作，并需要应用程序 Goroutine 使用的相同的 P 和 M。开始标记堆内存中仍在使用的值。该工作首先通过检查所有现有 Goroutine 的栈帧以找到指向堆内存的根指针。然后从这些根指针遍历对象图 进行标记。&lt;/li&gt;
@@ -609,7 +609,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v -bench&lt;span class=&#34
 &lt;p&gt;例如，平均延迟为 50 毫秒的服务最多可能需要 150 毫秒才能完成。这可能是延迟的 300% 惩罚。&lt;/p&gt;
 &lt;p&gt;首先，请关注 Go &lt;a href=&#34;https://github.com/golang/go/issues/33803&#34;&gt;issue 33803&lt;/a&gt;。也许在 Go 的未来版本中，GOMAXPROCS将支持 CFS。&lt;/p&gt;
 &lt;p&gt;今天的解决方案是依赖于由优步调用automaxprocs（&lt;a href=&#34;http://github.com/uber-go/automaxprocs&#34;&gt;github.com/uber-go/automaxprocs&lt;/a&gt;）。可以通过&lt;a href=&#34;http://xn--go-hf3c1a925dgwxre7e7sa.uber.org/automaxprocs%E5%9C%A8&#34;&gt;go.uber.org/automaxprocs&lt;/a&gt; 在main.go 中添加一个空白导入来使用这个库；它会自动设置GOMAXPROCS以匹配 Linux 容器 CPU 配额。在前面的示例中，GOMAXPROCS将设置为4而不是8，因此将无法达到 CPU 被节流的状态。&lt;/p&gt;
-&lt;p&gt;目前Go 不支持 CFS。GOMAXPROCS基于主机而不是定义的 CPU 限制。因此，我们可能会达到 CPU 被节流的状态，从而导致长时间的暂停和显着的延迟增加等实质性影响。在 Go 变得支持 CFS 之前，一种解决方案是依靠automaxprocs自动设置GOMAXPROCS为定义的配额。&lt;/p&gt;
+&lt;p&gt;目前Go 不支持 CFS。GOMAXPROCS基于主机而不是定义的 CPU 限制。因此，可能会达到 CPU 被节流的状态，从而导致长时间的暂停和显着的延迟增加等实质性影响。在 Go 变得支持 CFS 之前，一种解决方案是依靠automaxprocs自动设置GOMAXPROCS为定义的配额。&lt;/p&gt;
 &lt;h2 id=&#34;概括&#34;&gt;概括&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;了解如何使用 CPU 缓存对于优化受 CPU 限制的应用程序很重要，因为 L1 缓存比主内存快大约 50 到 100 倍。&lt;/li&gt;
@@ -628,7 +628,8 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v -bench&lt;span class=&#34
 &lt;/ul&gt;
 &lt;h1 id=&#34;总结&#34;&gt;总结&lt;/h1&gt;
 &lt;p&gt;总共花了10天左右把 100-go-mistakes-and-how-to-avoid-them 这本书看完，对于一些文中不够升入的地方，进行挖掘了下，了解弄清楚了背后的原理，知其然知其所以然之后，有些mistake是一些共性的问题，而且对于文中每个mistake，都应去实践操作一下，熟悉利用好Go相关工具，编译，测试，构建等等，文中大部分是语言层面的，工程方面也有些，特别像最后介绍的在K8S docker中CPU对Go语言本身的影响，实际遇到之后才会印象更深，应该从错误中去总结，而不是总结之后继续犯错，如此折返，意义不大；还是从错误点中多挖掘底层逻辑多思考多总结，后续在补充错误总结。&lt;/p&gt;
-&lt;p&gt;书的地址： &lt;a href=&#34;https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/&#34;&gt;https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;书的地址： &lt;a href=&#34;https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/&#34;&gt;https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;代码地址：https://github.com/teivah/100-go-mistakes 可以回顾下review&lt;/p&gt;</description>
       
     </item>
     
