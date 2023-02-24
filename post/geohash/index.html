@@ -393,7 +393,7 @@
 <li>接下来组码，将经度和纬度的编码合并，奇数位是纬度，偶数位是经度，得到二进制编码；</li>
 <li>最后使用base32（0-9、b-z，去掉a,i,l,o，比较常用）或者base36编码(base36的版本对大小写敏感，用了36个字符，“23456789bBCdDFgGhHjJKlLMnNPqQrRtTVWX”)；这里采用base32方式进行操作，首先将组合好的二进制码转成对应的十进制（二进制每5位表示一个base32字符）；十进制对应base32编码表如下：</li>
 </ol>
-<p><img src="https://raw.githubusercontent.com/weedge/weedge.github.io/master/image/base32.png" alt="base32"></p>
+<p><img src="https://raw.githubusercontent.com/weedge/weedge.github.io/3368e1e7132b25ac24459dd137ac57e7a3c0fe2e/image/base32.png" alt="base32"></p>
 <p>例如：将坐标 (39.97696,116.3764874)（latitude, longitude）编码成长度为12的字符串(base32编码) wx4g2jwf8tqx</p>
 <p>精度表：</p>
 <table>

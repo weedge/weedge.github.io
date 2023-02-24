@@ -550,7 +550,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v -bench&lt;span class=&#34
 &lt;/ul&gt;
 &lt;p&gt;ps: 整体思想可以借鉴&lt;/p&gt;
 &lt;p&gt;整体GC算法如下：from：&lt;a href=&#34;https://go.dev/talks/2015/go-gc.pdf&#34;&gt;https://go.dev/talks/2015/go-gc.pdf&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/2015-go-gc.png?&#34; alt=&#34;https://raw.githubusercontent.com/weedge/mypic/master/2015-go-gc.png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/2015-go-gc.png?raw=true&#34; alt=&#34;https://raw.githubusercontent.com/weedge/mypic/master/2015-go-gc.png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Go GC 还包括一种在消耗高峰后释放内存的方法。假设应用程序基于两个阶段：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;导致频繁分配大的堆空间的初始化阶段&lt;/li&gt;
