@@ -496,10 +496,10 @@ go tool pprof -http&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#
 &lt;li&gt;互斥锁争用&lt;/li&gt;
 &lt;li&gt;网络或文件系统等待&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;块分析还记录了 goroutine 等待的时间，可以通过 debug/pprof/block 访问。如果怀疑性能因阻止调用而受到损害，此配置文件可能会非常有用。&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;block&lt;/code&gt;默认情况下不启用配置文件：必须调用才能&lt;code&gt;runtime.SetBlockProfileRate&lt;/code&gt;启用它。此函数控制报告的 goroutine 阻塞事件的比例。一旦启用，分析器将继续在后台收集数据，即使不调用 debug/pprof/block 端点。如果想设置一个高速率，那么要小心，以免损害性能。&lt;/p&gt;
+&lt;p&gt;Block分析还记录了 goroutine 等待的时间，可以通过 debug/pprof/block 访问。如果怀疑性能因阻止调用而受到损害，此采样分析文件可能会非常有用。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;block&lt;/code&gt;默认情况下不启用采样分析文件：必须调用才能&lt;code&gt;runtime.SetBlockProfileRate&lt;/code&gt;启用它。此函数控制报告的 goroutine 阻塞事件的比例。一旦启用，分析器将继续在后台收集数据，即使不调用 debug/pprof/block 。如果想设置一个高速率，那么要小心，以免损害性能。&lt;/p&gt;
 &lt;h4 id=&#34;完整的-goroutine-栈dump&#34;&gt;完整的 goroutine 栈dump&lt;/h4&gt;
-&lt;p&gt;如果遇到死锁或怀疑 goroutines 处于阻塞状态，则完整的 goroutine 栈dump (debug/pprof/goroutine/?debug=2) 会创建所有当前 goroutine 堆栈跟踪的dump数据。这有助于作为第一个分析步骤&lt;/p&gt;
+&lt;p&gt;如果遇到死锁或怀疑 goroutines 处于阻塞状态，则完整的 goroutine 栈dump (debug/pprof/goroutine/?debug=2) 会创建所有当前 goroutine 堆栈跟踪的dump数据。这有助于作为分析首次步骤&lt;/p&gt;
 &lt;h4 id=&#34;mutex分析&#34;&gt;Mutex分析&lt;/h4&gt;
 &lt;p&gt;如果怀疑应用程序花费大量时间等待锁定互斥量，从而损害执行，可以使用mutex分析。&lt;/p&gt;
 &lt;p&gt;在生产环境建议启用&lt;code&gt;pprof&lt;/code&gt;，在发现性能问题，延时，负载，内存空间上涨等问题，可以采集对应现场信息进行分析，对于cpu的采集会导致性能下降，但仅在启用它们期间才会发生。&lt;/p&gt;
@@ -624,7 +624,8 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v -bench&lt;span class=&#34
 &lt;/ul&gt;
 &lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
 &lt;p&gt;总共花了10天左右把 100-go-mistakes-and-how-to-avoid-them 这本书看完，对于一些文中不够升入的地方，进行挖掘了下，了解弄清楚了背后的原理，知其然知其所以然之后，有些mistake是一些共性的问题，而且对于文中每个mistake，都应去实践操作一下，熟悉利用好Go相关工具，编译，测试，构建等等，文中大部分是语言层面的，工程方面也有些，特别像最后介绍的在K8S docker中CPU对Go语言本身的影响，实际遇到之后才会印象更深，应该从错误中去总结，而不是总结之后继续犯错，如此折返，意义不大；从错误点中多挖掘底层逻辑多思考总结。&lt;/p&gt;
-&lt;p&gt;原书地址： &lt;a href=&#34;https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/&#34;&gt;https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;原书地址： &lt;a href=&#34;https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/&#34;&gt;https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;TIPS： 文中对于channel 介绍的比较少，比如channel 在生产(发送)和消费(接受)之间，1:1,1:N,M:1,M:N场景下如何关闭; 还有GPM的调度模型的介绍，以及内存分配器 没有涉及到，可参考这些资料扩展： &lt;a href=&#34;https://go101.org/article/channel-closing.html&#34;&gt;channel-closing&lt;/a&gt; , &lt;a href=&#34;https://www.google.com.hk/search?q=kavya%20golang#fpstate=ive&amp;amp;vld=cid:089b5108,vid:KBZlN0izeiY&#34;&gt;Understanding Channels&lt;/a&gt; , &lt;a href=&#34;https://medium.com/@ankur_anand/a-visual-guide-to-golang-memory-allocator-from-ground-up-e132258453ed&#34;&gt;Go Memory Allocator&lt;/a&gt; ，&lt;a href=&#34;https://www.ardanlabs.com/blog/2018/08/scheduling-in-go-part2.html&#34;&gt;scheduling-in-go&lt;/a&gt;&lt;/p&gt;</description>
       
     </item>
     
