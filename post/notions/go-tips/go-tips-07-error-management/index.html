@@ -322,13 +322,18 @@
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#48panic">48.panic</a></li>
-    <li><a href="#49忽略何时error-wrap">49.忽略何时error wrap</a></li>
-    <li><a href="#50不准确地检查error类型-重要">50.不准确地检查error类型 (重要)</a></li>
-    <li><a href="#51检查error值不准确-重要">51.检查error值不准确 （重要）</a></li>
-    <li><a href="#52处理error两次">52.处理error两次</a></li>
-    <li><a href="#53不处理错误-工程规范">53.不处理错误 (工程规范）</a></li>
-    <li><a href="#54不处理延迟错误">54.不处理延迟错误</a></li>
+    <li><a href="#笔记">笔记</a>
+      <ul>
+        <li><a href="#48panic">48.panic</a></li>
+        <li><a href="#49忽略何时error-wrap">49.忽略何时error wrap</a></li>
+        <li><a href="#50不准确地检查error类型-重要">50.不准确地检查error类型 (重要)</a></li>
+        <li><a href="#51检查error值不准确-重要">51.检查error值不准确 （重要）</a></li>
+        <li><a href="#52处理error两次">52.处理error两次</a></li>
+        <li><a href="#53不处理错误-工程规范">53.不处理错误 (工程规范）</a></li>
+        <li><a href="#54不处理延迟错误">54.不处理延迟错误</a></li>
+      </ul>
+    </li>
+    <li><a href="#概括">概括</a></li>
   </ul>
 </nav>
   </div>
@@ -336,29 +341,29 @@
 
     
     <div class="post-content">
-      <h1 id="笔记">笔记</h1>
-<h2 id="48panic">48.panic</h2>
+      <h2 id="笔记">笔记</h2>
+<h3 id="48panic">48.panic</h3>
 <p>Go 新手对错误处理感到困惑是很常见的。在 Go 中，错误通常由返回的函数或方法管理类型<code>error</code>作为最后一个参数（这个是代码风格，error可以作为第一个参数）；先了解下panic调用时的情况：</p>
 <p>一旦<code>panic</code>被调用，它就会停止当前函数的执行并向上调用栈，直到当前 goroutine 出栈返回或被<code>recover</code>捕获；值得注意点是当前协程函数中panic了，如果有defer函数还是会执行，所以一般使用defer func(){recover()} 的形式来防止协程panic,  而且只能recover住当前协程panic, 这是因为当前协程未使用recover时已经出栈返回，函数栈帧已经无效了，调用者是没法recover的。</p>
 <p>panic一般使用在程序启动时，一个依赖项未能初始化它时，可以使用，但是一般的做法是打印fatal日志退出；在服务启动之后，不能panic，一般记录错误日志，并且在服务运行过程中，需要对当前协程 panic recover住，以防常见的空指针访问数据，服务down掉的情况。</p>
-<h2 id="49忽略何时error-wrap">49.忽略何时error wrap</h2>
+<h3 id="49忽略何时error-wrap">49.忽略何时error wrap</h3>
 <p>在处理错误时，需要向错误添加额外的上下文和/或将错误标记为特定类型。分为三种error情况进行使用：</p>
 <ul>
 <li>如果需要标记错误，应该创建一个自定义错误类型，比如errorCode。</li>
 <li>如果只想添加额外的上下文，应该使用<code>fmt.Errorf %w</code>格式指令生成wrapError类型错误，因为它不需要创建新的错误类型；wrapError会产生潜在的耦合，它使源错误通过Unwrap可供调用者使用。</li>
 <li>如果不想使用源错误追溯，不应该使用wrapError，而是错误转换，例如使用<code>fmt.Errorf %v</code>格式指令生成新的errorString类型错误</li>
 </ul>
-<h2 id="50不准确地检查error类型-重要">50.不准确地检查error类型 (重要)</h2>
+<h3 id="50不准确地检查error类型-重要">50.不准确地检查error类型 (重要)</h3>
 <p>这个其实就是弄懂Go1.13引入的wrapError类型错误，这个错误类型因为是层层包裹源错误，如果将以前老的代码返回的错误重构成wrapError的话，在调用的地方判断err的时候 需要用 error.Is 错误值和 error.As 错误类型 函数进行判断，Is是从error 链中递归地Unwrap err遍历是否有对应目标error值,  As是从error 链中递归地Unwrap err并查看其中一个错误是否是特定error类型；这两个函数都是用了反射，如果错误链路长的话，会有一些性能折损。</p>
-<h2 id="51检查error值不准确-重要">51.检查error值不准确 （重要）</h2>
+<h3 id="51检查error值不准确-重要">51.检查error值不准确 （重要）</h3>
 <p>这里介绍的是wrapError类型错误在==比较错误值时，应该采用error.Is来判断。</p>
-<h2 id="52处理error两次">52.处理error两次</h2>
+<h3 id="52处理error两次">52.处理error两次</h3>
 <p>这个在工程项目中，使用Go开发，打日志经常出现错误打印多条的情况，对于并发服务，如果不用logId,traceId来辅助定位，一般很难定位到一次逻辑交互的多条日志信息。这里的处理方式将多条错误通过wrap的方式 一条打印出整条逻辑链路的错误信息出来。工程实践小细节吧，如果考虑性能影响，需要折中考虑了。</p>
-<h2 id="53不处理错误-工程规范">53.不处理错误 (工程规范）</h2>
+<h3 id="53不处理错误-工程规范">53.不处理错误 (工程规范）</h3>
 <p>忽略错误都应该使用_标识符显式标示，在不处理错误的函数调用地方，加上对应注释上下文逻辑说明为什么可以忽略。。。</p>
-<h2 id="54不处理延迟错误">54.不处理延迟错误</h2>
+<h3 id="54不处理延迟错误">54.不处理延迟错误</h3>
 <p>如果函数返回的错误需要考虑defer函数中的函数调用是否返回错误，则在defer闭包函数中先判断函数中的err是否不为nil, 是则直接闭包函数返回，否则将defer 闭包函数中处理的逻辑函数错误赋值给err。如果想忽略它，使用_标识符标示。</p>
-<h1 id="概括">概括</h1>
+<h2 id="概括">概括</h2>
 <ul>
 <li><code>panic</code>是 Go 中处理错误的一个选项。它应该只在不可恢复的情况下谨慎使用：例如，发出程序员错误信号或加载强制依赖项失败时。</li>
 <li>包装错误允许标记错误和/或提供额外的上下文。但是，错误包装会产生潜在的耦合，因为它使源错误可供调用者使用。如果想防止这种情况发生，请不要使用错误包装。</li>

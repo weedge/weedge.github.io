@@ -318,7 +318,7 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <h1 id="引言">引言</h1>
+      <h2 id="引言">引言</h2>
 <p>在大多数情况下，编写可读、清晰的代码比编写经过优化但更复杂、更难理解的代码要好，不要过早的优化。建议遵循软件工程师 Wes Dyer 的这句名言：</p>
 <blockquote>
 <p><em>Make it correct, make it clear, make it concise, make it fast, in that order.</em></p>
@@ -358,7 +358,7 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <h1 id="引言">引言</h1>
+      <h2 id="引言">引言</h2>
 <p>测试是项目生命周期的一个重要方面。它提供了无数的好处，例如建立对应用程序的信心、充当代码文档以及使重构更容易。与其他一些语言相比，Go 具有强大的编写测试原语。主要讨论测试过程变得脆弱、效率低下和准确性低的常见错误。这类问题属于工程规范实践，有些case同样适用于其他语言。</p>
 <p>Go 中提供 go test 工具来执行测试，可以查看具体的开发文档： <strong><a href="https://pkg.go.dev/cmd/go#hdr-Testing_flags">https://pkg.go.dev/cmd/go#hdr-Testing_flags</a></strong>  里面介绍了每个模式的具体使用方式，使用好这些测试模式flag，可以更快执行或更好地发现可能错误，进而保证代码质量，工程代码稳定性建设上的重要一环。Go中支持4种测试函数：单测函数，基准压测函数，模糊测试，以及打印输出样例测试。</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestXxx</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
@@ -404,7 +404,7 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <h1 id="引言">引言</h1>
+      <h2 id="引言">引言</h2>
 <p>从程序中产生的错误中大多是使用姿势的不对，以及没有仔细阅读标准库相关包的开发文档，未查看源码导致，但是没有实践过这些问题，即使熟读文档和源码也可能避免不了。笔记中会以书中的mistake为切入点，结合源码升入分析其背后产生的原因，以及提出解决方案来避免。</p>
     </div>
     <div class="read-more">
@@ -440,7 +440,7 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <h1 id="引言">引言</h1>
+      <h2 id="引言">引言</h2>
 <p>这里主要介绍并发实践中遇到的问题，这些问题在golang开源项目中也经常会出现，如果编写并发也会一直伴随在开发当中出现，也有工程实践相关的论文进行统计归纳总结(PS: 用这种方式发个论文还是比较轻松的~)：</p>
 <p><strong><a href="https://songlh.github.io/paper/go-study.pdf">Understanding Real-World Concurrency Bugs in Go</a></strong></p>
 <p>tips: 作者对golang和rust都有研究，结合相关的代码都可以一起学习下, 语言方面的小细节</p>

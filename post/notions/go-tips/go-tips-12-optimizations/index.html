@@ -84,7 +84,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 
 并不意味着禁止为速度和效率优化应用程序, 了解并掌握这些优化点，以备不时之需；文中给出了常见的优化技术；有些特定于 Go 内存模型，内存分配，GPM调度模型；有些是关于了解硬件有助于写出好的代码(适用于不同语言)，其中会有硬件方面的术语，可以结合wiki进行学习；"><meta itemprop="datePublished" content="2023-02-23T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-02-23T10:26:23+08:00" />
-<meta itemprop="wordCount" content="20557">
+<meta itemprop="wordCount" content="20538">
 <meta itemprop="keywords" content="Golang," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Go tips-笔记: 优化 91-100 mistakes"/>
 <meta name="twitter:description" content="引言
@@ -340,52 +340,23 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#91不了解-cpu-缓存">91.不了解 CPU 缓存</a>
+    <li><a href="#引言">引言</a></li>
+    <li><a href="#笔记">笔记</a>
       <ul>
-        <li><a href="#cpu架构-cpu-architecture">CPU架构 CPU architecture</a></li>
-        <li><a href="#缓存行-cache-line">缓存行 Cache Line</a></li>
-        <li><a href="#结构切片与切片结构-slice-of-structs-vs-struct-of-slices">结构切片与切片结构 Slice of structs vs. struct of slices</a></li>
-        <li><a href="#可预测性-predictability">可预测性 Predictability</a></li>
-        <li><a href="#缓存放置策略-cache-placement-policy">缓存放置策略 Cache placement policy</a></li>
+        <li><a href="#91不了解-cpu-缓存">91.不了解 CPU 缓存</a></li>
+        <li><a href="#92编写导致伪共享false-sharding的并发代码">92.编写导致伪共享(false sharding)的并发代码</a></li>
+        <li><a href="#93不考虑指令级并行性-instruction-level-parallelism">93.不考虑指令级并行性 instruction-level parallelism</a></li>
+        <li><a href="#94不知道数据对齐">94.不知道数据对齐</a></li>
+        <li><a href="#95不了解栈与堆">95.不了解栈与堆</a></li>
+        <li><a href="#96不知道如何减少分配">96.不知道如何减少分配</a></li>
+        <li><a href="#97不依赖内联">97.不依赖内联</a></li>
+        <li><a href="#98不使用-go-诊断工具-重要">98.不使用 Go 诊断工具 （重要）</a></li>
+        <li><a href="#99不了解-gc-的工作原理">99.不了解 GC 的工作原理</a></li>
+        <li><a href="#100不了解在-docker-和-kubernetes-中运行-go-的影响">100.不了解在 Docker 和 Kubernetes 中运行 Go 的影响</a></li>
       </ul>
     </li>
-    <li><a href="#92编写导致伪共享false-sharding的并发代码">92.编写导致伪共享(false sharding)的并发代码</a></li>
-    <li><a href="#93不考虑指令级并行性-instruction-level-parallelism">93.不考虑指令级并行性 instruction-level parallelism</a></li>
-    <li><a href="#94不知道数据对齐">94.不知道数据对齐</a></li>
-    <li><a href="#95不了解栈与堆">95.不了解栈与堆</a></li>
-    <li><a href="#栈与堆">栈与堆</a>
-      <ul>
-        <li><a href="#逃逸分析-重要">逃逸分析 (重要)</a></li>
-      </ul>
-    </li>
-    <li><a href="#96不知道如何减少分配">96.不知道如何减少分配</a>
-      <ul>
-        <li><a href="#api-设计">API 设计</a></li>
-        <li><a href="#依赖编译器优化"><strong>依赖编译器优化</strong></a></li>
-        <li><a href="#池化syncpool"><strong>池化sync.Pool</strong></a></li>
-      </ul>
-    </li>
-    <li><a href="#97不依赖内联">97.不依赖内联</a></li>
-    <li><a href="#98不使用-go-诊断工具-重要">98.不使用 Go 诊断工具 （重要）</a>
-      <ul>
-        <li><a href="#分析-profiling"><strong>分析 Profiling</strong></a></li>
-        <li><a href="#cpu分析">CPU分析</a></li>
-        <li><a href="#heap堆分析">Heap堆分析</a></li>
-        <li><a href="#goroutines分析">Goroutines分析</a></li>
-        <li><a href="#block分析">Block分析</a></li>
-        <li><a href="#完整的-goroutine-栈dump">完整的 goroutine 栈dump</a></li>
-        <li><a href="#mutex分析">Mutex分析</a></li>
-        <li><a href="#执行跟踪器-execution-tracer"><strong>执行跟踪器 Execution Tracer</strong></a></li>
-      </ul>
-    </li>
-    <li><a href="#99不了解-gc-的工作原理">99.不了解 GC 的工作原理</a>
-      <ul>
-        <li><a href="#概念简介">概念简介</a></li>
-        <li><a href="#gc-跟踪">GC 跟踪</a></li>
-      </ul>
-    </li>
-    <li><a href="#100不了解在-docker-和-kubernetes-中运行-go-的影响">100.不了解在 Docker 和 Kubernetes 中运行 Go 的影响</a></li>
     <li><a href="#概括">概括</a></li>
+    <li><a href="#总结">总结</a></li>
   </ul>
 </nav>
   </div>
@@ -393,20 +364,20 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 
     
     <div class="post-content">
-      <h1 id="引言">引言</h1>
+      <h2 id="引言">引言</h2>
 <p>在大多数情况下，编写可读、清晰的代码比编写经过优化但更复杂、更难理解的代码要好，不要过早的优化。建议遵循软件工程师 Wes Dyer 的这句名言：</p>
 <blockquote>
 <p><em>Make it correct, make it clear, make it concise, make it fast, in that order.</em></p>
 </blockquote>
 <p>并不意味着禁止为速度和效率优化应用程序, 了解并掌握这些优化点，以备不时之需；文中给出了常见的优化技术；有些特定于 Go 内存模型，内存分配，GPM调度模型；有些是关于了解硬件有助于写出好的代码(适用于不同语言)，其中会有硬件方面的术语，可以结合wiki进行学习；</p>
-<h1 id="笔记">笔记</h1>
-<h2 id="91不了解-cpu-缓存">91.不了解 CPU 缓存</h2>
+<h2 id="笔记">笔记</h2>
+<h3 id="91不了解-cpu-缓存">91.不了解 CPU 缓存</h3>
 <p><em>Mechanical sympathy(机械同情)</em>  来自三届 F1 世界冠军 Jackie Stewart 创造的一个术语</p>
 <blockquote>
 <p><em>You don’t have to be an engineer to be a racing driver, but you do have to have mechanical sympathy.</em></p>
 </blockquote>
 <p>简而言之，当了解系统的设计用途时，无论是 F1 赛车、飞机还是计算机，都可以与设计保持一致以获得最佳性能。对 CPU 缓存工作方式的机械同情可以帮助优化 Go 应用程序。</p>
-<h3 id="cpu架构-cpu-architecture">CPU架构 CPU architecture</h3>
+<h4 id="cpu架构-cpu-architecture">CPU架构 CPU architecture</h4>
 <p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F01_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F01_Harsanyi.png"></p>
 <p>上图为简单的Intel Core i5-7300u cpu架构图；<a href="https://en.wikichip.org/wiki/intel/core_i5/i5-7300u">https://en.wikichip.org/wiki/intel/core_i5/i5-7300u</a></p>
 <p>每个物理核心（Core0和Core1）被分成两个逻辑核心Hyper-Threading（T0和T1）。</p>
@@ -424,7 +395,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
   <iframe src="https://www.youtube.com/embed/vgPFzblBh7w" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" allowfullscreen title="YouTube Video"></iframe>
 </div>
 
-<h3 id="缓存行-cache-line">缓存行 Cache Line</h3>
+<h4 id="缓存行-cache-line">缓存行 Cache Line</h4>
 <p>缓存行的概念对于理解至关重要。但在介绍它们是什么之前，了解为什么需要它们。</p>
 <p>当访问特定的内存位置时(例如 通过读取变量)，在不久的将来可能会发生以下情况之一：</p>
 <ul>
@@ -437,7 +408,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 <p>举一个简单的例子， 遍历容量为16的slice切片s []int64;  这个内存地址还没在缓存中；程序开始遍历，cpu决定缓存这个s[0]这个变量，会复制整个内存块复制到缓存行，缓存行中包含了8个int64，0到7的数据将会在cpu cache中命中；访问s[8]时同理；迭代16个int64元素导致2次强制缓存未命中(<em>compulsory miss</em>)和 14 次缓存命中。</p>
 <p>CPU缓存策略有个大致的了解：有时缓存是包容性的（例如，L2 数据也存在于 L3 中），有时缓存是排他性的（例如，L3 称为受害者缓存，因为它只包含从 L2 逐出的数据）；这些策略被 CPU 供应商隐藏起来；大致了解下即可。</p>
 <p>如果感兴趣，可以通过 <strong><a href="https://en.wikipedia.org/wiki/CPU_cache">https://en.wikipedia.org/wiki/CPU_cache</a></strong> 进一步了解，比较硬核。</p>
-<h3 id="结构切片与切片结构-slice-of-structs-vs-struct-of-slices">结构切片与切片结构 Slice of structs vs. struct of slices</h3>
+<h4 id="结构切片与切片结构-slice-of-structs-vs-struct-of-slices">结构切片与切片结构 Slice of structs vs. struct of slices</h4>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Foo</span> <span class="kd">struct</span> <span class="p">{</span>
 	<span class="nx">a</span> <span class="kt">int64</span>
 	<span class="nx">b</span> <span class="kt">int64</span>
@@ -448,7 +419,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 <span class="p">}</span>
 </code></pre></div><p>对[]Foo 和 Bar.a 容量长度为16的切片遍历，遍历数据结构切片 比 遍历切片结构 慢， 因为cache line的空间局部性原理，加载切片结构更紧凑，需要更少的缓存行来迭代，如图所示：</p>
 <p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F04_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F04_Harsanyi.png"></p>
-<h3 id="可预测性-predictability">可预测性 Predictability</h3>
+<h4 id="可预测性-predictability">可预测性 Predictability</h4>
 <p>要理解这一点，必须了解跨步striding的概念。跨步与 CPU 如何处理数据有关。共有三种不同类型的步幅(stride)</p>
 <ul>
 <li><em>单位步幅Unit stride</em>：全部想要访问的值是连续分配的：例如，切片[]int64元素。这个步幅对于 CPU 来说是可预测的并且是最有效的，因为它需要最少数量的缓存行来遍历元素。</li>
@@ -458,7 +429,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 <p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F06_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F06_Harsanyi.png"></p>
 <p>由于不同的步幅和相似的空间局部性，迭代链表比值的切片要慢得多。由于更好的空间局部性，通常应该支持单位步幅而不是恒定步幅。但是当CPU 都无法预测非单位步长，无论数据如何分配，都会有性能上的影响。</p>
 <p>到目前为止，已经讨论了 CPU 缓存速度很快但比主内存小得多。因此，CPU 需要一种策略来将内存块提取到缓存行。此策略称为<em>缓存放置策略</em>，并且会显着影响性能。</p>
-<h3 id="缓存放置策略-cache-placement-policy">缓存放置策略 Cache placement policy</h3>
+<h4 id="缓存放置策略-cache-placement-policy">缓存放置策略 Cache placement policy</h4>
 <p>当 CPU 决定复制一个内存块并将其放入缓存时，它必须遵循特定的策略。假设一个 32 KB 的 L1D 缓存和一个 64 字节的缓存行，如果一个块被随机放入 L1D，CPU 在最坏的情况下将不得不迭代 512 个缓存行来读取一个变量。这种缓存是称为<em>完全结合(fully associative)</em>。</p>
 <p>为了提高从 CPU 缓存访问地址的速度，设计人员制定了有关缓存放置的不同策略。跳过历史，讨论当今使用最广泛的策略：集合关联缓存策略(<em>set-associative cache)</em> ，它依赖缓存分区。</p>
 <p>具体参考以下资料进一步了解：</p>
@@ -476,14 +447,14 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 </ul>
 <p>假设该函数启动并尝试读取<code>s[0][0]</code>属于地址 0000000000000 的地址。由于该地址尚未出现在缓存中，因此 CPU 计算其集合索引并将其复制到相应的缓存集合。</p>
 <p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F08_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F08_Harsanyi.png"></p>
-<p>如前所述，9 位表示块偏移量：它是每个内存块地址的最小公共前缀。然后，2位表示集合索引。地址为 0000000000000 时，si 等于 00。因此，该内存块被复制到集合 0。</p>
-<p>当函数从 读取<code>s[0][1]</code>到时<code>s[0][7]</code>，数据已经在缓存中。CPU 是怎么知道的？CPU 计算内存块的起始地址，计算集合索引和标记位，然后检查集合 0 中是否存在 00。</p>
+<p>如前所述，9 位表示块偏移量：它是每个内存块地址的最小公共前缀。然后，2位表示集合索引。地址为 0000000000000 时，si 等于 00。因此，该内存块被复制到Set 0。</p>
+<p>当函数从 读取<code>s[0][1]</code>到时<code>s[0][7]</code>，数据已经在缓存中。CPU 是怎么知道的？CPU 计算内存块的起始地址，计算集合索引和标记位，然后检查Set 0 中是否存在 00。</p>
 <p>接下来函数读取<code>s[1][0]</code>，这个地址还没有被缓存。因此复制内存块 0100000000000 时发生相同的操作</p>
 <p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F09_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F09_Harsanyi.png"></p>
-<p>该内存的集合索引等于 00，因此它也属于集合 0。缓存行被复制到集合 0 中的下一个可用行。然后，再次从 读取到导致缓存<code>s[1][1]</code>命中<code>s[1][7]</code>。</p>
+<p>该内存的集合索引等于 00，因此它也属于Set 0。缓存行被复制到Set 0 中的下一个可用行。然后，再次从 读取到导致缓存<code>s[1][1]</code>命中<code>s[1][7]</code>。</p>
 <p>现在事情变得有趣了。该函数读取<code>s[2][0]</code>，并且该地址不存在于缓存中。执行相同的操作</p>
 <p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F10_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F10_Harsanyi.png"></p>
-<p>集合索引再次等于 00。但是，集合 0 已满——CPU 做了什么？将内存块复制到另一组？否。CPU 替换现有缓存行之一以复制内存块 1000000000000。</p>
+<p>集合索引再次等于 00。但是， Set0 已满，CPU 会替换现有缓存行之一以复制内存块 1000000000000。</p>
 <p>缓存替换策略(<a href="https://en.wikipedia.org/wiki/Cache_replacement_policies">Cache replacement policies</a>)取决于 CPU，但它通常是伪 LRU 策略（真正的 LRU [最近最少使用] 会太复杂而无法处理）。在这种情况下，假设它替换了第一个缓存行：0000000000000。当迭代第 3 行时会重复这种情况：内存地址 1100000000000 也有一个等于 00 的集合索引，导致替换现有的缓存行。</p>
 <p>现在，假设基准测试执行函数，其中一个切片指向从地址 0000000000000 开始的相同矩阵。每次基准测试，当函数读取时，<code>s[0][0]</code>地址不在缓存中；该块已被替换。</p>
 <p>基准测试将导致更多的缓存未命中，而不是从一个执行到另一个执行使用 CPU 缓存。这种类型的缓存未命中称为*冲突未命中conflict miss；*如果未对缓存进行分区，则不会发生未命中。迭代的所有变量都属于一个集合索引为00的内存块。因此，只使用一个缓存集合，而不是分布在整个缓存中。</p>
@@ -497,7 +468,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 <p>回到前面<a href="https://weedge.github.io/post/go-tips/go-tips-11-testing/#89%E7%BC%96%E5%86%99%E4%B8%8D%E5%87%86%E7%A1%AE%E7%9A%84%E5%9F%BA%E5%87%86">#89</a> 真实示例中，使用两个函数<code>calculateSum512</code>和<code>calculateSum513</code>。基准测试在 32 KB 8-way set-associative L1D cache上执行，总共 64 组。因为缓存行是 64 字节，所以每一路步长等于 64 × 64 字节 = 4 KB；代表512 个<code>int64</code>类型元素。因此，达到了 512 列矩阵的<em>临界步幅critical stride</em>，缓存分布很差(<em>冲突未命中conflict miss</em>)。同时，如果矩阵包含 513 列，则不会导致<em>临界步幅</em>。这就是为什么观察到两个基准之间存在如此巨大差异的原因。这个同样适用于在intel CPU架构上运行的其他语言。</p>
 <p>总之，必须意识到现代缓存是分区的。根据步幅，在某些情况下只使用一组，这可能会损害应用程序性能并导致冲突未命中。这种步幅称为临界步幅。对于性能密集型应用程序，应该避免关键步骤来充分利用 CPU 缓存。</p>
 <p>tips: 应该注意基准测试的结果在不同底层CPU架构而有所不同。注意开发测试 和 生产环境下的CPU架构一致，如果有对计算密集型的调优，最好在生产环境待部署的机器上都进行基准测试一下。</p>
-<h2 id="92编写导致伪共享false-sharding的并发代码">92.编写导致伪共享(false sharding)的并发代码</h2>
+<h3 id="92编写导致伪共享false-sharding的并发代码">92.编写导致伪共享(false sharding)的并发代码</h3>
 <p>由于多核处理器cpu之间独立的L1/L2 cache，会出现cache line不一致的问题，为了解决这个问题，有相关协议模型，常用MESI协议，MESI 通过 这个网站模拟更直观的了解 <a href="https://www.scss.tcd.ie/Jeremy.Jones/VivioJS/caches/MESIHelp.htm">https://www.scss.tcd.ie/Jeremy.Jones/VivioJS/caches/MESIHelp.htm</a>；为了保证一个core上修改的cache line数据同步到其他core的cache line上，则需要MESI协议来保证，如果同一个cache line上有个两个变量sum1 和 sum2 之间虽然没有相互依赖逻辑，但是当修改sum1 或者sum2 时，需要同步同一块cache line的内容，导致 即使没有相互关系的变量在同一cache line中， 需要彼此共享同步，从而出现所说的<em>伪共享 flase sharding</em>。伪共享因为cache line的同步会带来一些cpu 时钟周期的性能损失。</p>
 <p>了解伪共享的情况，知道如何破解了，直接让sum1和sum2 放置在不同的cache line就可以；比如一个结构体中sum1和sum2 的存放结构：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Result2</span> <span class="kd">struct</span> <span class="p">{</span>
@@ -507,13 +478,13 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 </span><span class="c1"></span><span class="p">}</span>
 </code></pre></div><p>还有一种解决方案是重新设计算法的结构。例如，不是让两个 goroutines 共享相同的结构，通过channel传递它们的本地结果。结果基准与填充大致相同。</p>
 <p>并发编程中，操作cpu L1/L2 cache 时，因为多核同步cache的最小单元是cache line，所以当缓存行在两个内核之间共享时，至少一个 goroutine 是 writer 时，就会发生伪共享。如果需要优化依赖于并发的应用程序，应该检查是否存在伪共享的代码，众所周知这种模式会降低应用程序性能。可以通过填充或通信来防止虚假共享。</p>
-<h2 id="93不考虑指令级并行性-instruction-level-parallelism">93.不考虑指令级并行性 instruction-level parallelism</h2>
+<h3 id="93不考虑指令级并行性-instruction-level-parallelism">93.不考虑指令级并行性 instruction-level parallelism</h3>
 <p>这个很大一部分取决于编程语言的编译器软件，编译优化之后代码指令是否可以充分利用指令级并行<em>instruction-level parallelism</em>（ILP）；以及在硬件cpu上进行指令级并行(ILP)；</p>
 <p>tips: 两者结合效果更佳，对于上层应用使用语言的开发者，了解其背后的原理即可，在应用程序上的性能优化可能效果不大，因为随着编译器升级可能会兼顾了应用程序上对ILP考虑优化。不过了解原理可以有助于上层宏观层面的思考并行，用于借鉴嘛~，微观到宏观(3体里经常浮现的词汇，降维打击)</p>
-<p><a href="https://en.wikipedia.org/wiki/Compiler">编译器</a>和<a href="https://en.wikipedia.org/wiki/Central_processing_unit">CPU</a>设计人员的目标是尽可能多地识别和利用 ILP。普通程序通常是在顺序执行模型下编写的，其中指令一条接一条地执行，并按照程序员指定的顺序执行。ILP 允许编译器和处理器重叠执行多条指令，甚至可以改变指令执行的顺序。cpu利用ILP执行指令时，<a href="https://en.wikipedia.org/wiki/Data_dependence">当表现出数据依赖性的</a>指令在流水线的不同阶段修改数据时，就会发生<a href="https://en.wikipedia.org/wiki/Hazard_(computer_architecture)">数据冒险危害</a>。忽略潜在的数据危害会导致<a href="https://en.wikipedia.org/wiki/Race_condition">竞争条件</a>（也称为竞争危害），进而触发控制风险；为了避免控制风险发生，可以通过<a href="https://en.wikipedia.org/wiki/Branch_predictor">预测分支</a>来解决。</p>
+<p><a href="https://en.wikipedia.org/wiki/Compiler">编译器</a>和<a href="https://en.wikipedia.org/wiki/Central_processing_unit">CPU</a>设计人员的目标是尽可能多地识别和利用 ILP。普通程序通常是在顺序执行模型下编写的，其中指令一条接一条地执行，并按照程序员指定的顺序执行。ILP 允许编译器和处理器重叠执行多条指令，甚至可以改变指令执行的顺序。cpu利用ILP执行指令时，当表现出<a href="https://en.wikipedia.org/wiki/Data_dependence">数据依赖性</a>的指令在流水线的不同阶段修改数据时，就会发生<a href="https://en.wikipedia.org/wiki/Hazard_(computer_architecture)">数据冒险危害</a>。忽略潜在的数据危害会导致<a href="https://en.wikipedia.org/wiki/Race_condition">竞争条件</a>（也称为竞争危害），进而触发控制风险；为了避免控制风险发生，可以通过<a href="https://en.wikipedia.org/wiki/Branch_predictor">预测分支</a>来解决。</p>
 <p>了解利用ILP的微架构技术见wiki: <a href="https://en.wikipedia.org/wiki/Instruction-level_parallelism">https://en.wikipedia.org/wiki/Instruction-level_parallelism</a></p>
 <p>在Go中，可以通过 <a href="https://research.swtch.com/mm">https://research.swtch.com/mm</a> 来了解在这方面的思考</p>
-<h2 id="94不知道数据对齐">94.不知道数据对齐</h2>
+<h3 id="94不知道数据对齐">94.不知道数据对齐</h3>
 <p>数据对齐是一种安排数据分配方式以加速 CPU 访问内存的方法。不了解这个概念会导致额外的内存消耗甚至性能下降。</p>
 <p>tips: 这个属于老生常谈的问题了，尤其在c语言开发的程序中，数据对齐，直接通过地址+偏移大小来指向对应内存数据，进行读写操作；golang很多思想来自c，自然也会有，只不过更加友好，unsafe形式来操作指针。</p>
 <p>在 64 位cpu架构上,处理最小单位是8字节的地址，如果没有数据对齐，变量j分配可以分布在两个地址上。如果 CPU 想要读取j，则需要两次而不是一次内存访问。</p>
@@ -533,9 +504,9 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 <p>第二种情况，在i之前没有分配32位变量；i被分配在一个词的开头。为了数据对齐（地址是 64 的倍数），i不能与下一个 64 的倍数j一起分配。灰色框表示 32 位填充。</p>
 <p>所以了解了字节对齐之后，在设计数据结构的时候，需要清楚，数据结构通过编译器优化编译之后方便cpu访问 的数据对齐结构，所占内存大小；防止出现本来不需要这么多内存空间的设计。尤其在设计非常依赖缓存存储的项目中。申请内存空间越多越频繁，对于Go来说，将带来更多的GC, 影响整体应用性能。</p>
 <p>还有一个好处是，考虑了字节对齐后的合理结构体(所占内存空间的结构体大小最小情况，<strong>结构体中的字段按大小降序对它们进行排序对齐</strong>)；利用cache 局部性原理，可以在cpu cache line中存放更多的对象，这样在遍历对象时，需要更少的缓存行总数，性能更好。</p>
-<h2 id="95不了解栈与堆">95.不了解栈与堆</h2>
+<h3 id="95不了解栈与堆">95.不了解栈与堆</h3>
 <p>在 Go 中，变量可以分配在栈上或堆上。这两种类型的内存根本不同，影响数据密集型应用程序。需要了解栈和堆这些概念，以及编译器决定变量分配位置所遵循的规则。</p>
-<h2 id="栈与堆">栈与堆</h2>
+<h4 id="栈与堆">栈与堆</h4>
 <p>首先，讨论一下栈和堆的区别。栈是它是一种后进先出 (LIFO) 数据结构，用于存储特定 goroutine 的所有局部变量。当一个 goroutine 启动时，它会获得 2 KB 的连续内存作为它的栈空间（这个大小随着时间的推移而变化并且可能会再次改变）。但是，此大小在运行时不是固定的，可以根据需要增大和缩小（但它始终在内存中保持连续，从而保留数据局部性）。</p>
 <p>tips: Go 在1.3之前栈扩容采用的是分段栈（Segemented Stack），在栈空间不够的时候新申请一个栈空间用于被调用函数的执行， 执行后销毁新申请的栈空间并回到老的栈空间继续执行，当函数出现频繁调用（递归）时可能会引发hot split。为了避免hot split, 1.3之后采用的是连续栈（Contiguous Stack），栈空间不足的时候申请一个2倍于当前大小的新栈，并把所有数据拷贝到新栈， 接下来的所有调用执行都发生在新栈上。</p>
 <p>当 Go 进入一个函数时，会创建一个栈帧，代表内存中只有当前函数才能访问的一个区间。</p>
@@ -563,7 +534,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 <p>tips:</p>
 <p>由于Go中的用户栈空间是自动扩缩容的，需要注意每个协程goroutine栈扩容对内存空间的影响，特别是在长连接的场景，单机连接数在100w级别的时候，尽量保持每个goroutine 处理函数的逻辑在2kb内(功能职责分离)，防止栈扩容，导致内存指数级暴涨。</p>
 <p>栈扩容了，长时间没有运行，为了提高内存利用率，在GC触发的时候，计算当前栈使用的空间，小于栈空间的1/4，会触发栈缩容操作到原来的1/2，最小到2kb，不会再缩容；但在缩容过程中会存在栈拷贝和写屏障(write barrier)，对于一些准实时应用可能会存在一些影响。 好在go提供了可设置的参数，可以通过设置环境变量 GODEBUG=gcshrinkstackoff=1 来关闭栈缩容。关闭栈缩容后， 需要承担栈持续增长的风险，在关闭前需要慎重考虑。</p>
-<h3 id="逃逸分析-重要">逃逸分析 (重要)</h3>
+<h4 id="逃逸分析-重要">逃逸分析 (重要)</h4>
 <p><a href="https://github.com/golang/go/blob/go1.20/src/cmd/compile/internal/escape/escape.go">逃逸分析(escape analysis)</a> 在程序编译阶段根据程序代码中的数据变量，对代码中哪些变量需要在栈上分配，哪些变量需要在堆上分配进行静态分析的方法；Go 语言的逃逸分析遵循以下两个不变性：</p>
 <ol>
 <li>指向栈对象的指针不能存储在堆中（pointers to stack objects cannot be stored in the heap）；</li>
@@ -646,7 +617,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 <p>了解堆和栈之间的根本区别对于优化 Go 应用程序至关重要。堆分配对于 Go 运行时处理来说更为复杂，并且需要具有 GC 的外部系统来释放数据。在某些数据密集型应用程序中，堆管理可占总 CPU 时间消耗的 20% 或 30%。另一方面，栈是自清洁的，并且对单个 goroutine 而言是本地的，从而使分配速度更快。因此，优化内存分配可以获得很大的投资回报。</p>
 <p>理解逃逸分析的规则对于编写更高效的代码也很重要。一般来说，向下共享留在栈上，而向上共享逃逸到堆中。这应该可以防止常见错误，例如想要返回指针的过早优化，例如“避免复制”。首先关注可读性和语义，然后在需要时优化分配。</p>
 <p>tips: 想更深入了解逃逸分析，可以一起学习这篇论文：<a href="http://www.wingtecher.com/themes/WingTecherResearch/assets/papers/ICSE20.pdf">Escape from Escape Analysis of Golang</a></p>
-<h2 id="96不知道如何减少分配">96.不知道如何减少分配</h2>
+<h3 id="96不知道如何减少分配">96.不知道如何减少分配</h3>
 <p>减少分配是加速 Go 应用程序的常见优化技术。已经涵盖了一些减少堆分配数量的方法：</p>
 <ul>
 <li>未优化的字符串连接（错误 <a href="https://weedge.github.io/post/notions/go-tips/go-tips-05-strings/#39%E4%BC%98%E5%8C%96%E4%B8%8D%E8%B6%B3%E7%9A%84%E5%AD%97%E7%AC%A6%E4%B8%B2%E8%BF%9E%E6%8E%A5">#39</a>）：使用<code>strings.Builder</code>替代<code>+</code>运算符来连接字符串。</li>
@@ -655,7 +626,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 <li>更好的数据结构对齐以减少结构大小（错误 <a href="https://weedge.github.io/post/notions/go-tips/go-tips-12-optimizations/#94%E4%B8%8D%E7%9F%A5%E9%81%93%E6%95%B0%E6%8D%AE%E5%AF%B9%E9%BD%90">#94</a>）。</li>
 </ul>
 <p>另外还有三种减少内存分配的常见方式：</p>
-<h3 id="api-设计">API 设计</h3>
+<h4 id="api-设计">API 设计</h4>
 <p>只要涉及到I/O读写，会大量使用到在io库https://pkg.go.dev/io中，定义的读Reader / 写Writer接口, 对应的API方法，设计时为什么使用[]byte 作为传入参数，返回读取了多少， 而不使用读取多少来返回对应[]byte呢？</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Reader</span> <span class="kd">interface</span> <span class="p">{</span>
     <span class="nf">Read</span><span class="p">(</span><span class="nx">p</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">(</span><span class="nx">n</span> <span class="kt">int</span><span class="p">,</span> <span class="nx">err</span> <span class="kt">error</span><span class="p">)</span>
@@ -672,7 +643,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 <span class="p">}</span>
 </code></pre></div><p>这样函数局部变量会逃逸到堆上分配，这样带了额外的gc影响，而且io库的接口经常会被不同对象实例化使用到。所以Go 的设计者使用向下共享的方法来防止自动将切片转义到堆中；由调用者提供读写的切片[]byte，至于是否分配在堆上还是栈上，这取决于调用者来处理它，而不是直接返回，导致逃逸发生的可能。</p>
 <p>有时，即使是 API 的微小变化也会对分配产生积极影响。在设计 API 时，了解逃逸分析规则，并在需要时使用它<code>-gcflags</code>来理解编译器的决策。</p>
-<h3 id="依赖编译器优化"><strong>依赖编译器优化</strong></h3>
+<h4 id="依赖编译器优化">依赖编译器优化</h4>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// go tool compile -m=1 -l -L -S -N see if use runtime.slicebytetostring
 </span><span class="c1"></span><span class="nx">m</span> <span class="o">:=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">int</span><span class="p">{}</span>
 <span class="nx">bytes</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">}</span>
@@ -681,7 +652,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 
 <span class="nx">_</span><span class="p">,</span> <span class="nx">_</span> <span class="p">=</span> <span class="nx">m</span><span class="p">[</span><span class="nb">string</span><span class="p">(</span><span class="nx">bytes</span><span class="p">)]</span>
 </code></pre></div><p>如上代码，通过linter相关静态编译检查工具可以提示出 直接使用m[string(key)]的方式比k := string(key); m[k] 效率更高一些，因为编译器对m[string(key)] 进行了优化，不会调用runtime.slicebytetostring 进行复制转化，执行效率更快，也不会带了额外内存分配。</p>
-<h3 id="池化syncpool"><strong>池化sync.Pool</strong></h3>
+<h4 id="池化syncpool">池化sync.Pool</h4>
 <p>当处理的对象，分配在堆上，且频繁被创建使用，这样会触发频繁gc，对这些临时对象标记扫描，会带来额外性能影响，所以在Go引入了sync.Pool，复用临时对象，减少频繁创建，并且在池中的临时对象一段时间不在使用时，会从对象池中移出，并被gc回收，合理的触发机制由gc来管理，进而减少频繁gc。而且sync.Pool 本身就是线程安全的，多个 goroutine 可以并发地调用Get方法存取对象；sync.Pool 不可在使用之后再复制使用，引入了noCopy机制，可以通过go vet来检查。</p>
 <p>sync.Pool有两个公开方法Get， Put 以及初始化Pool是的New 函数成员。</p>
 <p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F34_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F34_Harsanyi.png"></p>
@@ -719,18 +690,18 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 <span class="p">}</span>
 </code></pre></div><p>sync.Pool不适合长时间不会释放的资源 比如长连接；因为sync.Pool池化的对象可能会被垃圾回收掉，对于数据库长连接等场景是不合适。</p>
 <p>如果经常分配很多同类型的对象，可以考虑使用sync.Pool. 它是一组临时对象，可以防止重复重新分配同一种数据；并且sync.Pool可以安全地同时被多个 goroutines 使用。</p>
-<h2 id="97不依赖内联">97.不依赖内联</h2>
+<h3 id="97不依赖内联">97.不依赖内联</h3>
 <p>内联是将较小的函数组合到它们各自的调用者中的行为。在计算的早期，这种优化通常是手动执行的。如今，内联是在编译过程中自动执行的一类基本优化之一。</p>
 <p>内联很重要有两个原因。首先是它消除了函数调用本身的开销。第二个是它允许编译器更有效地应用其他优化策略,比如栈中内联(Go 1.9 引入 Mid-stack inlining)；</p>
 <p>了解更多Mid-stack inlining相关内容： <a href="https://go.googlesource.com/proposal/+/master/design/19348-midstack-inlining.md">提案</a>  , HN 上的讨论以及PPT: <a href="https://news.ycombinator.com/item?id=13803447">Mid-stack inlining in the Go compiler</a></p>
 <p>这种优化技术是关于区分快路径和慢路径。如果可以内联快速路径但不能内联慢速路径，可以将慢速路径提取到专用函数中。如果没有超出内联预算，函数就是内联的候选者。</p>
 <p>了解内联如何工作以及如何访问编译器的决定，可以成为使用快速路径内联技术进行优化的途径。如果执行快速路径，则在专用函数中提取慢速路径可防止函数调用。例如：sync库中使用Mutex.Lock Mutex.UnLock；<a href="http://Once.Do">Once.Do</a> 用到了快速路径内联技术进行优化。</p>
 <p>tips: 具体优化收益，都需要进行基准压测为准</p>
-<h2 id="98不使用-go-诊断工具-重要">98.不使用 Go 诊断工具 （重要）</h2>
+<h3 id="98不使用-go-诊断工具-重要">98.不使用 Go 诊断工具 （重要）</h3>
 <p>Go 提供了一些优秀的诊断工具来帮助深入了解应用程序的执行情况，重点介绍最重要的部分：剖析Profiling 和 执行跟踪器 Execution Tracer。具体查看官方文档： <strong><a href="https://go.dev/doc/diagnostics">https://go.dev/doc/diagnostics</a></strong></p>
 <p>Profiling 对运行中的代码采用基于定时器的采样。其缺点是，采样只能提供一个关于目标的粗略的图像，并且可能会遗漏事件。 比如cpu数据的采集，由于每次采集都会触发一次SIGPROF 信号中断，收集当时的调用堆栈；会对被采集的系统带来额外的负载影响，在采集cpu数据频率一般控制毫秒级别，所以存在采集精度的影响；对于微妙级别的采样，现在还不支持，有个改进的 <a href="https://go.googlesource.com/proposal/+/refs/changes/08/219508/2/design/36821-perf-counter-pprof.md">提案</a> ，还未合并。</p>
 <p>Execution Tracer用来捕获各种运行时事件。调度、系统调用、垃圾收集、堆大小和其他事件由运行时收集，并可通过 go 工具跟踪进行可视化。执行跟踪器是一种检测延迟和利用率问题的工具，可以用来检查 CPU 的使用情况，以及在网络或系统调用时goroutine 抢占的原因。</p>
-<h3 id="分析-profiling"><strong>分析 Profiling</strong></h3>
+<h4 id="分析-profiling">分析 Profiling</h4>
 <p>分析提供了对应用程序执行的洞察力。能够解决性能问题、检测争用、定位内存泄漏等。通过如下几个采集类型收集，并通过go tool pprof 分析：</p>
 <ul>
 <li>cpu: 确定应用程序将时间花在哪里</li>
@@ -792,11 +763,11 @@ go tool pprof -http<span class="o">=</span><span class="s2">&#34;:8080&#34;</spa
  go tool pprof http://localhost:6060/debug/pprof/goroutine?debug<span class="o">=</span><span class="m">1</span>
  go tool pprof http://localhost:6060/debug/pprof/allocs?debug<span class="o">=</span><span class="m">1</span>
  go tool pprof http://localhost:6060/debug/pprof/threadcreate?debug<span class="o">=</span><span class="m">1</span>
-</code></pre></div><h3 id="cpu分析">CPU分析</h3>
+</code></pre></div><h4 id="cpu分析">CPU分析</h4>
 <p>CPU 分析器依赖于操作系统和信号。当它被激活时，应用程序默认要求操作系统每 10 毫秒中断一次，通过一个<code>SIGPROF</code>信号。当应用程序收到一个 时<code>SIGPROF</code>，它会暂停当前活动并将执行转移到探查器。探查器收集诸如当前 goroutine 活动之类的数据，并汇总可以检索的执行统计信息。然后它停止，并继续执行直到下一个<code>SIGPROF</code>.</p>
 <p>可以访问 /debug/pprof/profile 端点来激活 CPU 分析。默认情况下，访问此端点会执行 30 秒的 CPU 分析。在 30 秒内，应用程序每 10 毫秒中断一次。请注意，可以更改这两个默认值：可以使用参数<code>seconds</code>将分析应该持续多长时间传递给端点（例如，/debug/pprof/profile?seconds=15），可以更改中断率（甚至小于 10 毫秒）。但在大多数情况下，10 毫秒应该足够了，在减小这个值（意味着增加速率）时，应该注意不要损害性能。30 秒后，下载 CPU 分析器的结果。</p>
 <p>可以为不同的函数附加标签。例如，想象一个从不同客户端调用的通用函数。要跟踪两个客户花费的时间，可以使用<code>pprof.Labels</code>.Go 1.9 开始引入 <strong><a href="https://github.com/golang/proposal/blob/master/design/17280-profile-labels.md">profiler labels</a>，</strong> 对于特殊调优性能，比如某个算法模型，或者线上特殊场景触发的性能问题，在这些特殊逻辑段，单独打上一个tag label 进行profiling的收集，通过pprof 工具分析，可以通过tag相关命令来过滤出样本数据分析。使用 <strong><a href="http://godoc.org/github.com/rakyll/goutil/pprofutil">pprofutil</a></strong> 包自动将 HTTP 路径标签添加到处理程序。</p>
-<h3 id="heap堆分析">Heap堆分析</h3>
+<h4 id="heap堆分析">Heap堆分析</h4>
 <p>堆分析可以获得有关当前堆使用情况的统计信息。与 CPU 分析一样，堆分析也是基于样本的。可以更改此速率，但不应该过于细化，因为降低速率越多，堆分析收集数据所需的工作就越多。默认情况下，样本在每 512 KB 堆分配的一次分配中进行分析。</p>
 <p>堆分析还可以查看不同的样本类型：</p>
 <ul>
@@ -823,9 +794,9 @@ go tool pprof -http<span class="o">=</span><span class="s2">&#34;:8080&#34;</spa
 <li>用于<code>go tool pprof -http=:8080 -diff_base &lt;file2&gt; &lt;file1&gt;</code>比较两个采集文件：</li>
 </ol>
 <p><strong>注意 与</strong>堆相关的另一种分析类型是<code>allocs</code>，它报告分配。堆分析显示堆内存的当前状态。要了解自应用程序启动以来过去的内存分配情况，可以使用分配分析。如前所述，由于栈分配很便宜，因此它们不属于此分析的一部分，该分析仅关注堆。</p>
-<h3 id="goroutines分析">Goroutines分析</h3>
+<h4 id="goroutines分析">Goroutines分析</h4>
 <p>该<code>goroutine</code>配置文件报告应用程序中所有当前 goroutine 的堆栈跟踪。可以使用 debug/pprof/goroutine/?debug=0 下载一个文件并go tool pprof再次采集分析， 可以分析是否golang在持续上涨，进而判断是否泄露。可以查看 goroutine 分析器数据以了解系统的哪一部分是可疑的。</p>
-<h3 id="block分析">Block分析</h3>
+<h4 id="block分析">Block分析</h4>
 <p>配置文件<code>block</code>报告正在进行的 goroutines 阻塞等待同步原语的位置。可能性包括</p>
 <ul>
 <li>在无缓冲通道上发送或接收</li>
@@ -836,13 +807,13 @@ go tool pprof -http<span class="o">=</span><span class="s2">&#34;:8080&#34;</spa
 </ul>
 <p>块分析还记录了 goroutine 等待的时间，可以通过 debug/pprof/block 访问。如果怀疑性能因阻止调用而受到损害，此配置文件可能会非常有用。</p>
 <p><code>block</code>默认情况下不启用配置文件：必须调用才能<code>runtime.SetBlockProfileRate</code>启用它。此函数控制报告的 goroutine 阻塞事件的比例。一旦启用，分析器将继续在后台收集数据，即使不调用 debug/pprof/block 端点。如果想设置一个高速率，那么要小心，以免损害性能。</p>
-<h3 id="完整的-goroutine-栈dump">完整的 goroutine 栈dump</h3>
+<h4 id="完整的-goroutine-栈dump">完整的 goroutine 栈dump</h4>
 <p>如果遇到死锁或怀疑 goroutines 处于阻塞状态，则完整的 goroutine 栈dump (debug/pprof/goroutine/?debug=2) 会创建所有当前 goroutine 堆栈跟踪的dump数据。这有助于作为第一个分析步骤</p>
-<h3 id="mutex分析">Mutex分析</h3>
+<h4 id="mutex分析">Mutex分析</h4>
 <p>如果怀疑应用程序花费大量时间等待锁定互斥量，从而损害执行，可以使用mutex分析。</p>
 <p>在生产环境建议启用<code>pprof</code>，在发现性能问题，延时，负载，内存空间上涨等问题，可以采集对应现场信息进行分析，对于cpu的采集会导致性能下降，但仅在启用它们期间才会发生。</p>
 <p>tips: 通过 <strong><a href="https://go.dev/blog/pprof">https://go.dev/blog/pprof</a></strong> 学习pprof 入门很合适，demo: <a href="https://github.com/rsc/benchgraffiti">https://github.com/rsc/benchgraffiti</a></p>
-<h3 id="执行跟踪器-execution-tracer"><strong>执行跟踪器 Execution Tracer</strong></h3>
+<h4 id="执行跟踪器-execution-tracer">执行跟踪器 Execution Tracer</h4>
 <p>trace和pprof一样，也有三种方式：</p>
 <p><strong>使用运行时trace包 接口API来采样数据</strong>：https://pkg.go.dev/runtime/trace 接口api来收集开始到结束区间的trace信息，和 runtime/pprof 包一样将采集的trace信息写入文件，或者二次开发写入网络io, push到三方平台去分析，常用语微服务的可视化分析监控。</p>
 <p><strong>使用网络net/http pprof包 http接口来采样数据</strong>： <a href="http://pkg.go.dev/net/http/pprof">https: //pkg.go.dev/net/http/pprof</a>； 和pprof http接口一样，采集trace的下载接口，如下：</p>
@@ -866,9 +837,9 @@ go <span class="nb">test</span> -v -bench<span class="o">=</span>Benchmark_paral
 <p>tips:  具体进一步实践，可以一起学习，掌握原理，熟练工具：</p>
 <p>Felix Geisendörfer  <strong><a href="https://github.com/DataDog/go-profiler-notes/blob/main/guide/README.md">The Busy Developer’s Guide to Go Profiling, Tracing and Observability</a></strong> 中的profiling, tracing, ob相关实验notes；</p>
 <p><a href="https://swtch.com/~rsc/">Russ Cox</a> 关于 <a href="https://research.swtch.com/telemetry"><strong>telemetry</strong></a> 引入 go toolchain(工具链)相关的设计思考; 讨论非常活跃，与时俱进呀~ 很期待这个功能。可以打通golang开发的应用程序 和 OTEL 相关监控系统的数据格式交互，进行同一标准管理。</p>
-<h2 id="99不了解-gc-的工作原理">99.不了解 GC 的工作原理</h2>
+<h3 id="99不了解-gc-的工作原理">99.不了解 GC 的工作原理</h3>
 <p>垃圾收集器（GC）是Go 语言的重要组成部分，跟踪和释放不再需要的堆分配。了解 GC 的工作原理有助于优化应用程序。</p>
-<h3 id="概念简介">概念简介</h3>
+<h4 id="概念简介">概念简介</h4>
 <p>跟踪垃圾回收，其通过循着指针来标识正在使用的、所谓的活动对象，通过活动对象构建的对象图，</p>
 <p>GC是基于标记清除算法，主要是mark-sweep 2个阶段，将mark操作进行进一分解，其过程如下：</p>
 <p>Mark setup (func Stack scan) → Make (concurrent make and assist make, make  termination) → concurrent Sweep ； 其中 开始Mark setup的时候会有非常短暂的STW(平均每 10 到 30 微秒),  标记终止(make  termination) 也会有STW, 进行收尾工作时间稍长，可以简单认为，STW发生在mark的开始和结束(开始时找到扫描开始的初始位置，开启写屏障；结束时关闭写屏障，进行收尾)</p>
@@ -915,7 +886,7 @@ go <span class="nb">test</span> -v -bench<span class="o">=</span>Benchmark_paral
 <p>tips: 通过设置<code>GOGC=off</code>或者<code>debug.SetGCPercent(-1)</code>关闭<code>GC</code></p>
 <p><strong>debug.SetMaxHeap</strong></p>
 <p>对内存不足（OOM）的情况非常敏感的场景，直接自定一个使用堆大小的上限，可以结合<code>debug.SetGCPercent(-1)</code>手动关闭<code>GC</code> 使用，到达最大限制，则触发GC,  对于内存使用比较有规律的场景适合使用，如果频繁很快到达最大限制，则会频繁GC，得不偿失了。</p>
-<h3 id="gc-跟踪">GC 跟踪</h3>
+<h4 id="gc-跟踪">GC 跟踪</h4>
 <p>可以通过设置打印 GC 跟踪<code>GODEBUG</code>环境变量，例如在运行基准测试时：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="nv">GODEBUG</span><span class="o">=</span><span class="nv">gctrace</span><span class="o">=</span><span class="m">1</span> go <span class="nb">test</span> -bench<span class="o">=</span>. -v
 </code></pre></div><p>tips: 命令中的环境变量GODEBUG值 参考官方文档：<a href="https://pkg.go.dev/runtime#hdr-Environment_Variables">Environment_Variables</a> 设置，以及查看输出格式具体内容说明。每次 GC 运行时启用一个跟踪<code>gctrace</code>都会写入<code>stderr</code>。</p>
@@ -923,7 +894,7 @@ go <span class="nb">test</span> -v -bench<span class="o">=</span>Benchmark_paral
 <p>tips: 上面只是简单概括的介绍了下，随着时间推移可能不准确，Go中GC是一个复杂的过程，具体细节，可以通过如下文档一起实践学习：</p>
 <p>了解GC细节入门:  <strong><a href="https://tip.golang.org/doc/gc-guide?continueFlag=bf311ba190bf0d160b5d3461e092f0f4">A Guide to the Go Garbage Collector</a></strong>  <strong><a href="https://go.dev/blog/ismmkeynote">Getting to Go: The Journey of Go&rsquo;s Garbage Collector</a></strong></p>
 <p>了解通过GC Trace定位问题: <a href="https://www.ardanlabs.com/blog/2018/12/garbage-collection-in-go-part1-semantics.html"><strong>Garbage Collection In Go : Part I - Semantics</strong></a></p>
-<h2 id="100不了解在-docker-和-kubernetes-中运行-go-的影响">100.不了解在 Docker 和 Kubernetes 中运行 Go 的影响</h2>
+<h3 id="100不了解在-docker-和-kubernetes-中运行-go-的影响">100.不了解在 Docker 和 Kubernetes 中运行 Go 的影响</h3>
 <p>根据 2021 年 Go 开发人员调查 ( <a href="https://go.dev/blog/survey2021-results">https://go.dev/blog/survey2021-results</a> )，使用 Go 编写服务是最常见的用途。同时，Kubernetes 是部署这些服务的最广泛使用的平台。了解在 Docker 和 Kubernetes 中运行 Go 的含义非常重要，以防止出现 CPU 节流等常见情况。</p>
 <p>GOMAXPROCS变量定义了负责同时执行用户级代码的操作系统线程的限制。默认情况下，它设置为 OS-apparent 逻辑 CPU 核心数。这在 Docker 和 Kubernetes 的上下文中意味着什么？</p>
 <p>假设 Kubernetes 集群由八个核心节点组成。当一个容器部署在 Kubernetes 中时，可以定义一个 CPU 限制，以确保一个应用程序不会耗尽宿主机的所有资源。例如，以下配置将 CPU 的使用限制为 4,000 millicpu（或 millicores），因此四个 CPU 内核</p>
@@ -960,9 +931,9 @@ go <span class="nb">test</span> -v -bench<span class="o">=</span>Benchmark_paral
 <li>了解如何调整 GC 可以带来多种好处，例如更有效地处理突然增加的负载。</li>
 <li>为帮助避免在 Docker 和 Kubernetes 中部署时出现 CPU 节流，请记住 Go 不支持 CFS。</li>
 </ul>
-<h1 id="总结">总结</h1>
+<h2 id="总结">总结</h2>
 <p>总共花了10天左右把 100-go-mistakes-and-how-to-avoid-them 这本书看完，对于一些文中不够升入的地方，进行挖掘了下，了解弄清楚了背后的原理，知其然知其所以然之后，有些mistake是一些共性的问题，而且对于文中每个mistake，都应去实践操作一下，熟悉利用好Go相关工具，编译，测试，构建等等，文中大部分是语言层面的，工程方面也有些，特别像最后介绍的在K8S docker中CPU对Go语言本身的影响，实际遇到之后才会印象更深，应该从错误中去总结，而不是总结之后继续犯错，如此折返，意义不大；从错误点中多挖掘底层逻辑多思考总结。</p>
-<p>书的地址： <a href="https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/">https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/</a></p>
+<p>原书地址： <a href="https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/">https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/</a></p>
     </div>
 
     

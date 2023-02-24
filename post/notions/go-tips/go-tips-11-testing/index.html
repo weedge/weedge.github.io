@@ -357,45 +357,21 @@ func ExampleXxx() {
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#82不对测试进行分类">82.不对测试进行分类</a>
+    <li><a href="#引言">引言</a></li>
+    <li><a href="#笔记">笔记</a>
       <ul>
-        <li><a href="#build-tags">Build tags</a></li>
-        <li><a href="#环境变量">环境变量</a></li>
-        <li><a href="#short-模式">Short 模式</a></li>
+        <li><a href="#82不对测试进行分类">82.不对测试进行分类</a></li>
+        <li><a href="#83不启用--race">83.不启用 -race</a></li>
+        <li><a href="#84不使用测试执行模式">84.不使用测试执行模式</a></li>
+        <li><a href="#85不使用表驱动测试">85.不使用表驱动测试</a></li>
+        <li><a href="#86在单元测试中使用timesleep">86.在单元测试中使用time.Sleep</a></li>
+        <li><a href="#87没有有效地处理时间-api">87.没有有效地处理时间 API</a></li>
+        <li><a href="#88不使用测试实用程序包">88.不使用测试实用程序包</a></li>
+        <li><a href="#89编写不准确的基准">89.编写不准确的基准</a></li>
+        <li><a href="#90没有探索所有的-go-测试功能">90.没有探索所有的 Go 测试功能</a></li>
       </ul>
     </li>
-    <li><a href="#83不启用--race">83.不启用 -race</a></li>
-    <li><a href="#84不使用测试执行模式">84.不使用测试执行模式</a>
-      <ul>
-        <li><a href="#-parallel">-parallel</a></li>
-        <li><a href="#-shuffle">-shuffle</a></li>
-      </ul>
-    </li>
-    <li><a href="#85不使用表驱动测试">85.不使用表驱动测试</a></li>
-    <li><a href="#86在单元测试中使用timesleep">86.在单元测试中使用time.Sleep</a></li>
-    <li><a href="#87没有有效地处理时间-api">87.没有有效地处理时间 API</a></li>
-    <li><a href="#88不使用测试实用程序包">88.不使用测试实用程序包</a>
-      <ul>
-        <li><a href="#httptest">httptest</a></li>
-        <li><a href="#iotest">iotest</a></li>
-      </ul>
-    </li>
-    <li><a href="#89编写不准确的基准">89.编写不准确的基准</a>
-      <ul>
-        <li><a href="#不重置或暂停定时器">不重置或暂停定时器</a></li>
-        <li><a href="#对微基准做出错误的假设">对微基准做出错误的假设</a></li>
-        <li><a href="#不注意编译器优化">不注意编译器优化</a></li>
-        <li><a href="#被观察者效应愚弄">被观察者效应愚弄</a></li>
-      </ul>
-    </li>
-    <li><a href="#90没有探索所有的-go-测试功能">90.没有探索所有的 Go 测试功能</a>
-      <ul>
-        <li><a href="#代码覆盖率">代码覆盖率</a></li>
-        <li><a href="#从不同的包进行测试">从不同的包进行测试</a></li>
-        <li><a href="#helper功能函数">helper功能函数</a></li>
-        <li><a href="#安装setup和拆卸teardown">安装(setup)和拆卸(teardown)</a></li>
-      </ul>
-    </li>
+    <li><a href="#概括">概括</a></li>
   </ul>
 </nav>
   </div>
@@ -403,7 +379,7 @@ func ExampleXxx() {
 
     
     <div class="post-content">
-      <h1 id="引言">引言</h1>
+      <h2 id="引言">引言</h2>
 <p>测试是项目生命周期的一个重要方面。它提供了无数的好处，例如建立对应用程序的信心、充当代码文档以及使重构更容易。与其他一些语言相比，Go 具有强大的编写测试原语。主要讨论测试过程变得脆弱、效率低下和准确性低的常见错误。这类问题属于工程规范实践，有些case同样适用于其他语言。</p>
 <p>Go 中提供 go test 工具来执行测试，可以查看具体的开发文档： <strong><a href="https://pkg.go.dev/cmd/go#hdr-Testing_flags">https://pkg.go.dev/cmd/go#hdr-Testing_flags</a></strong>  里面介绍了每个模式的具体使用方式，使用好这些测试模式flag，可以更快执行或更好地发现可能错误，进而保证代码质量，工程代码稳定性建设上的重要一环。Go中支持4种测试函数：单测函数，基准压测函数，模糊测试，以及打印输出样例测试。</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestXxx</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
@@ -414,10 +390,10 @@ func ExampleXxx() {
 	<span class="c1">// Output: The output of
 </span><span class="c1"></span>	<span class="c1">// this example.
 </span><span class="c1"></span><span class="p">}</span>
-</code></pre></div><h1 id="笔记">笔记</h1>
-<h2 id="82不对测试进行分类">82.不对测试进行分类</h2>
+</code></pre></div><h2 id="笔记">笔记</h2>
+<h3 id="82不对测试进行分类">82.不对测试进行分类</h3>
 <p>功能测试大致分为单元测试，集成测试，以及端到端的测试，单元测试则是程序测试case覆盖率的保障，列举Go中3种常见的测试分类方法</p>
-<h3 id="build-tags">Build tags</h3>
+<h4 id="build-tags">Build tags</h4>
 <p>build tags 的一些使用场景：</p>
 <ul>
 <li>测试环境使用 mock 服务；而正式环境使用真实数据</li>
@@ -437,13 +413,13 @@ go <span class="nb">test</span> -v .
 go <span class="nb">test</span> --tags<span class="o">=</span>mock3 -v .
 <span class="c1"># 仅运行包中 mock1 &amp;&amp; mock2 的测试case</span>
 go <span class="nb">test</span> --tags<span class="o">=</span>mock1,mock2 -v .
-</code></pre></div><h3 id="环境变量">环境变量</h3>
+</code></pre></div><h4 id="环境变量">环境变量</h4>
 <p>使用build tag方式构建测试用，随着tag的增加，可能会隐藏掉其中的错误，而且需要去查看测试文件中的tag有哪些。环境变量这种方式是build tags 的补充吧，对于没有设置环境变量的情况下，明确显示哪些测试是跳过的测试，比如</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="k">if</span> os.Getenv<span class="o">(</span><span class="s2">&#34;INTEGRATION&#34;</span><span class="o">)</span> !<span class="o">=</span> <span class="s2">&#34;true&#34;</span> <span class="o">{</span>
 		t.Skip<span class="o">(</span><span class="s2">&#34;skipping integration test&#34;</span><span class="o">)</span>
 	<span class="o">}</span>
 </code></pre></div><p>tips: tag是测试文件粒度分类(Go 构建工具支持)，环境变量是测试代码粒度分类(手动代码逻辑)</p>
-<h3 id="short-模式">Short 模式</h3>
+<h4 id="short-模式">Short 模式</h4>
 <p>另一种对测试进行分类的方法与它们的速度有关。可能不得不将短期运行的测试与长期运行的测试区分开来。</p>
 <p>作为说明，假设有一组单元测试，其中一个是出了名的慢。想对慢速测试进行分类，这样就不必每次都运行它（尤其是在保存文件后触发），使用testing.Short区分如下：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestLongRunning</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
@@ -455,37 +431,37 @@ go <span class="nb">test</span> --tags<span class="o">=</span>mock1,mock2 -v .
 </code></pre></div><p>运行测试是，通过-short 参数来执行跳过</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">go <span class="nb">test</span> -v -short .
 </code></pre></div><p>这三种方式可以组合使用，例如，项目包含长时间运行的单元测试，则使用构建标记或环境变量对测试进行分类（例如，作为单元测试，mock测试，或者集成测试）和使用短模式来跳过长时间运行的测试。</p>
-<h2 id="83不启用--race">83.不启用 -race</h2>
+<h3 id="83不启用--race">83.不启用 -race</h3>
 <p>对于并发程序代码的测试，需要检测是否存在data race， 需要使用 -race 模式来构建测试，比如</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="k">go</span> <span class="nx">test</span> <span class="o">-</span><span class="nx">race</span> <span class="p">.</span><span class="o">/...</span>
 </code></pre></div><p>这种方法使启用竞争检测器，它可以检测代码以捕获潜在的数据竞争(没有打上!race标记的文件)。启用时，它对内存和性能有显着影响，因此必须在特定条件下使用，例如本地测试或 CI。在生产中，应该避免它（或者只在金丝雀发布的情况下使用)。</p>
 <p>竞争检测器无法捕捉到误报（明显的数据竞争并不是真实的）。因此，如果收到警告，就知道代码包含数据竞争。相反，它有时会导致漏报（缺少实际的数据竞争）。对于漏报的情况，可以尽可能多的迭代来检测。</p>
-<h2 id="84不使用测试执行模式">84.不使用测试执行模式</h2>
-<h3 id="-parallel">-parallel</h3>
+<h3 id="84不使用测试执行模式">84.不使用测试执行模式</h3>
+<h4 id="-parallel">-parallel</h4>
 <p>默认情况下 go test 在不同的 package 之间是并行执行测试，在每个 package 内部是串行执行测试。如果想要在 package 内部开启并行测试，需要在测试函数中显式执行 t.Parallel() 告诉 go test 这个函数可以与其他测试并行执行，一旦开启并行测试，一定要确保测试函数之间的资源竞争的问题已经得到正确的解决。执行 go test -parallel n 来制定n个测试函数并行执行(需要再显示调用了t.Parrallel)。对于执行慢的测试函数，相互之间没有资源竞争，可以加入t.Parrallel 来同时执行，提高测试的执行速度。</p>
-<h3 id="-shuffle">-shuffle</h3>
+<h4 id="-shuffle">-shuffle</h4>
 <p>从 Go 1.17 开始引入，可以随机化测试和基准测试的执行顺序， 设置为<code>on</code>或<code>off</code>启用或禁用随机测试；编写测试时的最佳做法是将它们隔离开来。例如，它们不应依赖于执行顺序或共享变量。这些隐藏的依赖关系可能意味着一个可能的测试错误，或者更糟的是，一个在测试期间不会被捕获的错误。</p>
 <p>应该对现有的测试标志保持谨慎，并随时了解最新 Go 版本的新功能。运行parallel测试或者将测试分再不同的包中，可以减少运行所有测试的总体执行时间。shuffle测试可以帮助发现隐藏的依赖关系，这些依赖关系可能意味着在以相同顺序运行测试时出现测试错误，甚至不可见的错误。</p>
-<h2 id="85不使用表驱动测试">85.不使用表驱动测试</h2>
+<h3 id="85不使用表驱动测试">85.不使用表驱动测试</h3>
 <p>这个在vscode, goland IDE中已经集成了，对应函数生成对应单测函数时，会自动给出表驱动测试模版，编写测试用例，用于覆盖函数分支场景；如果不是用表驱动测试的话， 会出现大量的冗余函数，而且表达含义也会相对模糊，直接放入一个测试函数中来编写用例测试即可，也便于对整个函数的测试覆盖。通过t.Run来执行这些测试用例，进行期望值比较，同时也可以使用t.Parallel() 通过parallel 模式来加速测试，以及通过shuffle来随机测试。</p>
-<h2 id="86在单元测试中使用timesleep">86.在单元测试中使用time.Sleep</h2>
+<h3 id="86在单元测试中使用timesleep">86.在单元测试中使用time.Sleep</h3>
 <p>在测试并发编程时，可能存在竞争条件race condition 的场景，导致程序的执行顺序不同，进入影响测试的准确性，如果使用time.Sleep 之后来断言值， 可能会有不同的结果，是不确定性的，所以，尽量使用管道同步的方式来进行断言测试；如果同步不可能做到的话， 可以重试进行断言，比如常用的testify 测试包，使用Eventually函数实现了最终应该成功的断言，这比使用被动睡眠更好的选择来消除测试中的非确定性。</p>
-<h2 id="87没有有效地处理时间-api">87.没有有效地处理时间 API</h2>
+<h3 id="87没有有效地处理时间-api">87.没有有效地处理时间 API</h3>
 <p>对于函数中有time.Now()获取当前时间，而测试是也依赖当前时间的处理，导致那个时间点可能会存在差异，一种方式是提供全局共享变量，如果使用并行测试的，全部共享变量会引入数据竞争，导致无法并行测试，所以最好的方式，修改下所要测试的函数，去掉time.Now()的依赖，使用time.Time类型作为传入参数，有函数使用方一起来定义，这样可方便测试。</p>
-<h2 id="88不使用测试实用程序包">88.不使用测试实用程序包</h2>
+<h3 id="88不使用测试实用程序包">88.不使用测试实用程序包</h3>
 <p>httptest 和 iotest 是两个常用的包，应该利用起来，构造于http 和 io 相关函数的测试。</p>
-<h3 id="httptest">httptest</h3>
+<h4 id="httptest">httptest</h4>
 <p>httptest 包不需要通过建立网络连接就可以进行测试，主要用来测试服务端的http api handler 函数 以及 客户端的http caller函数。具体查看开发文档：https://pkg.go.dev/net/http/httptest</p>
 <p>对于测试服务中api Handler的场景，只需要通过httptest.NewRequest 来构建api的请求数据的Reader，以及使用httptest.NewRecorder 来创建一个往请求api中写入响应数据的Writer, 这样在写测试用例时候， 直接模拟接口请求数据，编写相关的测试case,  测试的api handler 返回的数据 可以从Writer中获取到，进而可以做接口响应数据的断言假设，比如 返回状态码，响应body数据， 响应头中的数据。</p>
 <p>对于测试客户端中相关的http client caller函数， 通过httptest.NewServer建立对应api handler服务, 客户端相关的http client <a href="http://xn--callerhttp-uh4py1d60ohkhow7ewtwc.Client.Do">caller函数可以使用http.Client.Do</a> 对server.URL进行调用了，进而可以对返回的值进行断言测试。还可以使用httptest.NewTLSServer 建立一个TLS的测试服务。</p>
 <p>grpc也有对应的测试库grpc/test 库，无需建立网络连接即可测试，具体查看开发文档：https://pkg.go.dev/google.golang.org/grpc/test</p>
-<h3 id="iotest">iotest</h3>
+<h4 id="iotest">iotest</h4>
 <p>该iotest包 ( <a href="https://pkg.go.dev/testing/iotest">https://pkg.go.dev/testing/iotest</a> ) 实现了io Reader ，Writer， Closer 等接口， 用于测试使用io 相关接口的方法测试；</p>
-<h2 id="89编写不准确的基准">89.编写不准确的基准</h2>
+<h3 id="89编写不准确的基准">89.编写不准确的基准</h3>
 <p>对于性能优化，不能盲猜，需要编写基准压测来 分析评估 具体性能，然而编写基准测试并不简单。编写不准确的基准并根据它们做出错误的假设可能非常简单。使用go test -bench <code>regexp</code> 匹配对应BenchmarkXxxx函数进行基准压测，默认运行1s, 运行时间通过-benchtime 来调整，其他性能分析的参数见开发文档。以下几种常见编写不准确基准压测的情况：</p>
-<h3 id="不重置或暂停定时器">不重置或暂停定时器</h3>
+<h4 id="不重置或暂停定时器">不重置或暂停定时器</h4>
 <p>在基准压测时，可能会执行一个耗时长的初始准备逻辑，比如准备大量的数据用于基准压测，这个时候需要引入 testing.B.ResetTimer() 来重置时间，在开始基准压测，从测试结果中丢弃这部分耗时设置； 还有一种情况是在基准压测的循环里，这需要使用testing.B.StopTimer()停止时间，处理完准备逻辑，在使用testing.B.StartTimer()开始时间来处理基准测试函数。</p>
-<h3 id="对微基准做出错误的假设">对微基准做出错误的假设</h3>
+<h4 id="对微基准做出错误的假设">对微基准做出错误的假设</h4>
 <p>对于基准测试，不能只用一轮或几轮基准实验，就做出了假设；基准测试受当前机器运行时环境的影响，cpu，内存负载情况等；所以在进行基准压测试，如果测试的值有所偏失，应该按照概率论中的大数定律，将压测的时间放长(-benchtime 调整)，而且测试的次数可以增加些(-count 调整)， 将这些性能数据，通过benchstat <a href="https://pkg.go.dev/golang.org/x/perf/cmd/benchstat">https://pkg.go.dev/golang.org/x/perf/cmd/benchstat</a> 工具来 对比分析 前后benchmark的统计数据, 如果对比结果误差很小，则说明性能无差异。基准测试必须基于在合理环境中通过多次样本取证进行A/B 比较之后才能给出比较正确的结果。</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="k">go</span> <span class="nx">install</span> <span class="nx">golang</span><span class="p">.</span><span class="nx">org</span><span class="o">/</span><span class="nx">x</span><span class="o">/</span><span class="nx">perf</span><span class="o">/</span><span class="nx">cmd</span><span class="o">/</span><span class="nx">benchstat</span><span class="err">@</span><span class="nx">latest</span>
 <span class="k">go</span> <span class="nx">test</span> <span class="o">-</span><span class="nx">run</span><span class="p">=</span><span class="nx">NONE</span> <span class="o">-</span><span class="nx">bench</span><span class="p">=</span><span class="nx">BenchmarkAtomicStoreInt32</span> <span class="o">-</span><span class="nx">count</span><span class="p">=</span><span class="mi">10</span> <span class="o">-</span><span class="nx">benchtime</span><span class="p">=</span><span class="mi">3</span><span class="nx">s</span> <span class="o">-</span><span class="nx">benchmem</span> <span class="p">.</span><span class="o">/</span><span class="mi">11</span><span class="o">-</span><span class="nx">testing</span><span class="o">/</span><span class="mi">89</span><span class="o">-</span><span class="nx">benchmark</span><span class="o">/</span><span class="nx">wrong</span><span class="o">-</span><span class="nx">assumptions</span> <span class="p">|</span> <span class="nx">tee</span> <span class="o">-</span><span class="nx">a</span> <span class="nx">smp1</span><span class="p">.</span><span class="nx">txt</span>
@@ -494,15 +470,15 @@ go <span class="nb">test</span> --tags<span class="o">=</span>mock1,mock2 -v .
 
 <span class="k">go</span> <span class="nx">test</span> <span class="o">-</span><span class="nx">run</span><span class="p">=</span><span class="nx">NONE</span> <span class="o">-</span><span class="nx">bench</span><span class="p">=</span><span class="nx">BenchmarkAtomicStore</span><span class="p">.</span> <span class="o">-</span><span class="nx">count</span><span class="p">=</span><span class="mi">10</span> <span class="o">-</span><span class="nx">benchtime</span><span class="p">=</span><span class="mi">3</span><span class="nx">s</span> <span class="o">-</span><span class="nx">benchmem</span> <span class="p">.</span><span class="o">/</span><span class="mi">11</span><span class="o">-</span><span class="nx">testing</span><span class="o">/</span><span class="mi">89</span><span class="o">-</span><span class="nx">benchmark</span><span class="o">/</span><span class="nx">wrong</span><span class="o">-</span><span class="nx">assumptions</span> <span class="p">|</span> <span class="nx">tee</span>  <span class="nx">smp</span><span class="p">.</span><span class="nx">txt</span>
 <span class="nx">benchstat</span> <span class="nx">smp</span><span class="p">.</span><span class="nx">txt</span>
-</code></pre></div><h3 id="不注意编译器优化">不注意编译器优化</h3>
+</code></pre></div><h4 id="不注意编译器优化">不注意编译器优化</h4>
 <p>这个case 在Go中有对应issue（https://github.com/golang/go/issues/14813）; benchmark的函数代码比较简单，被内联到基准压测文件中，导致测试为空的，这样导致空的基准压测在执行，每次op时间相当于一个时钟周期时间，如何避免编译器优化欺骗基准测试结果的模式：</p>
 <p>将被测函数的结果分配给局部变量，然后将最新结果分配给全局变量，先分配局部变量在栈上，不影响测试，而将局部变量复制给全局变量，分配在堆上，以防编译器优化进行inline 处理。</p>
 <p>还有一种方式是直接使用//go:noinline 标记函数，在编译阶段防止inline。</p>
-<h3 id="被观察者效应愚弄">被观察者效应愚弄</h3>
+<h4 id="被观察者效应愚弄">被观察者效应愚弄</h4>
 <p>在基准压测一个CPU-Bound的函数时，需要注意cpu cache 局部性原理对基准压测的影响；为了防止cpu cache对基准压测的影响，可以在每次测试前，创建一个新的测试数据用于测试，比如基准压测矩阵运算函数，在每次测试前，新建一个测试矩阵数据。</p>
-<h2 id="90没有探索所有的-go-测试功能">90.没有探索所有的 Go 测试功能</h2>
+<h3 id="90没有探索所有的-go-测试功能">90.没有探索所有的 Go 测试功能</h3>
 <p>工欲善其事必先利其器，充分掌握go test工具有助于写出高质量的代码。</p>
-<h3 id="代码覆盖率">代码覆盖率</h3>
+<h4 id="代码覆盖率">代码覆盖率</h4>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 输出测试覆盖文件</span>
 go <span class="nb">test</span> -coverprofile<span class="o">=</span>coverage.out ./...
 <span class="c1"># 分析测试覆盖文件</span>
@@ -510,11 +486,11 @@ go tool cover -html<span class="o">=</span>coverage.out
 <span class="c1"># 一个包在另外一个包中会测试到，需要表明测试覆盖到的包</span>
 go <span class="nb">test</span> -coverpkg<span class="o">=</span>./... -coverprofile<span class="o">=</span>coverage.out ./...
 </code></pre></div><p>tips: 在追踪代码覆盖率时要保持谨慎。拥有 100% 的测试覆盖率并不意味着应用程序没有错误；需正确推理测试涵盖的内容。</p>
-<h3 id="从不同的包进行测试">从不同的包进行测试</h3>
+<h4 id="从不同的包进行测试">从不同的包进行测试</h4>
 <p>这种在业务功能函数测试，或者对外部进行测试， 关注包的公开api行为而不是内部的具体实现细节，专注于测试暴露的行为。 常用的测试如BDD 开发， 只关注包的公开行为， 比如<a href="https://onsi.github.io/ginkgo/">ginkgo</a> ；编写的测试用例文件可以不用和测试函数在同一个包内，可以单独定义测试文件夹，对不同包来进行测试用例的开发。</p>
-<h3 id="helper功能函数">helper功能函数</h3>
+<h4 id="helper功能函数">helper功能函数</h4>
 <p>在进行测试是，需要测试前的准备，这些准备工作逻辑helper功能函数，用于初始化一些对象来测试，参数需要传入*testing.T,  在初始逻辑中判读初始的错误情况，如果错误直接调用t.Fatal退出即可，只返回对应测试对象，这样可以方便复用，无需在处理错误，方便其他测试场景使用。这个属于代码质量问题啦。</p>
-<h3 id="安装setup和拆卸teardown">安装(setup)和拆卸(teardown)</h3>
+<h4 id="安装setup和拆卸teardown">安装(setup)和拆卸(teardown)</h4>
 <p>如果单个测试初始执行完测试后需要清理一些初始资源，可以使用 testing.T.Cleanup函数来做单测的收尾工作；多个调用入栈操作，单测完出栈执行。</p>
 <p>如果测试文件都依赖于初始化之后才开始测试的话， 可以放在全部测试开始之前的位置进行测试的setup；在全部测试结束后对初始化的资源进行释放teardown； 可以通过在TestMain中定义整体逻辑如下：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestMain</span><span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">M</span><span class="p">)</span> <span class="p">{</span>
@@ -530,7 +506,7 @@ go <span class="nb">test</span> -coverpkg<span class="o">=</span>./... -coverpro
 </span><span class="c1"></span>	<span class="k">return</span> 
 <span class="p">}</span>
 </code></pre></div><p>这种方式在测试开发框架包中经常使用到，比如ginkgo中的BeforeSuite和AfterSuite函数，在测试前后执行。</p>
-<h1 id="概括">概括</h1>
+<h2 id="概括">概括</h2>
 <ul>
 <li>使用构建标志、环境变量或 -short模式对测试进行分类可以使测试过程更加高效。可以使用构建标志或环境变量（例如，单元测试与集成测试）创建测试类别，并区分短期运行测试和长期运行测试以确定要执行的测试类型。</li>
 <li><code>race</code>强烈建议在编写并发应用程序时启用该标志。这样做可以捕捉到可能导致软件错误的潜在数据竞争；开启race检测会消耗内存，一般在开发测试，CI, 金丝雀发布(预发环境)的时候使用。</li>

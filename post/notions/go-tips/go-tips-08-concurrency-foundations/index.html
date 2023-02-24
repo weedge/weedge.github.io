@@ -322,16 +322,17 @@
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#55混淆并发和并行">55.混淆并发和并行</a></li>
-    <li><a href="#56认为并发总是更快">56.认为并发总是更快</a></li>
-    <li><a href="#57对何时使用channel或mutex感到困惑">57.对何时使用channel或mutex感到困惑</a></li>
-    <li><a href="#58不理解竞争race问题">58.不理解竞争race问题</a>
+    <li><a href="#笔记">笔记</a>
       <ul>
-        <li><a href="#go-内存模型">Go 内存模型</a></li>
+        <li><a href="#55混淆并发和并行">55.混淆并发和并行</a></li>
+        <li><a href="#56认为并发总是更快">56.认为并发总是更快</a></li>
+        <li><a href="#57对何时使用channel或mutex感到困惑">57.对何时使用channel或mutex感到困惑</a></li>
+        <li><a href="#58不理解竞争race问题">58.不理解竞争race问题</a></li>
+        <li><a href="#59不了解工作负载类型的并发影响">59.不了解工作负载类型的并发影响</a></li>
+        <li><a href="#60误解-go-context">60.误解 Go Context</a></li>
       </ul>
     </li>
-    <li><a href="#59不了解工作负载类型的并发影响">59.不了解工作负载类型的并发影响</a></li>
-    <li><a href="#60误解-go-context">60.误解 Go Context</a></li>
+    <li><a href="#概括">概括</a></li>
   </ul>
 </nav>
   </div>
@@ -339,8 +340,8 @@
 
     
     <div class="post-content">
-      <h1 id="笔记">笔记</h1>
-<h2 id="55混淆并发和并行">55.混淆并发和并行</h2>
+      <h2 id="笔记">笔记</h2>
+<h3 id="55混淆并发和并行">55.混淆并发和并行</h3>
 <p>这个在处理大数据的场景中经常可以看到，可以这么抽象，比如将一个job 分成 很多的 task 事件， 比如 读取文件 task, 切割文件task, map key task, shuffle key task，reduce key task，sink task 等等，如果这个job 串行执行，同步处理task, 效率会很低，cpu资源也不会充分利用，比如文件io,网络io，系统缺页中断都会反生系统调用(同步或者异步)，这样cpu可能空闲出来了，串行执行的话， 需要等待这次系统调用处理完之后才能继续使用cpu, 所以处理起来很慢，吞吐量很低； 如果改成并发(取决于操作系统调度，基于时间片轮训抢占式调度)，将job进程分成的多个task事件一同工作，如果某个task发生了系统中断，则可以让出cpu给另外一个task来执行，比如读取文件io.Reader，sink io.Writer写入文件时产生了系统中断，则可以保存上下文让出cpu给其他task来执行，这样可以充分利用cpu资源，提高吞吐(这里task不能太多,涉及到上下文切换，反而会降低吞吐，需要需要用户合理编排运行时结构)；当cpu利用上了，那就使用多核cpu来同时处理，进一步提高吞吐(多核涉及到底层 <a href="https://fgiesen.wordpress.com/2014/07/07/cache-coherency/"><strong>cpu cache一致性</strong></a> 问题)；单机吞吐上来了，如果数据量非常大，单机优化已经无法存放这么多数据了，那就copy多台机器分布式进行处理(单机变多机，协同和网络问题)；第一次提升使用的就是将job切成多个task一起来处理，就是使用并发机制充分cpu资源；第二次提升则是使用多核，增加cpu资源，将多个task分配到cpu上同时一起做(执行)，即所谓的并行，这样可以单机垂直扩容提升吞吐了；即使存在摩尔定律，但是单机还是有限制；数据无极限，那处理也需要无极限，copy多台机器，组成集群，将单机任务分发到多集群上进行调度执行，充分利用并发并行，利用计算和存储资源，水平扩容，这样就没有资源上的限制了(需要考虑资源的充分利用，因为成本上去了嘛；当然<a href="https://www.intel.com/content/www/us/en/products/docs/processors/what-is-a-gpu.html">GPU</a>的利用应该同样适用，并行能力更强，但是单核计算能力相对cpu弱)。在并发并行处理时，task之间必然会存在协同关系，彼此分工合作，则需要沟通，共同处理共享资源，存在竞争，CSP理论中提倡通过沟通来共享资源，在Go中通过channel来协同，也有相关sync库来处理同步；分布式多机沟通则通过rpc和消息队列；其中涉及到分布式调度和计算。 这种并发和并行模式在开店做生意，银行排队，工厂流水线中都可以看到相同的处理模式。</p>
 <p>回到正题，引用Go设计者的一句话概括：</p>
 <blockquote>
@@ -350,7 +351,7 @@
 <p>并发是一次处理很多事情，并行是一次执行做很多事情；</p>
 <p>并发和并行是不同的。并发是关于结构的，可以通过引入分离并发线程可以处理的不同步骤，将顺序实现更改为并发实现。同时，并行性是关于执行的，可以通过添加更多并行线程在步骤级别使用它。理解这两个概念是成为一名熟练的 Gopher 的基础。</p>
 <p>附：<strong><a href="https://go.dev/blog/waza-talk">Concurrency is not parallelism</a></strong></p>
-<h2 id="56认为并发总是更快">56.认为并发总是更快</h2>
+<h3 id="56认为并发总是更快">56.认为并发总是更快</h3>
 <p>在考虑并发性时，有两种类型的工作负载需要理解。</p>
 <ul>
 <li><strong>CPU-Bound</strong>：是一种永远不会造成 Goroutines 自然地进入和退出等待状态的情况的工作负载。是不断进行计算的job。将 Pi 计算到第 N 位的线程将受 CPU-Bound。</li>
@@ -360,18 +361,18 @@
 <p>对于受IO-Bound的工作负载，不需要并行性来使用并发。单个操作系统/硬件线程可以高效地处理多个 Goroutines，因为 Goroutines 作为其工作负载的一部分自然地进入和退出等待状态。拥有比操作系统/硬件线程更多的 Goroutine 可以加快工作负载的执行速度，因为将 Goroutine 移入和移出操作系统线程的延迟成本不会产生“Stop The World”事件。工作负载自然停止，这允许不同的 Goroutine 有效地利用相同的操作系统/硬件线程，而不是让操作系统/硬件线程闲置。</p>
 <p>怎么知道每个硬件线程有多少 Goroutines 提供最佳吞吐量？Goroutines 太少，有更多的空闲时间；太多的 Goroutines 有更多的上下文切换延迟时间。如果不确定是否并发会更快，正确的方法可能是从一个简单的顺序版本开始，然后使用分析和基准测试，进行调优。</p>
 <p>附： <a href="https://www.ardanlabs.com/blog/2018/12/scheduling-in-go-part3.html"><strong>Scheduling In Go : Part III - Concurrency</strong></a></p>
-<h2 id="57对何时使用channel或mutex感到困惑">57.对何时使用channel或mutex感到困惑</h2>
+<h3 id="57对何时使用channel或mutex感到困惑">57.对何时使用channel或mutex感到困惑</h3>
 <p>channel最适合Goroutine之间传递数据所有权、分配工作单元和传达异步结果等情况，通过沟通来共享资源；</p>
 <p>想要共享状态或访问共享资源时，sync包中的mutex互斥锁同步原语会确保对该资源的独占访问。虽然channel也可以保证共享资源的互斥访问，但是与mutex相比，channel 会导致性能下降；当只需要锁定少量共享资源时，使用 mutex 非常有用。</p>
-<h2 id="58不理解竞争race问题">58.不理解竞争race问题</h2>
+<h3 id="58不理解竞争race问题">58.不理解竞争race问题</h3>
 <p>当则编写的并发应用程序中工作时，了解数据竞争 data race 不同于竞争条件 data condition 是很重要的。当多个 goroutine 同时访问同一内存位置并且其中至少一个正在写入时，就会发生数据竞争。数据竞争意味着意外行为。但是，无数据竞争的应用程序并不一定意味着确定性结果。一个应用程序可以没有数据竞争，但仍然有依赖于不受控制的事件的行为（例如 goroutine 执行，消息发布到通道的速度，或者对数据库的调用持续多长时间），这是一个竞争条件。理解这两个概念对于精通并发应用程序的设计至关重要。</p>
-<h3 id="go-内存模型">Go 内存模型</h3>
+<h4 id="go-内存模型">Go 内存模型</h4>
 <p>Go 内存模型是一种规范，它定义了在不同的 goroutine 中写入相同变量后可以保证从一个 goroutine 中的变量读取的条件. 换句话说，Go开发人员应牢记内存模型规范，避免做出可能导致数据竞争、竞争条件的错误假设。具体细节：<a href="https://research.swtch.com/gomm">https://research.swtch.com/gomm</a></p>
 <p>tips: 由于多核处理器cpu之间独立的L1/L2 cache，会出现cache line不一致的问题，为了解决这个问题，有相关协议模型，比如MESI协议来保证cache数据一致，同时由于CPU对「缓存一致性协议」进行的异步优化，对写和读分别引入了「store buffer」和「invalid queue」，很可能导致后面的指令查不到前面指令的执行结果（各个指令的执行顺序非代码执行顺序），这种现象很多时候被称作「CPU乱序执行」，为了解决乱序问题（也可以理解为可见性问题，修改完没有及时同步到其他的CPU），又引出了「内存屏障」的概念；内存屏障可以分为三种类型：写屏障，读屏障以及全能屏障（包含了读写屏障），屏障可以简单理解为：在操作数据的时候，往数据插入一条”特殊的指令”。只要遇到这条指令，那前面的操作都得「完成」。CPU当发现写屏障指令时，会把该指令「之前」存在于「store Buffer」所有写指令刷入高速缓存。就可以让CPU修改的数据马上暴露给其他CPU，达到「写操作」可见性的效果。读屏障也是类似的：CPU当发现读屏障的指令时，会把该指令「之前」存在于「invalid queue」所有的指令都处理掉。通过这种方式就可以确保当前CPU的缓存状态是准确的，达到「读操作」一定是读取最新的效果。由于不同CPU架构的缓存体系不一样、缓存一致性协议不一样、重排序的策略不一样、所提供的内存屏障指令也有差异，所以一些语言c++/java/go/rust 都有实现自己的内存模型，应该相互都有些借鉴吧。</p>
-<h2 id="59不了解工作负载类型的并发影响">59.不了解工作负载类型的并发影响</h2>
+<h3 id="59不了解工作负载类型的并发影响">59.不了解工作负载类型的并发影响</h3>
 <p>上文提到到工作负载分两种：CPU-Bound 和 IO-Bound 已经说明了一些问题，文中使用的工作池，也是依赖于使用场景的工作负载类型是CPU-Bound还是 IO-Bound ; 如果 worker 执行的工作负载是 I/O-bound，则该值主要取决于外部系统。相反，如果工作量是受 CPU 限制，goroutine 的最佳数量接近于可用线程的数量。在设计并发应用程序时，了解工作负载类型（I/O 或 CPU）至关重要。</p>
 <p>大多数情况下，应该通过基准来验证假设。并发不是直截了当的，很容易做出草率的假设，结果证明是无效的。</p>
-<h2 id="60误解-go-context">60.误解 Go Context</h2>
+<h3 id="60误解-go-context">60.误解 Go Context</h3>
 <p>文中主要是介绍了各种context的使用场景，<code>WithCancel</code> ，<code>WithTimeout</code>，<code>WithDeadline</code>，<code>WithValue</code>，以及1.20新加入的 <code>WithCancelCause</code>返回CancelCauseFunc 可以记录Cancel导致的错误原因，通过<code>Cause</code>获取到；具体可以在开发文档中学习即可： <a href="https://pkg.go.dev/context">https://pkg.go.dev/context</a> ;</p>
 <p>使用Context的程序应该遵循这些规则，以保持接口在包之间的一致性，并启用静态分析工具来检查context传播：</p>
 <ul>
@@ -386,7 +387,7 @@
 <li>WithValue中的key, 必须可比较的，并且不应是字符串类型或任何其他内置类型，以避免使用context的包之间发生冲突；最佳做法是创建一个未导出的自定义类型；比如在包中定义 <code>type favContextKey string</code> ，即使另一个包也用<code>favContextKey</code> 这个名字，不是同一个key了。这个在http中间件里经常出现，记录在访问日志中记录相关信息。</li>
 <li>同一个 context 可以传递到不同的 goroutine 中，且在多个 goroutine 可以安全访问。</li>
 </ul>
-<h1 id="概括">概括</h1>
+<h2 id="概括">概括</h2>
 <ul>
 <li>了解并发和并行之间的根本区别是 Go 开发人员知识的基石。并发是关于结构的，而并行是关于执行的。</li>
 <li>要成为熟练的开发人员，必须承认并发并不总是更快。涉及最小工作负载并行化的解决方案不一定比顺序实施更快。对顺序解决方案与并发解决方案进行基准测试应该是验证假设的方法。</li>

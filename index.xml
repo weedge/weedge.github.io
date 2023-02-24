@@ -62,20 +62,20 @@
       
       <guid>https://weedge.github.io/post/notions/go-tips/go-tips-12-optimizations/</guid>
       
-        <description>&lt;h1 id=&#34;引言&#34;&gt;引言&lt;/h1&gt;
+        <description>&lt;h2 id=&#34;引言&#34;&gt;引言&lt;/h2&gt;
 &lt;p&gt;在大多数情况下，编写可读、清晰的代码比编写经过优化但更复杂、更难理解的代码要好，不要过早的优化。建议遵循软件工程师 Wes Dyer 的这句名言：&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;&lt;em&gt;Make it correct, make it clear, make it concise, make it fast, in that order.&lt;/em&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;并不意味着禁止为速度和效率优化应用程序, 了解并掌握这些优化点，以备不时之需；文中给出了常见的优化技术；有些特定于 Go 内存模型，内存分配，GPM调度模型；有些是关于了解硬件有助于写出好的代码(适用于不同语言)，其中会有硬件方面的术语，可以结合wiki进行学习；&lt;/p&gt;
-&lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
-&lt;h2 id=&#34;91不了解-cpu-缓存&#34;&gt;91.不了解 CPU 缓存&lt;/h2&gt;
+&lt;h2 id=&#34;笔记&#34;&gt;笔记&lt;/h2&gt;
+&lt;h3 id=&#34;91不了解-cpu-缓存&#34;&gt;91.不了解 CPU 缓存&lt;/h3&gt;
 &lt;p&gt;&lt;em&gt;Mechanical sympathy(机械同情)&lt;/em&gt;  来自三届 F1 世界冠军 Jackie Stewart 创造的一个术语&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;&lt;em&gt;You don’t have to be an engineer to be a racing driver, but you do have to have mechanical sympathy.&lt;/em&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;简而言之，当了解系统的设计用途时，无论是 F1 赛车、飞机还是计算机，都可以与设计保持一致以获得最佳性能。对 CPU 缓存工作方式的机械同情可以帮助优化 Go 应用程序。&lt;/p&gt;
-&lt;h3 id=&#34;cpu架构-cpu-architecture&#34;&gt;CPU架构 CPU architecture&lt;/h3&gt;
+&lt;h4 id=&#34;cpu架构-cpu-architecture&#34;&gt;CPU架构 CPU architecture&lt;/h4&gt;
 &lt;p&gt;&lt;img src=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F01_Harsanyi.png&#34; alt=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F01_Harsanyi.png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;上图为简单的Intel Core i5-7300u cpu架构图；&lt;a href=&#34;https://en.wikichip.org/wiki/intel/core_i5/i5-7300u&#34;&gt;https://en.wikichip.org/wiki/intel/core_i5/i5-7300u&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;每个物理核心（Core0和Core1）被分成两个逻辑核心Hyper-Threading（T0和T1）。&lt;/p&gt;
@@ -93,7 +93,7 @@
   &lt;iframe src=&#34;https://www.youtube.com/embed/vgPFzblBh7w&#34; style=&#34;position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;&#34; allowfullscreen title=&#34;YouTube Video&#34;&gt;&lt;/iframe&gt;
 &lt;/div&gt;
 
-&lt;h3 id=&#34;缓存行-cache-line&#34;&gt;缓存行 Cache Line&lt;/h3&gt;
+&lt;h4 id=&#34;缓存行-cache-line&#34;&gt;缓存行 Cache Line&lt;/h4&gt;
 &lt;p&gt;缓存行的概念对于理解至关重要。但在介绍它们是什么之前，了解为什么需要它们。&lt;/p&gt;
 &lt;p&gt;当访问特定的内存位置时(例如 通过读取变量)，在不久的将来可能会发生以下情况之一：&lt;/p&gt;
 &lt;ul&gt;
@@ -106,7 +106,7 @@
 &lt;p&gt;举一个简单的例子， 遍历容量为16的slice切片s []int64;  这个内存地址还没在缓存中；程序开始遍历，cpu决定缓存这个s[0]这个变量，会复制整个内存块复制到缓存行，缓存行中包含了8个int64，0到7的数据将会在cpu cache中命中；访问s[8]时同理；迭代16个int64元素导致2次强制缓存未命中(&lt;em&gt;compulsory miss&lt;/em&gt;)和 14 次缓存命中。&lt;/p&gt;
 &lt;p&gt;CPU缓存策略有个大致的了解：有时缓存是包容性的（例如，L2 数据也存在于 L3 中），有时缓存是排他性的（例如，L3 称为受害者缓存，因为它只包含从 L2 逐出的数据）；这些策略被 CPU 供应商隐藏起来；大致了解下即可。&lt;/p&gt;
 &lt;p&gt;如果感兴趣，可以通过 &lt;strong&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/CPU_cache&#34;&gt;https://en.wikipedia.org/wiki/CPU_cache&lt;/a&gt;&lt;/strong&gt; 进一步了解，比较硬核。&lt;/p&gt;
-&lt;h3 id=&#34;结构切片与切片结构-slice-of-structs-vs-struct-of-slices&#34;&gt;结构切片与切片结构 Slice of structs vs. struct of slices&lt;/h3&gt;
+&lt;h4 id=&#34;结构切片与切片结构-slice-of-structs-vs-struct-of-slices&#34;&gt;结构切片与切片结构 Slice of structs vs. struct of slices&lt;/h4&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;type&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Foo&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
 	&lt;span class=&#34;nx&#34;&gt;a&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int64&lt;/span&gt;
 	&lt;span class=&#34;nx&#34;&gt;b&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int64&lt;/span&gt;
@@ -117,7 +117,7 @@
 &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;对[]Foo 和 Bar.a 容量长度为16的切片遍历，遍历数据结构切片 比 遍历切片结构 慢， 因为cache line的空间局部性原理，加载切片结构更紧凑，需要更少的缓存行来迭代，如图所示：&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F04_Harsanyi.png&#34; alt=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F04_Harsanyi.png&#34;&gt;&lt;/p&gt;
-&lt;h3 id=&#34;可预测性-predictability&#34;&gt;可预测性 Predictability&lt;/h3&gt;
+&lt;h4 id=&#34;可预测性-predictability&#34;&gt;可预测性 Predictability&lt;/h4&gt;
 &lt;p&gt;要理解这一点，必须了解跨步striding的概念。跨步与 CPU 如何处理数据有关。共有三种不同类型的步幅(stride)&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;em&gt;单位步幅Unit stride&lt;/em&gt;：全部想要访问的值是连续分配的：例如，切片[]int64元素。这个步幅对于 CPU 来说是可预测的并且是最有效的，因为它需要最少数量的缓存行来遍历元素。&lt;/li&gt;
@@ -127,7 +127,7 @@
 &lt;p&gt;&lt;img src=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F06_Harsanyi.png&#34; alt=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F06_Harsanyi.png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;由于不同的步幅和相似的空间局部性，迭代链表比值的切片要慢得多。由于更好的空间局部性，通常应该支持单位步幅而不是恒定步幅。但是当CPU 都无法预测非单位步长，无论数据如何分配，都会有性能上的影响。&lt;/p&gt;
 &lt;p&gt;到目前为止，已经讨论了 CPU 缓存速度很快但比主内存小得多。因此，CPU 需要一种策略来将内存块提取到缓存行。此策略称为&lt;em&gt;缓存放置策略&lt;/em&gt;，并且会显着影响性能。&lt;/p&gt;
-&lt;h3 id=&#34;缓存放置策略-cache-placement-policy&#34;&gt;缓存放置策略 Cache placement policy&lt;/h3&gt;
+&lt;h4 id=&#34;缓存放置策略-cache-placement-policy&#34;&gt;缓存放置策略 Cache placement policy&lt;/h4&gt;
 &lt;p&gt;当 CPU 决定复制一个内存块并将其放入缓存时，它必须遵循特定的策略。假设一个 32 KB 的 L1D 缓存和一个 64 字节的缓存行，如果一个块被随机放入 L1D，CPU 在最坏的情况下将不得不迭代 512 个缓存行来读取一个变量。这种缓存是称为&lt;em&gt;完全结合(fully associative)&lt;/em&gt;。&lt;/p&gt;
 &lt;p&gt;为了提高从 CPU 缓存访问地址的速度，设计人员制定了有关缓存放置的不同策略。跳过历史，讨论当今使用最广泛的策略：集合关联缓存策略(&lt;em&gt;set-associative cache)&lt;/em&gt; ，它依赖缓存分区。&lt;/p&gt;
 &lt;p&gt;具体参考以下资料进一步了解：&lt;/p&gt;
@@ -145,14 +145,14 @@
 &lt;/ul&gt;
 &lt;p&gt;假设该函数启动并尝试读取&lt;code&gt;s[0][0]&lt;/code&gt;属于地址 0000000000000 的地址。由于该地址尚未出现在缓存中，因此 CPU 计算其集合索引并将其复制到相应的缓存集合。&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F08_Harsanyi.png&#34; alt=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F08_Harsanyi.png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;如前所述，9 位表示块偏移量：它是每个内存块地址的最小公共前缀。然后，2位表示集合索引。地址为 0000000000000 时，si 等于 00。因此，该内存块被复制到集合 0。&lt;/p&gt;
-&lt;p&gt;当函数从 读取&lt;code&gt;s[0][1]&lt;/code&gt;到时&lt;code&gt;s[0][7]&lt;/code&gt;，数据已经在缓存中。CPU 是怎么知道的？CPU 计算内存块的起始地址，计算集合索引和标记位，然后检查集合 0 中是否存在 00。&lt;/p&gt;
+&lt;p&gt;如前所述，9 位表示块偏移量：它是每个内存块地址的最小公共前缀。然后，2位表示集合索引。地址为 0000000000000 时，si 等于 00。因此，该内存块被复制到Set 0。&lt;/p&gt;
+&lt;p&gt;当函数从 读取&lt;code&gt;s[0][1]&lt;/code&gt;到时&lt;code&gt;s[0][7]&lt;/code&gt;，数据已经在缓存中。CPU 是怎么知道的？CPU 计算内存块的起始地址，计算集合索引和标记位，然后检查Set 0 中是否存在 00。&lt;/p&gt;
 &lt;p&gt;接下来函数读取&lt;code&gt;s[1][0]&lt;/code&gt;，这个地址还没有被缓存。因此复制内存块 0100000000000 时发生相同的操作&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F09_Harsanyi.png&#34; alt=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F09_Harsanyi.png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;该内存的集合索引等于 00，因此它也属于集合 0。缓存行被复制到集合 0 中的下一个可用行。然后，再次从 读取到导致缓存&lt;code&gt;s[1][1]&lt;/code&gt;命中&lt;code&gt;s[1][7]&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;该内存的集合索引等于 00，因此它也属于Set 0。缓存行被复制到Set 0 中的下一个可用行。然后，再次从 读取到导致缓存&lt;code&gt;s[1][1]&lt;/code&gt;命中&lt;code&gt;s[1][7]&lt;/code&gt;。&lt;/p&gt;
 &lt;p&gt;现在事情变得有趣了。该函数读取&lt;code&gt;s[2][0]&lt;/code&gt;，并且该地址不存在于缓存中。执行相同的操作&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F10_Harsanyi.png&#34; alt=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F10_Harsanyi.png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;集合索引再次等于 00。但是，集合 0 已满——CPU 做了什么？将内存块复制到另一组？否。CPU 替换现有缓存行之一以复制内存块 1000000000000。&lt;/p&gt;
+&lt;p&gt;集合索引再次等于 00。但是， Set0 已满，CPU 会替换现有缓存行之一以复制内存块 1000000000000。&lt;/p&gt;
 &lt;p&gt;缓存替换策略(&lt;a href=&#34;https://en.wikipedia.org/wiki/Cache_replacement_policies&#34;&gt;Cache replacement policies&lt;/a&gt;)取决于 CPU，但它通常是伪 LRU 策略（真正的 LRU [最近最少使用] 会太复杂而无法处理）。在这种情况下，假设它替换了第一个缓存行：0000000000000。当迭代第 3 行时会重复这种情况：内存地址 1100000000000 也有一个等于 00 的集合索引，导致替换现有的缓存行。&lt;/p&gt;
 &lt;p&gt;现在，假设基准测试执行函数，其中一个切片指向从地址 0000000000000 开始的相同矩阵。每次基准测试，当函数读取时，&lt;code&gt;s[0][0]&lt;/code&gt;地址不在缓存中；该块已被替换。&lt;/p&gt;
 &lt;p&gt;基准测试将导致更多的缓存未命中，而不是从一个执行到另一个执行使用 CPU 缓存。这种类型的缓存未命中称为*冲突未命中conflict miss；*如果未对缓存进行分区，则不会发生未命中。迭代的所有变量都属于一个集合索引为00的内存块。因此，只使用一个缓存集合，而不是分布在整个缓存中。&lt;/p&gt;
@@ -166,7 +166,7 @@
 &lt;p&gt;回到前面&lt;a href=&#34;https://weedge.github.io/post/go-tips/go-tips-11-testing/#89%E7%BC%96%E5%86%99%E4%B8%8D%E5%87%86%E7%A1%AE%E7%9A%84%E5%9F%BA%E5%87%86&#34;&gt;#89&lt;/a&gt; 真实示例中，使用两个函数&lt;code&gt;calculateSum512&lt;/code&gt;和&lt;code&gt;calculateSum513&lt;/code&gt;。基准测试在 32 KB 8-way set-associative L1D cache上执行，总共 64 组。因为缓存行是 64 字节，所以每一路步长等于 64 × 64 字节 = 4 KB；代表512 个&lt;code&gt;int64&lt;/code&gt;类型元素。因此，达到了 512 列矩阵的&lt;em&gt;临界步幅critical stride&lt;/em&gt;，缓存分布很差(&lt;em&gt;冲突未命中conflict miss&lt;/em&gt;)。同时，如果矩阵包含 513 列，则不会导致&lt;em&gt;临界步幅&lt;/em&gt;。这就是为什么观察到两个基准之间存在如此巨大差异的原因。这个同样适用于在intel CPU架构上运行的其他语言。&lt;/p&gt;
 &lt;p&gt;总之，必须意识到现代缓存是分区的。根据步幅，在某些情况下只使用一组，这可能会损害应用程序性能并导致冲突未命中。这种步幅称为临界步幅。对于性能密集型应用程序，应该避免关键步骤来充分利用 CPU 缓存。&lt;/p&gt;
 &lt;p&gt;tips: 应该注意基准测试的结果在不同底层CPU架构而有所不同。注意开发测试 和 生产环境下的CPU架构一致，如果有对计算密集型的调优，最好在生产环境待部署的机器上都进行基准测试一下。&lt;/p&gt;
-&lt;h2 id=&#34;92编写导致伪共享false-sharding的并发代码&#34;&gt;92.编写导致伪共享(false sharding)的并发代码&lt;/h2&gt;
+&lt;h3 id=&#34;92编写导致伪共享false-sharding的并发代码&#34;&gt;92.编写导致伪共享(false sharding)的并发代码&lt;/h3&gt;
 &lt;p&gt;由于多核处理器cpu之间独立的L1/L2 cache，会出现cache line不一致的问题，为了解决这个问题，有相关协议模型，常用MESI协议，MESI 通过 这个网站模拟更直观的了解 &lt;a href=&#34;https://www.scss.tcd.ie/Jeremy.Jones/VivioJS/caches/MESIHelp.htm&#34;&gt;https://www.scss.tcd.ie/Jeremy.Jones/VivioJS/caches/MESIHelp.htm&lt;/a&gt;；为了保证一个core上修改的cache line数据同步到其他core的cache line上，则需要MESI协议来保证，如果同一个cache line上有个两个变量sum1 和 sum2 之间虽然没有相互依赖逻辑，但是当修改sum1 或者sum2 时，需要同步同一块cache line的内容，导致 即使没有相互关系的变量在同一cache line中， 需要彼此共享同步，从而出现所说的&lt;em&gt;伪共享 flase sharding&lt;/em&gt;。伪共享因为cache line的同步会带来一些cpu 时钟周期的性能损失。&lt;/p&gt;
 &lt;p&gt;了解伪共享的情况，知道如何破解了，直接让sum1和sum2 放置在不同的cache line就可以；比如一个结构体中sum1和sum2 的存放结构：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;type&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Result2&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
@@ -176,13 +176,13 @@
 &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;还有一种解决方案是重新设计算法的结构。例如，不是让两个 goroutines 共享相同的结构，通过channel传递它们的本地结果。结果基准与填充大致相同。&lt;/p&gt;
 &lt;p&gt;并发编程中，操作cpu L1/L2 cache 时，因为多核同步cache的最小单元是cache line，所以当缓存行在两个内核之间共享时，至少一个 goroutine 是 writer 时，就会发生伪共享。如果需要优化依赖于并发的应用程序，应该检查是否存在伪共享的代码，众所周知这种模式会降低应用程序性能。可以通过填充或通信来防止虚假共享。&lt;/p&gt;
-&lt;h2 id=&#34;93不考虑指令级并行性-instruction-level-parallelism&#34;&gt;93.不考虑指令级并行性 instruction-level parallelism&lt;/h2&gt;
+&lt;h3 id=&#34;93不考虑指令级并行性-instruction-level-parallelism&#34;&gt;93.不考虑指令级并行性 instruction-level parallelism&lt;/h3&gt;
 &lt;p&gt;这个很大一部分取决于编程语言的编译器软件，编译优化之后代码指令是否可以充分利用指令级并行&lt;em&gt;instruction-level parallelism&lt;/em&gt;（ILP）；以及在硬件cpu上进行指令级并行(ILP)；&lt;/p&gt;
 &lt;p&gt;tips: 两者结合效果更佳，对于上层应用使用语言的开发者，了解其背后的原理即可，在应用程序上的性能优化可能效果不大，因为随着编译器升级可能会兼顾了应用程序上对ILP考虑优化。不过了解原理可以有助于上层宏观层面的思考并行，用于借鉴嘛~，微观到宏观(3体里经常浮现的词汇，降维打击)&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Compiler&#34;&gt;编译器&lt;/a&gt;和&lt;a href=&#34;https://en.wikipedia.org/wiki/Central_processing_unit&#34;&gt;CPU&lt;/a&gt;设计人员的目标是尽可能多地识别和利用 ILP。普通程序通常是在顺序执行模型下编写的，其中指令一条接一条地执行，并按照程序员指定的顺序执行。ILP 允许编译器和处理器重叠执行多条指令，甚至可以改变指令执行的顺序。cpu利用ILP执行指令时，&lt;a href=&#34;https://en.wikipedia.org/wiki/Data_dependence&#34;&gt;当表现出数据依赖性的&lt;/a&gt;指令在流水线的不同阶段修改数据时，就会发生&lt;a href=&#34;https://en.wikipedia.org/wiki/Hazard_(computer_architecture)&#34;&gt;数据冒险危害&lt;/a&gt;。忽略潜在的数据危害会导致&lt;a href=&#34;https://en.wikipedia.org/wiki/Race_condition&#34;&gt;竞争条件&lt;/a&gt;（也称为竞争危害），进而触发控制风险；为了避免控制风险发生，可以通过&lt;a href=&#34;https://en.wikipedia.org/wiki/Branch_predictor&#34;&gt;预测分支&lt;/a&gt;来解决。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Compiler&#34;&gt;编译器&lt;/a&gt;和&lt;a href=&#34;https://en.wikipedia.org/wiki/Central_processing_unit&#34;&gt;CPU&lt;/a&gt;设计人员的目标是尽可能多地识别和利用 ILP。普通程序通常是在顺序执行模型下编写的，其中指令一条接一条地执行，并按照程序员指定的顺序执行。ILP 允许编译器和处理器重叠执行多条指令，甚至可以改变指令执行的顺序。cpu利用ILP执行指令时，当表现出&lt;a href=&#34;https://en.wikipedia.org/wiki/Data_dependence&#34;&gt;数据依赖性&lt;/a&gt;的指令在流水线的不同阶段修改数据时，就会发生&lt;a href=&#34;https://en.wikipedia.org/wiki/Hazard_(computer_architecture)&#34;&gt;数据冒险危害&lt;/a&gt;。忽略潜在的数据危害会导致&lt;a href=&#34;https://en.wikipedia.org/wiki/Race_condition&#34;&gt;竞争条件&lt;/a&gt;（也称为竞争危害），进而触发控制风险；为了避免控制风险发生，可以通过&lt;a href=&#34;https://en.wikipedia.org/wiki/Branch_predictor&#34;&gt;预测分支&lt;/a&gt;来解决。&lt;/p&gt;
 &lt;p&gt;了解利用ILP的微架构技术见wiki: &lt;a href=&#34;https://en.wikipedia.org/wiki/Instruction-level_parallelism&#34;&gt;https://en.wikipedia.org/wiki/Instruction-level_parallelism&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;在Go中，可以通过 &lt;a href=&#34;https://research.swtch.com/mm&#34;&gt;https://research.swtch.com/mm&lt;/a&gt; 来了解在这方面的思考&lt;/p&gt;
-&lt;h2 id=&#34;94不知道数据对齐&#34;&gt;94.不知道数据对齐&lt;/h2&gt;
+&lt;h3 id=&#34;94不知道数据对齐&#34;&gt;94.不知道数据对齐&lt;/h3&gt;
 &lt;p&gt;数据对齐是一种安排数据分配方式以加速 CPU 访问内存的方法。不了解这个概念会导致额外的内存消耗甚至性能下降。&lt;/p&gt;
 &lt;p&gt;tips: 这个属于老生常谈的问题了，尤其在c语言开发的程序中，数据对齐，直接通过地址+偏移大小来指向对应内存数据，进行读写操作；golang很多思想来自c，自然也会有，只不过更加友好，unsafe形式来操作指针。&lt;/p&gt;
 &lt;p&gt;在 64 位cpu架构上,处理最小单位是8字节的地址，如果没有数据对齐，变量j分配可以分布在两个地址上。如果 CPU 想要读取j，则需要两次而不是一次内存访问。&lt;/p&gt;
@@ -202,9 +202,9 @@
 &lt;p&gt;第二种情况，在i之前没有分配32位变量；i被分配在一个词的开头。为了数据对齐（地址是 64 的倍数），i不能与下一个 64 的倍数j一起分配。灰色框表示 32 位填充。&lt;/p&gt;
 &lt;p&gt;所以了解了字节对齐之后，在设计数据结构的时候，需要清楚，数据结构通过编译器优化编译之后方便cpu访问 的数据对齐结构，所占内存大小；防止出现本来不需要这么多内存空间的设计。尤其在设计非常依赖缓存存储的项目中。申请内存空间越多越频繁，对于Go来说，将带来更多的GC, 影响整体应用性能。&lt;/p&gt;
 &lt;p&gt;还有一个好处是，考虑了字节对齐后的合理结构体(所占内存空间的结构体大小最小情况，&lt;strong&gt;结构体中的字段按大小降序对它们进行排序对齐&lt;/strong&gt;)；利用cache 局部性原理，可以在cpu cache line中存放更多的对象，这样在遍历对象时，需要更少的缓存行总数，性能更好。&lt;/p&gt;
-&lt;h2 id=&#34;95不了解栈与堆&#34;&gt;95.不了解栈与堆&lt;/h2&gt;
+&lt;h3 id=&#34;95不了解栈与堆&#34;&gt;95.不了解栈与堆&lt;/h3&gt;
 &lt;p&gt;在 Go 中，变量可以分配在栈上或堆上。这两种类型的内存根本不同，影响数据密集型应用程序。需要了解栈和堆这些概念，以及编译器决定变量分配位置所遵循的规则。&lt;/p&gt;
-&lt;h2 id=&#34;栈与堆&#34;&gt;栈与堆&lt;/h2&gt;
+&lt;h4 id=&#34;栈与堆&#34;&gt;栈与堆&lt;/h4&gt;
 &lt;p&gt;首先，讨论一下栈和堆的区别。栈是它是一种后进先出 (LIFO) 数据结构，用于存储特定 goroutine 的所有局部变量。当一个 goroutine 启动时，它会获得 2 KB 的连续内存作为它的栈空间（这个大小随着时间的推移而变化并且可能会再次改变）。但是，此大小在运行时不是固定的，可以根据需要增大和缩小（但它始终在内存中保持连续，从而保留数据局部性）。&lt;/p&gt;
 &lt;p&gt;tips: Go 在1.3之前栈扩容采用的是分段栈（Segemented Stack），在栈空间不够的时候新申请一个栈空间用于被调用函数的执行， 执行后销毁新申请的栈空间并回到老的栈空间继续执行，当函数出现频繁调用（递归）时可能会引发hot split。为了避免hot split, 1.3之后采用的是连续栈（Contiguous Stack），栈空间不足的时候申请一个2倍于当前大小的新栈，并把所有数据拷贝到新栈， 接下来的所有调用执行都发生在新栈上。&lt;/p&gt;
 &lt;p&gt;当 Go 进入一个函数时，会创建一个栈帧，代表内存中只有当前函数才能访问的一个区间。&lt;/p&gt;
@@ -232,7 +232,7 @@
 &lt;p&gt;tips:&lt;/p&gt;
 &lt;p&gt;由于Go中的用户栈空间是自动扩缩容的，需要注意每个协程goroutine栈扩容对内存空间的影响，特别是在长连接的场景，单机连接数在100w级别的时候，尽量保持每个goroutine 处理函数的逻辑在2kb内(功能职责分离)，防止栈扩容，导致内存指数级暴涨。&lt;/p&gt;
 &lt;p&gt;栈扩容了，长时间没有运行，为了提高内存利用率，在GC触发的时候，计算当前栈使用的空间，小于栈空间的1/4，会触发栈缩容操作到原来的1/2，最小到2kb，不会再缩容；但在缩容过程中会存在栈拷贝和写屏障(write barrier)，对于一些准实时应用可能会存在一些影响。 好在go提供了可设置的参数，可以通过设置环境变量 GODEBUG=gcshrinkstackoff=1 来关闭栈缩容。关闭栈缩容后， 需要承担栈持续增长的风险，在关闭前需要慎重考虑。&lt;/p&gt;
-&lt;h3 id=&#34;逃逸分析-重要&#34;&gt;逃逸分析 (重要)&lt;/h3&gt;
+&lt;h4 id=&#34;逃逸分析-重要&#34;&gt;逃逸分析 (重要)&lt;/h4&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/cmd/compile/internal/escape/escape.go&#34;&gt;逃逸分析(escape analysis)&lt;/a&gt; 在程序编译阶段根据程序代码中的数据变量，对代码中哪些变量需要在栈上分配，哪些变量需要在堆上分配进行静态分析的方法；Go 语言的逃逸分析遵循以下两个不变性：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;指向栈对象的指针不能存储在堆中（pointers to stack objects cannot be stored in the heap）；&lt;/li&gt;
@@ -315,7 +315,7 @@
 &lt;p&gt;了解堆和栈之间的根本区别对于优化 Go 应用程序至关重要。堆分配对于 Go 运行时处理来说更为复杂，并且需要具有 GC 的外部系统来释放数据。在某些数据密集型应用程序中，堆管理可占总 CPU 时间消耗的 20% 或 30%。另一方面，栈是自清洁的，并且对单个 goroutine 而言是本地的，从而使分配速度更快。因此，优化内存分配可以获得很大的投资回报。&lt;/p&gt;
 &lt;p&gt;理解逃逸分析的规则对于编写更高效的代码也很重要。一般来说，向下共享留在栈上，而向上共享逃逸到堆中。这应该可以防止常见错误，例如想要返回指针的过早优化，例如“避免复制”。首先关注可读性和语义，然后在需要时优化分配。&lt;/p&gt;
 &lt;p&gt;tips: 想更深入了解逃逸分析，可以一起学习这篇论文：&lt;a href=&#34;http://www.wingtecher.com/themes/WingTecherResearch/assets/papers/ICSE20.pdf&#34;&gt;Escape from Escape Analysis of Golang&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;96不知道如何减少分配&#34;&gt;96.不知道如何减少分配&lt;/h2&gt;
+&lt;h3 id=&#34;96不知道如何减少分配&#34;&gt;96.不知道如何减少分配&lt;/h3&gt;
 &lt;p&gt;减少分配是加速 Go 应用程序的常见优化技术。已经涵盖了一些减少堆分配数量的方法：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;未优化的字符串连接（错误 &lt;a href=&#34;https://weedge.github.io/post/notions/go-tips/go-tips-05-strings/#39%E4%BC%98%E5%8C%96%E4%B8%8D%E8%B6%B3%E7%9A%84%E5%AD%97%E7%AC%A6%E4%B8%B2%E8%BF%9E%E6%8E%A5&#34;&gt;#39&lt;/a&gt;）：使用&lt;code&gt;strings.Builder&lt;/code&gt;替代&lt;code&gt;+&lt;/code&gt;运算符来连接字符串。&lt;/li&gt;
@@ -324,7 +324,7 @@
 &lt;li&gt;更好的数据结构对齐以减少结构大小（错误 &lt;a href=&#34;https://weedge.github.io/post/notions/go-tips/go-tips-12-optimizations/#94%E4%B8%8D%E7%9F%A5%E9%81%93%E6%95%B0%E6%8D%AE%E5%AF%B9%E9%BD%90&#34;&gt;#94&lt;/a&gt;）。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;另外还有三种减少内存分配的常见方式：&lt;/p&gt;
-&lt;h3 id=&#34;api-设计&#34;&gt;API 设计&lt;/h3&gt;
+&lt;h4 id=&#34;api-设计&#34;&gt;API 设计&lt;/h4&gt;
 &lt;p&gt;只要涉及到I/O读写，会大量使用到在io库https://pkg.go.dev/io中，定义的读Reader / 写Writer接口, 对应的API方法，设计时为什么使用[]byte 作为传入参数，返回读取了多少， 而不使用读取多少来返回对应[]byte呢？&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;type&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Reader&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;interface&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
     &lt;span class=&#34;nf&#34;&gt;Read&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;p&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[]&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;byte&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;n&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;err&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;error&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
@@ -341,7 +341,7 @@
 &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这样函数局部变量会逃逸到堆上分配，这样带了额外的gc影响，而且io库的接口经常会被不同对象实例化使用到。所以Go 的设计者使用向下共享的方法来防止自动将切片转义到堆中；由调用者提供读写的切片[]byte，至于是否分配在堆上还是栈上，这取决于调用者来处理它，而不是直接返回，导致逃逸发生的可能。&lt;/p&gt;
 &lt;p&gt;有时，即使是 API 的微小变化也会对分配产生积极影响。在设计 API 时，了解逃逸分析规则，并在需要时使用它&lt;code&gt;-gcflags&lt;/code&gt;来理解编译器的决策。&lt;/p&gt;
-&lt;h3 id=&#34;依赖编译器优化&#34;&gt;&lt;strong&gt;依赖编译器优化&lt;/strong&gt;&lt;/h3&gt;
+&lt;h4 id=&#34;依赖编译器优化&#34;&gt;依赖编译器优化&lt;/h4&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// go tool compile -m=1 -l -L -S -N see if use runtime.slicebytetostring
 &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;m&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;map&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;string&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{}&lt;/span&gt;
 &lt;span class=&#34;nx&#34;&gt;bytes&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[]&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;byte&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
@@ -350,7 +350,7 @@
 
 &lt;span class=&#34;nx&#34;&gt;_&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;_&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;m&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;nb&#34;&gt;string&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;bytes&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)]&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如上代码，通过linter相关静态编译检查工具可以提示出 直接使用m[string(key)]的方式比k := string(key); m[k] 效率更高一些，因为编译器对m[string(key)] 进行了优化，不会调用runtime.slicebytetostring 进行复制转化，执行效率更快，也不会带了额外内存分配。&lt;/p&gt;
-&lt;h3 id=&#34;池化syncpool&#34;&gt;&lt;strong&gt;池化sync.Pool&lt;/strong&gt;&lt;/h3&gt;
+&lt;h4 id=&#34;池化syncpool&#34;&gt;池化sync.Pool&lt;/h4&gt;
 &lt;p&gt;当处理的对象，分配在堆上，且频繁被创建使用，这样会触发频繁gc，对这些临时对象标记扫描，会带来额外性能影响，所以在Go引入了sync.Pool，复用临时对象，减少频繁创建，并且在池中的临时对象一段时间不在使用时，会从对象池中移出，并被gc回收，合理的触发机制由gc来管理，进而减少频繁gc。而且sync.Pool 本身就是线程安全的，多个 goroutine 可以并发地调用Get方法存取对象；sync.Pool 不可在使用之后再复制使用，引入了noCopy机制，可以通过go vet来检查。&lt;/p&gt;
 &lt;p&gt;sync.Pool有两个公开方法Get， Put 以及初始化Pool是的New 函数成员。&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F34_Harsanyi.png&#34; alt=&#34;https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F34_Harsanyi.png&#34;&gt;&lt;/p&gt;
@@ -388,18 +388,18 @@
 &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;sync.Pool不适合长时间不会释放的资源 比如长连接；因为sync.Pool池化的对象可能会被垃圾回收掉，对于数据库长连接等场景是不合适。&lt;/p&gt;
 &lt;p&gt;如果经常分配很多同类型的对象，可以考虑使用sync.Pool. 它是一组临时对象，可以防止重复重新分配同一种数据；并且sync.Pool可以安全地同时被多个 goroutines 使用。&lt;/p&gt;
-&lt;h2 id=&#34;97不依赖内联&#34;&gt;97.不依赖内联&lt;/h2&gt;
+&lt;h3 id=&#34;97不依赖内联&#34;&gt;97.不依赖内联&lt;/h3&gt;
 &lt;p&gt;内联是将较小的函数组合到它们各自的调用者中的行为。在计算的早期，这种优化通常是手动执行的。如今，内联是在编译过程中自动执行的一类基本优化之一。&lt;/p&gt;
 &lt;p&gt;内联很重要有两个原因。首先是它消除了函数调用本身的开销。第二个是它允许编译器更有效地应用其他优化策略,比如栈中内联(Go 1.9 引入 Mid-stack inlining)；&lt;/p&gt;
 &lt;p&gt;了解更多Mid-stack inlining相关内容： &lt;a href=&#34;https://go.googlesource.com/proposal/+/master/design/19348-midstack-inlining.md&#34;&gt;提案&lt;/a&gt;  , HN 上的讨论以及PPT: &lt;a href=&#34;https://news.ycombinator.com/item?id=13803447&#34;&gt;Mid-stack inlining in the Go compiler&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;这种优化技术是关于区分快路径和慢路径。如果可以内联快速路径但不能内联慢速路径，可以将慢速路径提取到专用函数中。如果没有超出内联预算，函数就是内联的候选者。&lt;/p&gt;
 &lt;p&gt;了解内联如何工作以及如何访问编译器的决定，可以成为使用快速路径内联技术进行优化的途径。如果执行快速路径，则在专用函数中提取慢速路径可防止函数调用。例如：sync库中使用Mutex.Lock Mutex.UnLock；&lt;a href=&#34;http://Once.Do&#34;&gt;Once.Do&lt;/a&gt; 用到了快速路径内联技术进行优化。&lt;/p&gt;
 &lt;p&gt;tips: 具体优化收益，都需要进行基准压测为准&lt;/p&gt;
-&lt;h2 id=&#34;98不使用-go-诊断工具-重要&#34;&gt;98.不使用 Go 诊断工具 （重要）&lt;/h2&gt;
+&lt;h3 id=&#34;98不使用-go-诊断工具-重要&#34;&gt;98.不使用 Go 诊断工具 （重要）&lt;/h3&gt;
 &lt;p&gt;Go 提供了一些优秀的诊断工具来帮助深入了解应用程序的执行情况，重点介绍最重要的部分：剖析Profiling 和 执行跟踪器 Execution Tracer。具体查看官方文档： &lt;strong&gt;&lt;a href=&#34;https://go.dev/doc/diagnostics&#34;&gt;https://go.dev/doc/diagnostics&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;Profiling 对运行中的代码采用基于定时器的采样。其缺点是，采样只能提供一个关于目标的粗略的图像，并且可能会遗漏事件。 比如cpu数据的采集，由于每次采集都会触发一次SIGPROF 信号中断，收集当时的调用堆栈；会对被采集的系统带来额外的负载影响，在采集cpu数据频率一般控制毫秒级别，所以存在采集精度的影响；对于微妙级别的采样，现在还不支持，有个改进的 &lt;a href=&#34;https://go.googlesource.com/proposal/+/refs/changes/08/219508/2/design/36821-perf-counter-pprof.md&#34;&gt;提案&lt;/a&gt; ，还未合并。&lt;/p&gt;
 &lt;p&gt;Execution Tracer用来捕获各种运行时事件。调度、系统调用、垃圾收集、堆大小和其他事件由运行时收集，并可通过 go 工具跟踪进行可视化。执行跟踪器是一种检测延迟和利用率问题的工具，可以用来检查 CPU 的使用情况，以及在网络或系统调用时goroutine 抢占的原因。&lt;/p&gt;
-&lt;h3 id=&#34;分析-profiling&#34;&gt;&lt;strong&gt;分析 Profiling&lt;/strong&gt;&lt;/h3&gt;
+&lt;h4 id=&#34;分析-profiling&#34;&gt;分析 Profiling&lt;/h4&gt;
 &lt;p&gt;分析提供了对应用程序执行的洞察力。能够解决性能问题、检测争用、定位内存泄漏等。通过如下几个采集类型收集，并通过go tool pprof 分析：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;cpu: 确定应用程序将时间花在哪里&lt;/li&gt;
@@ -461,11 +461,11 @@ go tool pprof -http&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#
  go tool pprof http://localhost:6060/debug/pprof/goroutine?debug&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;
  go tool pprof http://localhost:6060/debug/pprof/allocs?debug&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;
  go tool pprof http://localhost:6060/debug/pprof/threadcreate?debug&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;cpu分析&#34;&gt;CPU分析&lt;/h3&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;cpu分析&#34;&gt;CPU分析&lt;/h4&gt;
 &lt;p&gt;CPU 分析器依赖于操作系统和信号。当它被激活时，应用程序默认要求操作系统每 10 毫秒中断一次，通过一个&lt;code&gt;SIGPROF&lt;/code&gt;信号。当应用程序收到一个 时&lt;code&gt;SIGPROF&lt;/code&gt;，它会暂停当前活动并将执行转移到探查器。探查器收集诸如当前 goroutine 活动之类的数据，并汇总可以检索的执行统计信息。然后它停止，并继续执行直到下一个&lt;code&gt;SIGPROF&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;可以访问 /debug/pprof/profile 端点来激活 CPU 分析。默认情况下，访问此端点会执行 30 秒的 CPU 分析。在 30 秒内，应用程序每 10 毫秒中断一次。请注意，可以更改这两个默认值：可以使用参数&lt;code&gt;seconds&lt;/code&gt;将分析应该持续多长时间传递给端点（例如，/debug/pprof/profile?seconds=15），可以更改中断率（甚至小于 10 毫秒）。但在大多数情况下，10 毫秒应该足够了，在减小这个值（意味着增加速率）时，应该注意不要损害性能。30 秒后，下载 CPU 分析器的结果。&lt;/p&gt;
 &lt;p&gt;可以为不同的函数附加标签。例如，想象一个从不同客户端调用的通用函数。要跟踪两个客户花费的时间，可以使用&lt;code&gt;pprof.Labels&lt;/code&gt;.Go 1.9 开始引入 &lt;strong&gt;&lt;a href=&#34;https://github.com/golang/proposal/blob/master/design/17280-profile-labels.md&#34;&gt;profiler labels&lt;/a&gt;，&lt;/strong&gt; 对于特殊调优性能，比如某个算法模型，或者线上特殊场景触发的性能问题，在这些特殊逻辑段，单独打上一个tag label 进行profiling的收集，通过pprof 工具分析，可以通过tag相关命令来过滤出样本数据分析。使用 &lt;strong&gt;&lt;a href=&#34;http://godoc.org/github.com/rakyll/goutil/pprofutil&#34;&gt;pprofutil&lt;/a&gt;&lt;/strong&gt; 包自动将 HTTP 路径标签添加到处理程序。&lt;/p&gt;
-&lt;h3 id=&#34;heap堆分析&#34;&gt;Heap堆分析&lt;/h3&gt;
+&lt;h4 id=&#34;heap堆分析&#34;&gt;Heap堆分析&lt;/h4&gt;
 &lt;p&gt;堆分析可以获得有关当前堆使用情况的统计信息。与 CPU 分析一样，堆分析也是基于样本的。可以更改此速率，但不应该过于细化，因为降低速率越多，堆分析收集数据所需的工作就越多。默认情况下，样本在每 512 KB 堆分配的一次分配中进行分析。&lt;/p&gt;
 &lt;p&gt;堆分析还可以查看不同的样本类型：&lt;/p&gt;
 &lt;ul&gt;
@@ -492,9 +492,9 @@ go tool pprof -http&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#
 &lt;li&gt;用于&lt;code&gt;go tool pprof -http=:8080 -diff_base &amp;lt;file2&amp;gt; &amp;lt;file1&amp;gt;&lt;/code&gt;比较两个采集文件：&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;&lt;strong&gt;注意 与&lt;/strong&gt;堆相关的另一种分析类型是&lt;code&gt;allocs&lt;/code&gt;，它报告分配。堆分析显示堆内存的当前状态。要了解自应用程序启动以来过去的内存分配情况，可以使用分配分析。如前所述，由于栈分配很便宜，因此它们不属于此分析的一部分，该分析仅关注堆。&lt;/p&gt;
-&lt;h3 id=&#34;goroutines分析&#34;&gt;Goroutines分析&lt;/h3&gt;
+&lt;h4 id=&#34;goroutines分析&#34;&gt;Goroutines分析&lt;/h4&gt;
 &lt;p&gt;该&lt;code&gt;goroutine&lt;/code&gt;配置文件报告应用程序中所有当前 goroutine 的堆栈跟踪。可以使用 debug/pprof/goroutine/?debug=0 下载一个文件并go tool pprof再次采集分析， 可以分析是否golang在持续上涨，进而判断是否泄露。可以查看 goroutine 分析器数据以了解系统的哪一部分是可疑的。&lt;/p&gt;
-&lt;h3 id=&#34;block分析&#34;&gt;Block分析&lt;/h3&gt;
+&lt;h4 id=&#34;block分析&#34;&gt;Block分析&lt;/h4&gt;
 &lt;p&gt;配置文件&lt;code&gt;block&lt;/code&gt;报告正在进行的 goroutines 阻塞等待同步原语的位置。可能性包括&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;在无缓冲通道上发送或接收&lt;/li&gt;
@@ -505,13 +505,13 @@ go tool pprof -http&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#
 &lt;/ul&gt;
 &lt;p&gt;块分析还记录了 goroutine 等待的时间，可以通过 debug/pprof/block 访问。如果怀疑性能因阻止调用而受到损害，此配置文件可能会非常有用。&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;block&lt;/code&gt;默认情况下不启用配置文件：必须调用才能&lt;code&gt;runtime.SetBlockProfileRate&lt;/code&gt;启用它。此函数控制报告的 goroutine 阻塞事件的比例。一旦启用，分析器将继续在后台收集数据，即使不调用 debug/pprof/block 端点。如果想设置一个高速率，那么要小心，以免损害性能。&lt;/p&gt;
-&lt;h3 id=&#34;完整的-goroutine-栈dump&#34;&gt;完整的 goroutine 栈dump&lt;/h3&gt;
+&lt;h4 id=&#34;完整的-goroutine-栈dump&#34;&gt;完整的 goroutine 栈dump&lt;/h4&gt;
 &lt;p&gt;如果遇到死锁或怀疑 goroutines 处于阻塞状态，则完整的 goroutine 栈dump (debug/pprof/goroutine/?debug=2) 会创建所有当前 goroutine 堆栈跟踪的dump数据。这有助于作为第一个分析步骤&lt;/p&gt;
-&lt;h3 id=&#34;mutex分析&#34;&gt;Mutex分析&lt;/h3&gt;
+&lt;h4 id=&#34;mutex分析&#34;&gt;Mutex分析&lt;/h4&gt;
 &lt;p&gt;如果怀疑应用程序花费大量时间等待锁定互斥量，从而损害执行，可以使用mutex分析。&lt;/p&gt;
 &lt;p&gt;在生产环境建议启用&lt;code&gt;pprof&lt;/code&gt;，在发现性能问题，延时，负载，内存空间上涨等问题，可以采集对应现场信息进行分析，对于cpu的采集会导致性能下降，但仅在启用它们期间才会发生。&lt;/p&gt;
 &lt;p&gt;tips: 通过 &lt;strong&gt;&lt;a href=&#34;https://go.dev/blog/pprof&#34;&gt;https://go.dev/blog/pprof&lt;/a&gt;&lt;/strong&gt; 学习pprof 入门很合适，demo: &lt;a href=&#34;https://github.com/rsc/benchgraffiti&#34;&gt;https://github.com/rsc/benchgraffiti&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&#34;执行跟踪器-execution-tracer&#34;&gt;&lt;strong&gt;执行跟踪器 Execution Tracer&lt;/strong&gt;&lt;/h3&gt;
+&lt;h4 id=&#34;执行跟踪器-execution-tracer&#34;&gt;执行跟踪器 Execution Tracer&lt;/h4&gt;
 &lt;p&gt;trace和pprof一样，也有三种方式：&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;使用运行时trace包 接口API来采样数据&lt;/strong&gt;：https://pkg.go.dev/runtime/trace 接口api来收集开始到结束区间的trace信息，和 runtime/pprof 包一样将采集的trace信息写入文件，或者二次开发写入网络io, push到三方平台去分析，常用语微服务的可视化分析监控。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;使用网络net/http pprof包 http接口来采样数据&lt;/strong&gt;： &lt;a href=&#34;http://pkg.go.dev/net/http/pprof&#34;&gt;https: //pkg.go.dev/net/http/pprof&lt;/a&gt;； 和pprof http接口一样，采集trace的下载接口，如下：&lt;/p&gt;
@@ -535,9 +535,9 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v -bench&lt;span class=&#34
 &lt;p&gt;tips:  具体进一步实践，可以一起学习，掌握原理，熟练工具：&lt;/p&gt;
 &lt;p&gt;Felix Geisendörfer  &lt;strong&gt;&lt;a href=&#34;https://github.com/DataDog/go-profiler-notes/blob/main/guide/README.md&#34;&gt;The Busy Developer’s Guide to Go Profiling, Tracing and Observability&lt;/a&gt;&lt;/strong&gt; 中的profiling, tracing, ob相关实验notes；&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://swtch.com/~rsc/&#34;&gt;Russ Cox&lt;/a&gt; 关于 &lt;a href=&#34;https://research.swtch.com/telemetry&#34;&gt;&lt;strong&gt;telemetry&lt;/strong&gt;&lt;/a&gt; 引入 go toolchain(工具链)相关的设计思考; 讨论非常活跃，与时俱进呀~ 很期待这个功能。可以打通golang开发的应用程序 和 OTEL 相关监控系统的数据格式交互，进行同一标准管理。&lt;/p&gt;
-&lt;h2 id=&#34;99不了解-gc-的工作原理&#34;&gt;99.不了解 GC 的工作原理&lt;/h2&gt;
+&lt;h3 id=&#34;99不了解-gc-的工作原理&#34;&gt;99.不了解 GC 的工作原理&lt;/h3&gt;
 &lt;p&gt;垃圾收集器（GC）是Go 语言的重要组成部分，跟踪和释放不再需要的堆分配。了解 GC 的工作原理有助于优化应用程序。&lt;/p&gt;
-&lt;h3 id=&#34;概念简介&#34;&gt;概念简介&lt;/h3&gt;
+&lt;h4 id=&#34;概念简介&#34;&gt;概念简介&lt;/h4&gt;
 &lt;p&gt;跟踪垃圾回收，其通过循着指针来标识正在使用的、所谓的活动对象，通过活动对象构建的对象图，&lt;/p&gt;
 &lt;p&gt;GC是基于标记清除算法，主要是mark-sweep 2个阶段，将mark操作进行进一分解，其过程如下：&lt;/p&gt;
 &lt;p&gt;Mark setup (func Stack scan) → Make (concurrent make and assist make, make  termination) → concurrent Sweep ； 其中 开始Mark setup的时候会有非常短暂的STW(平均每 10 到 30 微秒),  标记终止(make  termination) 也会有STW, 进行收尾工作时间稍长，可以简单认为，STW发生在mark的开始和结束(开始时找到扫描开始的初始位置，开启写屏障；结束时关闭写屏障，进行收尾)&lt;/p&gt;
@@ -584,7 +584,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v -bench&lt;span class=&#34
 &lt;p&gt;tips: 通过设置&lt;code&gt;GOGC=off&lt;/code&gt;或者&lt;code&gt;debug.SetGCPercent(-1)&lt;/code&gt;关闭&lt;code&gt;GC&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;debug.SetMaxHeap&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;对内存不足（OOM）的情况非常敏感的场景，直接自定一个使用堆大小的上限，可以结合&lt;code&gt;debug.SetGCPercent(-1)&lt;/code&gt;手动关闭&lt;code&gt;GC&lt;/code&gt; 使用，到达最大限制，则触发GC,  对于内存使用比较有规律的场景适合使用，如果频繁很快到达最大限制，则会频繁GC，得不偿失了。&lt;/p&gt;
-&lt;h3 id=&#34;gc-跟踪&#34;&gt;GC 跟踪&lt;/h3&gt;
+&lt;h4 id=&#34;gc-跟踪&#34;&gt;GC 跟踪&lt;/h4&gt;
 &lt;p&gt;可以通过设置打印 GC 跟踪&lt;code&gt;GODEBUG&lt;/code&gt;环境变量，例如在运行基准测试时：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;nv&#34;&gt;GODEBUG&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;gctrace&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -bench&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;. -v
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;tips: 命令中的环境变量GODEBUG值 参考官方文档：&lt;a href=&#34;https://pkg.go.dev/runtime#hdr-Environment_Variables&#34;&gt;Environment_Variables&lt;/a&gt; 设置，以及查看输出格式具体内容说明。每次 GC 运行时启用一个跟踪&lt;code&gt;gctrace&lt;/code&gt;都会写入&lt;code&gt;stderr&lt;/code&gt;。&lt;/p&gt;
@@ -592,7 +592,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v -bench&lt;span class=&#34
 &lt;p&gt;tips: 上面只是简单概括的介绍了下，随着时间推移可能不准确，Go中GC是一个复杂的过程，具体细节，可以通过如下文档一起实践学习：&lt;/p&gt;
 &lt;p&gt;了解GC细节入门:  &lt;strong&gt;&lt;a href=&#34;https://tip.golang.org/doc/gc-guide?continueFlag=bf311ba190bf0d160b5d3461e092f0f4&#34;&gt;A Guide to the Go Garbage Collector&lt;/a&gt;&lt;/strong&gt;  &lt;strong&gt;&lt;a href=&#34;https://go.dev/blog/ismmkeynote&#34;&gt;Getting to Go: The Journey of Go&amp;rsquo;s Garbage Collector&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;了解通过GC Trace定位问题: &lt;a href=&#34;https://www.ardanlabs.com/blog/2018/12/garbage-collection-in-go-part1-semantics.html&#34;&gt;&lt;strong&gt;Garbage Collection In Go : Part I - Semantics&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;100不了解在-docker-和-kubernetes-中运行-go-的影响&#34;&gt;100.不了解在 Docker 和 Kubernetes 中运行 Go 的影响&lt;/h2&gt;
+&lt;h3 id=&#34;100不了解在-docker-和-kubernetes-中运行-go-的影响&#34;&gt;100.不了解在 Docker 和 Kubernetes 中运行 Go 的影响&lt;/h3&gt;
 &lt;p&gt;根据 2021 年 Go 开发人员调查 ( &lt;a href=&#34;https://go.dev/blog/survey2021-results&#34;&gt;https://go.dev/blog/survey2021-results&lt;/a&gt; )，使用 Go 编写服务是最常见的用途。同时，Kubernetes 是部署这些服务的最广泛使用的平台。了解在 Docker 和 Kubernetes 中运行 Go 的含义非常重要，以防止出现 CPU 节流等常见情况。&lt;/p&gt;
 &lt;p&gt;GOMAXPROCS变量定义了负责同时执行用户级代码的操作系统线程的限制。默认情况下，它设置为 OS-apparent 逻辑 CPU 核心数。这在 Docker 和 Kubernetes 的上下文中意味着什么？&lt;/p&gt;
 &lt;p&gt;假设 Kubernetes 集群由八个核心节点组成。当一个容器部署在 Kubernetes 中时，可以定义一个 CPU 限制，以确保一个应用程序不会耗尽宿主机的所有资源。例如，以下配置将 CPU 的使用限制为 4,000 millicpu（或 millicores），因此四个 CPU 内核&lt;/p&gt;
@@ -629,9 +629,9 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v -bench&lt;span class=&#34
 &lt;li&gt;了解如何调整 GC 可以带来多种好处，例如更有效地处理突然增加的负载。&lt;/li&gt;
 &lt;li&gt;为帮助避免在 Docker 和 Kubernetes 中部署时出现 CPU 节流，请记住 Go 不支持 CFS。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h1 id=&#34;总结&#34;&gt;总结&lt;/h1&gt;
+&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
 &lt;p&gt;总共花了10天左右把 100-go-mistakes-and-how-to-avoid-them 这本书看完，对于一些文中不够升入的地方，进行挖掘了下，了解弄清楚了背后的原理，知其然知其所以然之后，有些mistake是一些共性的问题，而且对于文中每个mistake，都应去实践操作一下，熟悉利用好Go相关工具，编译，测试，构建等等，文中大部分是语言层面的，工程方面也有些，特别像最后介绍的在K8S docker中CPU对Go语言本身的影响，实际遇到之后才会印象更深，应该从错误中去总结，而不是总结之后继续犯错，如此折返，意义不大；从错误点中多挖掘底层逻辑多思考总结。&lt;/p&gt;
-&lt;p&gt;书的地址： &lt;a href=&#34;https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/&#34;&gt;https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;原书地址： &lt;a href=&#34;https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/&#34;&gt;https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/&lt;/a&gt;&lt;/p&gt;</description>
       
     </item>
     
@@ -642,7 +642,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v -bench&lt;span class=&#34
       
       <guid>https://weedge.github.io/post/notions/go-tips/go-tips-11-testing/</guid>
       
-        <description>&lt;h1 id=&#34;引言&#34;&gt;引言&lt;/h1&gt;
+        <description>&lt;h2 id=&#34;引言&#34;&gt;引言&lt;/h2&gt;
 &lt;p&gt;测试是项目生命周期的一个重要方面。它提供了无数的好处，例如建立对应用程序的信心、充当代码文档以及使重构更容易。与其他一些语言相比，Go 具有强大的编写测试原语。主要讨论测试过程变得脆弱、效率低下和准确性低的常见错误。这类问题属于工程规范实践，有些case同样适用于其他语言。&lt;/p&gt;
 &lt;p&gt;Go 中提供 go test 工具来执行测试，可以查看具体的开发文档： &lt;strong&gt;&lt;a href=&#34;https://pkg.go.dev/cmd/go#hdr-Testing_flags&#34;&gt;https://pkg.go.dev/cmd/go#hdr-Testing_flags&lt;/a&gt;&lt;/strong&gt;  里面介绍了每个模式的具体使用方式，使用好这些测试模式flag，可以更快执行或更好地发现可能错误，进而保证代码质量，工程代码稳定性建设上的重要一环。Go中支持4种测试函数：单测函数，基准压测函数，模糊测试，以及打印输出样例测试。&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestXxx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;...&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
@@ -653,10 +653,10 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v -bench&lt;span class=&#34
 	&lt;span class=&#34;c1&#34;&gt;// Output: The output of
 &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;	&lt;span class=&#34;c1&#34;&gt;// this example.
 &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
-&lt;h2 id=&#34;82不对测试进行分类&#34;&gt;82.不对测试进行分类&lt;/h2&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;笔记&#34;&gt;笔记&lt;/h2&gt;
+&lt;h3 id=&#34;82不对测试进行分类&#34;&gt;82.不对测试进行分类&lt;/h3&gt;
 &lt;p&gt;功能测试大致分为单元测试，集成测试，以及端到端的测试，单元测试则是程序测试case覆盖率的保障，列举Go中3种常见的测试分类方法&lt;/p&gt;
-&lt;h3 id=&#34;build-tags&#34;&gt;Build tags&lt;/h3&gt;
+&lt;h4 id=&#34;build-tags&#34;&gt;Build tags&lt;/h4&gt;
 &lt;p&gt;build tags 的一些使用场景：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;测试环境使用 mock 服务；而正式环境使用真实数据&lt;/li&gt;
@@ -676,13 +676,13 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v .
 go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; --tags&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;mock3 -v .
 &lt;span class=&#34;c1&#34;&gt;# 仅运行包中 mock1 &amp;amp;&amp;amp; mock2 的测试case&lt;/span&gt;
 go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; --tags&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;mock1,mock2 -v .
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;环境变量&#34;&gt;环境变量&lt;/h3&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;环境变量&#34;&gt;环境变量&lt;/h4&gt;
 &lt;p&gt;使用build tag方式构建测试用，随着tag的增加，可能会隐藏掉其中的错误，而且需要去查看测试文件中的tag有哪些。环境变量这种方式是build tags 的补充吧，对于没有设置环境变量的情况下，明确显示哪些测试是跳过的测试，比如&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; os.Getenv&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;INTEGRATION&amp;#34;&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; !&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;true&amp;#34;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
 		t.Skip&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;skipping integration test&amp;#34;&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
 	&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;tips: tag是测试文件粒度分类(Go 构建工具支持)，环境变量是测试代码粒度分类(手动代码逻辑)&lt;/p&gt;
-&lt;h3 id=&#34;short-模式&#34;&gt;Short 模式&lt;/h3&gt;
+&lt;h4 id=&#34;short-模式&#34;&gt;Short 模式&lt;/h4&gt;
 &lt;p&gt;另一种对测试进行分类的方法与它们的速度有关。可能不得不将短期运行的测试与长期运行的测试区分开来。&lt;/p&gt;
 &lt;p&gt;作为说明，假设有一组单元测试，其中一个是出了名的慢。想对慢速测试进行分类，这样就不必每次都运行它（尤其是在保存文件后触发），使用testing.Short区分如下：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestLongRunning&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
@@ -694,37 +694,37 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; --tags&lt;span class=&#34;o&
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;运行测试是，通过-short 参数来执行跳过&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v -short .
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这三种方式可以组合使用，例如，项目包含长时间运行的单元测试，则使用构建标记或环境变量对测试进行分类（例如，作为单元测试，mock测试，或者集成测试）和使用短模式来跳过长时间运行的测试。&lt;/p&gt;
-&lt;h2 id=&#34;83不启用--race&#34;&gt;83.不启用 -race&lt;/h2&gt;
+&lt;h3 id=&#34;83不启用--race&#34;&gt;83.不启用 -race&lt;/h3&gt;
 &lt;p&gt;对于并发程序代码的测试，需要检测是否存在data race， 需要使用 -race 模式来构建测试，比如&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;k&#34;&gt;go&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;test&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;race&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/...&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这种方法使启用竞争检测器，它可以检测代码以捕获潜在的数据竞争(没有打上!race标记的文件)。启用时，它对内存和性能有显着影响，因此必须在特定条件下使用，例如本地测试或 CI。在生产中，应该避免它（或者只在金丝雀发布的情况下使用)。&lt;/p&gt;
 &lt;p&gt;竞争检测器无法捕捉到误报（明显的数据竞争并不是真实的）。因此，如果收到警告，就知道代码包含数据竞争。相反，它有时会导致漏报（缺少实际的数据竞争）。对于漏报的情况，可以尽可能多的迭代来检测。&lt;/p&gt;
-&lt;h2 id=&#34;84不使用测试执行模式&#34;&gt;84.不使用测试执行模式&lt;/h2&gt;
-&lt;h3 id=&#34;-parallel&#34;&gt;-parallel&lt;/h3&gt;
+&lt;h3 id=&#34;84不使用测试执行模式&#34;&gt;84.不使用测试执行模式&lt;/h3&gt;
+&lt;h4 id=&#34;-parallel&#34;&gt;-parallel&lt;/h4&gt;
 &lt;p&gt;默认情况下 go test 在不同的 package 之间是并行执行测试，在每个 package 内部是串行执行测试。如果想要在 package 内部开启并行测试，需要在测试函数中显式执行 t.Parallel() 告诉 go test 这个函数可以与其他测试并行执行，一旦开启并行测试，一定要确保测试函数之间的资源竞争的问题已经得到正确的解决。执行 go test -parallel n 来制定n个测试函数并行执行(需要再显示调用了t.Parrallel)。对于执行慢的测试函数，相互之间没有资源竞争，可以加入t.Parrallel 来同时执行，提高测试的执行速度。&lt;/p&gt;
-&lt;h3 id=&#34;-shuffle&#34;&gt;-shuffle&lt;/h3&gt;
+&lt;h4 id=&#34;-shuffle&#34;&gt;-shuffle&lt;/h4&gt;
 &lt;p&gt;从 Go 1.17 开始引入，可以随机化测试和基准测试的执行顺序， 设置为&lt;code&gt;on&lt;/code&gt;或&lt;code&gt;off&lt;/code&gt;启用或禁用随机测试；编写测试时的最佳做法是将它们隔离开来。例如，它们不应依赖于执行顺序或共享变量。这些隐藏的依赖关系可能意味着一个可能的测试错误，或者更糟的是，一个在测试期间不会被捕获的错误。&lt;/p&gt;
 &lt;p&gt;应该对现有的测试标志保持谨慎，并随时了解最新 Go 版本的新功能。运行parallel测试或者将测试分再不同的包中，可以减少运行所有测试的总体执行时间。shuffle测试可以帮助发现隐藏的依赖关系，这些依赖关系可能意味着在以相同顺序运行测试时出现测试错误，甚至不可见的错误。&lt;/p&gt;
-&lt;h2 id=&#34;85不使用表驱动测试&#34;&gt;85.不使用表驱动测试&lt;/h2&gt;
+&lt;h3 id=&#34;85不使用表驱动测试&#34;&gt;85.不使用表驱动测试&lt;/h3&gt;
 &lt;p&gt;这个在vscode, goland IDE中已经集成了，对应函数生成对应单测函数时，会自动给出表驱动测试模版，编写测试用例，用于覆盖函数分支场景；如果不是用表驱动测试的话， 会出现大量的冗余函数，而且表达含义也会相对模糊，直接放入一个测试函数中来编写用例测试即可，也便于对整个函数的测试覆盖。通过t.Run来执行这些测试用例，进行期望值比较，同时也可以使用t.Parallel() 通过parallel 模式来加速测试，以及通过shuffle来随机测试。&lt;/p&gt;
-&lt;h2 id=&#34;86在单元测试中使用timesleep&#34;&gt;86.在单元测试中使用time.Sleep&lt;/h2&gt;
+&lt;h3 id=&#34;86在单元测试中使用timesleep&#34;&gt;86.在单元测试中使用time.Sleep&lt;/h3&gt;
 &lt;p&gt;在测试并发编程时，可能存在竞争条件race condition 的场景，导致程序的执行顺序不同，进入影响测试的准确性，如果使用time.Sleep 之后来断言值， 可能会有不同的结果，是不确定性的，所以，尽量使用管道同步的方式来进行断言测试；如果同步不可能做到的话， 可以重试进行断言，比如常用的testify 测试包，使用Eventually函数实现了最终应该成功的断言，这比使用被动睡眠更好的选择来消除测试中的非确定性。&lt;/p&gt;
-&lt;h2 id=&#34;87没有有效地处理时间-api&#34;&gt;87.没有有效地处理时间 API&lt;/h2&gt;
+&lt;h3 id=&#34;87没有有效地处理时间-api&#34;&gt;87.没有有效地处理时间 API&lt;/h3&gt;
 &lt;p&gt;对于函数中有time.Now()获取当前时间，而测试是也依赖当前时间的处理，导致那个时间点可能会存在差异，一种方式是提供全局共享变量，如果使用并行测试的，全部共享变量会引入数据竞争，导致无法并行测试，所以最好的方式，修改下所要测试的函数，去掉time.Now()的依赖，使用time.Time类型作为传入参数，有函数使用方一起来定义，这样可方便测试。&lt;/p&gt;
-&lt;h2 id=&#34;88不使用测试实用程序包&#34;&gt;88.不使用测试实用程序包&lt;/h2&gt;
+&lt;h3 id=&#34;88不使用测试实用程序包&#34;&gt;88.不使用测试实用程序包&lt;/h3&gt;
 &lt;p&gt;httptest 和 iotest 是两个常用的包，应该利用起来，构造于http 和 io 相关函数的测试。&lt;/p&gt;
-&lt;h3 id=&#34;httptest&#34;&gt;httptest&lt;/h3&gt;
+&lt;h4 id=&#34;httptest&#34;&gt;httptest&lt;/h4&gt;
 &lt;p&gt;httptest 包不需要通过建立网络连接就可以进行测试，主要用来测试服务端的http api handler 函数 以及 客户端的http caller函数。具体查看开发文档：https://pkg.go.dev/net/http/httptest&lt;/p&gt;
 &lt;p&gt;对于测试服务中api Handler的场景，只需要通过httptest.NewRequest 来构建api的请求数据的Reader，以及使用httptest.NewRecorder 来创建一个往请求api中写入响应数据的Writer, 这样在写测试用例时候， 直接模拟接口请求数据，编写相关的测试case,  测试的api handler 返回的数据 可以从Writer中获取到，进而可以做接口响应数据的断言假设，比如 返回状态码，响应body数据， 响应头中的数据。&lt;/p&gt;
 &lt;p&gt;对于测试客户端中相关的http client caller函数， 通过httptest.NewServer建立对应api handler服务, 客户端相关的http client &lt;a href=&#34;http://xn--callerhttp-uh4py1d60ohkhow7ewtwc.Client.Do&#34;&gt;caller函数可以使用http.Client.Do&lt;/a&gt; 对server.URL进行调用了，进而可以对返回的值进行断言测试。还可以使用httptest.NewTLSServer 建立一个TLS的测试服务。&lt;/p&gt;
 &lt;p&gt;grpc也有对应的测试库grpc/test 库，无需建立网络连接即可测试，具体查看开发文档：https://pkg.go.dev/google.golang.org/grpc/test&lt;/p&gt;
-&lt;h3 id=&#34;iotest&#34;&gt;iotest&lt;/h3&gt;
+&lt;h4 id=&#34;iotest&#34;&gt;iotest&lt;/h4&gt;
 &lt;p&gt;该iotest包 ( &lt;a href=&#34;https://pkg.go.dev/testing/iotest&#34;&gt;https://pkg.go.dev/testing/iotest&lt;/a&gt; ) 实现了io Reader ，Writer， Closer 等接口， 用于测试使用io 相关接口的方法测试；&lt;/p&gt;
-&lt;h2 id=&#34;89编写不准确的基准&#34;&gt;89.编写不准确的基准&lt;/h2&gt;
+&lt;h3 id=&#34;89编写不准确的基准&#34;&gt;89.编写不准确的基准&lt;/h3&gt;
 &lt;p&gt;对于性能优化，不能盲猜，需要编写基准压测来 分析评估 具体性能，然而编写基准测试并不简单。编写不准确的基准并根据它们做出错误的假设可能非常简单。使用go test -bench &lt;code&gt;regexp&lt;/code&gt; 匹配对应BenchmarkXxxx函数进行基准压测，默认运行1s, 运行时间通过-benchtime 来调整，其他性能分析的参数见开发文档。以下几种常见编写不准确基准压测的情况：&lt;/p&gt;
-&lt;h3 id=&#34;不重置或暂停定时器&#34;&gt;不重置或暂停定时器&lt;/h3&gt;
+&lt;h4 id=&#34;不重置或暂停定时器&#34;&gt;不重置或暂停定时器&lt;/h4&gt;
 &lt;p&gt;在基准压测时，可能会执行一个耗时长的初始准备逻辑，比如准备大量的数据用于基准压测，这个时候需要引入 testing.B.ResetTimer() 来重置时间，在开始基准压测，从测试结果中丢弃这部分耗时设置； 还有一种情况是在基准压测的循环里，这需要使用testing.B.StopTimer()停止时间，处理完准备逻辑，在使用testing.B.StartTimer()开始时间来处理基准测试函数。&lt;/p&gt;
-&lt;h3 id=&#34;对微基准做出错误的假设&#34;&gt;对微基准做出错误的假设&lt;/h3&gt;
+&lt;h4 id=&#34;对微基准做出错误的假设&#34;&gt;对微基准做出错误的假设&lt;/h4&gt;
 &lt;p&gt;对于基准测试，不能只用一轮或几轮基准实验，就做出了假设；基准测试受当前机器运行时环境的影响，cpu，内存负载情况等；所以在进行基准压测试，如果测试的值有所偏失，应该按照概率论中的大数定律，将压测的时间放长(-benchtime 调整)，而且测试的次数可以增加些(-count 调整)， 将这些性能数据，通过benchstat &lt;a href=&#34;https://pkg.go.dev/golang.org/x/perf/cmd/benchstat&#34;&gt;https://pkg.go.dev/golang.org/x/perf/cmd/benchstat&lt;/a&gt; 工具来 对比分析 前后benchmark的统计数据, 如果对比结果误差很小，则说明性能无差异。基准测试必须基于在合理环境中通过多次样本取证进行A/B 比较之后才能给出比较正确的结果。&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;k&#34;&gt;go&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;install&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;golang&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;org&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;perf&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;cmd&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;benchstat&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;@&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;latest&lt;/span&gt;
 &lt;span class=&#34;k&#34;&gt;go&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;test&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;run&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;NONE&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;bench&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;BenchmarkAtomicStoreInt32&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;count&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;benchtime&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;s&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;benchmem&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;11&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;89&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;benchmark&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;wrong&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;assumptions&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;tee&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;a&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;smp1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;txt&lt;/span&gt;
@@ -733,15 +733,15 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; --tags&lt;span class=&#34;o&
 
 &lt;span class=&#34;k&#34;&gt;go&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;test&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;run&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;NONE&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;bench&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;BenchmarkAtomicStore&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;count&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;benchtime&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;s&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;benchmem&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;11&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;89&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;benchmark&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;wrong&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;assumptions&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;tee&lt;/span&gt;  &lt;span class=&#34;nx&#34;&gt;smp&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;txt&lt;/span&gt;
 &lt;span class=&#34;nx&#34;&gt;benchstat&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;smp&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;txt&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;不注意编译器优化&#34;&gt;不注意编译器优化&lt;/h3&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;不注意编译器优化&#34;&gt;不注意编译器优化&lt;/h4&gt;
 &lt;p&gt;这个case 在Go中有对应issue（https://github.com/golang/go/issues/14813）; benchmark的函数代码比较简单，被内联到基准压测文件中，导致测试为空的，这样导致空的基准压测在执行，每次op时间相当于一个时钟周期时间，如何避免编译器优化欺骗基准测试结果的模式：&lt;/p&gt;
 &lt;p&gt;将被测函数的结果分配给局部变量，然后将最新结果分配给全局变量，先分配局部变量在栈上，不影响测试，而将局部变量复制给全局变量，分配在堆上，以防编译器优化进行inline 处理。&lt;/p&gt;
 &lt;p&gt;还有一种方式是直接使用//go:noinline 标记函数，在编译阶段防止inline。&lt;/p&gt;
-&lt;h3 id=&#34;被观察者效应愚弄&#34;&gt;被观察者效应愚弄&lt;/h3&gt;
+&lt;h4 id=&#34;被观察者效应愚弄&#34;&gt;被观察者效应愚弄&lt;/h4&gt;
 &lt;p&gt;在基准压测一个CPU-Bound的函数时，需要注意cpu cache 局部性原理对基准压测的影响；为了防止cpu cache对基准压测的影响，可以在每次测试前，创建一个新的测试数据用于测试，比如基准压测矩阵运算函数，在每次测试前，新建一个测试矩阵数据。&lt;/p&gt;
-&lt;h2 id=&#34;90没有探索所有的-go-测试功能&#34;&gt;90.没有探索所有的 Go 测试功能&lt;/h2&gt;
+&lt;h3 id=&#34;90没有探索所有的-go-测试功能&#34;&gt;90.没有探索所有的 Go 测试功能&lt;/h3&gt;
 &lt;p&gt;工欲善其事必先利其器，充分掌握go test工具有助于写出高质量的代码。&lt;/p&gt;
-&lt;h3 id=&#34;代码覆盖率&#34;&gt;代码覆盖率&lt;/h3&gt;
+&lt;h4 id=&#34;代码覆盖率&#34;&gt;代码覆盖率&lt;/h4&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 输出测试覆盖文件&lt;/span&gt;
 go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverprofile&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;coverage.out ./...
 &lt;span class=&#34;c1&#34;&gt;# 分析测试覆盖文件&lt;/span&gt;
@@ -749,11 +749,11 @@ go tool cover -html&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;coverage.out
 &lt;span class=&#34;c1&#34;&gt;# 一个包在另外一个包中会测试到，需要表明测试覆盖到的包&lt;/span&gt;
 go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;./... -coverprofile&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;coverage.out ./...
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;tips: 在追踪代码覆盖率时要保持谨慎。拥有 100% 的测试覆盖率并不意味着应用程序没有错误；需正确推理测试涵盖的内容。&lt;/p&gt;
-&lt;h3 id=&#34;从不同的包进行测试&#34;&gt;从不同的包进行测试&lt;/h3&gt;
+&lt;h4 id=&#34;从不同的包进行测试&#34;&gt;从不同的包进行测试&lt;/h4&gt;
 &lt;p&gt;这种在业务功能函数测试，或者对外部进行测试， 关注包的公开api行为而不是内部的具体实现细节，专注于测试暴露的行为。 常用的测试如BDD 开发， 只关注包的公开行为， 比如&lt;a href=&#34;https://onsi.github.io/ginkgo/&#34;&gt;ginkgo&lt;/a&gt; ；编写的测试用例文件可以不用和测试函数在同一个包内，可以单独定义测试文件夹，对不同包来进行测试用例的开发。&lt;/p&gt;
-&lt;h3 id=&#34;helper功能函数&#34;&gt;helper功能函数&lt;/h3&gt;
+&lt;h4 id=&#34;helper功能函数&#34;&gt;helper功能函数&lt;/h4&gt;
 &lt;p&gt;在进行测试是，需要测试前的准备，这些准备工作逻辑helper功能函数，用于初始化一些对象来测试，参数需要传入*testing.T,  在初始逻辑中判读初始的错误情况，如果错误直接调用t.Fatal退出即可，只返回对应测试对象，这样可以方便复用，无需在处理错误，方便其他测试场景使用。这个属于代码质量问题啦。&lt;/p&gt;
-&lt;h3 id=&#34;安装setup和拆卸teardown&#34;&gt;安装(setup)和拆卸(teardown)&lt;/h3&gt;
+&lt;h4 id=&#34;安装setup和拆卸teardown&#34;&gt;安装(setup)和拆卸(teardown)&lt;/h4&gt;
 &lt;p&gt;如果单个测试初始执行完测试后需要清理一些初始资源，可以使用 testing.T.Cleanup函数来做单测的收尾工作；多个调用入栈操作，单测完出栈执行。&lt;/p&gt;
 &lt;p&gt;如果测试文件都依赖于初始化之后才开始测试的话， 可以放在全部测试开始之前的位置进行测试的setup；在全部测试结束后对初始化的资源进行释放teardown； 可以通过在TestMain中定义整体逻辑如下：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestMain&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;m&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;M&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
@@ -769,7 +769,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;	&lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; 
 &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这种方式在测试开发框架包中经常使用到，比如ginkgo中的BeforeSuite和AfterSuite函数，在测试前后执行。&lt;/p&gt;
-&lt;h1 id=&#34;概括&#34;&gt;概括&lt;/h1&gt;
+&lt;h2 id=&#34;概括&#34;&gt;概括&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;使用构建标志、环境变量或 -short模式对测试进行分类可以使测试过程更加高效。可以使用构建标志或环境变量（例如，单元测试与集成测试）创建测试类别，并区分短期运行测试和长期运行测试以确定要执行的测试类型。&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;race&lt;/code&gt;强烈建议在编写并发应用程序时启用该标志。这样做可以捕捉到可能导致软件错误的潜在数据竞争；开启race检测会消耗内存，一般在开发测试，CI, 金丝雀发布(预发环境)的时候使用。&lt;/li&gt;
@@ -804,12 +804,12 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
       
       <guid>https://weedge.github.io/post/notions/go-tips/go-tips-10-standard-lib/</guid>
       
-        <description>&lt;h1 id=&#34;引言&#34;&gt;引言&lt;/h1&gt;
+        <description>&lt;h2 id=&#34;引言&#34;&gt;引言&lt;/h2&gt;
 &lt;p&gt;从程序中产生的错误中大多是使用姿势的不对，以及没有仔细阅读标准库相关包的开发文档，未查看源码导致，但是没有实践过这些问题，即使熟读文档和源码也可能避免不了。笔记中会以书中的mistake为切入点，结合源码升入分析其背后产生的原因，以及提出解决方案来避免。&lt;/p&gt;
-&lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
-&lt;h2 id=&#34;75提供错误的持续时间&#34;&gt;75.提供错误的持续时间&lt;/h2&gt;
+&lt;h2 id=&#34;笔记&#34;&gt;笔记&lt;/h2&gt;
+&lt;h3 id=&#34;75提供错误的持续时间&#34;&gt;75.提供错误的持续时间&lt;/h3&gt;
 &lt;p&gt;记住使用&lt;code&gt;time.Duration&lt;/code&gt;API 和提供&lt;code&gt;int64&lt;/code&gt;一个时间单位, 默认最小时间单位是微妙&lt;/p&gt;
-&lt;h2 id=&#34;76timeafter-和内存泄漏-重要&#34;&gt;76.time.After 和内存泄漏 （重要）&lt;/h2&gt;
+&lt;h3 id=&#34;76timeafter-和内存泄漏-重要&#34;&gt;76.time.After 和内存泄漏 （重要）&lt;/h3&gt;
 &lt;p&gt;常见问题之一，将time.After函数进行循环调用，导致内存泄露。&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
 		&lt;span class=&#34;k&#34;&gt;select&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
@@ -840,11 +840,11 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;p&gt;&lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/runtime/runtime2.go&#34;&gt;go1.20/src/runtime/runtime2.go&lt;/a&gt; , &lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/runtime/proc.go&#34;&gt;go1.20/src/runtime/proc.go&lt;/a&gt;(p结构上最小四叉堆 timer数组, 以及运行时相关timer的调度；调用流程：findRunnable/stealWork → checkTimers → runtimer → runOneTimer → f (sendTime or goFunc) , lock free的方式调用f, CAS原子操作timer的状态)&lt;/p&gt;
 &lt;p&gt;每次新生成Timer的时候，会往p上的最小堆上添加timer(O(logN))，将等待可读事件放入netpoll异步事件中监听，netpoll是在程序启动时初始化绑定一个单独的M进行事件轮训；Go1.14之前使用timerproc函数会调用一些系统调用来来让 goroutine 进入睡眠状态并唤醒 goroutine，系统调用意味着它为此生成OS线程，如果创建timer比较多，那就会发生比较多的系统调用，大大降低性能；之后改成异步事件轮训机制netpoll的方式多路复用，只需要一个OS线程来监听事件即可；系统调用因系统平台而异，通过runtime.nanotime1函数进行了封装；&lt;/p&gt;
 &lt;p&gt;如果时间到了，将最小堆顶timer删除(O(logN))，通过netpoll 异步事件机制 将 可执行的G调度到runnext中，然后绑定M运行f；&lt;/p&gt;
-&lt;h2 id=&#34;77常见的-json-处理错误-重要&#34;&gt;77.常见的 JSON 处理错误 (重要)&lt;/h2&gt;
-&lt;h3 id=&#34;case1-类型嵌入导致的意外行为&#34;&gt;case1 类型嵌入导致的意外行为&lt;/h3&gt;
+&lt;h3 id=&#34;77常见的-json-处理错误-重要&#34;&gt;77.常见的 JSON 处理错误 (重要)&lt;/h3&gt;
+&lt;h4 id=&#34;case1-类型嵌入导致的意外行为&#34;&gt;case1 类型嵌入导致的意外行为&lt;/h4&gt;
 &lt;p&gt;需要了解json.Marshal 方法，在对结构类型对象进行Marshal操作时，如果实现了json.Marshaler接口方法MarshalJSON， 则会调用对应MarshalJSON方法进行encode操作，可以看具体源码： &lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/runtime/proc.go&#34;&gt;go1.20/src/encoding/json/encode.go&lt;/a&gt; （调用流程：Marshal→ marshal → reflectValue → valueEncoder → typeEncoder → newTypeEncoder → marshalerEncoder → MarshalJSON)  ; 所以在json.Marshal操作的时候需要注意结构体的嵌入成员是否实现了json.Marshaler接口方法MarshalJSON， 比如： time.Time 实现了MarshalJSON这个方法； 如果不想直接使用组合嵌入成员的方法，则将其定义为对应类型成员，或者实现MarshalJSON方法覆盖嵌入成员的实现；&lt;/p&gt;
 &lt;p&gt;tips: 对结构类型对象进行UnMarshal操作也是同样情况。&lt;/p&gt;
-&lt;h3 id=&#34;case2-json-和单调时钟&#34;&gt;case2 JSON 和单调时钟&lt;/h3&gt;
+&lt;h4 id=&#34;case2-json-和单调时钟&#34;&gt;case2 JSON 和单调时钟&lt;/h4&gt;
 &lt;p&gt;对包含一个time.Time类型的结构encode或decode，有时会遇到意想不到的比较错误。&lt;/p&gt;
 &lt;p&gt;首先需要弄清楚操作系统处理两种不同的时钟类型：wall clock(挂钟)和 monotonic clock(单调时钟)。挂钟用于确定一天中的当前时间。此时钟可能会有所变化。例如，如果时钟使用同步网络时间协议 (NTP)，它可以及时向后或向前跳转。不应该使用挂钟测量持续时间，因为可能会遇到奇怪的行为，例如负持续时间(润秒重置的情况)。这就是操作系统提供第二种时钟类型的原因：单调时钟。单调时钟保证时间总是向前移动并且不受时间跳跃的影响。它可能会受到频率调整的影响（例如，如果服务器检测到本地石英钟的移动速度与 NTP 服务器不同），但不会受到时间跳跃的影响。&lt;/p&gt;
 &lt;p&gt;以前Go Time包的相关时间读取函数实现仅读取系统挂钟，从不读取单调时钟，从而在时钟重置时导致测量不正确。比如 一个 Go 程序在闰秒期间测量负的经过时间导致&lt;a href=&#34;https://blog.cloudflare.com/how-and-why-the-leap-second-affected-cloudflare-dns/&#34;&gt;CloudFlare 最近的 DNS 中断&lt;/a&gt;. 维基百科&lt;a href=&#34;https://en.wikipedia.org/wiki/Leap_second#Examples_of_problems_associated_with_the_leap_second&#34;&gt;与闰秒相关的问题示例列表&lt;/a&gt;现在包括 CloudFlare 的中断，并将 Go 的时间 API 列为根本原因。除了闰秒问题之外，Go 还扩展到非生产环境中的系统，这些环境中的时钟可能不太好调节，因此时钟重置更频繁。Go 必须优雅地处理时钟重置。Go语言作者Russ Cox提出了提案设计**&lt;a href=&#34;https://github.com/golang/proposal/blob/master/design/12914-monotonic.md&#34;&gt;Proposal: Monotonic Elapsed Time Measurements in Go&lt;/a&gt;**  (golang的开发规范和提案设计文档值得借鉴学习的，背景原因，验证评估影响面，尽量向前兼容，提案通过，再安排开发计划)； 将monotonic clock 单调时钟引入time.Time结构体中，具体CR: &lt;a href=&#34;https://go-review.googlesource.com/c/go/+/36255&#34;&gt;https://go-review.googlesource.com/c/go/+/36255&lt;/a&gt; ， HN也有对应讨论： &lt;a href=&#34;https://news.ycombinator.com/item?id=13566110&#34;&gt;https://news.ycombinator.com/item?id=13566110&lt;/a&gt; ;&lt;/p&gt;
@@ -854,15 +854,15 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;span class=&#34;o&#34;&gt;------------------------------------&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;--------------&lt;/span&gt;
              &lt;span class=&#34;nx&#34;&gt;Wall&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;time&lt;/span&gt;               &lt;span class=&#34;nx&#34;&gt;Monotonic&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;time&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在执行json.UnMarshal 解码包涵time.Time类型公开成员结构体进行格式化解析时， 也会调用time.Time的UnMarshalJSON函数，最终会调用Time.stripMono, 去掉Monotonic time；导致前后结构体对象不一致，一个从time.Now中返回有Monotonic time，解析后的没有；通过Time.Truncate方法，去掉Monotonic time，可以解决；需要注意带有time.Time的结构体在encode/decode时，前后对象会不一致的情况；&lt;/p&gt;
-&lt;h3 id=&#34;case3-any-map&#34;&gt;case3 any map&lt;/h3&gt;
+&lt;h4 id=&#34;case3-any-map&#34;&gt;case3 any map&lt;/h4&gt;
 &lt;p&gt;any是空接口interface{}的别名，在对map[string]any类型对象进行 json.UnMarshal时，json字符串中的整数类型会解析成默认的float64类型，这样可能会导致数据判断时出现问题，对类型转换做出错误的假设可能会导致 goroutine panic。&lt;/p&gt;
-&lt;h2 id=&#34;78常见的-sql-错误&#34;&gt;78.常见的 SQL 错误&lt;/h2&gt;
+&lt;h3 id=&#34;78常见的-sql-错误&#34;&gt;78.常见的 SQL 错误&lt;/h3&gt;
 &lt;p&gt;该&lt;code&gt;database/sql&lt;/code&gt;包提供SQL（或类似 SQL）数据库的标准通用接口；依赖具体数据操作，由三方来实现；接口与实现分离的很好例子；&lt;/p&gt;
 &lt;p&gt;tips：在设计通用中台和平台项目中的模块时，经常需要将抽象与实现分离，驱动化设计，方便具体领域场景的定制化开发。&lt;/p&gt;
 &lt;p&gt;具体查看开发文档：https://pkg.go.dev/database/sql；在使用这个包时看到一些模式或错误也很常见；深入研究五个常见错误case。&lt;/p&gt;
-&lt;h3 id=&#34;case1-忘记-sqlopen-不一定建立到数据库的连接-工程规范&#34;&gt;case1 忘记 sql.Open 不一定建立到数据库的连接 (工程规范)&lt;/h3&gt;
+&lt;h4 id=&#34;case1-忘记-sqlopen-不一定建立到数据库的连接-工程规范&#34;&gt;case1 忘记 sql.Open 不一定建立到数据库的连接 (工程规范)&lt;/h4&gt;
 &lt;p&gt;Open 可能只是验证其参数而不创建与数据库的连接。要验证数据源名称是否有效，请调用 Ping。在使用的时候，和数据库进行交互的时候才建立连接。比如go-redis &lt;a href=&#34;https://github.com/redis/go-redis/issues/2085&#34;&gt;issues-2085&lt;/a&gt; , 这个issue是因为使用go-redis v8 版本 通过ping请求访问 7.0 redis redis-cluster， v8版本还不支持新的协议返回的数据导致，需要升级使用go-redis v9版本来支持，所以使用ping功能即可以测试生成有效连接，而且可以验证客户端和服务端协议的一致性。&lt;/p&gt;
-&lt;h3 id=&#34;case2-忘记使用连接池-工程规范&#34;&gt;case2 忘记使用连接池 (工程规范)&lt;/h3&gt;
+&lt;h4 id=&#34;case2-忘记使用连接池-工程规范&#34;&gt;case2 忘记使用连接池 (工程规范)&lt;/h4&gt;
 &lt;p&gt;应为数据库是底层存储数据资源，如果不限制使用有限的底层数据库连接资源，会增加底层数据库服务的负载；需要设置连接池，进行连接复用，以及结合数据库服务能力限制设置最大连接数，具体参数：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;SetMaxOpenConns&lt;/code&gt;最大限度打开的数据库连接数（默认值&lt;code&gt;unlimited&lt;/code&gt;）；设置&lt;code&gt;SetMaxOpenConns&lt;/code&gt;对于生产级应用程序很重要。因为默认值是无限的，应该设置它以确保它适合底层数据库可以处理的内容。&lt;/li&gt;
@@ -871,16 +871,16 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;li&gt;&lt;code&gt;SetConnMaxLifetime&lt;/code&gt;最大限度连接在关闭之前可以保持打开状态的时间（默认值&lt;code&gt;unlimited&lt;/code&gt;）；如果连接到负载平衡的数据库服务器，设置会很有帮助。在这种情况下，要确保应用程序永远不会使用连接太久。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;如果应用程序面临不同的用例，可以使用多个连接池。这些值需要根据不同环境进行配置，对这些值进行可配置化管理，或者放在配置中心。&lt;/p&gt;
-&lt;h3 id=&#34;case3-不使用prepare语句-工程规范&#34;&gt;case3 不使用Prepare语句 (工程规范)&lt;/h3&gt;
+&lt;h4 id=&#34;case3-不使用prepare语句-工程规范&#34;&gt;case3 不使用Prepare语句 (工程规范)&lt;/h4&gt;
 &lt;p&gt;生产环境中，应该使用Prepare对sql 进行预处理，以防sql 注入，并且重复的sql语句不需要重新解析处理。&lt;/p&gt;
-&lt;h3 id=&#34;case4-错误处理空值---工程规范&#34;&gt;case4 错误处理空值   (工程规范)&lt;/h3&gt;
+&lt;h4 id=&#34;case4-错误处理空值---工程规范&#34;&gt;case4 错误处理空值   (工程规范)&lt;/h4&gt;
 &lt;p&gt;在设计数据库表时，如果允许字段为NULL的话；查询这个字段scan row时，需要考虑NULL的情况，如果直接使用类型，则会报错； 解决方法，使用指针类型，以及sql包中封装的类型sql.NullXXX&lt;/p&gt;
 &lt;p&gt;比指针类型更清楚地表达了意图。&lt;/p&gt;
-&lt;h3 id=&#34;case5-不处理行迭代错误--工程规范&#34;&gt;case5 不处理行迭代错误  (工程规范)&lt;/h3&gt;
+&lt;h4 id=&#34;case5-不处理行迭代错误--工程规范&#34;&gt;case5 不处理行迭代错误  (工程规范)&lt;/h4&gt;
 &lt;p&gt;这是要牢记的最佳实践：因为&lt;code&gt;rows.Next&lt;/code&gt;可以在遍历所有行或准备下一行时发生错误时停止，所以应该在迭代后使用&lt;code&gt;rows.Err&lt;/code&gt;进行检查。&lt;/p&gt;
-&lt;h2 id=&#34;79不关闭临时资源&#34;&gt;79.不关闭临时资源&lt;/h2&gt;
+&lt;h3 id=&#34;79不关闭临时资源&#34;&gt;79.不关闭临时资源&lt;/h3&gt;
 &lt;p&gt;开发者经常在代码中的某个点关闭申请的临时资源，以避免磁盘或内存，连接等资源泄漏。结构通常实现&lt;code&gt;io.Closer&lt;/code&gt;接口表示必须关闭临时资源。列举3个不关闭临时资源的case:&lt;/p&gt;
-&lt;h3 id=&#34;case1-http-response-body-重要&#34;&gt;case1 HTTP Response body （重要）&lt;/h3&gt;
+&lt;h4 id=&#34;case1-http-response-body-重要&#34;&gt;case1 HTTP Response body （重要）&lt;/h4&gt;
 &lt;p&gt;如果使用Go语言编写HTTP协议相关的代码，经常会遇到的问题，忘记关闭返回的http.Response.Body,  导致资源泄露，其实开发文档中已经给出了说明 &lt;a href=&#34;https://pkg.go.dev/net/http#Response.Body&#34;&gt;https://pkg.go.dev/net/http#Response.Body&lt;/a&gt;&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;nx&#34;&gt;The&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Client&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;and&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Transport&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;guarantee&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;that&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Body&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;is&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;always&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;non&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;nil&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;even&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;on&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;responses&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;without&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;a&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;body&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;or&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;responses&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;with&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;a&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;zero&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;length&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;body&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;  &lt;span class=&#34;nx&#34;&gt;It&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;is&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;the&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;caller&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;s&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;responsibility&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;to&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;close&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Body&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;  &lt;span class=&#34;nx&#34;&gt;The&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;default&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;HTTP&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;client&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;s&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Transport&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;may&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;not&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;reuse&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;HTTP&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;mf&#34;&gt;1.&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;x&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;#34;keep-alive&amp;#34;&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;TCP&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;connections&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;the&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Body&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;is&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;not&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;read&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;to&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;completion&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;and&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;closed&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;http客户端和传输保证Body总是非空的，即使响应没有Body或者响应的Body长度为零。关闭Body是调用者的责任。如果&lt;strong&gt;Body没有读到完成并且关闭，缺省HTTP客户端的传输(DefaultTransport 默认打开了Keep-Alive)不能复用HTTP/1.x &amp;ldquo;keep-alive&amp;quot;tcp 连接&lt;/strong&gt;。并且查看源码分析：&lt;/p&gt;
@@ -932,16 +932,16 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;p&gt;所以不管如何，最好的方式是都应该关闭Response Body,  尽管Body没有数据，或者已经读取完了，都应该关闭。&lt;/p&gt;
 &lt;p&gt;tips: 是否连接复用的判定，可以通过tcpdump 或者 wireshark 来抓包，通过是否使用同一个连接四元组来确定是否复用了同一连接。可以使用类似如下命令：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;tcpdump -i utun2 -tnn dst host www.baidu.com //per host pool
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;case2-sqlrows&#34;&gt;case2 sql.Rows&lt;/h3&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;case2-sqlrows&#34;&gt;case2 sql.Rows&lt;/h4&gt;
 &lt;p&gt;&lt;code&gt;sql.Rows&lt;/code&gt;是用作 SQL 查询结果的结构。因为这个结构实现了&lt;code&gt;io.Closer&lt;/code&gt;，所以它必须被关闭。忘记关闭行意味着连接泄漏，这会阻止数据库连接被放回连接池。&lt;/p&gt;
-&lt;h3 id=&#34;case3-osfile&#34;&gt;case3 os.File&lt;/h3&gt;
+&lt;h4 id=&#34;case3-osfile&#34;&gt;case3 os.File&lt;/h4&gt;
 &lt;p&gt;如果最终没有关闭一个&lt;code&gt;os.File&lt;/code&gt;，它本身不会导致泄漏：文件将在&lt;code&gt;os.File&lt;/code&gt;垃圾收集时自动关闭。但是，最好&lt;code&gt;Close&lt;/code&gt;显式调用，因为不知道下一次 GC 何时会被触发（除非手动运行它）。&lt;/p&gt;
 &lt;p&gt;总结本节，已经看到关闭临时资源从而避免泄漏的重要性。临时资源必须在正确的时间和特定情况下关闭。事先并不总是清楚什么必须关闭。只能通过仔细阅读 API 文档和/或通过经验来获取这些信息。但是应该记住，如果一个结构实现了&lt;code&gt;io.Closer&lt;/code&gt;接口，最终必须调用&lt;code&gt;Close&lt;/code&gt;方法。最后但并非最不重要的一点是，了解如果闭包失败该怎么办非常重要：是否足以记录一条消息，或者是否也应该传播它？适当的操作取决于具体错误err是否需要处理。&lt;/p&gt;
-&lt;h2 id=&#34;80在回复-http-请求后忘记返回语句-凑数&#34;&gt;80.在回复 HTTP 请求后忘记返回语句 （凑数）&lt;/h2&gt;
+&lt;h3 id=&#34;80在回复-http-请求后忘记返回语句-凑数&#34;&gt;80.在回复 HTTP 请求后忘记返回语句 （凑数）&lt;/h3&gt;
 &lt;p&gt;如果有适当的覆盖率，这样的问题可以而且应该在测试期间被发现。这个属于err≠nil, 需要check遇到错误不为nil，是否直接return返回。这总低级错误，可以交给测试用例来覆盖到。&lt;/p&gt;
-&lt;h2 id=&#34;81使用默认的-http-客户端和服务器-工程规范&#34;&gt;81.使用默认的 HTTP 客户端和服务器 (工程规范)&lt;/h2&gt;
+&lt;h3 id=&#34;81使用默认的-http-客户端和服务器-工程规范&#34;&gt;81.使用默认的 HTTP 客户端和服务器 (工程规范)&lt;/h3&gt;
 &lt;p&gt;在讨论http包的时候提到, 如果不初始化http.Client，Client结构中的RoundTripper会默认使用DefaultTransport, 而DefaultTransport 只能用于开发测试时使用；对于生产环境， 需要更具依赖的资源服务进行配置，保证其配置过大的连接数而超出资源服务的负载能力，以及在网络不稳定情况下，连接超时，读写超时的设定，以便是否重试，这样不会一直hang住连接不释放，并发场景下，会导致服务负载增加， 连接过多导致服务拒绝。所以对于网络tcp请求，都需要根据具体的生产情况进行合理配置，而且是可配置化， 或者引入配置中心动态下发配置。对于服务端的tcp连接配置也是如此，也需要配置读写超时时间，进行可配置化管理。&lt;/p&gt;
-&lt;h1 id=&#34;概括&#34;&gt;概括&lt;/h1&gt;
+&lt;h2 id=&#34;概括&#34;&gt;概括&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;对接受&lt;code&gt;time.Duration&lt;/code&gt;. 即使允许传递整数，也要尽量使用时间 API 来防止任何可能的混淆。&lt;/li&gt;
 &lt;li&gt;避免调用&lt;code&gt;time.After&lt;/code&gt;重复函数（例如循环或 HTTP 处理程序）可以避免峰值内存消耗。由创建的资源&lt;code&gt;time.After&lt;/code&gt;只有在定时器到期时才会被释放。&lt;/li&gt;
@@ -967,7 +967,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
       
       <guid>https://weedge.github.io/post/notions/go-tips/go-tips-09-concurrency-practice/</guid>
       
-        <description>&lt;h1 id=&#34;引言&#34;&gt;引言&lt;/h1&gt;
+        <description>&lt;h2 id=&#34;引言&#34;&gt;引言&lt;/h2&gt;
 &lt;p&gt;这里主要介绍并发实践中遇到的问题，这些问题在golang开源项目中也经常会出现，如果编写并发也会一直伴随在开发当中出现，也有工程实践相关的论文进行统计归纳总结(PS: 用这种方式发个论文还是比较轻松的~)：&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://songlh.github.io/paper/go-study.pdf&#34;&gt;Understanding Real-World Concurrency Bugs in Go&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;tips: 作者对golang和rust都有研究，结合相关的代码都可以一起学习下, 语言方面的小细节&lt;/p&gt;
@@ -976,30 +976,30 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;p&gt;&lt;a href=&#34;https://github.com/google/sanitizers/wiki/ThreadSanitizerGoManual&#34;&gt;https://github.com/google/sanitizers/wiki/ThreadSanitizerGoManual&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;注：Go要使用-race，需启用CGO，依赖sanitizers；一般用于开发测试进行检测&lt;/p&gt;
 &lt;p&gt;如果想更加深入的了解并发并行，可以一起学习这本书： &lt;a href=&#34;https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/perfbook/perfbook.html&#34;&gt;&lt;strong&gt;Is Parallel Programming Hard, And, If So, What Can You Do About It?&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
-&lt;h2 id=&#34;61传播不适当的context&#34;&gt;61.传播不适当的context&lt;/h2&gt;
+&lt;h2 id=&#34;笔记&#34;&gt;笔记&lt;/h2&gt;
+&lt;h3 id=&#34;61传播不适当的context&#34;&gt;61.传播不适当的context&lt;/h3&gt;
 &lt;p&gt;传播context应该谨慎进行。比如文中中通过一个基于与 http.Request关联的context处理异步操作的示例来说明这一点。因为一旦服务接口返回响应，这次请求会话的context就会被cancel，使用 http.Request关联的context的异步操作也可能会意外停止(请求已经结束，但是异步操作还没有执行完)。遇到这种情况，可以为特殊情况创建实现context.Context接口的自定义context结构，这个结构将原来的ctx context.Context作为成员wrap一层，实现主要的传递功能Value方法, 这样在服务的请求回话结束之后，异步操作可以继续执行完成。&lt;/p&gt;
 &lt;p&gt;tips：生产环境下，请求接口下的异步操作，必须避免因goroutine协程处理hang住，导致泄露，一般引入执行超时机制。&lt;/p&gt;
-&lt;h2 id=&#34;62在不知道何时停止的情况下启动-goroutine-重要&#34;&gt;62,在不知道何时停止的情况下启动 goroutine (重要)&lt;/h2&gt;
+&lt;h3 id=&#34;62在不知道何时停止的情况下启动-goroutine-重要&#34;&gt;62.在不知道何时停止的情况下启动 goroutine (重要)&lt;/h3&gt;
 &lt;p&gt;Goroutines 启动起来既简单又便宜——如此简单和便宜，以至于不考虑停止一个新的 goroutine，这可能会导致泄漏。不知道何时停止 goroutine 是一个设计问题，也是 Go 中常见的并发错误。了解原因以及如何预防它。&lt;/p&gt;
 &lt;p&gt;首先，量化一下 goroutine 泄漏的含义。在内存方面，一个 goroutine 以 2 KB 的最小堆栈大小开始，它可以根据需要增长和收缩（最大堆栈大小在 64 位上为 1 GB，在 32 位上为 250 MB）。在内存方面，goroutine 还可以保存分配给堆的变量引用。同时，goroutine 可以保存 HTTP 或数据库连接、打开的文件和网络套接字等资源，这些资源最终应该正常关闭。如果一个 goroutine 被泄露，那么这些资源也会被泄露。&lt;/p&gt;
 &lt;p&gt;goroutine 是一种资源，就像任何其他资源一样，最终必须关闭以释放内存或其他资源(通常通过cancel 信号量，ctx.Done方式让这些goroutine任务退出释放资源)。在不知道何时停止的情况下启动 goroutine 是一个设计问题。每当一个 goroutine 启动时，应该对它何时停止有一个明确的计划。如果一个 goroutine 创建资源并且它的生命周期与应用程序的生命周期绑定，那么在退出应用程序之前，等待这个 goroutine 完成可能更安全。这样可以确保资源可以被释放。&lt;/p&gt;
-&lt;h2 id=&#34;63不注意-goroutines-和循环变量-重要&#34;&gt;63.不注意 goroutines 和循环变量 (重要)&lt;/h2&gt;
+&lt;h3 id=&#34;63不注意-goroutines-和循环变量-重要&#34;&gt;63.不注意 goroutines 和循环变量 (重要)&lt;/h3&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;_&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;i&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;range&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;s&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;      
     &lt;span class=&#34;k&#34;&gt;go&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
         &lt;span class=&#34;nx&#34;&gt;fmt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;i&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
     &lt;span class=&#34;p&#34;&gt;}()&lt;/span&gt;
 &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这个是Go新手经常会遇到问题，也是老生常谈的问题了，如果希望每个闭包都访问goroutine创建时的值，有什么解决方案？有两种方法: 每次迭代中，创建一个局部新变量i，并将i复制给新i；另外一种方法是不再依赖闭包，而是使用实际函数进行传参值拷贝，本质上一样。&lt;/p&gt;
-&lt;h2 id=&#34;64使用-select-和-channels-期待确定性行为-重要&#34;&gt;64.使用 select 和 channels 期待确定性行为 （重要）&lt;/h2&gt;
+&lt;h3 id=&#34;64使用-select-和-channels-期待确定性行为-重要&#34;&gt;64.使用 select 和 channels 期待确定性行为 （重要）&lt;/h3&gt;
 &lt;p&gt;这里主要了解select语义的工作原理，可以从官方文档中进行了解：https://go.dev/ref/spec#Select_statements&lt;/p&gt;
 &lt;p&gt;如果一个或多个通信可以继续进行，则通过统一的伪随机选择一个可以继续进行的通信。否则，如果存在默认情况，则选择该情况。如果没有默认情况，则“select”语句将阻塞，直到至少有一个通信可以继续进行。&lt;/p&gt;
 &lt;p&gt;tips: 当使用无缓冲channel时，写入不想阻塞，使用select + case 写chan + default的方式来处理时非常好的办法，可以避免死锁的情况，比如 &lt;code&gt;fatal error: all goroutines are asleep - deadlock!&lt;/code&gt;这个错误经常会遇到，这个是全部在执行的goroutine都进入了等待状态，Go 语言死锁检测会发现当前的 Goroutine 已经不可能被唤醒，就会直接报错退出；常见于 一组协程处理数据其中一个协程进入一直等待状态，调用sync.WaitGroup Wait方法(底层通过信号量值机制semacquire1)等待协程执行完成，这样出现相互等待，导致deadlock。&lt;/p&gt;
-&lt;h2 id=&#34;65不使用通知channel&#34;&gt;65.不使用通知channel&lt;/h2&gt;
+&lt;h3 id=&#34;65不使用通知channel&#34;&gt;65.不使用通知channel&lt;/h3&gt;
 &lt;p&gt;无数据channel应该用 &lt;code&gt;chan struct{}&lt;/code&gt; 作为通知channel， struct{}{}不占内存空间。&lt;/p&gt;
-&lt;h2 id=&#34;66不使用nil--channel&#34;&gt;66.不使用nil  channel&lt;/h2&gt;
+&lt;h3 id=&#34;66不使用nil--channel&#34;&gt;66.不使用nil  channel&lt;/h3&gt;
 &lt;p&gt;接受或发送到 nil 通道是一种阻塞行为，而且这种行为并非无用。正如文中合并两个通道的示例中看到的那样，即使close 通道， 接受方还是可以读取数据，通过返回的第二个参数判断是否关闭，关闭了将通道设置为nil，这样利用select不会选择阻塞的nil通道，可以使用 nil 通道来实现一个优雅的状态机，所以 nil 通道在某些情况下很有用，并且在处理并发代码时应该成为 Go 开发人员工具集的一部分。&lt;/p&gt;
-&lt;h2 id=&#34;67对channel大小感到困惑&#34;&gt;67.对channel大小感到困惑&lt;/h2&gt;
+&lt;h3 id=&#34;67对channel大小感到困惑&#34;&gt;67.对channel大小感到困惑&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;无缓冲通道支持同步。可以保证两个 goroutine 将处于已知状态：一个接收消息，另一个发送消息。&lt;/li&gt;
 &lt;li&gt;缓冲通道不提供任何强同步。实际上，生产者 goroutine 可以发送一条消息，然后在通道未满时继续执行。唯一的保证是 goroutine 在消息发送之前不会收到消息。&lt;/li&gt;
@@ -1011,12 +1011,12 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;li&gt;当使用通道来解决速率限制问题时。如果需要通过限制请求数量来强制资源利用，应该根据限制设置缓冲通道大小。例如，errorgroup 中的 sem chan struct{}(token) 就是用来设置最大执行的goroutine数目。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;决定一个准确缓冲通道大小不是一个容易的问题。首先，它是 CPU 和内存之间的平衡。值越小，可以面对的 CPU 争用越多；但是这个值越大，需要分配的内存就越多；需要基于场景下，基准压测来衡量。&lt;/p&gt;
-&lt;h2 id=&#34;68忘记字符串格式化可能产生的副作用&#34;&gt;68.忘记字符串格式化可能产生的副作用&lt;/h2&gt;
+&lt;h3 id=&#34;68忘记字符串格式化可能产生的副作用&#34;&gt;68.忘记字符串格式化可能产生的副作用&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;数据竞争(data race), 文中举了一个etcd 例子中 一个goroutine通过&lt;code&gt;fmt.Sprintf(&amp;quot;%v&amp;quot;, ctx)&lt;/code&gt; 格式化成key, 对key进行watch操作， 通过ctx中的String方法读取ctx中的元数据进行格式化；另一个goroutine 通过context.WithValue 写入，这样产生了data race。修复 ( &lt;a href=&#34;https://github.com/etcd-io/etcd/pull/7816&#34;&gt;https://github.com/etcd-io/etcd/pull/7816&lt;/a&gt; ) pr中, 直接实现wrap一层自定义ctx，不依赖通过context.WithValue写入改变值的ctx；&lt;/li&gt;
 &lt;li&gt;死锁(deadlock)，如果一个结构体的格式化String函数中使用了互斥锁，则对结构体对象格式化时，要考虑对应互斥锁的范围，如果上锁范围包括了格式化代码，则会重复上锁，导致相互等待，进而出现deadlock；&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&#34;69使用append操作产生数据竞争-重要&#34;&gt;69.使用append操作产生数据竞争 (重要)&lt;/h2&gt;
+&lt;h3 id=&#34;69使用append操作产生数据竞争-重要&#34;&gt;69.使用append操作产生数据竞争 (重要)&lt;/h3&gt;
 &lt;p&gt;发生数据竞争(data race)的情况是多个并发goroutines至少有一个写操作发生在一个共享空间中；对于slice切片结构，append在扩容的时候是否重新分配了内存空间，如果发生扩容则在在切片副本上使用，而不是原始切片，这样就不会发生数据竞争；更合理情况是直接在goroutine中进行copy一份切片副本进行append操作。&lt;/p&gt;
 &lt;p&gt;多个goroutines 并发访问 slice和map时，发生数据竞争的情况：&lt;/p&gt;
 &lt;ul&gt;
@@ -1024,12 +1024,12 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;li&gt;无论操作如何访问不同的切片索引都不是数据竞争；不同的索引意味着不同的内存位置。&lt;/li&gt;
 &lt;li&gt;使用至少一个goroutine更新访问同一个map（不管它是相同的还是不同的key）是一种数据竞争。为什么这与切片数据结构不同？map底层结构是个桶数组，每个桶都是一个指向键值对数组的指针；哈希算法用于确定桶的数组索引。因为该算法在map初始化期间包含一些随机性，所以一次执行可能导致相同的数组索引(相同bucket)，而另一次执行可能不会。竞争检测器通过发出警告来处理这种情况，而不管实际的数据竞争是否发生。与slice不同，go在map实现中内置了对并发读写的检测，即便不加入-race，一旦发现也会抛出panic。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&#34;70对slice和map使用mutex不准确-重要&#34;&gt;70.对slice和map使用mutex不准确 （重要）&lt;/h2&gt;
+&lt;h3 id=&#34;70对slice和map使用mutex不准确-重要&#34;&gt;70.对slice和map使用mutex不准确 （重要）&lt;/h3&gt;
 &lt;p&gt;在数据既可变又共享的并发上下文中工作时，通常使用mutex对操作数据的临界区域进行同步互斥访问；&lt;/p&gt;
 &lt;p&gt;具体map的内部结构在https://github.com/golang/go/blob/go1.20/src/runtime/map.go hmap查看源码(通过测试用例代码了解)；map是一个&lt;code&gt;runtime.hmap&lt;/code&gt;主要包含元数据（counter,flags,B等）以及2个指向数据桶(bucket)的指针的结构。所以对与map变量之间赋值操作&lt;code&gt;mp:=m&lt;/code&gt;不复制底层实际数据(buckets)。这个和slice切片的原理是一样，只不过需要注意append扩容情况，而map扩容的是底层buckets数据。&lt;/p&gt;
 &lt;p&gt;了解了slice和map的结构，对于mutex保护操作共享的slice或者map的临界区间很有帮助，对于map遍历操作进行互斥访问，如果遍历处理的时间长，考虑到性能问题，可以深拷贝一份出来进行耗时的计算操作；&lt;/p&gt;
 &lt;p&gt;在考虑使用mutex对slice或map进行互斥访问时，需要考虑好互斥的临界区域。&lt;/p&gt;
-&lt;h2 id=&#34;71滥用-syncwaitgroup--重要&#34;&gt;71.滥用 sync.WaitGroup  （重要）&lt;/h2&gt;
+&lt;h3 id=&#34;71滥用-syncwaitgroup--重要&#34;&gt;71.滥用 sync.WaitGroup  （重要）&lt;/h3&gt;
 &lt;p&gt;sync.WaitGroup是Go并发程序常用的用于等待一组goroutine退出的机制。通过Add和Done方法实现内部计数的调整。而Wait方法用于等待，直到内部计数器为0才会返回。文中提到的例子是比较经典的坑，在论文&lt;a href=&#34;https://arxiv.org/pdf/2204.00764.pdf&#34;&gt;&lt;strong&gt;A Study of Real-World Data Races in Golang&lt;/strong&gt;&lt;/a&gt;中也有提到&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;nx&#34;&gt;wg&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;sync&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;WaitGroup&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{}&lt;/span&gt;
 	&lt;span class=&#34;kd&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;v&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;uint64&lt;/span&gt;
@@ -1047,10 +1047,10 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在&lt;code&gt;sync.WaitGroup&lt;/code&gt;结构中拥有一个默认初始化为 0的计数器。可以使用&lt;code&gt;Add(int)&lt;/code&gt;方法递增此计数器，使用&lt;code&gt;Done()&lt;/code&gt;或使用Add负值来递减此计数器。如果想要等到计数器为0，则使用&lt;code&gt;Wait()&lt;/code&gt;阻塞等待并释放goroutine资源，这部分内容在 &lt;a href=&#34;https://weedge.github.io/post/notions/go-tips/go-tips-09-concurrency-practice/#64%E4%BD%BF%E7%94%A8-select-%E5%92%8C-channels-%E6%9C%9F%E5%BE%85%E7%A1%AE%E5%AE%9A%E6%80%A7%E8%A1%8C%E4%B8%BA-%E9%87%8D%E8%A6%81&#34;&gt;#64&lt;/a&gt; tips中也有提到，具体见源码客观分析：https://github.com/golang/go/blob/go1.20/src/sync/waitgroup.go (结合测试用例看疗效更好)&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/runtime/sema.go&#34;&gt;https://github.com/golang/go/blob/go1.20/src/runtime/sema.go&lt;/a&gt; (Semaphore实现，&lt;a href=&#34;https://swtch.com/semaphore.pdf&#34;&gt;类似Linux的futex机制&lt;/a&gt;)&lt;/p&gt;
 &lt;p&gt;了解了WaitGroup,  不难理解例子中的代码问题，将wg.Add(1)放在了goroutine执行的函数中，而没有像正确方法那样，将Add(1)放在goroutine创建启动之前，这样会导致对WaitGroup内部计数器形成了数据竞争，很可能因goroutine调度问题，Add(1)还未来的及调用，从而导致Wait提前返回，这组goroutine中还有在执行中的。&lt;/p&gt;
-&lt;p&gt;在 论文&lt;a href=&#34;https://arxiv.org/pdf/2204.00764.pdf&#34;&gt;**A Study of Real-World Data Races in Golang&lt;/a&gt;** 中 还提到一个问题，就是goroutine中有多个defer 操作，defer Done 操作首先执行了，导致其他defer操作可能还未执行，Wait就已经返回了，导致后面依赖defer操作中的结果,进行判断处理的逻辑会出错。&lt;/p&gt;
+&lt;p&gt;在 论文&lt;a href=&#34;https://arxiv.org/pdf/2204.00764.pdf&#34;&gt;A Study of Real-World Data Races in Golang&lt;/a&gt; 中 还提到一个问题，就是goroutine中有多个defer 操作，defer Done 操作首先执行了，导致其他defer操作可能还未执行，Wait就已经返回了，导致后面依赖defer操作中的结果,进行判断处理的逻辑会出错。&lt;/p&gt;
 &lt;p&gt;tips: 上一节tips中有提到cpu有使用&lt;em&gt;内存屏障(memory barrier)&lt;/em&gt;（也称为&lt;em&gt;内存栅栏(memory fence)&lt;/em&gt;）来确保顺序。Go 为实现内存屏障定义了语言层面的内存模型规范，这里在使用的&lt;code&gt;sync.WaitGroup&lt;/code&gt;，&lt;code&gt;wg.Add&lt;/code&gt; 和 &lt;code&gt;wg.Wait&lt;/code&gt;之间存在 happens-before 关系。&lt;/p&gt;
 &lt;p&gt;这个是Go开发人员常见错误。使用&lt;code&gt;sync.WaitGroup&lt;/code&gt;，&lt;code&gt;Add&lt;/code&gt;操作必须在父 goroutine 中启动 goroutine 之前完成，而&lt;code&gt;Done&lt;/code&gt;操作必须在 goroutine 内完成。&lt;/p&gt;
-&lt;h2 id=&#34;72忘记-synccond&#34;&gt;72.忘记 sync.Cond&lt;/h2&gt;
+&lt;h3 id=&#34;72忘记-synccond&#34;&gt;72.忘记 sync.Cond&lt;/h3&gt;
 &lt;p&gt;在同步原语&lt;code&gt;sync&lt;/code&gt;包中，&lt;code&gt;sync.Cond&lt;/code&gt;可能是最少使用和理解的。但是，它提供了无法通过channel实现的功能。实现类似pub/sub 的多通道广播机制，可以认为pub/sub机制是包括了单通道广播的，sync.Cond的内部实现，其结构中L Locker 用来互斥访问条件逻辑，如果条件不成立，则检测是否copy，copy则直接panic, 否则添加到通知列表中，进行等待；如果条件成立，则执行对应逻辑。唤醒方式分为两种：Signal() 唤醒等待队中的一个goroutine来执行判断； Broadcast 唤醒等待队列中的全部goroutine来执行对应判断逻辑；具体见源码客观分析：https://github.com/golang/go/blob/go1.20/src/sync/cond.go (结合测试用例看疗效更好)&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/runtime/sema.go&#34;&gt;https://github.com/golang/go/blob/go1.20/src/runtime/sema.go&lt;/a&gt; (Semaphore实现，&lt;a href=&#34;https://swtch.com/semaphore.pdf&#34;&gt;类似Linux的futex机制&lt;/a&gt;)&lt;/p&gt;
 &lt;p&gt;对于Signal()方式，和使用 channel chan struct{} 非阻塞发送消息一样&lt;/p&gt;
@@ -1059,7 +1059,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;span class=&#34;k&#34;&gt;case&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;ch&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{}{}:&lt;/span&gt;
 &lt;span class=&#34;k&#34;&gt;default&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
 &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;73不使用errorgroup&#34;&gt;73.不使用errorgroup&lt;/h2&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;73不使用errorgroup&#34;&gt;73.不使用errorgroup&lt;/h3&gt;
 &lt;p&gt;errorgroup这个包是google对go的一个扩展包：&lt;a href=&#34;https://pkg.go.dev/golang.org/x/sync/errgroup&#34;&gt;golang.org/x/sync/errgroup&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;tips: &lt;code&gt;golang.org/x&lt;/code&gt;是一个提供标准库扩展的库。为sync包扩展了一个包：errgroup&lt;/p&gt;
 &lt;p&gt;实现逻辑简单，主要是错误处理，如果其中有一个goroutine执行错误，则只记录第一次goroutine执行的错误，通过context告知了cancel状态，这个需要通过select+ctx.Done() 感知到；并且通知对应使用Wait()等待全部goroutine执行完成，并且返回记录的错误； 后面加入sem chan struct{}(token)，用来限制最大执行goroutine数，通过SetLimit来设置，并且提供了TryGo 非阻塞执行。&lt;/p&gt;
@@ -1086,7 +1086,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;当然如果想获取goroutine执行的全部错误则需要额外的错误数组来支持，Go中的函数返回错误必须为nil。&lt;/p&gt;
-&lt;h2 id=&#34;74复制同步类型-重要&#34;&gt;74.复制同步类型 （重要）&lt;/h2&gt;
+&lt;h3 id=&#34;74复制同步类型-重要&#34;&gt;74.复制同步类型 （重要）&lt;/h3&gt;
 &lt;p&gt;sync包提供基本同步原语，例如 mutex, rwmutex, condition variable，waitgroup，pool，map等。对于所有这些结构体，有一个硬性规则要遵循：它们永远不应该被复制。以下是一个常见的错误：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;type&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Counter&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
 	&lt;span class=&#34;nx&#34;&gt;mu&lt;/span&gt;       &lt;span class=&#34;nx&#34;&gt;sync&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Mutex&lt;/span&gt;
@@ -1139,7 +1139,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
    &lt;span class=&#34;c1&#34;&gt;// Copy *noCopy
 &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;每当多个 goroutine 访问一个同步共享元素，必须确保它们都依赖于同一个实例。此规则适用于定义的所有同步类型。可以使用指针解决这个问题，结构传递者对象是指针，或者结构成员中的同步共享元素是指针类型。本质上是值传递和指针传递的问题。&lt;/p&gt;
-&lt;h1 id=&#34;概括&#34;&gt;概括&lt;/h1&gt;
+&lt;h2 id=&#34;概括&#34;&gt;概括&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;了解context何时可以取消在传播它时需要注意，避免取消导致未执行完：例如，HTTP 处理程序在发送响应后取消context。&lt;/li&gt;
 &lt;li&gt;避免泄漏意味着要注意，无论何时启动 goroutine，都应该有一个最终停止它的计划。&lt;/li&gt;
@@ -1167,8 +1167,8 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
       
       <guid>https://weedge.github.io/post/notions/go-tips/go-tips-08-concurrency-foundations/</guid>
       
-        <description>&lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
-&lt;h2 id=&#34;55混淆并发和并行&#34;&gt;55.混淆并发和并行&lt;/h2&gt;
+        <description>&lt;h2 id=&#34;笔记&#34;&gt;笔记&lt;/h2&gt;
+&lt;h3 id=&#34;55混淆并发和并行&#34;&gt;55.混淆并发和并行&lt;/h3&gt;
 &lt;p&gt;这个在处理大数据的场景中经常可以看到，可以这么抽象，比如将一个job 分成 很多的 task 事件， 比如 读取文件 task, 切割文件task, map key task, shuffle key task，reduce key task，sink task 等等，如果这个job 串行执行，同步处理task, 效率会很低，cpu资源也不会充分利用，比如文件io,网络io，系统缺页中断都会反生系统调用(同步或者异步)，这样cpu可能空闲出来了，串行执行的话， 需要等待这次系统调用处理完之后才能继续使用cpu, 所以处理起来很慢，吞吐量很低； 如果改成并发(取决于操作系统调度，基于时间片轮训抢占式调度)，将job进程分成的多个task事件一同工作，如果某个task发生了系统中断，则可以让出cpu给另外一个task来执行，比如读取文件io.Reader，sink io.Writer写入文件时产生了系统中断，则可以保存上下文让出cpu给其他task来执行，这样可以充分利用cpu资源，提高吞吐(这里task不能太多,涉及到上下文切换，反而会降低吞吐，需要需要用户合理编排运行时结构)；当cpu利用上了，那就使用多核cpu来同时处理，进一步提高吞吐(多核涉及到底层 &lt;a href=&#34;https://fgiesen.wordpress.com/2014/07/07/cache-coherency/&#34;&gt;&lt;strong&gt;cpu cache一致性&lt;/strong&gt;&lt;/a&gt; 问题)；单机吞吐上来了，如果数据量非常大，单机优化已经无法存放这么多数据了，那就copy多台机器分布式进行处理(单机变多机，协同和网络问题)；第一次提升使用的就是将job切成多个task一起来处理，就是使用并发机制充分cpu资源；第二次提升则是使用多核，增加cpu资源，将多个task分配到cpu上同时一起做(执行)，即所谓的并行，这样可以单机垂直扩容提升吞吐了；即使存在摩尔定律，但是单机还是有限制；数据无极限，那处理也需要无极限，copy多台机器，组成集群，将单机任务分发到多集群上进行调度执行，充分利用并发并行，利用计算和存储资源，水平扩容，这样就没有资源上的限制了(需要考虑资源的充分利用，因为成本上去了嘛；当然&lt;a href=&#34;https://www.intel.com/content/www/us/en/products/docs/processors/what-is-a-gpu.html&#34;&gt;GPU&lt;/a&gt;的利用应该同样适用，并行能力更强，但是单核计算能力相对cpu弱)。在并发并行处理时，task之间必然会存在协同关系，彼此分工合作，则需要沟通，共同处理共享资源，存在竞争，CSP理论中提倡通过沟通来共享资源，在Go中通过channel来协同，也有相关sync库来处理同步；分布式多机沟通则通过rpc和消息队列；其中涉及到分布式调度和计算。 这种并发和并行模式在开店做生意，银行排队，工厂流水线中都可以看到相同的处理模式。&lt;/p&gt;
 &lt;p&gt;回到正题，引用Go设计者的一句话概括：&lt;/p&gt;
 &lt;blockquote&gt;
@@ -1178,7 +1178,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;p&gt;并发是一次处理很多事情，并行是一次执行做很多事情；&lt;/p&gt;
 &lt;p&gt;并发和并行是不同的。并发是关于结构的，可以通过引入分离并发线程可以处理的不同步骤，将顺序实现更改为并发实现。同时，并行性是关于执行的，可以通过添加更多并行线程在步骤级别使用它。理解这两个概念是成为一名熟练的 Gopher 的基础。&lt;/p&gt;
 &lt;p&gt;附：&lt;strong&gt;&lt;a href=&#34;https://go.dev/blog/waza-talk&#34;&gt;Concurrency is not parallelism&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
-&lt;h2 id=&#34;56认为并发总是更快&#34;&gt;56.认为并发总是更快&lt;/h2&gt;
+&lt;h3 id=&#34;56认为并发总是更快&#34;&gt;56.认为并发总是更快&lt;/h3&gt;
 &lt;p&gt;在考虑并发性时，有两种类型的工作负载需要理解。&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;CPU-Bound&lt;/strong&gt;：是一种永远不会造成 Goroutines 自然地进入和退出等待状态的情况的工作负载。是不断进行计算的job。将 Pi 计算到第 N 位的线程将受 CPU-Bound。&lt;/li&gt;
@@ -1188,18 +1188,18 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;p&gt;对于受IO-Bound的工作负载，不需要并行性来使用并发。单个操作系统/硬件线程可以高效地处理多个 Goroutines，因为 Goroutines 作为其工作负载的一部分自然地进入和退出等待状态。拥有比操作系统/硬件线程更多的 Goroutine 可以加快工作负载的执行速度，因为将 Goroutine 移入和移出操作系统线程的延迟成本不会产生“Stop The World”事件。工作负载自然停止，这允许不同的 Goroutine 有效地利用相同的操作系统/硬件线程，而不是让操作系统/硬件线程闲置。&lt;/p&gt;
 &lt;p&gt;怎么知道每个硬件线程有多少 Goroutines 提供最佳吞吐量？Goroutines 太少，有更多的空闲时间；太多的 Goroutines 有更多的上下文切换延迟时间。如果不确定是否并发会更快，正确的方法可能是从一个简单的顺序版本开始，然后使用分析和基准测试，进行调优。&lt;/p&gt;
 &lt;p&gt;附： &lt;a href=&#34;https://www.ardanlabs.com/blog/2018/12/scheduling-in-go-part3.html&#34;&gt;&lt;strong&gt;Scheduling In Go : Part III - Concurrency&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;57对何时使用channel或mutex感到困惑&#34;&gt;57.对何时使用channel或mutex感到困惑&lt;/h2&gt;
+&lt;h3 id=&#34;57对何时使用channel或mutex感到困惑&#34;&gt;57.对何时使用channel或mutex感到困惑&lt;/h3&gt;
 &lt;p&gt;channel最适合Goroutine之间传递数据所有权、分配工作单元和传达异步结果等情况，通过沟通来共享资源；&lt;/p&gt;
 &lt;p&gt;想要共享状态或访问共享资源时，sync包中的mutex互斥锁同步原语会确保对该资源的独占访问。虽然channel也可以保证共享资源的互斥访问，但是与mutex相比，channel 会导致性能下降；当只需要锁定少量共享资源时，使用 mutex 非常有用。&lt;/p&gt;
-&lt;h2 id=&#34;58不理解竞争race问题&#34;&gt;58.不理解竞争race问题&lt;/h2&gt;
+&lt;h3 id=&#34;58不理解竞争race问题&#34;&gt;58.不理解竞争race问题&lt;/h3&gt;
 &lt;p&gt;当则编写的并发应用程序中工作时，了解数据竞争 data race 不同于竞争条件 data condition 是很重要的。当多个 goroutine 同时访问同一内存位置并且其中至少一个正在写入时，就会发生数据竞争。数据竞争意味着意外行为。但是，无数据竞争的应用程序并不一定意味着确定性结果。一个应用程序可以没有数据竞争，但仍然有依赖于不受控制的事件的行为（例如 goroutine 执行，消息发布到通道的速度，或者对数据库的调用持续多长时间），这是一个竞争条件。理解这两个概念对于精通并发应用程序的设计至关重要。&lt;/p&gt;
-&lt;h3 id=&#34;go-内存模型&#34;&gt;Go 内存模型&lt;/h3&gt;
+&lt;h4 id=&#34;go-内存模型&#34;&gt;Go 内存模型&lt;/h4&gt;
 &lt;p&gt;Go 内存模型是一种规范，它定义了在不同的 goroutine 中写入相同变量后可以保证从一个 goroutine 中的变量读取的条件. 换句话说，Go开发人员应牢记内存模型规范，避免做出可能导致数据竞争、竞争条件的错误假设。具体细节：&lt;a href=&#34;https://research.swtch.com/gomm&#34;&gt;https://research.swtch.com/gomm&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;tips: 由于多核处理器cpu之间独立的L1/L2 cache，会出现cache line不一致的问题，为了解决这个问题，有相关协议模型，比如MESI协议来保证cache数据一致，同时由于CPU对「缓存一致性协议」进行的异步优化，对写和读分别引入了「store buffer」和「invalid queue」，很可能导致后面的指令查不到前面指令的执行结果（各个指令的执行顺序非代码执行顺序），这种现象很多时候被称作「CPU乱序执行」，为了解决乱序问题（也可以理解为可见性问题，修改完没有及时同步到其他的CPU），又引出了「内存屏障」的概念；内存屏障可以分为三种类型：写屏障，读屏障以及全能屏障（包含了读写屏障），屏障可以简单理解为：在操作数据的时候，往数据插入一条”特殊的指令”。只要遇到这条指令，那前面的操作都得「完成」。CPU当发现写屏障指令时，会把该指令「之前」存在于「store Buffer」所有写指令刷入高速缓存。就可以让CPU修改的数据马上暴露给其他CPU，达到「写操作」可见性的效果。读屏障也是类似的：CPU当发现读屏障的指令时，会把该指令「之前」存在于「invalid queue」所有的指令都处理掉。通过这种方式就可以确保当前CPU的缓存状态是准确的，达到「读操作」一定是读取最新的效果。由于不同CPU架构的缓存体系不一样、缓存一致性协议不一样、重排序的策略不一样、所提供的内存屏障指令也有差异，所以一些语言c++/java/go/rust 都有实现自己的内存模型，应该相互都有些借鉴吧。&lt;/p&gt;
-&lt;h2 id=&#34;59不了解工作负载类型的并发影响&#34;&gt;59.不了解工作负载类型的并发影响&lt;/h2&gt;
+&lt;h3 id=&#34;59不了解工作负载类型的并发影响&#34;&gt;59.不了解工作负载类型的并发影响&lt;/h3&gt;
 &lt;p&gt;上文提到到工作负载分两种：CPU-Bound 和 IO-Bound 已经说明了一些问题，文中使用的工作池，也是依赖于使用场景的工作负载类型是CPU-Bound还是 IO-Bound ; 如果 worker 执行的工作负载是 I/O-bound，则该值主要取决于外部系统。相反，如果工作量是受 CPU 限制，goroutine 的最佳数量接近于可用线程的数量。在设计并发应用程序时，了解工作负载类型（I/O 或 CPU）至关重要。&lt;/p&gt;
 &lt;p&gt;大多数情况下，应该通过基准来验证假设。并发不是直截了当的，很容易做出草率的假设，结果证明是无效的。&lt;/p&gt;
-&lt;h2 id=&#34;60误解-go-context&#34;&gt;60.误解 Go Context&lt;/h2&gt;
+&lt;h3 id=&#34;60误解-go-context&#34;&gt;60.误解 Go Context&lt;/h3&gt;
 &lt;p&gt;文中主要是介绍了各种context的使用场景，&lt;code&gt;WithCancel&lt;/code&gt; ，&lt;code&gt;WithTimeout&lt;/code&gt;，&lt;code&gt;WithDeadline&lt;/code&gt;，&lt;code&gt;WithValue&lt;/code&gt;，以及1.20新加入的 &lt;code&gt;WithCancelCause&lt;/code&gt;返回CancelCauseFunc 可以记录Cancel导致的错误原因，通过&lt;code&gt;Cause&lt;/code&gt;获取到；具体可以在开发文档中学习即可： &lt;a href=&#34;https://pkg.go.dev/context&#34;&gt;https://pkg.go.dev/context&lt;/a&gt; ;&lt;/p&gt;
 &lt;p&gt;使用Context的程序应该遵循这些规则，以保持接口在包之间的一致性，并启用静态分析工具来检查context传播：&lt;/p&gt;
 &lt;ul&gt;
@@ -1214,7 +1214,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;li&gt;WithValue中的key, 必须可比较的，并且不应是字符串类型或任何其他内置类型，以避免使用context的包之间发生冲突；最佳做法是创建一个未导出的自定义类型；比如在包中定义 &lt;code&gt;type favContextKey string&lt;/code&gt; ，即使另一个包也用&lt;code&gt;favContextKey&lt;/code&gt; 这个名字，不是同一个key了。这个在http中间件里经常出现，记录在访问日志中记录相关信息。&lt;/li&gt;
 &lt;li&gt;同一个 context 可以传递到不同的 goroutine 中，且在多个 goroutine 可以安全访问。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h1 id=&#34;概括&#34;&gt;概括&lt;/h1&gt;
+&lt;h2 id=&#34;概括&#34;&gt;概括&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;了解并发和并行之间的根本区别是 Go 开发人员知识的基石。并发是关于结构的，而并行是关于执行的。&lt;/li&gt;
 &lt;li&gt;要成为熟练的开发人员，必须承认并发并不总是更快。涉及最小工作负载并行化的解决方案不一定比顺序实施更快。对顺序解决方案与并发解决方案进行基准测试应该是验证假设的方法。&lt;/li&gt;
@@ -1235,29 +1235,29 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
       
       <guid>https://weedge.github.io/post/notions/go-tips/go-tips-07-error-management/</guid>
       
-        <description>&lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
-&lt;h2 id=&#34;48panic&#34;&gt;48.panic&lt;/h2&gt;
+        <description>&lt;h2 id=&#34;笔记&#34;&gt;笔记&lt;/h2&gt;
+&lt;h3 id=&#34;48panic&#34;&gt;48.panic&lt;/h3&gt;
 &lt;p&gt;Go 新手对错误处理感到困惑是很常见的。在 Go 中，错误通常由返回的函数或方法管理类型&lt;code&gt;error&lt;/code&gt;作为最后一个参数（这个是代码风格，error可以作为第一个参数）；先了解下panic调用时的情况：&lt;/p&gt;
 &lt;p&gt;一旦&lt;code&gt;panic&lt;/code&gt;被调用，它就会停止当前函数的执行并向上调用栈，直到当前 goroutine 出栈返回或被&lt;code&gt;recover&lt;/code&gt;捕获；值得注意点是当前协程函数中panic了，如果有defer函数还是会执行，所以一般使用defer func(){recover()} 的形式来防止协程panic,  而且只能recover住当前协程panic, 这是因为当前协程未使用recover时已经出栈返回，函数栈帧已经无效了，调用者是没法recover的。&lt;/p&gt;
 &lt;p&gt;panic一般使用在程序启动时，一个依赖项未能初始化它时，可以使用，但是一般的做法是打印fatal日志退出；在服务启动之后，不能panic，一般记录错误日志，并且在服务运行过程中，需要对当前协程 panic recover住，以防常见的空指针访问数据，服务down掉的情况。&lt;/p&gt;
-&lt;h2 id=&#34;49忽略何时error-wrap&#34;&gt;49.忽略何时error wrap&lt;/h2&gt;
+&lt;h3 id=&#34;49忽略何时error-wrap&#34;&gt;49.忽略何时error wrap&lt;/h3&gt;
 &lt;p&gt;在处理错误时，需要向错误添加额外的上下文和/或将错误标记为特定类型。分为三种error情况进行使用：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;如果需要标记错误，应该创建一个自定义错误类型，比如errorCode。&lt;/li&gt;
 &lt;li&gt;如果只想添加额外的上下文，应该使用&lt;code&gt;fmt.Errorf %w&lt;/code&gt;格式指令生成wrapError类型错误，因为它不需要创建新的错误类型；wrapError会产生潜在的耦合，它使源错误通过Unwrap可供调用者使用。&lt;/li&gt;
 &lt;li&gt;如果不想使用源错误追溯，不应该使用wrapError，而是错误转换，例如使用&lt;code&gt;fmt.Errorf %v&lt;/code&gt;格式指令生成新的errorString类型错误&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&#34;50不准确地检查error类型-重要&#34;&gt;50.不准确地检查error类型 (重要)&lt;/h2&gt;
+&lt;h3 id=&#34;50不准确地检查error类型-重要&#34;&gt;50.不准确地检查error类型 (重要)&lt;/h3&gt;
 &lt;p&gt;这个其实就是弄懂Go1.13引入的wrapError类型错误，这个错误类型因为是层层包裹源错误，如果将以前老的代码返回的错误重构成wrapError的话，在调用的地方判断err的时候 需要用 error.Is 错误值和 error.As 错误类型 函数进行判断，Is是从error 链中递归地Unwrap err遍历是否有对应目标error值,  As是从error 链中递归地Unwrap err并查看其中一个错误是否是特定error类型；这两个函数都是用了反射，如果错误链路长的话，会有一些性能折损。&lt;/p&gt;
-&lt;h2 id=&#34;51检查error值不准确-重要&#34;&gt;51.检查error值不准确 （重要）&lt;/h2&gt;
+&lt;h3 id=&#34;51检查error值不准确-重要&#34;&gt;51.检查error值不准确 （重要）&lt;/h3&gt;
 &lt;p&gt;这里介绍的是wrapError类型错误在==比较错误值时，应该采用error.Is来判断。&lt;/p&gt;
-&lt;h2 id=&#34;52处理error两次&#34;&gt;52.处理error两次&lt;/h2&gt;
+&lt;h3 id=&#34;52处理error两次&#34;&gt;52.处理error两次&lt;/h3&gt;
 &lt;p&gt;这个在工程项目中，使用Go开发，打日志经常出现错误打印多条的情况，对于并发服务，如果不用logId,traceId来辅助定位，一般很难定位到一次逻辑交互的多条日志信息。这里的处理方式将多条错误通过wrap的方式 一条打印出整条逻辑链路的错误信息出来。工程实践小细节吧，如果考虑性能影响，需要折中考虑了。&lt;/p&gt;
-&lt;h2 id=&#34;53不处理错误-工程规范&#34;&gt;53.不处理错误 (工程规范）&lt;/h2&gt;
+&lt;h3 id=&#34;53不处理错误-工程规范&#34;&gt;53.不处理错误 (工程规范）&lt;/h3&gt;
 &lt;p&gt;忽略错误都应该使用_标识符显式标示，在不处理错误的函数调用地方，加上对应注释上下文逻辑说明为什么可以忽略。。。&lt;/p&gt;
-&lt;h2 id=&#34;54不处理延迟错误&#34;&gt;54.不处理延迟错误&lt;/h2&gt;
+&lt;h3 id=&#34;54不处理延迟错误&#34;&gt;54.不处理延迟错误&lt;/h3&gt;
 &lt;p&gt;如果函数返回的错误需要考虑defer函数中的函数调用是否返回错误，则在defer闭包函数中先判断函数中的err是否不为nil, 是则直接闭包函数返回，否则将defer 闭包函数中处理的逻辑函数错误赋值给err。如果想忽略它，使用_标识符标示。&lt;/p&gt;
-&lt;h1 id=&#34;概括&#34;&gt;概括&lt;/h1&gt;
+&lt;h2 id=&#34;概括&#34;&gt;概括&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;panic&lt;/code&gt;是 Go 中处理错误的一个选项。它应该只在不可恢复的情况下谨慎使用：例如，发出程序员错误信号或加载强制依赖项失败时。&lt;/li&gt;
 &lt;li&gt;包装错误允许标记错误和/或提供额外的上下文。但是，错误包装会产生潜在的耦合，因为它使源错误可供调用者使用。如果想防止这种情况发生，请不要使用错误包装。&lt;/li&gt;
@@ -1278,25 +1278,25 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
       
       <guid>https://weedge.github.io/post/notions/go-tips/go-tips-06-functions-methods/</guid>
       
-        <description>&lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
-&lt;h2 id=&#34;42结构体方法不知道使用哪种类型的接收者&#34;&gt;42.结构体方法不知道使用哪种类型的接收者&lt;/h2&gt;
+        <description>&lt;h2 id=&#34;笔记&#34;&gt;笔记&lt;/h2&gt;
+&lt;h3 id=&#34;42结构体方法不知道使用哪种类型的接收者&#34;&gt;42.结构体方法不知道使用哪种类型的接收者&lt;/h3&gt;
 &lt;p&gt;文中说了很多，感觉为了凑数，主要就是围绕着值传递还是指针传递，值传递给接收者，如果结构体中没有指针类型成员，则不会改变接收者的数据；如有指针传递，则会改变。选择哪种传递方式，主要取决于结构体中的成员是否都是只读操作，如果是只读，使用值传递，否则使用指针传递。至于是否大结构体数据，这个由结构体中的成员来决定，是否有指针成员；&lt;/p&gt;
-&lt;h2 id=&#34;43从不使用命名结果参数--建议&#34;&gt;43.从不使用命名结果参数  (建议)&lt;/h2&gt;
+&lt;h3 id=&#34;43从不使用命名结果参数--建议&#34;&gt;43.从不使用命名结果参数  (建议)&lt;/h3&gt;
 &lt;p&gt;主要是为了函数/结构体方法返回的值，更具代码可读性，数据类型本身不能表示具体含义，除非type 别名； 在大多数情况下，在接口定义的上下文中使用命名结果参数可以提高可读性而不会导致任何副作用。但是在方法实现的上下文中没有严格的规则。 当有明显的好处时，应该谨慎使用命名结果参数。&lt;/p&gt;
-&lt;h2 id=&#34;44具有命名结果参数的意外副作用-建议&#34;&gt;44.具有命名结果参数的意外副作用 （建议）&lt;/h2&gt;
+&lt;h3 id=&#34;44具有命名结果参数的意外副作用-建议&#34;&gt;44.具有命名结果参数的意外副作用 （建议）&lt;/h3&gt;
 &lt;p&gt;如果使用命名的结构参数，声明了结果的变量名，在函数方法体内进行初始定义，使用时注意不用被同名覆盖，特别是在处理错误逻辑时，错误的返回情况，所以 使用命名结果参数时保持谨慎，以避免潜在的副作用 。&lt;/p&gt;
-&lt;h2 id=&#34;45返回一个-nil-接口-重要&#34;&gt;45.返回一个 nil 接口 (重要)&lt;/h2&gt;
+&lt;h3 id=&#34;45返回一个-nil-接口-重要&#34;&gt;45.返回一个 nil 接口 (重要)&lt;/h3&gt;
 &lt;p&gt;在处理自定义实现error接口的错误体结构，判断错误时需要注意的地方，如果接口error 为未赋值的自定义错误体结构，虽然错误体结构为nil，但是interface error不为nil, 其interface error 内部指向的错误体结构为nil， 所以需要判断erro为nil时， 直接返回nil值, 而不是为nil的错误体结构体指针；这个是Go中经常会遇到的坑。这种情况也可能发生在任何使用指针接收者实现的接口，需要保持谨慎。&lt;/p&gt;
-&lt;h2 id=&#34;46使用文件名作为函数输入&#34;&gt;46.使用文件名作为函数输入&lt;/h2&gt;
+&lt;h3 id=&#34;46使用文件名作为函数输入&#34;&gt;46.使用文件名作为函数输入&lt;/h3&gt;
 &lt;p&gt;这个是属于设计问题了，函数操作的是共性数据时，应该采用接口作为函数的输入，以便解耦具体实现，方便测试和扩展，比如文中所提到扫描数据内容的行数，属于读操作，可以使用&lt;code&gt;io.Reader&lt;/code&gt; 接口作为参数，如果是写操作，使用io.Writer 等等，io包中封装了不同接口组合; bufio包中有对应方法接受接口参数进行读写操作；这样数据源只要实现对应读写接口方法即可。&lt;/p&gt;
-&lt;h2 id=&#34;47忽略defer参数和接收者的计算方式-重要&#34;&gt;47.忽略defer参数和接收者的计算方式 (重要)&lt;/h2&gt;
+&lt;h3 id=&#34;47忽略defer参数和接收者的计算方式-重要&#34;&gt;47.忽略defer参数和接收者的计算方式 (重要)&lt;/h3&gt;
 &lt;p&gt;在传递defer 函数参数时，函数的参数是值拷贝传递，传入的值为当前值，比如defer f(a) 在f的定义中,传入参数对a值进行了值拷贝，所以外部a值怎么变，已经和defer函数中的参数值已经没有关系了，如果想继续使用的话， 提供了两种方案：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;defer 函数参数采用指针传递，比如f(&amp;amp;a)，这样指向同一地址空间，需要函数传入指针类型，这个对于已有封装好的函数是不可行的。&lt;/li&gt;
 &lt;li&gt;使用闭包函数，defer func(){f(a)}() 这样可以引用到在return之前a的最终值，如果改成 defer func(a int){f(a)}(a), 则和原来值传递的情况一样。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;注意的地方，如果defer的是结构体实例的方法，比如 defer s.f() ，如果s是指针传递，则后续结构体实例s中的成员有变化，也会影响到defer s.f(); 如果采用值传递给接受者s, 则是当前s的值拷贝，后续怎么变都不影响；&lt;/p&gt;
-&lt;h1 id=&#34;概括&#34;&gt;概括&lt;/h1&gt;
+&lt;h2 id=&#34;概括&#34;&gt;概括&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;应该根据类型、是否必须改变、是否包含无法复制的字段以及对象有多大等因素来决定是使用值还是指针接收器。如有疑问，请使用指针接收器。&lt;/li&gt;
 &lt;li&gt;使用命名结果参数是提高函数/方法可读性的有效方法，尤其是在多个结果参数具有相同类型的情况下。在某些情况下，这种方法也很方便，因为命名的结果参数被初始化为它们的零值。但要注意潜在的副作用。&lt;/li&gt;
@@ -1315,7 +1315,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
       
       <guid>https://weedge.github.io/post/notions/go-tips/go-tips-05-strings/</guid>
       
-        <description>&lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
+        <description>&lt;h2 id=&#34;笔记&#34;&gt;笔记&lt;/h2&gt;
 &lt;p&gt;在 Go 中，string是一种不可变的数据结构，包含以下内容：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;指向不可变字节序列的指针，指向一个byte类型的数组&lt;/li&gt;
@@ -1357,7 +1357,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 	&lt;span class=&#34;nx&#34;&gt;h&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;uintptr&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;],&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;],&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]}&lt;/span&gt;
 	&lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[]&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;byte&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;unsafe&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Pointer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;h&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
 &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;36不理解rune的概念-重要&#34;&gt;36.不理解rune的概念 （重要）&lt;/h2&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;36不理解rune的概念-重要&#34;&gt;36.不理解rune的概念 （重要）&lt;/h3&gt;
 &lt;p&gt;字符集和编码之间的区别：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;字符集(charset)是一组字符。例如，Unicode 字符集包含 2^21 个字符。&lt;/li&gt;
@@ -1373,18 +1373,18 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;li&gt;在 Go 中使用&lt;code&gt;len&lt;/code&gt;字符串返回字节数，而不是rune数。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;如果想准确获取到有符文(rune)字符串的长度，可以使用&lt;code&gt;utf8.RuneCountInString&lt;/code&gt; 函数&lt;/p&gt;
-&lt;h2 id=&#34;37不准确的字符串迭代&#34;&gt;37.不准确的字符串迭代&lt;/h2&gt;
+&lt;h3 id=&#34;37不准确的字符串迭代&#34;&gt;37.不准确的字符串迭代&lt;/h3&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;i&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;range&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;s&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
     &lt;span class=&#34;nx&#34;&gt;fmt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;position %d: %c\\n&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;i&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;s&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;i&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;])&lt;/span&gt;
 &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;以上代码，没有遍历每个rune，而是迭代rune的每个起始索引；&lt;/p&gt;
 &lt;p&gt;如果想遍历字符串的符文(rune)，可以使用&lt;code&gt;range&lt;/code&gt;直接在字符串上循环，必须记住，**索引对应的不是符文索引，而是符文字节序列的起始索引；**因为一个符文可以由多个字节组成，如果要访问符文本身，应该使用 的值变量&lt;code&gt;range&lt;/code&gt;，而不是字符串中的索引;&lt;/p&gt;
 &lt;p&gt;如果想获取第i个字符串的符文(rune)，在大多数情况下应该将字符串转换为一段 runes。&lt;/p&gt;
-&lt;h2 id=&#34;38滥用-trim-函数&#34;&gt;38.滥用 trim 函数&lt;/h2&gt;
+&lt;h3 id=&#34;38滥用-trim-函数&#34;&gt;38.滥用 trim 函数&lt;/h3&gt;
 &lt;p&gt;Go中的strings包，开发者可能经常混淆使用TrimRight 和 TrimSuffix， 或者 TrimLeft 和 TrimPrefix&lt;/p&gt;
 &lt;p&gt;TrimRight向后遍历每个符文；如果符文是提供的集合的一部分，则该函数将其删除。如果不是，该函数将停止迭代并返回剩余的字符串。TrimLeft 向前遍历同理。  Trim 函数 两边遍历也是一样。&lt;/p&gt;
 &lt;p&gt;如果想匹配整体的字符串进行删除的话， 应该使用 TrimSuffix 和 TrimPrefix，如果两边移除分别调用这两个方法。&lt;/p&gt;
-&lt;h2 id=&#34;39优化不足的字符串连接&#34;&gt;39.优化不足的字符串连接&lt;/h2&gt;
+&lt;h3 id=&#34;39优化不足的字符串连接&#34;&gt;39.优化不足的字符串连接&lt;/h3&gt;
 &lt;p&gt;如果使用 s += str 的方式连接字符串，会有性能问题，因为字符的数据是不可变的，每次字符串 + 连接操作都会重新分配一次内存空间(allocator)；&lt;/p&gt;
 &lt;p&gt;应该使用 strings.Builder 结构来拼接字符串， Builder结构中有一个byte切片 buf []byte用于数据拼接，WriteString 内部使用append来操作，前面提到append操作会出发自动扩容，这样不用每次拼接的时候分配一次新的内存空间，提高了性能； 如果可以获取到拼接字符串的长度，那就可以直接通过 Grow函数来一次初始化拼接buf byte切片内存空间，这样性能可以得到进一步的提升(与 21. 切片初始化效率低下 分析一样)。类似WriteString方法对应string 类型，还有一下三总方法：&lt;/p&gt;
 &lt;ul&gt;
@@ -1393,16 +1393,16 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;li&gt;单个符文使用&lt;code&gt;WriteRune&lt;/code&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;当然如果拼接的短字符串就那么几个，则没有必要使用strings.Builder 结构来拼接字符串，性能提升可以忽略，但是代码量可读性方面就降低了，可读性不如使用运算符&lt;code&gt;+=&lt;/code&gt;或&lt;code&gt;fmt.Sprintf&lt;/code&gt;。&lt;/p&gt;
-&lt;h2 id=&#34;40无用的字符串转换&#34;&gt;40.无用的字符串转换&lt;/h2&gt;
+&lt;h3 id=&#34;40无用的字符串转换&#34;&gt;40.无用的字符串转换&lt;/h3&gt;
 &lt;p&gt;比如 string 转[]byte,  []byte 转string， 如果是直接 []byte(string) 或者 string([]byte)，转换都会有额外的内存分配，而且转换后的string是不可变的； 所以在进行字符串操作的时候，尽量都使用[]byte类型，避免转换string带来的额外操作，&lt;code&gt;strings&lt;/code&gt;包也有替代品包&lt;code&gt;bytes&lt;/code&gt;，大多数 I/O Buffer 都是操作 &lt;code&gt;[]byte&lt;/code&gt;，字符串的拼接Builder结构也是对[]byte的操作。&lt;/p&gt;
-&lt;h2 id=&#34;41子字符串和内存泄漏&#34;&gt;41.子字符串和内存泄漏&lt;/h2&gt;
+&lt;h3 id=&#34;41子字符串和内存泄漏&#34;&gt;41.子字符串和内存泄漏&lt;/h3&gt;
 &lt;p&gt;在 Go 中使用子字符串操作时，字符串的结构可知：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;提供的间隔是基于字节数，而不是符文数。&lt;/li&gt;
 &lt;li&gt;子字符串操作可能会导致内存泄漏，因为生成的子字符串将与初始字符串共享相同的底层数组。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;防止这种情况发生的解决方案是手动执行字符串复制，或者从 Go 1.18 开始引入&lt;code&gt;strings.Clone&lt;/code&gt;。&lt;/p&gt;
-&lt;h1 id=&#34;概括&#34;&gt;概括&lt;/h1&gt;
+&lt;h2 id=&#34;概括&#34;&gt;概括&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;了解符文对应于 Unicode 码位(code point)的概念，它可以由多个字节组成，应该是 Go 开发人员准确处理字符串的核心知识的一部分。&lt;/li&gt;
 &lt;li&gt;使用&lt;code&gt;range&lt;/code&gt;运算符迭代字符串会迭代符文，其索引对应于符文字节序列的起始索引。要访问特定的符文索引（例如第三个符文），请将字符串转换为&lt;code&gt;[]rune&lt;/code&gt;.&lt;/li&gt;
@@ -1421,10 +1421,10 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
       
       <guid>https://weedge.github.io/post/notions/go-tips/go-tips-04-control-structures/</guid>
       
-        <description>&lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
-&lt;h2 id=&#34;30忽略了元素在-for-range循环中被复制-重要&#34;&gt;30.忽略了元素在 for range循环中被复制 (重要)&lt;/h2&gt;
+        <description>&lt;h2 id=&#34;笔记&#34;&gt;笔记&lt;/h2&gt;
+&lt;h3 id=&#34;30忽略了元素在-for-range循环中被复制-重要&#34;&gt;30.忽略了元素在 for range循环中被复制 (重要)&lt;/h3&gt;
 &lt;p&gt;需要注意，&lt;code&gt;range&lt;/code&gt;循环中的值元素是一个复制的副本。因此，如果值是需要改变结构，只会更新副本，而不是元素本身，除非修改的值或字段是指针。在经典for循环或者for range循环中，通过索引访问元素来进行修改。&lt;/p&gt;
-&lt;h2 id=&#34;31忽略了参数在for-range循环中的计算方式-重要&#34;&gt;31.忽略了参数在for range循环中的计算方式 (重要)&lt;/h2&gt;
+&lt;h3 id=&#34;31忽略了参数在for-range循环中的计算方式-重要&#34;&gt;31.忽略了参数在for range循环中的计算方式 (重要)&lt;/h3&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;type&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;slice&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
 	&lt;span class=&#34;nx&#34;&gt;array&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;unsafe&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Pointer&lt;/span&gt;
 	&lt;span class=&#34;nx&#34;&gt;len&lt;/span&gt;   &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;
@@ -1443,15 +1443,15 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;notice&lt;/strong&gt;： 这段代码在原文中分析过程是有误的，但不影响整体结果；range s 之后会发生值拷贝出现copy s, 在append之前，copy s 和 s的array ptr指向同一地址空间；当发生append之后，s 发生来扩容，s的ptr指向了新的地址空间，copy s还是指向原来的地址空间，两者的ptr指向的地址空间已经不同了；&lt;/p&gt;
 &lt;p&gt;对于ch chan 同理 ， range ch 之后会发生值拷贝出现copy ch；对copy ch进行遍历;&lt;/p&gt;
 &lt;p&gt;对应数组arr […]int{1,2,3} 也是同理，range arr 之后会发生值拷贝出现copy arr; 对copy arr进行遍历， 如果想想改变对应arr的值，可以使用下标访问，或者 range &amp;amp;arr 之后 反生copy 数组引用&amp;amp;arr 指向同一地址空间;&lt;/p&gt;
-&lt;h2 id=&#34;32忽略了在for-range中使用指针元素的影响--重要&#34;&gt;32.忽略了在for range中使用指针元素的影响  (重要)&lt;/h2&gt;
-&lt;p&gt;由于 for _, val := range **  &amp;amp;val的地址是一个常量，每次迭代指向不同的值，但是地址是同一个，所以在使用&amp;amp;val， 需要特别注意，如果存放&amp;amp;val值，循环迭代完之后，&amp;amp;val指向最后一个元素；如何解决呢， 两个主要的解决方案： 1. 值拷贝，然后赋予地址；2. 直接只用下标对应值的地址；&lt;/p&gt;
-&lt;h2 id=&#34;33在map迭代期间做出错误的假设-重要&#34;&gt;33.在map迭代期间做出错误的假设 (重要)&lt;/h2&gt;
-&lt;p&gt;一种是错误的有序性假设， map是无序的，每次循环是随机获取key，就是说，插入顺序和读取的顺序不一致，每次循环读取的顺序都不同；应该清楚这些map无序行为，这样我们的代码就不会基于错误的假设；&lt;/p&gt;
+&lt;h3 id=&#34;32忽略了在for-range中使用指针元素的影响--重要&#34;&gt;32.忽略了在for range中使用指针元素的影响  (重要)&lt;/h3&gt;
+&lt;p&gt;由于 for _, val := range   &amp;amp;val的地址是一个常量，每次迭代指向不同的值，但是地址是同一个，所以在使用&amp;amp;val， 需要特别注意，如果存放&amp;amp;val值，循环迭代完之后，&amp;amp;val指向最后一个元素；如何解决呢， 两个主要的解决方案： 1. 值拷贝，然后赋予地址；2. 直接只用下标对应值的地址；&lt;/p&gt;
+&lt;h3 id=&#34;33在map迭代期间做出错误的假设-重要&#34;&gt;33.在map迭代期间做出错误的假设 (重要)&lt;/h3&gt;
+&lt;p&gt;一种是错误的有序性假设， map是无序的，每次循环是随机获取key，就是说，插入顺序和读取的顺序不一致，每次循环读取的顺序都不同；应该清楚这些map无序行为，这样代码就不会基于错误的假设；&lt;/p&gt;
 &lt;p&gt;那么为什么 Go 有这样一种令人惊讶的方式来遍历map呢？这是语言设计者有意识的选择。他们想添加某种形式的随机性，以确保开发人员在使用map时永远不会依赖任何顺序假设（请参阅http://mng.bz/M2JW）；&lt;/p&gt;
 &lt;p&gt;一种是迭代map时插入k/v，在 Go 中，允许在迭代期间更新map（插入或删除元素）；它不会导致编译错误或运行时错误。但是，在迭代期间在map中添加条目时，应该考虑这种情况，以避免出现不确定的结果。出现的情况：&lt;/p&gt;
 &lt;p&gt;在Go中，&lt;em&gt;如果在迭代过程中创建了map条目，则可以在迭代过程中产生或跳过。对于创建的每个条目以及从一个迭代到下一个迭代，选择可能会有所不同。&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;必须牢记这种行为，以确保代码不会产生不可预测的输出。如果想在迭代map的同时更新map并确保添加的条目不是迭代的一部分，一种解决方案是copy map，迭代map, 在用新的copy map中添加条目；&lt;/p&gt;
-&lt;p&gt;总而言之，当我们使用map时，我们不应该依赖以下内容：&lt;/p&gt;
+&lt;p&gt;总而言之，当使用map时，不应该依赖以下内容：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;按键排序的数据&lt;/li&gt;
 &lt;li&gt;保留插入顺序&lt;/li&gt;
@@ -1459,12 +1459,12 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;li&gt;在添加元素的同一迭代中生成的元素&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;记住这些行为应该有助于避免基于错误假设的常见错误。&lt;/p&gt;
-&lt;h2 id=&#34;34忽略-break-语句是如何工作的&#34;&gt;34.忽略 break 语句是如何工作的&lt;/h2&gt;
+&lt;h3 id=&#34;34忽略-break-语句是如何工作的&#34;&gt;34.忽略 break 语句是如何工作的&lt;/h3&gt;
 &lt;p&gt;在Go中， 一个基本规则是&lt;code&gt;break&lt;/code&gt;语句终止的执行最里面的&lt;code&gt;for&lt;/code&gt;, &lt;code&gt;switch&lt;/code&gt;, 或&lt;code&gt;select&lt;/code&gt;语句。&lt;/p&gt;
 &lt;p&gt;如何编写代码来打破循环呢？ 最惯用的方法是使用标签， 从对应的标签代码块中break; 或者对标签块代码封装成函数，直接return;&lt;/p&gt;
-&lt;h2 id=&#34;35在循环中使用-defer&#34;&gt;35.在循环中使用 defer&lt;/h2&gt;
+&lt;h3 id=&#34;35在循环中使用-defer&#34;&gt;35.在循环中使用 defer&lt;/h3&gt;
 &lt;p&gt;使用&lt;code&gt;defer&lt;/code&gt;时，必须记住它会在周围函数返回时安排函数调用。因此，&lt;code&gt;defer&lt;/code&gt;在循环内调用将堆叠所有调用：它们不会在每次迭代期间执行，例如，如果循环未终止，这可能会导致内存泄漏。解决这个问题最方便的方法是在每次迭代中引入另一个函数来调用。但是，如果性能至关重要，那么一个缺点就是函数调用增加的开销。如果有这样的情况并且想要防止这种开销，应该在循环之前摆脱&lt;code&gt;defer&lt;/code&gt;并手动处理延迟调用。&lt;/p&gt;
-&lt;h1 id=&#34;概括&#34;&gt;概括&lt;/h1&gt;
+&lt;h2 id=&#34;概括&#34;&gt;概括&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;循环中的值元素&lt;code&gt;range&lt;/code&gt;是一个副本。因此要改变一个结构，例如，通过其索引或通过经典&lt;code&gt;for&lt;/code&gt;循环访问它（除非修改的元素或字段是指针）。&lt;/li&gt;
 &lt;li&gt;了解传递给运算符的表达式&lt;code&gt;range&lt;/code&gt;在循环开始之前仅计算一次可以帮助避免常见错误，例如通道或切片迭代中的低效赋值。&lt;/li&gt;
@@ -1491,12 +1491,12 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
       
       <guid>https://weedge.github.io/post/notions/go-tips/go-tips-03-data-types/</guid>
       
-        <description>&lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
-&lt;h2 id=&#34;17与八进制文字混淆&#34;&gt;17.与八进制文字混淆&lt;/h2&gt;
+        <description>&lt;h2 id=&#34;笔记&#34;&gt;笔记&lt;/h2&gt;
+&lt;h3 id=&#34;17与八进制文字混淆&#34;&gt;17.与八进制文字混淆&lt;/h3&gt;
 &lt;p&gt;Go 可以处理二进制、十六进制、虚数和八进制数。八进制数字以 0 开头。但是，为了提高可读性并避免未来代码阅读器可能犯的错误，请使用前缀明确表示八进制数字&lt;code&gt;0o&lt;/code&gt;&lt;/p&gt;
-&lt;h2 id=&#34;18忽略整数溢出&#34;&gt;18.忽略整数溢出&lt;/h2&gt;
+&lt;h3 id=&#34;18忽略整数溢出&#34;&gt;18.忽略整数溢出&lt;/h3&gt;
 &lt;p&gt;在处理大数字或进行转换成小数字，进行运算时，可能会出现溢出。溢出会产生一些bug, 所以需要再一些可能溢出的场景中增加检测判断是否溢出，溢出则直接panic,或者进行错误返回&lt;/p&gt;
-&lt;h2 id=&#34;19不理解浮点数&#34;&gt;19.不理解浮点数&lt;/h2&gt;
+&lt;h3 id=&#34;19不理解浮点数&#34;&gt;19.不理解浮点数&lt;/h3&gt;
 &lt;p&gt;以&lt;code&gt;float64&lt;/code&gt;类型为例。&lt;code&gt;math.SmallestNonzeroFloat64&lt;/code&gt;（&lt;code&gt;float64&lt;/code&gt;最小值）和&lt;code&gt;math.MaxFloat64&lt;/code&gt;（最大值）之间存在无限多个实数值&lt;code&gt;float64&lt;/code&gt;。但是该&lt;code&gt;float64&lt;/code&gt;类型有有限位数：64。因为不可能将无限值放入有限空间，所以必须使用近似值，因此可能会失去精度。同样的逻辑适用于类型&lt;code&gt;float32&lt;/code&gt;。所以在使用&lt;code&gt;==&lt;/code&gt;运算符比较两个浮点数可能会导致不准确，浮点计算的结果取决于实际的处理器。最多处理器有一个浮点单元 (FPU) 来处理此类计算。不能保证在一台机器上执行的结果在另一台具有不同 FPU 的机器上是相同的。&lt;code&gt;testify&lt;/code&gt;测试( &lt;a href=&#34;https://github.com/stretchr/testify&#34;&gt;https://github.com/stretchr/testify&lt;/a&gt; ) 有一个&lt;code&gt;InDelta&lt;/code&gt;功能断言两个值在彼此给定的误差范围内。&lt;/p&gt;
 &lt;p&gt;Go&lt;code&gt;float32&lt;/code&gt;和&lt;code&gt;float64&lt;/code&gt;是近似值。必须牢记一些规则：&lt;/p&gt;
 &lt;ul&gt;
@@ -1504,22 +1504,22 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;li&gt;执行加法或减法时，将具有相似数量级的运算分组以获得更好的准确性。&lt;/li&gt;
 &lt;li&gt;为了保证准确性，如果一系列运算需要加、减、乘或除，请先执行乘除运算。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&#34;20不了解切片长度和容量&#34;&gt;20.不了解切片长度和容量&lt;/h2&gt;
+&lt;h3 id=&#34;20不了解切片长度和容量&#34;&gt;20.不了解切片长度和容量&lt;/h3&gt;
 &lt;p&gt;平常代码中经常用到是的slice, 和数组不是一个概念，这个是在Go中最容易犯得错误，需要了解slice结构，对于只读操作，可以在slice结构指向的数组进行复用，而无需重新分配空间（注意复用后是否需要回收）；但是在append操作时，需要考虑什么时候扩容，重新分配了数组空间；书中有个错误地方，也是很多文章介绍slice grow时不准确的地方，在1.18版本之后，slicegrow方法有所改进，具体查看 &lt;a href=&#34;https://github.com/golang/go/blob/release-branch.go1.18/src/runtime/slice.go&#34;&gt;https://github.com/golang/go/blob/release-branch.go1.18/src/runtime/slice.go&lt;/a&gt;  growslice函数；&lt;/p&gt;
-&lt;h2 id=&#34;21切片初始化效率低下&#34;&gt;21.切片初始化效率低下&lt;/h2&gt;
+&lt;h3 id=&#34;21切片初始化效率低下&#34;&gt;21.切片初始化效率低下&lt;/h3&gt;
 &lt;p&gt;切片在初始化时，尽量分配好容量，如果经常append操作，对于未初始化容量的slice, 在append 进行slicegrow扩容操作时，会分配一个临时的内存空间，导致 GC 需要付出额外的努力来清理所有这些临时分配的内存空间。也尽量初始化slice长度大小，这样直接可以用数组下标进行操作，效率更高，对于性能有要求的场景选择后者；&lt;/p&gt;
-&lt;h2 id=&#34;22对-nil-和空切片感到困惑&#34;&gt;22.对 nil 和空切片感到困惑&lt;/h2&gt;
+&lt;h3 id=&#34;22对-nil-和空切片感到困惑&#34;&gt;22.对 nil 和空切片感到困惑&lt;/h3&gt;
 &lt;p&gt;比如 这个在开发api返回json数据时经常会遇到，一般情况会返回一个空切片，防止调用端未判断nil而导致panic；具体根据上下文初始化：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;var s []string&lt;/code&gt;如果不确定最终长度并且切片可以为空&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;[]string(nil)&lt;/code&gt;作为创建 nil 和空切片的语法糖&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;make([]string,&lt;/code&gt; &lt;code&gt;length)&lt;/code&gt;如果未来的长度已知&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&#34;23没有正确检查切片是否为空&#34;&gt;23.没有正确检查切片是否为空&lt;/h2&gt;
+&lt;h3 id=&#34;23没有正确检查切片是否为空&#34;&gt;23.没有正确检查切片是否为空&lt;/h3&gt;
 &lt;p&gt;不管是空切片还是nil, 通过检查长度len(slice)是最好的选择, 都是0&lt;/p&gt;
-&lt;h2 id=&#34;24没有正确使用切片copy&#34;&gt;24.没有正确使用切片copy&lt;/h2&gt;
+&lt;h3 id=&#34;24没有正确使用切片copy&#34;&gt;24.没有正确使用切片copy&lt;/h3&gt;
 &lt;p&gt;其实就是了解copy函数，复制到目标切片的元素数量为源切片和目标切片长度最小值min(len(dst),len(src))，而且不能混淆参数来，copy(dst,src []Type)，还有一种替换方案：&lt;code&gt;dst := append([]int(nil), src...)&lt;/code&gt;&lt;/p&gt;
-&lt;h2 id=&#34;25使用切片附加的意外副作用&#34;&gt;25.使用切片附加的意外副作用&lt;/h2&gt;
+&lt;h3 id=&#34;25使用切片附加的意外副作用&#34;&gt;25.使用切片附加的意外副作用&lt;/h3&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;nx&#34;&gt;s1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[]&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;span class=&#34;nx&#34;&gt;s2&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;s1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
 &lt;span class=&#34;nx&#34;&gt;s3&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;append&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;s2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
@@ -1546,7 +1546,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// s3=[2 10],len(s3)=2,cap(s3)=2
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;em&gt;完整切片表达式&lt;/em&gt;: &lt;code&gt;s[low:high:max]&lt;/code&gt;。max没有赋值默认为原始数据容量大小，如果max值超过原始数据容量则会在运行时panic；生成的切片的容量等于&lt;code&gt;max - low&lt;/code&gt;，长度等于&lt;code&gt;high-low&lt;/code&gt;，数据范围在[low,high) 左闭右开区间进行切片。&lt;/p&gt;
 &lt;p&gt;所以使用切片时，可能会面临导致意想不到的副作用的情况。如果生成的切片的长度小于其容量，&lt;code&gt;append&lt;/code&gt;则可以改变原始切片。如果想限制可能的副作用的范围，可以使用切片copy或完整的切片表达式，这会阻止进行复制。&lt;/p&gt;
-&lt;h2 id=&#34;26切片和内存泄漏-重要&#34;&gt;26.切片和内存泄漏 (重要）&lt;/h2&gt;
+&lt;h3 id=&#34;26切片和内存泄漏-重要&#34;&gt;26.切片和内存泄漏 (重要）&lt;/h3&gt;
 &lt;p&gt;切片中导致内存泄露的原因是，切片一直在复用，未被gc释放，每次重新使用又会重新分配一次内存空间，一直重复分配，导致内存泄露，比如，在网络请求中，消息数据大于32KB，需要对网络的消息协议进行解包之后处理保存数据， 首先从网络中获取消息，然后从消息中获取协议头，通过切片方式复用对应消息，下次从网络请求中获取消息数据，又重新从堆上分配了新的内存空间，以前复用的空间还未释放，最终导致内存泄露；解决这个问题的方案，从消息中获取协议头，只copy协议头部分数据进行处理，处理完，由gc来释放内存空间；&lt;/p&gt;
 &lt;p&gt;根据经验，请记住对大切片或数组进行切片可能会导致潜在的高内存消耗。剩余的空间不会被 GC 回收，尽管只使用了几个元素，但可以保留一个大的后备数组。copy切片是防止这种情况的解决方案。通过runtime.ReadMemStats 函数可以获取运行时内存alloctor的统计信息MemStats,&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;printAlloc&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
@@ -1558,16 +1558,16 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;p&gt;第一个是关于对现有切片或数组进行切片以保留容量；如果处理大型切片并将它们重新切片以仅保留一小部分，则大量内存将保持分配状态但未使用。&lt;/p&gt;
 &lt;p&gt;第二个问题是，当对指针或具有指针字段的结构使用切片操作时，需要知道 GC 不会回收这些元素。&lt;/p&gt;
 &lt;p&gt;在这种情况下，两个选项是执行复制或将剩余元素字段显式标记为&lt;code&gt;nil&lt;/code&gt;。&lt;/p&gt;
-&lt;h2 id=&#34;27低效的map初始化&#34;&gt;27.低效的map初始化&lt;/h2&gt;
+&lt;h3 id=&#34;27低效的map初始化&#34;&gt;27.低效的map初始化&lt;/h3&gt;
 &lt;p&gt;在使用slice切片时，如果预先知道要添加到切片中的元素数量，就可以使用给定的大小或容量对其进行初始化。这避免了必须不断重复昂贵的切片增长操作。这个想法与map类似。这样可以尽量减少map的扩容，重新分配新的空间，以及扩容后的rehash平衡所有元素。&lt;/p&gt;
-&lt;h2 id=&#34;28map和内存泄漏&#34;&gt;28.map和内存泄漏&lt;/h2&gt;
+&lt;h3 id=&#34;28map和内存泄漏&#34;&gt;28.map和内存泄漏&lt;/h3&gt;
 &lt;p&gt;向map中添加&lt;em&gt;n个&lt;/em&gt;元素，然后删除所有元素，意味着在内存中保留相同数量的桶。因为 Go map 的大小只会增加，所以它的内存消耗也会增加。没有自动策略来缩小它。如果这导致高内存消耗，可以尝试不同的方法，例如强制 Go 重新创建map(这种方式不太可取，在复制之后和下一次垃圾回收之前，可能会在短时间内消耗当前内存的两倍) 或 val存放指向数据的指针；&lt;/p&gt;
 &lt;p&gt;tips： 需要了解map的结构，以及map中的key （可比较类型）&lt;/p&gt;
-&lt;h2 id=&#34;29错误地比较值&#34;&gt;29.错误地比较值&lt;/h2&gt;
+&lt;h3 id=&#34;29错误地比较值&#34;&gt;29.错误地比较值&lt;/h3&gt;
 &lt;p&gt;具体可比较的类型见官方最新文档： (重要)&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://go.dev/ref/spec#Comparison_operators&#34;&gt;The Go Programming Language Specification - The Go Programming Language&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;考虑到文档中这些行为，如果必须比较两个切片、两个map或两个包含不可比较类型的结构，有哪些选择？如果坚持使用标准库，一个选择是使用运行时反射&lt;code&gt;reflect&lt;/code&gt;包中的&lt;code&gt;reflect.DeepEqual&lt;/code&gt;方法， 但是由性能损失，一般不用于生产环境，主要用于单元测试返回的值是否是预期值，还有类似的三方库用于测试时的期望值比较，比如&lt;code&gt;go-cmp&lt;/code&gt; ( &lt;a href=&#34;https://github.com/google/go-cmp&#34;&gt;https://github.com/google/go-cmp&lt;/a&gt; ) 或&lt;code&gt;testify&lt;/code&gt;( &lt;a href=&#34;https://github.com/stretchr/testify&#34;&gt;https://github.com/stretchr/testify&lt;/a&gt; )；如果性能在运行时至关重要，那么实施自定义方法可能是最佳解决方案；&lt;/p&gt;
-&lt;h1 id=&#34;概括&#34;&gt;概括&lt;/h1&gt;
+&lt;h2 id=&#34;概括&#34;&gt;概括&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;阅读现有代码时，请记住以 0 开头的整数文字是八进制数。此外，为了提高可读性，通过在八进制整数前加上&lt;code&gt;0o&lt;/code&gt;.&lt;/li&gt;
 &lt;li&gt;因为整数上溢和下溢在 Go 中是静默处理的，所以可以实现自己的函数来捕获它们。&lt;/li&gt;
@@ -1595,23 +1595,23 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
       
       <guid>https://weedge.github.io/post/notions/go-tips/go-tips-02-code-project-organization/</guid>
       
-        <description>&lt;h1 id=&#34;引言&#34;&gt;引言&lt;/h1&gt;
+        <description>&lt;h2 id=&#34;引言&#34;&gt;引言&lt;/h2&gt;
 &lt;p&gt;从错误中学习效率更高，而且从错误失败的场景下学习，往往比直接交代正确性的理论知识，没有上下文的结果去 记忆巩固知识，在错误失败场景下往往印象更深刻；可以帮助更好地避免错误并做出更明智、更有意识的决定，因为现在了解了错误背后的基本原理，有种该死的，恍然大悟的感觉，拨开雨雾见月明；&lt;/p&gt;
 &lt;p&gt;涵盖了可能导致各种软件错误的案例，包括数据竞争、泄漏、逻辑错误和其他缺陷。虽然准确的测试应该是尽早发现此类错误的一种方式，但有时可能会因为时间限制或复杂性等不同因素而错过案例。因此，使用Golang开发，确保避免常见错误至关重要。&lt;/p&gt;
 &lt;p&gt;有些坑可能曾经踩过，通过这些mistakes产生共鸣，加深印象，同时可以继续追加一些新的坑来填充,比如系统性能调优，包括IO,  网络，数据编解码压缩，分布式系统，业务系统组织架构，逐步学习实践试错过程。学习笔记开个头。&lt;/p&gt;
 &lt;p&gt;代码地址：&lt;a href=&#34;https://github.com/teivah/100-go-mistakes&#34;&gt;https://github.com/teivah/100-go-mistakes&lt;/a&gt; ; 可以直接查看里面的示例，进行CR，如果知道坑的缘由，说明已经避坑了 :）&lt;/p&gt;
-&lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
-&lt;h2 id=&#34;1变量隐藏&#34;&gt;1.变量隐藏&lt;/h2&gt;
+&lt;h2 id=&#34;笔记&#34;&gt;笔记&lt;/h2&gt;
+&lt;h3 id=&#34;1变量隐藏&#34;&gt;1.变量隐藏&lt;/h3&gt;
 &lt;p&gt;需要理解golang中变量的作用域，在块中声明的变量名可以在内部块中重新声明(:=)；常见于err变量名的重用的情况，需要考虑是否需要重新命名；使用 vet lint工具进行检测&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow
 go vet --vettool&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;which shadow&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;go file&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;2不必要的嵌套代码工程规范&#34;&gt;2.不必要的嵌套代码（工程规范）&lt;/h2&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;2不必要的嵌套代码工程规范&#34;&gt;2.不必要的嵌套代码（工程规范）&lt;/h3&gt;
 &lt;p&gt;这个就是代码风格问题了，google code style里，或者代码质量中经常会提到的，和编程语言无关联，尽量保持在一层嵌套(happy path)，经常出现的判断前置；&lt;/p&gt;
-&lt;h2 id=&#34;3滥用初始化函数&#34;&gt;3.滥用初始化函数&lt;/h2&gt;
+&lt;h3 id=&#34;3滥用初始化函数&#34;&gt;3.滥用初始化函数&lt;/h3&gt;
 &lt;p&gt;init 函数是golang规定package初始化函数，不能直接显示调用， 而且调用顺序按照包名字母顺序依次调用执行，即使未使用(_), 也会调用包的init方法；还可以在包中声明多个init函数依次执行； 所以对于初始化依赖资源服务，需要单测的场景，不能使用包中的init函数，而是使用自定义的初始化函数，并且可以返回具体初始化实例，可用于依赖注入，工程化经常会使用； 但是仅仅是简单的初始化，静态的罗列，彼此没有关联， 可以用init初始化， 比如 net/http/pprof包直接在init中初始化了路由注册的服务接口函数句柄；&lt;/p&gt;
 &lt;h3 id=&#34;4过度使用-getter-和-setter工程规范&#34;&gt;4.过度使用 getter 和 setter（工程规范）&lt;/h3&gt;
 &lt;p&gt;这个在面向对象语言c++/java中经常会出现的情况，将私有成员封装成方法调用，隐藏内部一些逻辑细节； golang不会强制约束这样做，比如time.Timer结构 成员C 是公开的，相对比较自由；另外如果使用getter封装私有成员的函数名，不需要Get前缀，这个仅仅是 统一的代码风格问题，遵循业界标准Google Style就行；&lt;/p&gt;
-&lt;h2 id=&#34;5interface-污染&#34;&gt;5.interface 污染&lt;/h2&gt;
+&lt;h3 id=&#34;5interface-污染&#34;&gt;5.interface 污染&lt;/h3&gt;
 &lt;p&gt;设计抽象接口函数的粒度，记住Go 中的一个著名谚语 ( &lt;a href=&#34;https://www.youtube.com/watch?v=PAAkCSZUG1c&amp;amp;t=318s&#34;&gt;https://www.youtube.com/watch?v=PAAkCSZUG1c&amp;amp;t=318s&lt;/a&gt; )&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;The bigger the interface, the weaker the abstraction.&lt;/p&gt;
@@ -1626,21 +1626,21 @@ go vet --vettool&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;
 &lt;p&gt;Don’t design with interfaces, discover them.&lt;/p&gt;
 &lt;p&gt;—Rob Pike&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h2 id=&#34;6生产者侧-interface&#34;&gt;6.生产者侧 interface&lt;/h2&gt;
+&lt;h3 id=&#34;6生产者侧-interface&#34;&gt;6.生产者侧 interface&lt;/h3&gt;
 &lt;p&gt;就是提供给外部使用的包中没有抽象时，不应该过度设计接口，在接口中定义过多方法，这些方法在消费接口端使用时不会用到这些过多的方法，存在过度的接口设计；golang允许在包外消费侧来定义接口，如果在生产侧定义接口，抽象应该是被发现是通用的，而且接口中方法粒度尽可能的小，方便消费侧使用方组合；&lt;/p&gt;
-&lt;h2 id=&#34;7返回-interface&#34;&gt;7.返回 interface&lt;/h2&gt;
+&lt;h3 id=&#34;7返回-interface&#34;&gt;7.返回 interface&lt;/h3&gt;
 &lt;blockquote&gt;
 &lt;p&gt;&lt;em&gt;Be conservative in what you do, be liberal in what you accept from others.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;—Transmission Control Protocol&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;其实还是接口抽象时的原则： 抽象应该被发现，而不是创建。总之，在大多数情况下，不应该返回接口，而是返回具体的实现。否则，由于包依赖性，它会使设计更加复杂，并且会限制灵活性，因为所有使用端都必须依赖相同的抽象。同样，结论与前面的部分类似：如果知道（不是预见）抽象对使用端有帮助，可以考虑返回一个接口。否则，不应该强制抽象；他们应该被使用端发现。如果使用端出于某种原因需要抽象实现，它仍然可以在使用端执行此操作。&lt;/p&gt;
-&lt;h2 id=&#34;8anyinterface-says-nothing&#34;&gt;8.any(interface{}) says nothing&lt;/h2&gt;
+&lt;h3 id=&#34;8anyinterface-says-nothing&#34;&gt;8.any(interface{}) says nothing&lt;/h3&gt;
 &lt;p&gt;在 Go 中，指定零个方法的接口类型称为空接口，interface{}. 在 Go 1.18 中，预先声明的类型any成为空接口的别名；因此，所有interface{}出现的地方都可以替换为any。在许多情况下，any可以被认为是过度概括；正如 Rob Pike 所提到的，它没有传达任何信息（&lt;a href=&#34;https://www.youtube.com/watch?v=PAAkCSZUG1c&amp;amp;t=7m36s&#34;&gt;https://www.youtube.com/watch?v=PAAkCSZUG1c&amp;amp;t=7m36s&lt;/a&gt; ）;&lt;/p&gt;
 &lt;p&gt;any(interface{})如果确实需要接受或返回任何可能的类型（例如，当涉及到marshaling or formatting时），它会很有帮助。一般来说，应该不惜一切代价避免过度概括编写的代码。如果能提高其他方面（例如代码表达能力），也许一点点重复代码偶尔会更好。&lt;/p&gt;
-&lt;h2 id=&#34;9对何时使用泛型感到困惑&#34;&gt;9.对何时使用泛型感到困惑&lt;/h2&gt;
+&lt;h3 id=&#34;9对何时使用泛型感到困惑&#34;&gt;9.对何时使用泛型感到困惑&lt;/h3&gt;
 &lt;p&gt;尽管泛型在特定情况下会有所帮助，但是应该谨慎选择何时使用它们以及何时不使用它们。一般来说，如果要回答何时不使用泛型，可以找到与何时不使用接口的相似之处。事实上，泛型引入了一种抽象形式，必须记住，不必要的抽象会带来复杂性。&lt;/p&gt;
 &lt;p&gt;同样，不要用不必要的抽象污染代码，专注于解决具体问题。这意味着不应该过早地使用类型参数。等到即将编写样板代码时再考虑使用泛型。而且泛型现在还存在一些性能上的问题，可以参考： &lt;a href=&#34;https://planetscale.com/blog/generics-can-make-your-go-code-slower&#34;&gt;&lt;strong&gt;&lt;!-- raw HTML omitted --&gt;Generics can make your Go code slower&lt;!-- raw HTML omitted --&gt;&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;10没有意识到类型嵌入可能存在的问题&#34;&gt;10.没有意识到类型嵌入可能存在的问题&lt;/h2&gt;
+&lt;h3 id=&#34;10没有意识到类型嵌入可能存在的问题&#34;&gt;10.没有意识到类型嵌入可能存在的问题&lt;/h3&gt;
 &lt;p&gt;想要封装在结构中并使外部客户端不可见的东西，在这种情况下不应该将其设为嵌入字段；&lt;/p&gt;
 &lt;p&gt;如果决定使用类型嵌入，需要牢记两个主要约束：&lt;/p&gt;
 &lt;ul&gt;
@@ -1648,20 +1648,20 @@ go vet --vettool&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;
 &lt;li&gt;它不应该提升想要从外部隐藏的数据（字段）或行为（方法）：例如，如果它允许客户端访问应该对结构保持私有的锁定行为。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;比如对一个开源的日志库进行二次封装，可以直接嵌入至结构体中，使用对应日志库结构体中的公有方法。&lt;/p&gt;
-&lt;h2 id=&#34;11不使用功能选项模式工程规范&#34;&gt;11.不使用功能选项模式（工程规范）&lt;/h2&gt;
+&lt;h3 id=&#34;11不使用功能选项模式工程规范&#34;&gt;11.不使用功能选项模式（工程规范）&lt;/h3&gt;
 &lt;p&gt;GO中不像python有默认参数，通过参数可变配置来new一个对象；如果GO实现，可变配置可以通过… Option方式配置，配置项通过With* 设置返回闭包函数操作， 在初始化对象时传入With** 方法对配置项进行设置，参数个数可选，未设置则使用默认配置项；这个方式经常用于程序启动时通过加载配置进行初始化操作。&lt;/p&gt;
-&lt;h2 id=&#34;12项目组织不当工程规范&#34;&gt;12.项目组织不当（工程规范）&lt;/h2&gt;
+&lt;h3 id=&#34;12项目组织不当工程规范&#34;&gt;12.项目组织不当（工程规范）&lt;/h3&gt;
 &lt;p&gt;GO官方没有提供标准的项目组织结构，一般情况使用GitHub golang-standards 组织下的项目布局（&lt;a href=&#34;https://github.com/golang-standards/project-layout&#34;&gt;https://github.com/golang-standards/project-layout&lt;/a&gt;），但是这个不是绝对的，因项目而异稍有不同；主要是项目中的层级不能嵌套太深，而且重要的一点是不能出现循环嵌套引用包； 不要过早封包，抽象一层时，尽量上层依赖下层子目录，子目录高度内聚， 业务逻辑层依赖公共层；如果不确定是否导出一个元素，应该默认不导出它；后面发现需要导出，可以调整代码。对于大型项目，有多个子模块，可以使用workspace进行管理；&lt;/p&gt;
 &lt;p&gt;Tips: 如果使用DDD &lt;a href=&#34;https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html&#34;&gt;clean-architecture&lt;/a&gt; 架构思想开发业务，可以使用 &lt;a href=&#34;https://github.com/bxcodec/go-clean-arch&#34;&gt;go-clean-arch&lt;/a&gt; 这个项目结构。&lt;/p&gt;
-&lt;h2 id=&#34;13创建实用程序包工程规范&#34;&gt;13.创建实用程序包（工程规范）&lt;/h2&gt;
+&lt;h3 id=&#34;13创建实用程序包工程规范&#34;&gt;13.创建实用程序包（工程规范）&lt;/h3&gt;
 &lt;p&gt;包命名，应该是包对应功能，而不是通用意义上的名称比如utils、common或base，这些可以作为具体包的归档。类似net包中的组织形式&lt;/p&gt;
-&lt;h2 id=&#34;14忽略包名称冲突工程规范&#34;&gt;14.忽略包名称冲突（工程规范）&lt;/h2&gt;
+&lt;h3 id=&#34;14忽略包名称冲突工程规范&#34;&gt;14.忽略包名称冲突（工程规范）&lt;/h3&gt;
 &lt;p&gt;变量名与包名冲突，应该避免，这个staticcheck 工具就可以直接检测出来提示; 可以使用包别名；&lt;/p&gt;
-&lt;h2 id=&#34;15缺少代码文档工程规范&#34;&gt;15.缺少代码文档（工程规范）&lt;/h2&gt;
+&lt;h3 id=&#34;15缺少代码文档工程规范&#34;&gt;15.缺少代码文档（工程规范）&lt;/h3&gt;
 &lt;p&gt;这个属于代码工程规范问题了，对于开放出去的包，需要提供代码文档，表明其目的和内容，方便使用者查看文档，其实这个因人而异了，最好结合源码和用例来理解，有时候代码更新，文档却未更新，在代码中经常可以看到(各种pr修改)。 最好类似rust那样，在文档中加入一些测试用例；对于后续不维护的方法，可以通过// Deprecated:这种方式使用注释弃用导出的元素， 这个不同的开发语言都有类似功能；&lt;/p&gt;
-&lt;h2 id=&#34;16不使用-linters&#34;&gt;16.不使用 linters&lt;/h2&gt;
+&lt;h3 id=&#34;16不使用-linters&#34;&gt;16.不使用 linters&lt;/h3&gt;
 &lt;p&gt;应该使用Go提供的检测工具来写出统一质量高的代码，Linters 类工具和格式化程序是提高代码库质量和一致性的有效方法。花时间了解这些工具，并确保自动执行它们（例如 CI 或 Git 预提交挂钩，比如开源项目中在经常使用staticcheck 和 golangci-lint 进行分析,&lt;code&gt;golangci-lint run --out-format=github-actions --path-prefix=. -E gofumpt&lt;/code&gt;）；学会使用工具分析代码质量问题；&lt;/p&gt;
-&lt;h1 id=&#34;概括&#34;&gt;概括&lt;/h1&gt;
+&lt;h2 id=&#34;概括&#34;&gt;概括&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;避免隐藏变量有助于防止错误，例如引用错误的变量或混淆读者。&lt;/li&gt;
 &lt;li&gt;避免嵌套级别并保持快乐路径在左侧对齐，可以更轻松地构建心智代码模型。&lt;/li&gt;

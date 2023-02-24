@@ -322,19 +322,24 @@
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#17与八进制文字混淆">17.与八进制文字混淆</a></li>
-    <li><a href="#18忽略整数溢出">18.忽略整数溢出</a></li>
-    <li><a href="#19不理解浮点数">19.不理解浮点数</a></li>
-    <li><a href="#20不了解切片长度和容量">20.不了解切片长度和容量</a></li>
-    <li><a href="#21切片初始化效率低下">21.切片初始化效率低下</a></li>
-    <li><a href="#22对-nil-和空切片感到困惑">22.对 nil 和空切片感到困惑</a></li>
-    <li><a href="#23没有正确检查切片是否为空">23.没有正确检查切片是否为空</a></li>
-    <li><a href="#24没有正确使用切片copy">24.没有正确使用切片copy</a></li>
-    <li><a href="#25使用切片附加的意外副作用">25.使用切片附加的意外副作用</a></li>
-    <li><a href="#26切片和内存泄漏-重要">26.切片和内存泄漏 (重要）</a></li>
-    <li><a href="#27低效的map初始化">27.低效的map初始化</a></li>
-    <li><a href="#28map和内存泄漏">28.map和内存泄漏</a></li>
-    <li><a href="#29错误地比较值">29.错误地比较值</a></li>
+    <li><a href="#笔记">笔记</a>
+      <ul>
+        <li><a href="#17与八进制文字混淆">17.与八进制文字混淆</a></li>
+        <li><a href="#18忽略整数溢出">18.忽略整数溢出</a></li>
+        <li><a href="#19不理解浮点数">19.不理解浮点数</a></li>
+        <li><a href="#20不了解切片长度和容量">20.不了解切片长度和容量</a></li>
+        <li><a href="#21切片初始化效率低下">21.切片初始化效率低下</a></li>
+        <li><a href="#22对-nil-和空切片感到困惑">22.对 nil 和空切片感到困惑</a></li>
+        <li><a href="#23没有正确检查切片是否为空">23.没有正确检查切片是否为空</a></li>
+        <li><a href="#24没有正确使用切片copy">24.没有正确使用切片copy</a></li>
+        <li><a href="#25使用切片附加的意外副作用">25.使用切片附加的意外副作用</a></li>
+        <li><a href="#26切片和内存泄漏-重要">26.切片和内存泄漏 (重要）</a></li>
+        <li><a href="#27低效的map初始化">27.低效的map初始化</a></li>
+        <li><a href="#28map和内存泄漏">28.map和内存泄漏</a></li>
+        <li><a href="#29错误地比较值">29.错误地比较值</a></li>
+      </ul>
+    </li>
+    <li><a href="#概括">概括</a></li>
   </ul>
 </nav>
   </div>
@@ -342,12 +347,12 @@
 
     
     <div class="post-content">
-      <h1 id="笔记">笔记</h1>
-<h2 id="17与八进制文字混淆">17.与八进制文字混淆</h2>
+      <h2 id="笔记">笔记</h2>
+<h3 id="17与八进制文字混淆">17.与八进制文字混淆</h3>
 <p>Go 可以处理二进制、十六进制、虚数和八进制数。八进制数字以 0 开头。但是，为了提高可读性并避免未来代码阅读器可能犯的错误，请使用前缀明确表示八进制数字<code>0o</code></p>
-<h2 id="18忽略整数溢出">18.忽略整数溢出</h2>
+<h3 id="18忽略整数溢出">18.忽略整数溢出</h3>
 <p>在处理大数字或进行转换成小数字，进行运算时，可能会出现溢出。溢出会产生一些bug, 所以需要再一些可能溢出的场景中增加检测判断是否溢出，溢出则直接panic,或者进行错误返回</p>
-<h2 id="19不理解浮点数">19.不理解浮点数</h2>
+<h3 id="19不理解浮点数">19.不理解浮点数</h3>
 <p>以<code>float64</code>类型为例。<code>math.SmallestNonzeroFloat64</code>（<code>float64</code>最小值）和<code>math.MaxFloat64</code>（最大值）之间存在无限多个实数值<code>float64</code>。但是该<code>float64</code>类型有有限位数：64。因为不可能将无限值放入有限空间，所以必须使用近似值，因此可能会失去精度。同样的逻辑适用于类型<code>float32</code>。所以在使用<code>==</code>运算符比较两个浮点数可能会导致不准确，浮点计算的结果取决于实际的处理器。最多处理器有一个浮点单元 (FPU) 来处理此类计算。不能保证在一台机器上执行的结果在另一台具有不同 FPU 的机器上是相同的。<code>testify</code>测试( <a href="https://github.com/stretchr/testify">https://github.com/stretchr/testify</a> ) 有一个<code>InDelta</code>功能断言两个值在彼此给定的误差范围内。</p>
 <p>Go<code>float32</code>和<code>float64</code>是近似值。必须牢记一些规则：</p>
 <ul>
@@ -355,22 +360,22 @@
 <li>执行加法或减法时，将具有相似数量级的运算分组以获得更好的准确性。</li>
 <li>为了保证准确性，如果一系列运算需要加、减、乘或除，请先执行乘除运算。</li>
 </ul>
-<h2 id="20不了解切片长度和容量">20.不了解切片长度和容量</h2>
+<h3 id="20不了解切片长度和容量">20.不了解切片长度和容量</h3>
 <p>平常代码中经常用到是的slice, 和数组不是一个概念，这个是在Go中最容易犯得错误，需要了解slice结构，对于只读操作，可以在slice结构指向的数组进行复用，而无需重新分配空间（注意复用后是否需要回收）；但是在append操作时，需要考虑什么时候扩容，重新分配了数组空间；书中有个错误地方，也是很多文章介绍slice grow时不准确的地方，在1.18版本之后，slicegrow方法有所改进，具体查看 <a href="https://github.com/golang/go/blob/release-branch.go1.18/src/runtime/slice.go">https://github.com/golang/go/blob/release-branch.go1.18/src/runtime/slice.go</a>  growslice函数；</p>
-<h2 id="21切片初始化效率低下">21.切片初始化效率低下</h2>
+<h3 id="21切片初始化效率低下">21.切片初始化效率低下</h3>
 <p>切片在初始化时，尽量分配好容量，如果经常append操作，对于未初始化容量的slice, 在append 进行slicegrow扩容操作时，会分配一个临时的内存空间，导致 GC 需要付出额外的努力来清理所有这些临时分配的内存空间。也尽量初始化slice长度大小，这样直接可以用数组下标进行操作，效率更高，对于性能有要求的场景选择后者；</p>
-<h2 id="22对-nil-和空切片感到困惑">22.对 nil 和空切片感到困惑</h2>
+<h3 id="22对-nil-和空切片感到困惑">22.对 nil 和空切片感到困惑</h3>
 <p>比如 这个在开发api返回json数据时经常会遇到，一般情况会返回一个空切片，防止调用端未判断nil而导致panic；具体根据上下文初始化：</p>
 <ul>
 <li><code>var s []string</code>如果不确定最终长度并且切片可以为空</li>
 <li><code>[]string(nil)</code>作为创建 nil 和空切片的语法糖</li>
 <li><code>make([]string,</code> <code>length)</code>如果未来的长度已知</li>
 </ul>
-<h2 id="23没有正确检查切片是否为空">23.没有正确检查切片是否为空</h2>
+<h3 id="23没有正确检查切片是否为空">23.没有正确检查切片是否为空</h3>
 <p>不管是空切片还是nil, 通过检查长度len(slice)是最好的选择, 都是0</p>
-<h2 id="24没有正确使用切片copy">24.没有正确使用切片copy</h2>
+<h3 id="24没有正确使用切片copy">24.没有正确使用切片copy</h3>
 <p>其实就是了解copy函数，复制到目标切片的元素数量为源切片和目标切片长度最小值min(len(dst),len(src))，而且不能混淆参数来，copy(dst,src []Type)，还有一种替换方案：<code>dst := append([]int(nil), src...)</code></p>
-<h2 id="25使用切片附加的意外副作用">25.使用切片附加的意外副作用</h2>
+<h3 id="25使用切片附加的意外副作用">25.使用切片附加的意外副作用</h3>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">s1</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">}</span>
 <span class="nx">s2</span> <span class="o">:=</span> <span class="nx">s1</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
 <span class="nx">s3</span> <span class="o">:=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">s2</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
@@ -397,7 +402,7 @@
 </span><span class="c1">// s3=[2 10],len(s3)=2,cap(s3)=2
 </span></code></pre></div><p><em>完整切片表达式</em>: <code>s[low:high:max]</code>。max没有赋值默认为原始数据容量大小，如果max值超过原始数据容量则会在运行时panic；生成的切片的容量等于<code>max - low</code>，长度等于<code>high-low</code>，数据范围在[low,high) 左闭右开区间进行切片。</p>
 <p>所以使用切片时，可能会面临导致意想不到的副作用的情况。如果生成的切片的长度小于其容量，<code>append</code>则可以改变原始切片。如果想限制可能的副作用的范围，可以使用切片copy或完整的切片表达式，这会阻止进行复制。</p>
-<h2 id="26切片和内存泄漏-重要">26.切片和内存泄漏 (重要）</h2>
+<h3 id="26切片和内存泄漏-重要">26.切片和内存泄漏 (重要）</h3>
 <p>切片中导致内存泄露的原因是，切片一直在复用，未被gc释放，每次重新使用又会重新分配一次内存空间，一直重复分配，导致内存泄露，比如，在网络请求中，消息数据大于32KB，需要对网络的消息协议进行解包之后处理保存数据， 首先从网络中获取消息，然后从消息中获取协议头，通过切片方式复用对应消息，下次从网络请求中获取消息数据，又重新从堆上分配了新的内存空间，以前复用的空间还未释放，最终导致内存泄露；解决这个问题的方案，从消息中获取协议头，只copy协议头部分数据进行处理，处理完，由gc来释放内存空间；</p>
 <p>根据经验，请记住对大切片或数组进行切片可能会导致潜在的高内存消耗。剩余的空间不会被 GC 回收，尽管只使用了几个元素，但可以保留一个大的后备数组。copy切片是防止这种情况的解决方案。通过runtime.ReadMemStats 函数可以获取运行时内存alloctor的统计信息MemStats,</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">printAlloc</span><span class="p">()</span> <span class="p">{</span>
@@ -409,16 +414,16 @@
 <p>第一个是关于对现有切片或数组进行切片以保留容量；如果处理大型切片并将它们重新切片以仅保留一小部分，则大量内存将保持分配状态但未使用。</p>
 <p>第二个问题是，当对指针或具有指针字段的结构使用切片操作时，需要知道 GC 不会回收这些元素。</p>
 <p>在这种情况下，两个选项是执行复制或将剩余元素字段显式标记为<code>nil</code>。</p>
-<h2 id="27低效的map初始化">27.低效的map初始化</h2>
+<h3 id="27低效的map初始化">27.低效的map初始化</h3>
 <p>在使用slice切片时，如果预先知道要添加到切片中的元素数量，就可以使用给定的大小或容量对其进行初始化。这避免了必须不断重复昂贵的切片增长操作。这个想法与map类似。这样可以尽量减少map的扩容，重新分配新的空间，以及扩容后的rehash平衡所有元素。</p>
-<h2 id="28map和内存泄漏">28.map和内存泄漏</h2>
+<h3 id="28map和内存泄漏">28.map和内存泄漏</h3>
 <p>向map中添加<em>n个</em>元素，然后删除所有元素，意味着在内存中保留相同数量的桶。因为 Go map 的大小只会增加，所以它的内存消耗也会增加。没有自动策略来缩小它。如果这导致高内存消耗，可以尝试不同的方法，例如强制 Go 重新创建map(这种方式不太可取，在复制之后和下一次垃圾回收之前，可能会在短时间内消耗当前内存的两倍) 或 val存放指向数据的指针；</p>
 <p>tips： 需要了解map的结构，以及map中的key （可比较类型）</p>
-<h2 id="29错误地比较值">29.错误地比较值</h2>
+<h3 id="29错误地比较值">29.错误地比较值</h3>
 <p>具体可比较的类型见官方最新文档： (重要)</p>
 <p><a href="https://go.dev/ref/spec#Comparison_operators">The Go Programming Language Specification - The Go Programming Language</a></p>
 <p>考虑到文档中这些行为，如果必须比较两个切片、两个map或两个包含不可比较类型的结构，有哪些选择？如果坚持使用标准库，一个选择是使用运行时反射<code>reflect</code>包中的<code>reflect.DeepEqual</code>方法， 但是由性能损失，一般不用于生产环境，主要用于单元测试返回的值是否是预期值，还有类似的三方库用于测试时的期望值比较，比如<code>go-cmp</code> ( <a href="https://github.com/google/go-cmp">https://github.com/google/go-cmp</a> ) 或<code>testify</code>( <a href="https://github.com/stretchr/testify">https://github.com/stretchr/testify</a> )；如果性能在运行时至关重要，那么实施自定义方法可能是最佳解决方案；</p>
-<h1 id="概括">概括</h1>
+<h2 id="概括">概括</h2>
 <ul>
 <li>阅读现有代码时，请记住以 0 开头的整数文字是八进制数。此外，为了提高可读性，通过在八进制整数前加上<code>0o</code>.</li>
 <li>因为整数上溢和下溢在 Go 中是静默处理的，所以可以实现自己的函数来捕获它们。</li>

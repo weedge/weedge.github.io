@@ -378,12 +378,17 @@ type StringHeader struct {
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#36不理解rune的概念-重要">36.不理解rune的概念 （重要）</a></li>
-    <li><a href="#37不准确的字符串迭代">37.不准确的字符串迭代</a></li>
-    <li><a href="#38滥用-trim-函数">38.滥用 trim 函数</a></li>
-    <li><a href="#39优化不足的字符串连接">39.优化不足的字符串连接</a></li>
-    <li><a href="#40无用的字符串转换">40.无用的字符串转换</a></li>
-    <li><a href="#41子字符串和内存泄漏">41.子字符串和内存泄漏</a></li>
+    <li><a href="#笔记">笔记</a>
+      <ul>
+        <li><a href="#36不理解rune的概念-重要">36.不理解rune的概念 （重要）</a></li>
+        <li><a href="#37不准确的字符串迭代">37.不准确的字符串迭代</a></li>
+        <li><a href="#38滥用-trim-函数">38.滥用 trim 函数</a></li>
+        <li><a href="#39优化不足的字符串连接">39.优化不足的字符串连接</a></li>
+        <li><a href="#40无用的字符串转换">40.无用的字符串转换</a></li>
+        <li><a href="#41子字符串和内存泄漏">41.子字符串和内存泄漏</a></li>
+      </ul>
+    </li>
+    <li><a href="#概括">概括</a></li>
   </ul>
 </nav>
   </div>
@@ -391,7 +396,7 @@ type StringHeader struct {
 
     
     <div class="post-content">
-      <h1 id="笔记">笔记</h1>
+      <h2 id="笔记">笔记</h2>
 <p>在 Go 中，string是一种不可变的数据结构，包含以下内容：</p>
 <ul>
 <li>指向不可变字节序列的指针，指向一个byte类型的数组</li>
@@ -433,7 +438,7 @@ type StringHeader struct {
 	<span class="nx">h</span> <span class="o">:=</span> <span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="kt">uintptr</span><span class="p">{</span><span class="nx">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nx">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nx">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span>
 	<span class="k">return</span> <span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="p">[]</span><span class="kt">byte</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">h</span><span class="p">))</span>
 <span class="p">}</span>
-</code></pre></div><h2 id="36不理解rune的概念-重要">36.不理解rune的概念 （重要）</h2>
+</code></pre></div><h3 id="36不理解rune的概念-重要">36.不理解rune的概念 （重要）</h3>
 <p>字符集和编码之间的区别：</p>
 <ul>
 <li>字符集(charset)是一组字符。例如，Unicode 字符集包含 2^21 个字符。</li>
@@ -449,18 +454,18 @@ type StringHeader struct {
 <li>在 Go 中使用<code>len</code>字符串返回字节数，而不是rune数。</li>
 </ul>
 <p>如果想准确获取到有符文(rune)字符串的长度，可以使用<code>utf8.RuneCountInString</code> 函数</p>
-<h2 id="37不准确的字符串迭代">37.不准确的字符串迭代</h2>
+<h3 id="37不准确的字符串迭代">37.不准确的字符串迭代</h3>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">s</span> <span class="p">{</span>
     <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;position %d: %c\\n&#34;</span><span class="p">,</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">s</span><span class="p">[</span><span class="nx">i</span><span class="p">])</span>
 <span class="p">}</span>
 </code></pre></div><p>以上代码，没有遍历每个rune，而是迭代rune的每个起始索引；</p>
 <p>如果想遍历字符串的符文(rune)，可以使用<code>range</code>直接在字符串上循环，必须记住，**索引对应的不是符文索引，而是符文字节序列的起始索引；**因为一个符文可以由多个字节组成，如果要访问符文本身，应该使用 的值变量<code>range</code>，而不是字符串中的索引;</p>
 <p>如果想获取第i个字符串的符文(rune)，在大多数情况下应该将字符串转换为一段 runes。</p>
-<h2 id="38滥用-trim-函数">38.滥用 trim 函数</h2>
+<h3 id="38滥用-trim-函数">38.滥用 trim 函数</h3>
 <p>Go中的strings包，开发者可能经常混淆使用TrimRight 和 TrimSuffix， 或者 TrimLeft 和 TrimPrefix</p>
 <p>TrimRight向后遍历每个符文；如果符文是提供的集合的一部分，则该函数将其删除。如果不是，该函数将停止迭代并返回剩余的字符串。TrimLeft 向前遍历同理。  Trim 函数 两边遍历也是一样。</p>
 <p>如果想匹配整体的字符串进行删除的话， 应该使用 TrimSuffix 和 TrimPrefix，如果两边移除分别调用这两个方法。</p>
-<h2 id="39优化不足的字符串连接">39.优化不足的字符串连接</h2>
+<h3 id="39优化不足的字符串连接">39.优化不足的字符串连接</h3>
 <p>如果使用 s += str 的方式连接字符串，会有性能问题，因为字符的数据是不可变的，每次字符串 + 连接操作都会重新分配一次内存空间(allocator)；</p>
 <p>应该使用 strings.Builder 结构来拼接字符串， Builder结构中有一个byte切片 buf []byte用于数据拼接，WriteString 内部使用append来操作，前面提到append操作会出发自动扩容，这样不用每次拼接的时候分配一次新的内存空间，提高了性能； 如果可以获取到拼接字符串的长度，那就可以直接通过 Grow函数来一次初始化拼接buf byte切片内存空间，这样性能可以得到进一步的提升(与 21. 切片初始化效率低下 分析一样)。类似WriteString方法对应string 类型，还有一下三总方法：</p>
 <ul>
@@ -469,16 +474,16 @@ type StringHeader struct {
 <li>单个符文使用<code>WriteRune</code></li>
 </ul>
 <p>当然如果拼接的短字符串就那么几个，则没有必要使用strings.Builder 结构来拼接字符串，性能提升可以忽略，但是代码量可读性方面就降低了，可读性不如使用运算符<code>+=</code>或<code>fmt.Sprintf</code>。</p>
-<h2 id="40无用的字符串转换">40.无用的字符串转换</h2>
+<h3 id="40无用的字符串转换">40.无用的字符串转换</h3>
 <p>比如 string 转[]byte,  []byte 转string， 如果是直接 []byte(string) 或者 string([]byte)，转换都会有额外的内存分配，而且转换后的string是不可变的； 所以在进行字符串操作的时候，尽量都使用[]byte类型，避免转换string带来的额外操作，<code>strings</code>包也有替代品包<code>bytes</code>，大多数 I/O Buffer 都是操作 <code>[]byte</code>，字符串的拼接Builder结构也是对[]byte的操作。</p>
-<h2 id="41子字符串和内存泄漏">41.子字符串和内存泄漏</h2>
+<h3 id="41子字符串和内存泄漏">41.子字符串和内存泄漏</h3>
 <p>在 Go 中使用子字符串操作时，字符串的结构可知：</p>
 <ol>
 <li>提供的间隔是基于字节数，而不是符文数。</li>
 <li>子字符串操作可能会导致内存泄漏，因为生成的子字符串将与初始字符串共享相同的底层数组。</li>
 </ol>
 <p>防止这种情况发生的解决方案是手动执行字符串复制，或者从 Go 1.18 开始引入<code>strings.Clone</code>。</p>
-<h1 id="概括">概括</h1>
+<h2 id="概括">概括</h2>
 <ul>
 <li>了解符文对应于 Unicode 码位(code point)的概念，它可以由多个字节组成，应该是 Go 开发人员准确处理字符串的核心知识的一部分。</li>
 <li>使用<code>range</code>运算符迭代字符串会迭代符文，其索引对应于符文字节序列的起始索引。要访问特定的符文索引（例如第三个符文），请将字符串转换为<code>[]rune</code>.</li>
