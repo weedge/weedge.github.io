@@ -68,7 +68,6 @@
 &lt;p&gt;&lt;em&gt;Make it correct, make it clear, make it concise, make it fast, in that order.&lt;/em&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;并不意味着禁止为速度和效率优化应用程序, 了解并掌握这些优化点，以备不时之需；文中给出了常见的优化技术；有些特定于 Go 内存模型，内存分配，GPM调度模型；有些是关于了解硬件有助于写出好的代码(适用于不同语言)，其中会有硬件方面的术语，可以结合wiki进行学习；&lt;/p&gt;
-&lt;p&gt;tips: 学习一些和编程优化相关的底层计算机组成原理，并且结合相关硬件进行基准压测实践。&lt;/p&gt;
 &lt;h1 id=&#34;笔记&#34;&gt;笔记&lt;/h1&gt;
 &lt;h2 id=&#34;91不了解-cpu-缓存&#34;&gt;91.不了解 CPU 缓存&lt;/h2&gt;
 &lt;p&gt;&lt;em&gt;Mechanical sympathy(机械同情)&lt;/em&gt;  来自三届 F1 世界冠军 Jackie Stewart 创造的一个术语&lt;/p&gt;
@@ -105,7 +104,7 @@
 &lt;p&gt;时间局部性是需要 CPU 缓存的部分原因：加速对相同变量的重复访问。由于空间局部性，CPU 会复制缓存行将包括单个变量的缓存行从主存复制到高速缓存，并加载到寄存器中执行。&lt;/p&gt;
 &lt;p&gt;高速缓存行是固定大小的连续内存段，通常为 64 字节（8 个&lt;code&gt;int64&lt;/code&gt;变量）。每当 CPU 决定缓存 RAM 中的内存块时，它会将内存块复制到缓存行。因为内存是有层次结构的，所以当CPU要访问一个特定的内存位置时，它首先检查L1，然后是L2，然后是L3，最后，如果位置不在那些缓存中，则在主内存中。&lt;/p&gt;
 &lt;p&gt;举一个简单的例子， 遍历容量为16的slice切片s []int64;  这个内存地址还没在缓存中；程序开始遍历，cpu决定缓存这个s[0]这个变量，会复制整个内存块复制到缓存行，缓存行中包含了8个int64，0到7的数据将会在cpu cache中命中；访问s[8]时同理；迭代16个int64元素导致2次强制缓存未命中(&lt;em&gt;compulsory miss&lt;/em&gt;)和 14 次缓存命中。&lt;/p&gt;
-&lt;p&gt;CPU缓存策略有个大致的了解：有时缓存是包容性的（例如，L2 数据也存在于 L3 中），有时缓存是排他性的（例如，L3 称为受害者缓存*，*因为它只包含从 L2 逐出的数据）；这些策略被 CPU 供应商隐藏起来；大致了解下即可。&lt;/p&gt;
+&lt;p&gt;CPU缓存策略有个大致的了解：有时缓存是包容性的（例如，L2 数据也存在于 L3 中），有时缓存是排他性的（例如，L3 称为受害者缓存，因为它只包含从 L2 逐出的数据）；这些策略被 CPU 供应商隐藏起来；大致了解下即可。&lt;/p&gt;
 &lt;p&gt;如果感兴趣，可以通过 &lt;strong&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/CPU_cache&#34;&gt;https://en.wikipedia.org/wiki/CPU_cache&lt;/a&gt;&lt;/strong&gt; 进一步了解，比较硬核。&lt;/p&gt;
 &lt;h3 id=&#34;结构切片与切片结构-slice-of-structs-vs-struct-of-slices&#34;&gt;结构切片与切片结构 Slice of structs vs. struct of slices&lt;/h3&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;type&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Foo&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
@@ -580,7 +579,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v -bench&lt;span class=&#34
 &lt;p&gt;在生产环境中使用&lt;code&gt;GOGC&lt;/code&gt;使用时需要注意，分析进行微调(取决于具体场景，机器性能)：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;减少阈值，会减低 堆空间 增长，但是增加了 GC 的压力。&lt;/li&gt;
-&lt;li&gt;增加阈值，会增加 堆空间 增长，但是减少了 GC 的压力。(适用于free 内存空间大的场景)&lt;/li&gt;
+&lt;li&gt;增加阈值，会增加 堆空间 增长，但是减少了 GC 的压力。(适用于free 内存空间大的场景，因为清扫是异步触发的~)&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;tips: 通过设置&lt;code&gt;GOGC=off&lt;/code&gt;或者&lt;code&gt;debug.SetGCPercent(-1)&lt;/code&gt;关闭&lt;code&gt;GC&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;debug.SetMaxHeap&lt;/strong&gt;&lt;/p&gt;
@@ -631,9 +630,8 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v -bench&lt;span class=&#34
 &lt;li&gt;为帮助避免在 Docker 和 Kubernetes 中部署时出现 CPU 节流，请记住 Go 不支持 CFS。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h1 id=&#34;总结&#34;&gt;总结&lt;/h1&gt;
-&lt;p&gt;总共花了10天左右把 100-go-mistakes-and-how-to-avoid-them 这本书看完，对于一些文中不够升入的地方，进行挖掘了下，了解弄清楚了背后的原理，知其然知其所以然之后，有些mistake是一些共性的问题，而且对于文中每个mistake，都应去实践操作一下，熟悉利用好Go相关工具，编译，测试，构建等等，文中大部分是语言层面的，工程方面也有些，特别像最后介绍的在K8S docker中CPU对Go语言本身的影响，实际遇到之后才会印象更深，应该从错误中去总结，而不是总结之后继续犯错，如此折返，意义不大；还是从错误点中多挖掘底层逻辑多思考多总结，后续在补充错误总结。&lt;/p&gt;
-&lt;p&gt;书的地址： &lt;a href=&#34;https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/&#34;&gt;https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;代码地址：https://github.com/teivah/100-go-mistakes 可以回顾下review&lt;/p&gt;</description>
+&lt;p&gt;总共花了10天左右把 100-go-mistakes-and-how-to-avoid-them 这本书看完，对于一些文中不够升入的地方，进行挖掘了下，了解弄清楚了背后的原理，知其然知其所以然之后，有些mistake是一些共性的问题，而且对于文中每个mistake，都应去实践操作一下，熟悉利用好Go相关工具，编译，测试，构建等等，文中大部分是语言层面的，工程方面也有些，特别像最后介绍的在K8S docker中CPU对Go语言本身的影响，实际遇到之后才会印象更深，应该从错误中去总结，而不是总结之后继续犯错，如此折返，意义不大；从错误点中多挖掘底层逻辑多思考总结。&lt;/p&gt;
+&lt;p&gt;书的地址： &lt;a href=&#34;https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/&#34;&gt;https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/&lt;/a&gt;&lt;/p&gt;</description>
       
     </item>
     
