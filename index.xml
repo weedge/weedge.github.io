@@ -166,8 +166,8 @@
 &lt;p&gt;回到前面&lt;a href=&#34;https://weedge.github.io/post/go-tips/go-tips-11-testing/#89%E7%BC%96%E5%86%99%E4%B8%8D%E5%87%86%E7%A1%AE%E7%9A%84%E5%9F%BA%E5%87%86&#34;&gt;#89&lt;/a&gt; 真实示例中，使用两个函数&lt;code&gt;calculateSum512&lt;/code&gt;和&lt;code&gt;calculateSum513&lt;/code&gt;。基准测试在 32 KB 8-way set-associative L1D cache上执行，总共 64 组。因为缓存行是 64 字节，所以每一路步长等于 64 × 64 字节 = 4 KB；代表512 个&lt;code&gt;int64&lt;/code&gt;类型元素。因此，达到了 512 列矩阵的&lt;em&gt;临界步幅critical stride&lt;/em&gt;，缓存分布很差(&lt;em&gt;冲突未命中conflict miss&lt;/em&gt;)。同时，如果矩阵包含 513 列，则不会导致&lt;em&gt;临界步幅&lt;/em&gt;。这就是为什么观察到两个基准之间存在如此巨大差异的原因。这个同样适用于在intel CPU架构上运行的其他语言。&lt;/p&gt;
 &lt;p&gt;总之，必须意识到现代缓存是分区的。根据步幅，在某些情况下只使用一组，这可能会损害应用程序性能并导致冲突未命中。这种步幅称为临界步幅。对于性能密集型应用程序，应该避免关键步骤来充分利用 CPU 缓存。&lt;/p&gt;
 &lt;p&gt;tips: 应该注意基准测试的结果在不同底层CPU架构而有所不同。注意开发测试 和 生产环境下的CPU架构一致，如果有对计算密集型的调优，最好在生产环境待部署的机器上都进行基准测试一下。&lt;/p&gt;
-&lt;h3 id=&#34;92编写导致伪共享false-sharding的并发代码&#34;&gt;92.编写导致伪共享(false sharding)的并发代码&lt;/h3&gt;
-&lt;p&gt;由于多核处理器cpu之间独立的L1/L2 cache，会出现cache line不一致的问题，为了解决这个问题，有相关协议模型，常用MESI协议，MESI 通过 这个网站模拟更直观的了解 &lt;a href=&#34;https://www.scss.tcd.ie/Jeremy.Jones/VivioJS/caches/MESIHelp.htm&#34;&gt;https://www.scss.tcd.ie/Jeremy.Jones/VivioJS/caches/MESIHelp.htm&lt;/a&gt;；为了保证一个core上修改的cache line数据同步到其他core的cache line上，则需要MESI协议来保证，如果同一个cache line上有个两个变量sum1 和 sum2 之间虽然没有相互依赖逻辑，但是当修改sum1 或者sum2 时，需要同步同一块cache line的内容，导致 即使没有相互关系的变量在同一cache line中， 需要彼此共享同步，从而出现所说的&lt;em&gt;伪共享 flase sharding&lt;/em&gt;。伪共享因为cache line的同步会带来一些cpu 时钟周期的性能损失。&lt;/p&gt;
+&lt;h3 id=&#34;92编写导致伪共享false-sharing的并发代码&#34;&gt;92.编写导致伪共享(false sharing)的并发代码&lt;/h3&gt;
+&lt;p&gt;由于多核处理器cpu之间独立的L1/L2 cache，会出现cache line不一致的问题，为了解决这个问题，有相关协议模型，常用MESI协议，MESI 通过 这个网站模拟更直观的了解 &lt;a href=&#34;https://www.scss.tcd.ie/Jeremy.Jones/VivioJS/caches/MESIHelp.htm&#34;&gt;https://www.scss.tcd.ie/Jeremy.Jones/VivioJS/caches/MESIHelp.htm&lt;/a&gt;；为了保证一个core上修改的cache line数据同步到其他core的cache line上，则需要MESI协议来保证，如果同一个cache line上有个两个变量sum1 和 sum2 之间虽然没有相互依赖逻辑，但是当修改sum1 或者sum2 时，需要同步同一块cache line的内容，导致 即使没有相互关系的变量在同一cache line中， 需要彼此共享同步，从而出现所说的&lt;em&gt;伪共享 flase sharing&lt;/em&gt;。伪共享因为cache line的同步会带来一些cpu 时钟周期的性能损失。&lt;/p&gt;
 &lt;p&gt;了解伪共享的情况，知道如何破解了，直接让sum1和sum2 放置在不同的cache line就可以；比如一个结构体中sum1和sum2 的存放结构：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;type&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Result2&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
 	&lt;span class=&#34;nx&#34;&gt;sumA&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int64&lt;/span&gt;
@@ -616,10 +616,10 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v -bench&lt;span class=&#34
 &lt;h2 id=&#34;概括&#34;&gt;概括&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;了解如何使用 CPU 缓存对于优化受 CPU 限制的应用程序很重要，因为 L1 缓存比主内存快大约 50 到 100 倍。&lt;/li&gt;
-&lt;li&gt;了解高速缓存行概念对于理解如何在数据密集型应用程序中组织数据至关重要。CPU 不会逐字获取内存；相反，它通常将内存块复制到 64 字节的缓存行。要充分利用每个单独的缓存行，请强制执行空间局部性。&lt;/li&gt;
+&lt;li&gt;了解高速缓存行概念对于理解如何在数据密集型应用程序中组织数据至关重要。CPU 不会逐字获取内存；相反，它通常将内存块复制到 64 字节的缓存行。要充分利用每个单独的缓存行，利用好空间局部性。&lt;/li&gt;
 &lt;li&gt;让 CPU 可以预测代码也是优化某些功能的有效方法。例如，单位或恒定步幅对于 CPU 是可预测的，但非单位步幅（例如，链表）是不可预测的。&lt;/li&gt;
 &lt;li&gt;为避免关键步幅，从而只使用缓存的一小部分，请注意缓存是分区的。&lt;/li&gt;
-&lt;li&gt;了解较低级别的 CPU 缓存不会在所有内核之间共享有助于避免性能下降模式，例如在编写并发代码时进行错误共享。共享记忆是一种幻觉。&lt;/li&gt;
+&lt;li&gt;了解false sharing对并发程序的影响，伪共享因为cache line的同步会带来一些cpu 时钟周期的性能损失。&lt;/li&gt;
 &lt;li&gt;使用指令级并行 (ILP) 来优化代码的特定部分，以允许 CPU 执行尽可能多的并行指令。识别数据危害是主要步骤之一。&lt;/li&gt;
 &lt;li&gt;可以通过记住在 Go 中基本类型与它们自己的大小对齐来避免常见错误。例如，请记住，按大小降序重组结构的字段可以导致更紧凑的结构（更少的内存分配和可能更好的空间局部性）。&lt;/li&gt;
 &lt;li&gt;在优化 Go 应用程序时，理解堆和栈之间的根本区别也应该是你的核心知识的一部分。栈分配几乎是免费的，而堆分配速度较慢并且依赖于 GC 来清理内存。&lt;/li&gt;

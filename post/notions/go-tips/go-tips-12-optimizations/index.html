@@ -84,7 +84,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 
 并不意味着禁止为速度和效率优化应用程序, 了解并掌握这些优化点，以备不时之需；文中给出了常见的优化技术；有些特定于 Go 内存模型，内存分配，GPM调度模型；有些是关于了解硬件有助于写出好的代码(适用于不同语言)，其中会有硬件方面的术语，可以结合wiki进行学习；"><meta itemprop="datePublished" content="2023-02-23T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-02-23T10:26:23+08:00" />
-<meta itemprop="wordCount" content="20538">
+<meta itemprop="wordCount" content="20532">
 <meta itemprop="keywords" content="Golang," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Go tips-笔记: 优化 91-100 mistakes"/>
 <meta name="twitter:description" content="引言
@@ -344,7 +344,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
     <li><a href="#笔记">笔记</a>
       <ul>
         <li><a href="#91不了解-cpu-缓存">91.不了解 CPU 缓存</a></li>
-        <li><a href="#92编写导致伪共享false-sharding的并发代码">92.编写导致伪共享(false sharding)的并发代码</a></li>
+        <li><a href="#92编写导致伪共享false-sharing的并发代码">92.编写导致伪共享(false sharing)的并发代码</a></li>
         <li><a href="#93不考虑指令级并行性-instruction-level-parallelism">93.不考虑指令级并行性 instruction-level parallelism</a></li>
         <li><a href="#94不知道数据对齐">94.不知道数据对齐</a></li>
         <li><a href="#95不了解栈与堆">95.不了解栈与堆</a></li>
@@ -468,8 +468,8 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 <p>回到前面<a href="https://weedge.github.io/post/go-tips/go-tips-11-testing/#89%E7%BC%96%E5%86%99%E4%B8%8D%E5%87%86%E7%A1%AE%E7%9A%84%E5%9F%BA%E5%87%86">#89</a> 真实示例中，使用两个函数<code>calculateSum512</code>和<code>calculateSum513</code>。基准测试在 32 KB 8-way set-associative L1D cache上执行，总共 64 组。因为缓存行是 64 字节，所以每一路步长等于 64 × 64 字节 = 4 KB；代表512 个<code>int64</code>类型元素。因此，达到了 512 列矩阵的<em>临界步幅critical stride</em>，缓存分布很差(<em>冲突未命中conflict miss</em>)。同时，如果矩阵包含 513 列，则不会导致<em>临界步幅</em>。这就是为什么观察到两个基准之间存在如此巨大差异的原因。这个同样适用于在intel CPU架构上运行的其他语言。</p>
 <p>总之，必须意识到现代缓存是分区的。根据步幅，在某些情况下只使用一组，这可能会损害应用程序性能并导致冲突未命中。这种步幅称为临界步幅。对于性能密集型应用程序，应该避免关键步骤来充分利用 CPU 缓存。</p>
 <p>tips: 应该注意基准测试的结果在不同底层CPU架构而有所不同。注意开发测试 和 生产环境下的CPU架构一致，如果有对计算密集型的调优，最好在生产环境待部署的机器上都进行基准测试一下。</p>
-<h3 id="92编写导致伪共享false-sharding的并发代码">92.编写导致伪共享(false sharding)的并发代码</h3>
-<p>由于多核处理器cpu之间独立的L1/L2 cache，会出现cache line不一致的问题，为了解决这个问题，有相关协议模型，常用MESI协议，MESI 通过 这个网站模拟更直观的了解 <a href="https://www.scss.tcd.ie/Jeremy.Jones/VivioJS/caches/MESIHelp.htm">https://www.scss.tcd.ie/Jeremy.Jones/VivioJS/caches/MESIHelp.htm</a>；为了保证一个core上修改的cache line数据同步到其他core的cache line上，则需要MESI协议来保证，如果同一个cache line上有个两个变量sum1 和 sum2 之间虽然没有相互依赖逻辑，但是当修改sum1 或者sum2 时，需要同步同一块cache line的内容，导致 即使没有相互关系的变量在同一cache line中， 需要彼此共享同步，从而出现所说的<em>伪共享 flase sharding</em>。伪共享因为cache line的同步会带来一些cpu 时钟周期的性能损失。</p>
+<h3 id="92编写导致伪共享false-sharing的并发代码">92.编写导致伪共享(false sharing)的并发代码</h3>
+<p>由于多核处理器cpu之间独立的L1/L2 cache，会出现cache line不一致的问题，为了解决这个问题，有相关协议模型，常用MESI协议，MESI 通过 这个网站模拟更直观的了解 <a href="https://www.scss.tcd.ie/Jeremy.Jones/VivioJS/caches/MESIHelp.htm">https://www.scss.tcd.ie/Jeremy.Jones/VivioJS/caches/MESIHelp.htm</a>；为了保证一个core上修改的cache line数据同步到其他core的cache line上，则需要MESI协议来保证，如果同一个cache line上有个两个变量sum1 和 sum2 之间虽然没有相互依赖逻辑，但是当修改sum1 或者sum2 时，需要同步同一块cache line的内容，导致 即使没有相互关系的变量在同一cache line中， 需要彼此共享同步，从而出现所说的<em>伪共享 flase sharing</em>。伪共享因为cache line的同步会带来一些cpu 时钟周期的性能损失。</p>
 <p>了解伪共享的情况，知道如何破解了，直接让sum1和sum2 放置在不同的cache line就可以；比如一个结构体中sum1和sum2 的存放结构：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Result2</span> <span class="kd">struct</span> <span class="p">{</span>
 	<span class="nx">sumA</span> <span class="kt">int64</span>
@@ -918,10 +918,10 @@ go <span class="nb">test</span> -v -bench<span class="o">=</span>Benchmark_paral
 <h2 id="概括">概括</h2>
 <ul>
 <li>了解如何使用 CPU 缓存对于优化受 CPU 限制的应用程序很重要，因为 L1 缓存比主内存快大约 50 到 100 倍。</li>
-<li>了解高速缓存行概念对于理解如何在数据密集型应用程序中组织数据至关重要。CPU 不会逐字获取内存；相反，它通常将内存块复制到 64 字节的缓存行。要充分利用每个单独的缓存行，请强制执行空间局部性。</li>
+<li>了解高速缓存行概念对于理解如何在数据密集型应用程序中组织数据至关重要。CPU 不会逐字获取内存；相反，它通常将内存块复制到 64 字节的缓存行。要充分利用每个单独的缓存行，利用好空间局部性。</li>
 <li>让 CPU 可以预测代码也是优化某些功能的有效方法。例如，单位或恒定步幅对于 CPU 是可预测的，但非单位步幅（例如，链表）是不可预测的。</li>
 <li>为避免关键步幅，从而只使用缓存的一小部分，请注意缓存是分区的。</li>
-<li>了解较低级别的 CPU 缓存不会在所有内核之间共享有助于避免性能下降模式，例如在编写并发代码时进行错误共享。共享记忆是一种幻觉。</li>
+<li>了解false sharing对并发程序的影响，伪共享因为cache line的同步会带来一些cpu 时钟周期的性能损失。</li>
 <li>使用指令级并行 (ILP) 来优化代码的特定部分，以允许 CPU 执行尽可能多的并行指令。识别数据危害是主要步骤之一。</li>
 <li>可以通过记住在 Go 中基本类型与它们自己的大小对齐来避免常见错误。例如，请记住，按大小降序重组结构的字段可以导致更紧凑的结构（更少的内存分配和可能更好的空间局部性）。</li>
 <li>在优化 Go 应用程序时，理解堆和栈之间的根本区别也应该是你的核心知识的一部分。栈分配几乎是免费的，而堆分配速度较慢并且依赖于 GC 来清理内存。</li>
