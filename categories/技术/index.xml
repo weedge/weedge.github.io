@@ -153,15 +153,6 @@
     </item>
     
     <item>
-      <title>源码阅读草稿-leveldb</title>
-      <link>https://weedge.github.io/todo/leveldb-viewcode/</link>
-      <pubDate>Tue, 07 Feb 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/todo/leveldb-viewcode/</guid>
-      <description>安装 leveldb源码使用tag 1.23, 在本地macOS 下通过vscode查看源码，编译debug如下： git clone --recurse-submodules https://github.com/google/leveldb.git &amp;amp;&amp;amp; cd leveldb &amp;amp;&amp;amp; git checkout 1.23 brew install gflags brew install snappy mkdir -p build &amp;amp;&amp;amp;</description>
-    </item>
-    
-    <item>
       <title>设计-直播间赠送礼物功能</title>
       <link>https://weedge.github.io/post/zb-gift/</link>
       <pubDate>Mon, 21 Nov 2022 10:26:23 +0800</pubDate>
@@ -243,15 +234,6 @@
     </item>
     
     <item>
-      <title>深入理解Linux的Page Cache 「转载的哦」</title>
-      <link>https://weedge.github.io/%E8%BD%AC%E8%BD%BD/page-cache/</link>
-      <pubDate>Fri, 26 Nov 2021 11:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/%E8%BD%AC%E8%BD%BD/page-cache/</guid>
-      <description>from: 互联网，了解下备个份而已啦～！unix 请看个 man 1、Page Cache 1.1 Page Cache 是什么？ 为了理解 Page Cache，我们不妨先看一下 Linux 的文件 I/O 系统，如下图所示</description>
-    </item>
-    
-    <item>
       <title>WAL</title>
       <link>https://weedge.github.io/post/wal/</link>
       <pubDate>Sun, 21 Nov 2021 10:26:23 +0800</pubDate>
@@ -259,6 +241,29 @@
       <guid>https://weedge.github.io/post/wal/</guid>
       <description>&lt;h2 id=&#34;序言&#34;&gt;序言&lt;/h2&gt;
 &lt;p&gt;​	数据落地之前，如果出现持久化存储引擎实例重启，或者服务当机重启，如何进行故障恢复（Crash Recovery）呢？数据写操作增删改，这些操作状态数据，是如何保证事务中原子性和持久性的呢？ 这些问题数据大拿们提出了&lt;a href=&#34;https://en.wikipedia.org/wiki/Algorithms_for_Recovery_and_Isolation_Exploiting_Semantics&#34;&gt;Algorithms for Recovery and Isolation Exploiting Semantics&lt;/a&gt; ，基于语义的恢复与隔离算法,现代数据库的基础理论；当前主流关系型数据在事务实现上都受到该理论的影响，其中有两种故障恢复的方法： 预写日志(write-ahead logging (WAL) ) 和shadow-page technique；shadow-page 方法简单介绍就是每次事务操作，以page为单位，写时复制的方式，分为Current和Shadow，类似主备的形式，如果commit成功，Current中的page合并到 Shadow中; 如果abort不成功丢弃Current的page; 如果Crash了，从Shadow中的page恢复，对所有未提交事务的回滚操作； 由于shadow-page技术的实现以page为单位，page内无法并发操作，commit/回滚时会有大量垃圾回收操作；本文主要介绍WAL，以及对应持久化存储引擎的实现机制介绍。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>设计-配置平台</title>
+      <link>https://weedge.github.io/post/conf/</link>
+      <pubDate>Thu, 18 Nov 2021 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/conf/</guid>
+      <description>&lt;h3 id=&#34;介绍&#34;&gt;介绍&lt;/h3&gt;
+&lt;p&gt;业务服务在启动时加载配置，配置分为静态配置和动态配置，静态配置如服务监听的端口，日志路径，访问依赖服务单元不同云(region / zone) 域名地址等；动态配置包括业务配置，流程管理配置，策略配置等；静态配置服务启动之后不会更改，而动态配置在服务启动运行时可以动态热加载；将配置的内容和版本进行分离，关注配置的管理而无需关注配置的内容，配置内容用户可以自定义配置内容，使用json-schema进行校验，提供自定义配置内容json给后台ui前端进行单个整体配置的交互，配置后台只需加载json-schema进行校验提交内容，json-schema由用户上传提供地址即可。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>工具盒子-ping/traceroute</title>
+      <link>https://weedge.github.io/post/ping/</link>
+      <pubDate>Mon, 15 Nov 2021 14:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/ping/</guid>
+      <description>&lt;h2 id=&#34;序言&#34;&gt;序言&lt;/h2&gt;
+&lt;p&gt;在访问网络是否ok, 通常喜欢用ping 命令来访问&lt;code&gt;ping www.baidu.com&lt;/code&gt; 看是否出现超时；ping在不同的操作系统平台实现方式差不多，底层都是用ICMP协议，每次发ICMP ECHO_REQUEST packet (IP地址/Host, ttl，icmp_seq序列号，&lt;a href=&#34;https://en.wikipedia.org/wiki/Round-trip_delay&#34;&gt;RTD/RTT&lt;/a&gt;(往返延时)记录 ),  运行结束后统计每个RTT, 最大RTT, 最小RTT, 平均RTT, &lt;a href=&#34;https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford&#34;&gt;标准偏差&lt;/a&gt;RTT, 发送/接受packets总数，丢包率 等数据，ping工具在PING(8)中的定义如下：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The ping utility uses the ICMP protocol&amp;rsquo;s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.  ECHO_REQUEST datagrams  (&amp;ldquo;pings&#39;&#39;) have an IP and ICMP header, followed by a &amp;ldquo;struct timeval&#39;&#39; and then an arbitrary number of &amp;ldquo;pad&amp;rdquo; bytes used to fill out the packet.&lt;/p&gt;
+&lt;/blockquote&gt;</description>
     </item>
     
   </channel>
