@@ -794,7 +794,7 @@ go tool pprof -http<span class="o">=</span><span class="s2">&#34;:8080&#34;</spa
 <li>用于<code>go tool pprof -http=:8080 -diff_base &lt;file2&gt; &lt;file1&gt;</code>比较两个采集文件：</li>
 </ol>
 <p><strong>注意 与</strong>堆相关的另一种分析类型是<code>allocs</code>，它报告分配。堆分析显示堆内存的当前状态。要了解自应用程序启动以来过去的内存分配情况，可以使用分配分析。如前所述，由于栈分配很便宜，因此它们不属于此分析的一部分，该分析仅关注堆。</p>
-<p>tips: 关于性能分析，基准压测方法论，关注的指标，可以在 <a href="https://www.brendangregg.com/systems-performance-2nd-edition-book.html"><strong>性能之巅</strong></a> 这本书中找到相关介绍，本质上都是在系统层面监控，分析，调优。</p>
+<p>tips: 关于性能分析，基准测试方法论，关注的指标，可以在 <a href="https://www.brendangregg.com/systems-performance-2nd-edition-book.html"><strong>性能之巅</strong></a> 这本书中找到相关介绍，本质上都是在系统层面监控，分析，调优。</p>
 <h4 id="goroutines分析">Goroutines分析</h4>
 <p>该<code>goroutine</code>配置文件报告应用程序中所有当前 goroutine 的堆栈跟踪。可以使用 debug/pprof/goroutine/?debug=0 下载一个文件并go tool pprof再次采集分析， 可以分析是否golang在持续上涨，进而判断是否泄露。可以查看 goroutine 分析器数据以了解系统的哪一部分是可疑的。</p>
 <h4 id="block分析">Block分析</h4>
