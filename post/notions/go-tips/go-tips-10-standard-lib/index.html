@@ -433,7 +433,7 @@
 <p>调用流程：初始化Client, 调用 Client.Do/do (Get/Post/Head方法NewRequest之后都会调用Do方法）→ Client.send → send →  Transport.RoundTrip 接口方法 →  Transport.roundTrip</p>
 <p>→ Transport.getConn → Transport.queueForDial -》 go Transport.dialConnFor → go persistConn.readLoop （将连接响应数据写入transferReader Body中, 发送responseAndError给roundTrip） 和  go persistConn.writeLoop  (往连接中写请求数据,将writeErr结果分别发送一份到writeErrCh中，由readLoop接收处理，发送一份给roundTrip处理)</p>
 <p>→ persistConn.roundTrip (发送persistConn.requestAndChan 到 reqch中,用于readLoop接收；发送writeRequest到writech中，由writeLoop 接收；从writeErrCh 处理write错误；从responseAndError chan中处理read错误)</p>
-<p>整体过程是一个建立长连接(KeepAlive开启), 并在长连接中通过读写管道和错误结果管道来协同处理，管道是非阻塞的，长度是1个buffer，刚好用于存放一个数据，发送和接收等待管道中的数据进行处理。</p>
+<p>整体过程是一个建立长连接(KeepAlive开启), 并在长连接中通过读写管道和错误结果管道来协同处理，管道是可缓冲的，长度是1个buffer，刚好用于存放一个数据，发送和接收等待管道中的数据进行处理。</p>
 <p>在KeepAlive开启的情况下，长连接如果不关闭Response.Body，并且不读取Body中的数据，不会复用原有长连接，通过上面分析，会导致协程泄露；如下代码：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
 		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;go nums&#34;</span><span class="p">,</span> <span class="nx">runtime</span><span class="p">.</span><span class="nf">NumGoroutine</span><span class="p">())</span>
