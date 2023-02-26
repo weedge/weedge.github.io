@@ -79,6 +79,7 @@
 &lt;/ol&gt;
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/doraemon/openai.png&#34; alt=&#34;openai&#34;&gt;&lt;/p&gt;
 &lt;p&gt;像国内BAT在这块也早已开始布局了，大概16,17年左右就已经开始搭建智能平台底座，只不过被国外chatGPT “大力出奇迹” 给引爆了；大模型的训练需要大量的数据和参数调整，而且需要消耗大量服务器计算资源，特别是GPU 。像百度的 &lt;a href=&#34;https://wenxin.baidu.com/&#34;&gt;文心大模型&lt;/a&gt; （塑造了一个二次元create大会） ; 中国素有基建狂魔之称，希望能在中国版的&amp;quot;大力神丸&amp;quot;上出奇迹。&lt;/p&gt;
+&lt;p&gt;附demo: &lt;a href=&#34;https://github.com/weedge/craftsman/tree/main/doraemon/openai&#34;&gt;https://github.com/weedge/craftsman/tree/main/doraemon/openai&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&#34;reference&#34;&gt;reference&lt;/h2&gt;
 &lt;p&gt;&lt;a href=&#34;https://platform.openai.com/docs/introduction/overview&#34;&gt;https://platform.openai.com/docs/introduction/overview&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://platform.openai.com/examples/&#34;&gt;https://platform.openai.com/examples/&lt;/a&gt;&lt;/p&gt;
