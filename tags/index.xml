@@ -6,7 +6,16 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Thu, 23 Feb 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 26 Feb 2023 20:16:30 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>openai</title>
+      <link>https://weedge.github.io/tags/openai/</link>
+      <pubDate>Sun, 26 Feb 2023 20:16:30 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/openai/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>Golang</title>
       <link>https://weedge.github.io/tags/golang/</link>
@@ -175,15 +184,6 @@
       <pubDate>Sat, 19 Jan 2019 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/macbook/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>idgen</title>
-      <link>https://weedge.github.io/tags/idgen/</link>
-      <pubDate>Tue, 12 Dec 2017 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/idgen/</guid>
       <description></description>
     </item>
     
