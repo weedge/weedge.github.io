@@ -72,7 +72,7 @@
 <meta itemprop="name" content="OpenAI体验">
 <meta itemprop="description" content="OpenAI chatGPT 很火，体验了一把，哇哦之后，心想这个会成为内容创造的辅助工具，目前大部分是通过搜索寻找来解答难题，以后可能收敛到具体应用场景中了，不过底层可能还是掌握大数据公司来提供模型资源:"><meta itemprop="datePublished" content="2023-02-26T20:16:30+08:00" />
 <meta itemprop="dateModified" content="2023-02-26T20:16:30+08:00" />
-<meta itemprop="wordCount" content="1761">
+<meta itemprop="wordCount" content="1964">
 <meta itemprop="keywords" content="openai," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="OpenAI体验"/>
 <meta name="twitter:description" content="OpenAI chatGPT 很火，体验了一把，哇哦之后，心想这个会成为内容创造的辅助工具，目前大部分是通过搜索寻找来解答难题，以后可能收敛到具体应用场景中了，不过底层可能还是掌握大数据公司来提供模型资源:"/>
@@ -332,7 +332,7 @@
     <div class="post-content">
       <p>OpenAI chatGPT 很火，体验了一把，哇哦之后，心想这个会成为内容创造的辅助工具，目前大部分是通过搜索寻找来解答难题，以后可能收敛到具体应用场景中了，不过底层可能还是掌握大数据公司来提供模型资源:</p>
 <ol>
-<li>企业ToB常应用在Saas办公软件，低代码，客服，生物医疗，教育当中，比如微软办公软件，notion等相关笔记软件, 飞书，钉钉，企业微信等办公聊天，文档，视屏会议等软件，以及银行智能客服，生物蛋白质生成和基因测序领域等等；付费模式，开放的模型Pass平台提供模型训练，以及微调，交互api等；按使用资源和更好的体验质量速度来收费，比如国内BAT；上层SaaS服务通过租户使用更多实用便利功能组合来付费。</li>
+<li>企业ToB常应用在Saas办公软件，低代码，客服，生物医疗，教育当中，比如微软办公软件，notion等相关笔记软件, 飞书，钉钉，企业微信等办公聊天，文档，视屏会议等软件，以及银行智能客服，生物蛋白质生成和基因测序领域等等；付费模式，开放的模型Pass平台提供模型训练，以及微调，交互api等；按使用资源和更好的体验质量速度来收费，比如国内BAT；上层SaaS服务通过租户使用更多实用便利功能组合(三方资源和内部资源整合)来付费。</li>
 <li>ToC主要是UGC的场景，随着多模交互场景下的大模型出现，AIGC方面的应用应该会更多，普通玩家更多，想象空间应该也更大，这块比ToB要大的多，而且较为通用，有UGC大数据公司才可能出大模型吧，并且开放给上游应用玩家使用，按功能体验质量来付费；比如国内抖音，微信这些app应用，以及和企业合作的实验室。可能还会有其他好玩的智能硬件出现。</li>
 </ol>
 <p>想象空间有限，未来是怎样，以上说的可能有误:)，anyway，Just Do IT~</p>
@@ -354,7 +354,15 @@
 </ol>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/doraemon/openai.png" alt="openai"></p>
 <p>像国内BAT在这块也早已开始布局了，大概16,17年左右就已经开始搭建智能平台底座，只不过被国外chatGPT “大力出奇迹” 给引爆了；大模型的训练需要大量的数据和参数调整，而且需要消耗大量服务器计算资源，特别是GPU 。像百度的 <a href="https://wenxin.baidu.com/">文心大模型</a> （塑造了一个二次元create大会） ; 中国素有基建狂魔之称，希望能在中国版的&quot;大力神丸&quot;上出奇迹。</p>
-<p>附demo: <a href="https://github.com/weedge/craftsman/tree/main/doraemon/openai">https://github.com/weedge/craftsman/tree/main/doraemon/openai</a></p>
+<p>附demo:</p>
+<p>本地命令行交互</p>
+<p>源码地址：<a href="https://github.com/weedge/craftsman/tree/main/doraemon/openai">https://github.com/weedge/craftsman/tree/main/doraemon/openai</a></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">git clone  https://github.com/weedge/craftsman 
+make init
+# cmd chat Q&amp;A
+make run
+</code></pre></div><p>web交互(使用AWS Serverless 架构搭建)</p>
+<p>源码地址：<a href="https://github.com/weedge/craftsman/tree/main/cloud/aws/cdk/serverless-openai-chatbot">https://github.com/weedge/craftsman/tree/main/cloud/aws/cdk/serverless-openai-chatbot</a></p>
 <h2 id="reference">reference</h2>
 <p><a href="https://platform.openai.com/docs/introduction/overview">https://platform.openai.com/docs/introduction/overview</a></p>
 <p><a href="https://platform.openai.com/examples/">https://platform.openai.com/examples/</a></p>
