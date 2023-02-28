@@ -95,7 +95,7 @@ https://github.com/google/sanitizers/wiki/ThreadSanitizerGoManual
 注：Go要使用-race，需启用CGO，依赖sanitizers；一般用于开发测试进行检测
 如果想更加深入的了解并发并行，可以一起学习这本书： Is Parallel Programming Hard, And, If So, What Can You Do About It?"><meta itemprop="datePublished" content="2023-02-18T14:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-02-18T14:26:23+08:00" />
-<meta itemprop="wordCount" content="7118">
+<meta itemprop="wordCount" content="7138">
 <meta itemprop="keywords" content="Golang," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Go tips-笔记: 并发实践 61-74 mistakes"/>
 <meta name="twitter:description" content="引言
@@ -434,9 +434,16 @@ https://github.com/google/sanitizers/wiki/ThreadSanitizerGoManual
 <p>发生数据竞争(data race)的情况是多个并发goroutines至少有一个写操作发生在一个共享空间中；对于slice切片结构，append在扩容的时候是否重新分配了内存空间，如果发生扩容则在在切片副本上使用，而不是原始切片，这样就不会发生数据竞争；更合理情况是直接在goroutine中进行copy一份切片副本进行append操作。</p>
 <p>多个goroutines 并发访问 slice和map时，发生数据竞争的情况：</p>
 <ul>
-<li>使用至少一个更新值的 goroutine 访问同一个切片索引是一种数据竞争；goroutines 访问相同的内存位置。</li>
-<li>无论操作如何访问不同的切片索引都不是数据竞争；不同的索引意味着不同的内存位置。</li>
-<li>使用至少一个goroutine更新访问同一个map（不管它是相同的还是不同的key）是一种数据竞争。为什么这与切片数据结构不同？map底层结构是个桶数组，每个桶都是一个指向键值对数组的指针；哈希算法用于确定桶的数组索引。因为该算法在map初始化期间包含一些随机性，所以一次执行可能导致相同的数组索引(相同bucket)，而另一次执行可能不会。竞争检测器通过发出警告来处理这种情况，而不管实际的数据竞争是否发生。与slice不同，go在map实现中内置了对并发读写的检测，即便不加入-race，一旦发现也会抛出panic。</li>
+<li>
+<p>使用至少一个更新值的 goroutine 访问同一个切片索引是一种数据竞争；goroutines 访问相同的内存位置。</p>
+</li>
+<li>
+<p>无论操作如何访问不同的切片索引都不是数据竞争；不同的索引意味着不同的内存位置。</p>
+</li>
+<li>
+<p>使用至少一个goroutine更新访问同一个map（不管它是相同的还是不同的key）是一种数据竞争。为什么这与切片数据结构不同？map底层结构是个桶数组，每个桶都是一个指向键值对数组的指针；哈希算法用于确定桶的数组索引。因为该算法在map初始化期间包含一些随机性，所以一次执行可能导致相同的数组索引(相同bucket)，而另一次执行可能不会。竞争检测器通过发出警告来处理这种情况，而不管实际的数据竞争是否发生。</p>
+<p>tips: 与slice不同，go在map实现中内置了对并发读写的检测，即便不加入-race，一旦发现存在数据竞争(至少有一个写操作)直接fatal error。</p>
+</li>
 </ul>
 <h3 id="70对slice和map使用mutex不准确-重要">70.对slice和map使用mutex不准确 （重要）</h3>
 <p>在数据既可变又共享的并发上下文中工作时，通常使用mutex对操作数据的临界区域进行同步互斥访问；</p>
