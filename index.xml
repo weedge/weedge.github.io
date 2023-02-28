@@ -97,7 +97,8 @@ make run
 &lt;/ol&gt;
 &lt;p&gt;源码地址：https://github.com/weedge/craftsman/tree/main/doraemon/ai-creator&lt;/p&gt;
 &lt;ol start=&#34;4&#34;&gt;
-&lt;li&gt;微信小程序方式 （todo）&lt;/li&gt;
+&lt;li&gt;微信小程序方式 (todo)&lt;/li&gt;
+&lt;li&gt;树莓派硬件设备 (todo)&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h2 id=&#34;reference&#34;&gt;reference&lt;/h2&gt;
 &lt;p&gt;&lt;a href=&#34;https://platform.openai.com/docs/introduction/overview&#34;&gt;https://platform.openai.com/docs/introduction/overview&lt;/a&gt;&lt;/p&gt;
