@@ -90,23 +90,18 @@
 export OPENAI_API_SK=
 make run
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;2&#34;&gt;
-&lt;li&gt;web交互(使用AWS &lt;a href=&#34;https://www.serverless.com/blog&#34;&gt;Serverless&lt;/a&gt; 架构搭建)☁️智能底座+上层轻/微应用，适合快速迭代的业务&lt;/li&gt;
+&lt;li&gt;web交互(使用AWS &lt;a href=&#34;https://www.serverless.com/blog&#34;&gt;Serverless&lt;/a&gt; 架构搭建)☁️智能底座+上层轻/微应用，适合快速迭代的业务，just code serverless biz logic handler func run on the could  &lt;a href=&#34;https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html&#34;&gt;lambda runtime&lt;/a&gt;, like shell/c++/rust use &lt;a href=&#34;https://docs.aws.amazon.com/lambda/latest/dg/runtimes-walkthrough.html&#34;&gt;custom runtime&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;源码地址：&lt;a href=&#34;https://github.com/weedge/craftsman/tree/main/cloud/aws/cdk/serverless-openai-chatbot&#34;&gt;https://github.com/weedge/craftsman/tree/main/cloud/aws/cdk/serverless-openai-chatbot&lt;/a&gt;&lt;/p&gt;
 &lt;ol start=&#34;3&#34;&gt;
 &lt;li&gt;k8s部署方式&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;源码地址：https://github.com/weedge/craftsman/tree/main/doraemon/ai-creator&lt;/p&gt;
-&lt;ol start=&#34;4&#34;&gt;
-&lt;li&gt;微信小程序方式 (todo)&lt;/li&gt;
-&lt;li&gt;树莓派硬件设备 (todo)&lt;/li&gt;
-&lt;/ol&gt;
+&lt;p&gt;源码地址：&lt;a href=&#34;https://github.com/weedge/craftsman/tree/main/doraemon/ai-creator&#34;&gt;https://github.com/weedge/craftsman/tree/main/doraemon/ai-creator&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&#34;reference&#34;&gt;reference&lt;/h2&gt;
 &lt;p&gt;&lt;a href=&#34;https://platform.openai.com/docs/introduction/overview&#34;&gt;https://platform.openai.com/docs/introduction/overview&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://platform.openai.com/examples/&#34;&gt;https://platform.openai.com/examples/&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://gpt3demo.com/&#34;&gt;https://gpt3demo.com/&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/mli/paper-reading#%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86---transformer&#34;&gt;https://github.com/mli/paper-reading#自然语言处理-transformer&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://wallstreetcn.com/articles/3681850&#34;&gt;https://wallstreetcn.com/articles/3681850&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;&lt;a href=&#34;https://github.com/mli/paper-reading#%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86---transformer&#34;&gt;https://github.com/mli/paper-reading#自然语言处理-transformer&lt;/a&gt;&lt;/p&gt;</description>
       
     </item>
     
