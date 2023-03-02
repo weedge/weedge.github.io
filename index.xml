@@ -90,7 +90,7 @@
 export OPENAI_API_SK=
 make run
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;2&#34;&gt;
-&lt;li&gt;web交互(使用AWS &lt;a href=&#34;https://www.serverless.com/blog&#34;&gt;Serverless&lt;/a&gt; 架构搭建)☁️智能底座+上层轻/微应用，适合快速迭代的业务，just code serverless biz logic handler func run on the could  &lt;a href=&#34;https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html&#34;&gt;lambda runtime&lt;/a&gt;, like shell/c++/rust use &lt;a href=&#34;https://docs.aws.amazon.com/lambda/latest/dg/runtimes-walkthrough.html&#34;&gt;custom runtime&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;web交互(使用AWS &lt;a href=&#34;https://www.serverless.com/blog&#34;&gt;Serverless&lt;/a&gt; 架构搭建)☁️智能底座+上层轻/微应用，适合快速迭代的业务，just code serverless biz logic handler func run on the could  &lt;a href=&#34;https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html&#34;&gt;lambda runtime&lt;/a&gt;, like shell/c++/rust use &lt;a href=&#34;https://docs.aws.amazon.com/lambda/latest/dg/runtimes-walkthrough.html&#34;&gt;custom runtime&lt;/a&gt; ; aws抽象出来的服务，复杂都留在后面，简单交互留给用户，按业务场景自由组装infrastructure。智能底座需要这样的抽象工程给上层应用赋能。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;源码地址：&lt;a href=&#34;https://github.com/weedge/craftsman/tree/main/cloud/aws/cdk/serverless-openai-chatbot&#34;&gt;https://github.com/weedge/craftsman/tree/main/cloud/aws/cdk/serverless-openai-chatbot&lt;/a&gt;&lt;/p&gt;
 &lt;ol start=&#34;3&#34;&gt;
