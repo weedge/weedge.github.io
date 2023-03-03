@@ -55,7 +55,12 @@
       
       <guid>https://weedge.github.io/post/doraemon/openai/</guid>
       
-        <description>&lt;p&gt;OpenAI chatGPT 很火，体验了一把，哇哦之后，心想这个会成为内容创造的辅助工具，目前大部分是通过搜索寻找来解答难题，以后可能收敛到具体应用场景中了，不过底层可能还是掌握大数据公司来提供模型资源:&lt;/p&gt;
+        <description>&lt;iframe frameborder=&#34;no&#34; border=&#34;0&#34; marginwidth=&#34;0&#34; marginheight=&#34;0&#34; width=330 height=86 src=&#34;//music.163.com/outchain/player?type=2&amp;id=1428273917&amp;auto=1&amp;height=66&#34;&gt;&lt;/iframe&gt;
+
+
+
+&lt;p&gt;OpenAI chatGPT 很火，体验了一把，哇哦之后，心想这个会成为内容创造的辅助工具，目前大部分是通过搜索寻找来解答难题，以后可能收敛到具体应用场景中了，不过底层可能还是掌握大数据公司来提供模型资源。&lt;/p&gt;
+&lt;p&gt;按适用方使用大致分为如下场景：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;企业ToB常应用在Saas办公软件，低代码，客服，生物医疗，教育当中，比如微软办公软件，notion等相关笔记软件, 飞书，钉钉，企业微信等办公聊天，文档，视屏会议等软件，以及银行智能客服，生物蛋白质生成和基因测序领域等等；付费模式，开放的模型Pass平台提供模型训练，以及微调，交互api等；按使用资源和更好的体验质量速度来收费，比如国内BAT；上层SaaS服务通过租户使用更多实用便利功能组合(三方资源和内部资源整合)来付费。&lt;/li&gt;
 &lt;li&gt;ToC主要是UGC的场景，随着多模交互场景下的大模型出现，AIGC方面的应用应该会更多，普通玩家更多，想象空间应该也更大，这块比ToB要大的多，而且较为通用，有UGC大数据公司才可能出大模型吧，并且开放给上游应用玩家使用，按功能体验质量来付费；比如国内抖音，微信这些app应用，以及和企业合作的实验室。可能还会有其他好玩的智能硬件出现。&lt;/li&gt;
@@ -98,10 +103,10 @@ export OPENAI_API_SK=
 make run
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;2&#34;&gt;
 &lt;li&gt;
-&lt;p&gt;web交互(使用AWS &lt;a href=&#34;https://serverlessland.com/&#34;&gt;&lt;strong&gt;Serverless&lt;/strong&gt;&lt;/a&gt;  架构搭建)☁️智能底座+上层轻/微应用，适合快速迭代的业务，just code serverless biz logic handler func run on the could  &lt;a href=&#34;https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html&#34;&gt;lambda runtime&lt;/a&gt;, like shell/c++/rust use &lt;a href=&#34;https://docs.aws.amazon.com/lambda/latest/dg/runtimes-walkthrough.html&#34;&gt;custom runtime&lt;/a&gt; 特别是rust lambda runtime 是开源的，值得关注，对于使用运行时语言来进行无服务化平台化改造，比如数据模型训练是的pipeline，数据库cloud平台，而且在aws内部大量使用，Rust 已迅速成为大规模构建基础设施的关键语言，&lt;a href=&#34;https://firecracker-microvm.github.io/&#34;&gt;&lt;strong&gt;Firecracker&lt;/strong&gt;&lt;/a&gt; 是一种开源虚拟化技术，为&lt;a href=&#34;https://aws.amazon.com/lambda/&#34;&gt;AWS Lambda&lt;/a&gt;和其他无服务器产品提供支持。 aws抽象出来的服务，复杂都留在后面，简单交互留给用户，按业务场景自由组装infrastructure。智能底座需要这样的抽象工程给上层应用赋能。&lt;/p&gt;
+&lt;p&gt;web交互(使用AWS &lt;a href=&#34;https://serverlessland.com/&#34;&gt;&lt;strong&gt;Serverless&lt;/strong&gt;&lt;/a&gt;  架构搭建)☁️智能底座+上层轻/微应用，适合快速迭代的业务，just code serverless biz logic handler func run on the could  &lt;a href=&#34;https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html&#34;&gt;lambda runtime&lt;/a&gt;, like shell/c++/rust use &lt;a href=&#34;https://docs.aws.amazon.com/lambda/latest/dg/runtimes-walkthrough.html&#34;&gt;custom runtime&lt;/a&gt; 特别是rust lambda runtime 是开源的，值得关注，对于使用运行时语言来进行无服务化平台化改造，比如数据模型训练是的pipeline，数据库cloud平台，而且在aws内部大量使用，Rust 已迅速成为大规模构建基础设施的关键语言，&lt;a href=&#34;https://firecracker-microvm.github.io/&#34;&gt;Firecracker&lt;/a&gt; 是一种开源虚拟化技术，为&lt;a href=&#34;https://aws.amazon.com/lambda/&#34;&gt;AWS Lambda&lt;/a&gt;和其他无服务器产品提供支持。 aws抽象出来的服务，复杂都留在后面，简单交互留给用户，按业务场景自由组装infrastructure。智能底座需要这样的抽象工程给上层应用赋能。&lt;/p&gt;
 &lt;p&gt;目的： &lt;!-- raw HTML omitted --&gt;熟悉aws serverless 事件驱动整体架构，以及整体lambda runtime运行原理； 在数据库cloud 或者内部/外部pass平台场景中，提供给客户使用serverless来实现具体业务逻辑。aws在这块做的深入，通过学习以便这些思想用于实际工作场景中。&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
 &lt;p&gt;源码地址：&lt;a href=&#34;https://github.com/weedge/craftsman/tree/main/cloud/aws/cdk/serverless-openai-chatbot&#34;&gt;https://github.com/weedge/craftsman/tree/main/cloud/aws/cdk/serverless-openai-chatbot&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;使用aws无服务lambda系统设施架构如下：(push模块异步对接openai 推送结果，这里分不同开放语言，是为了熟悉lambda对不同语言runtime，具体语言根据公司组织应用场景而定)&lt;/p&gt;
+&lt;p&gt;使用aws无服务lambda系统设施架构如下：(push模块异步对接openai 推送结果，这里分不同开放语言，是为了熟悉lambda对不同语言runtime，具体语言根据公司组织应用场景而定，不过 golang挺适合push服务的，分channel治之)&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/doraemon/aws-serverless-openai-chatbot.drawio.png&#34; alt=&#34;architecture&#34;&gt;&lt;/p&gt;
 &lt;p&gt;按照demo readme 配置好文件，后端服务可以一键部署这个demo应用，第一次部署过程可能比较长，主要是用docker容器来CI lambda不同语言所依赖的库，用于部署至aws lambda容器环境中；前段静态资源则需要手动配置, 看 &lt;a href=&#34;https://docs.aws.amazon.com/AmazonS3/latest/userguide/HostingWebsiteOnS3Setup.html&#34;&gt;Tutorial: Configuring a static website on Amazon S3&lt;/a&gt; 这个教程就可以，配置好后可提供对象存储S3域名使用，如果需要配置公司组织域名，使用CDN加速，则自行查看相关文档解决~&lt;/p&gt;
 &lt;/li&gt;
@@ -125,7 +130,7 @@ make run
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://chat.openai.com/&#34;&gt;chatGPT&lt;/a&gt;: 这个大家都知道一款火爆应用产品，发现社交永远是人类永恒需求哈；&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://labs.openai.com/&#34;&gt;DALL·E 2&lt;/a&gt;：使用文本生成图片；有相关的提示文本推荐，体验更好；&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.yabble.com/&#34;&gt;yabble&lt;/a&gt;：数据洞察，进行归纳终结，并且帮助规划日程，提出建议；小助手类型工具，网上有用来分析炒股的~；&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.yabble.com/&#34;&gt;yabble&lt;/a&gt;：数据洞察(insights)，进行归纳终结，并且帮助规划日程，提出建议；小助手类型工具，网上有用来分析炒股的~；&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://openai.com/research/jukebox&#34;&gt;jukebox&lt;/a&gt;：使用文本生成音乐；涉及到音乐版权，数据资源可能不好弄~；&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://waymark.com/&#34;&gt;waymark&lt;/a&gt;：使用文本生成视频；主要用于制作电视广告和数字视频广告；&lt;/li&gt;
 &lt;/ol&gt;
