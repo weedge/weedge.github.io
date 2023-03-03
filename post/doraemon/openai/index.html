@@ -72,7 +72,7 @@
 <meta itemprop="name" content="OpenAI体验">
 <meta itemprop="description" content="OpenAI chatGPT 很火，体验了一把，哇哦之后，心想这个会成为内容创造的辅助工具，目前大部分是通过搜索寻找来解答难题，以后可能收敛到具体应用场景中了，不过底层可能还是掌握大数据公司来提供模型资源:"><meta itemprop="datePublished" content="2023-02-26T20:16:30+08:00" />
 <meta itemprop="dateModified" content="2023-02-26T20:16:30+08:00" />
-<meta itemprop="wordCount" content="3126">
+<meta itemprop="wordCount" content="3874">
 <meta itemprop="keywords" content="openai," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="OpenAI体验"/>
 <meta name="twitter:description" content="OpenAI chatGPT 很火，体验了一把，哇哦之后，心想这个会成为内容创造的辅助工具，目前大部分是通过搜索寻找来解答难题，以后可能收敛到具体应用场景中了，不过底层可能还是掌握大数据公司来提供模型资源:"/>
@@ -343,12 +343,13 @@
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/doraemon/openai-case.png" alt="openai-case"></p>
 <p>openai使用GPT模型(公开使用的是GPT-3以上), 底层具体对应的大模型已经训练好了，提供openAPI给应用开发者来进行微调模型使用。</p>
 <p>作为一个开发者，当然想在通过开放的api来使用openai模型啦；如果是研究人员，虽然木有大数据和服务器计算资源来玩，也可以使用openai开放的GPT-3以及以上的模型来微调。</p>
-<p>以下是chatGPT 对使用的回答(这个就相当于是智能客服场景)，提供的开放的多模交互api使用如下：</p>
+<p>以下是chatGPT 对使用的回答(这个就相当于是智能客服场景)，提供的开放的(text/image/audio/video)多模交互api使用如下：</p>
 <ol>
 <li>GPT-3, GPT-3.5 &hellip; 模型，用于模型参数微调；文本补全，编辑；以及搜索(相关性排序)，聚类(相似性分组)，推荐(推荐相关文本)，异常检测(识别相关性很小的异常值)，多样性测试(分析相似性分布)，分类(最相似的标签分类)等embedding，通过向量列表表示，计算文本相关性(向量距离)；主要用于文本类交互，以及基于上下文聊天场景；</li>
-<li>Codex api 通过描述文本提示<strong>Prompt</strong>生成对应代码；这个挺适合开发人员的，对于新语言的新手，结合ide，记事本通过Prompt提示词语来生成相关代码还是挺爽的，至少不用去google 来回找确认是否是需要方案代码，可以用于到底方案；</li>
+<li>Codex api 通过描述文本提示<strong>Prompt</strong>生成对应代码；这个挺适合开发人员的，对于新语言的新手，结合ide，记事本通过Prompt提示词语来生成相关代码还是挺爽的，至少不用去google 来回找确认是否是需要方案代码，搜索则可以用于兜底方案；</li>
 <li>DALL-E /2 api 通过描述文本提示<strong>Prompt</strong>生成图片或者编辑原始图片 ；插画，设计师 辅助类工具，大概构思草图；</li>
 <li>音频转换为文本, 使用开源大型 v2 <a href="https://openai.com/blog/whisper/">Whisper 模型</a>。 这个用在硬件设备上挺好的，硬件操作系统如果有开放口子可以开发的话，直接就可以对接上赋能了。将音频转录成音频所使用的任何语言；将音频翻译并转录成英文；</li>
+<li>视频类的api暂时还没有；</li>
 <li>需要生成 <a href="https://platform.openai.com/account/api-keys">api-keys</a> 用于api接口调用时使用；</li>
 <li>提供了不同开发语言的 <a href="https://platform.openai.com/docs/libraries/community-libraries">client库</a> ，默认包括：python,nodejs, 还有其他语言三方包，比如golang: <a href="https://github.com/sashabaranov/go-gpt3">sashabaranov/go-gpt3</a> ; 以及api 错误说明；</li>
 <li>可以在 <a href="https://platform.openai.com/playground">playground</a> 中编辑描述文本提示<strong>Prompt</strong>对模型接口调试测试，还可以用语音生成描述文本(speech to text)，适合端到端的语音智能设备；</li>
@@ -372,11 +373,12 @@ export OPENAI_API_SK=
 make run
 </code></pre></div><ol start="2">
 <li>
-<p>web交互(使用AWS <a href="https://serverlessland.com/"><strong>Serverless</strong></a>  架构搭建)☁️智能底座+上层轻/微应用，适合快速迭代的业务，just code serverless biz logic handler func run on the could  <a href="https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html">lambda runtime</a>, like shell/c++/rust use <a href="https://docs.aws.amazon.com/lambda/latest/dg/runtimes-walkthrough.html">custom runtime</a> ; aws抽象出来的服务，复杂都留在后面，简单交互留给用户，按业务场景自由组装infrastructure。智能底座需要这样的抽象工程给上层应用赋能。</p>
+<p>web交互(使用AWS <a href="https://serverlessland.com/"><strong>Serverless</strong></a>  架构搭建)☁️智能底座+上层轻/微应用，适合快速迭代的业务，just code serverless biz logic handler func run on the could  <a href="https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html">lambda runtime</a>, like shell/c++/rust use <a href="https://docs.aws.amazon.com/lambda/latest/dg/runtimes-walkthrough.html">custom runtime</a> 特别是rust lambda runtime 是开源的，值得关注，对于使用运行时语言来进行无服务化平台化改造，比如数据模型训练是的pipeline，数据库cloud平台，而且在aws内部大量使用，Rust 已迅速成为大规模构建基础设施的关键语言，<a href="https://firecracker-microvm.github.io/"><strong>Firecracker</strong></a> 是一种开源虚拟化技术，为<a href="https://aws.amazon.com/lambda/">AWS Lambda</a>和其他无服务器产品提供支持。 aws抽象出来的服务，复杂都留在后面，简单交互留给用户，按业务场景自由组装infrastructure。智能底座需要这样的抽象工程给上层应用赋能。</p>
 <p>目的： <!-- raw HTML omitted -->熟悉aws serverless 事件驱动整体架构，以及整体lambda runtime运行原理； 在数据库cloud 或者内部/外部pass平台场景中，提供给客户使用serverless来实现具体业务逻辑。aws在这块做的深入，通过学习以便这些思想用于实际工作场景中。<!-- raw HTML omitted --></p>
 <p>源码地址：<a href="https://github.com/weedge/craftsman/tree/main/cloud/aws/cdk/serverless-openai-chatbot">https://github.com/weedge/craftsman/tree/main/cloud/aws/cdk/serverless-openai-chatbot</a></p>
 <p>使用aws无服务lambda系统设施架构如下：(push模块异步对接openai 推送结果，这里分不同开放语言，是为了熟悉lambda对不同语言runtime，具体语言根据公司组织应用场景而定)</p>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/doraemon/aws-serverless-openai-chatbot.drawio.png" alt="architecture"></p>
+<p>按照demo readme 配置好文件，后端服务可以一键部署这个demo应用，第一次部署过程可能比较长，主要是用docker容器来CI lambda不同语言所依赖的库，用于部署至aws lambda容器环境中；前段静态资源则需要手动配置, 看 <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/HostingWebsiteOnS3Setup.html">Tutorial: Configuring a static website on Amazon S3</a> 这个教程就可以，配置好后可提供对象存储S3域名使用，如果需要配置公司组织域名，使用CDN加速，则自行查看相关文档解决~</p>
 </li>
 <li>
 <p>k8s部署方式</p>
@@ -390,14 +392,26 @@ make run
 <li><a href="https://www.notion.so/product/ai">https://www.notion.so/product/ai</a> 笔记思路智能套路</li>
 <li><a href="https://www.midjourney.com/">https://www.midjourney.com/</a> 需要注册Discord 下通过聊天命令交互 生成图片</li>
 <li><a href="https://piggy.to/">https://piggy.to/</a> ui设计师</li>
+<li><a href="https://soundraw.io/">https://soundraw.io/</a>  寻找音乐灵感</li>
 <li><a href="https://typeset.io/">https://typeset.io/</a> 读论文神器</li>
 </ol>
 <p>携手AI前行，效率优先，压缩时间成本~</p>
+<p>附3 openai 官方提供的应用类产品，</p>
+<ol>
+<li><a href="https://chat.openai.com/">chatGPT</a>: 这个大家都知道一款火爆应用产品，发现社交永远是人类永恒需求哈；</li>
+<li><a href="https://labs.openai.com/">DALL·E 2</a>：使用文本生成图片；有相关的提示文本推荐，体验更好；</li>
+<li><a href="https://www.yabble.com/">yabble</a>：数据洞察，进行归纳终结，并且帮助规划日程，提出建议；小助手类型工具，网上有用来分析炒股的~；</li>
+<li><a href="https://openai.com/research/jukebox">jukebox</a>：使用文本生成音乐；涉及到音乐版权，数据资源可能不好弄~；</li>
+<li><a href="https://waymark.com/">waymark</a>：使用文本生成视频；主要用于制作电视广告和数字视频广告；</li>
+</ol>
+<p>以上应用产品底层大模型大多是基于GPT相关最新模型，官网提供的GPT-3: <a href="https://openai.com/blog/gpt-3-apps">https://openai.com/blog/gpt-3-apps</a>介绍。</p>
 <h2 id="reference">reference</h2>
-<p><a href="https://platform.openai.com/docs/introduction/overview">https://platform.openai.com/docs/introduction/overview</a></p>
-<p><a href="https://platform.openai.com/examples/">https://platform.openai.com/examples/</a></p>
-<p><a href="https://gpt3demo.com/">https://gpt3demo.com/</a></p>
-<p><a href="https://github.com/mli/paper-reading#%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86---transformer">https://github.com/mli/paper-reading#自然语言处理-transformer</a></p>
+<p><a href="https://openai.com/product">https://openai.com/product</a> (可以先了解清楚openai自己的应用根源产品，后续有时间整理下，感兴趣的话，然后去发散吧)</p>
+<p><a href="https://openai.com/blog">https://openai.com/blog</a> (技术宅，可以订阅一波)</p>
+<p><a href="https://platform.openai.com/docs/introduction/overview">https://platform.openai.com/docs/introduction/overview</a> (适合开发，模型微调)</p>
+<p><a href="https://platform.openai.com/examples/">https://platform.openai.com/examples/</a> (找灵感)</p>
+<p><a href="https://gpt3demo.com/">https://gpt3demo.com/</a> （潘多拉盒子）</p>
+<p><a href="https://github.com/mli/paper-reading#%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86---transformer">https://github.com/mli/paper-reading#自然语言处理-transformer</a> (背后模型原理导读)</p>
     </div>
 
     
