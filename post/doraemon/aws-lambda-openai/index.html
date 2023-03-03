@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="实践 年前使用过Nolibox的生成图片的接口，使用prompt进行调整； 国外的https://www.midjourney.com/ 直接整合" />
+  <meta name="description" content="使用aws severless lambda 一键搭建 openai 聊天机器人 引言 在玩openai的过程中，openai 最最常用的应该是聊天接口，以此来加深下aws lambda 部署流程，以及如果" />
 
   <meta name="keywords" content="工作, 技术, 生活" />
 
@@ -35,7 +35,7 @@
 <meta name="generator" content="Hugo 0.88.1" />
 
 
-<link rel="canonical" href="https://weedge.github.io/post/doraemon/aigc/" />
+<link rel="canonical" href="https://weedge.github.io/post/doraemon/aws-lambda-openai/" />
 
 
 
@@ -62,19 +62,19 @@
 
 
 <meta property="og:title" content="" />
-<meta property="og:description" content="实践 年前使用过Nolibox的生成图片的接口，使用prompt进行调整； 国外的https://www.midjourney.com/ 直接整合" />
+<meta property="og:description" content="使用aws severless lambda 一键搭建 openai 聊天机器人 引言 在玩openai的过程中，openai 最最常用的应该是聊天接口，以此来加深下aws lambda 部署流程，以及如果" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://weedge.github.io/post/doraemon/aigc/" /><meta property="article:section" content="post" />
+<meta property="og:url" content="https://weedge.github.io/post/doraemon/aws-lambda-openai/" /><meta property="article:section" content="post" />
 
 
 
 <meta itemprop="name" content="">
-<meta itemprop="description" content="实践 年前使用过Nolibox的生成图片的接口，使用prompt进行调整； 国外的https://www.midjourney.com/ 直接整合">
+<meta itemprop="description" content="使用aws severless lambda 一键搭建 openai 聊天机器人 引言 在玩openai的过程中，openai 最最常用的应该是聊天接口，以此来加深下aws lambda 部署流程，以及如果">
 
-<meta itemprop="wordCount" content="128">
+<meta itemprop="wordCount" content="207">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content=""/>
-<meta name="twitter:description" content="实践 年前使用过Nolibox的生成图片的接口，使用prompt进行调整； 国外的https://www.midjourney.com/ 直接整合"/>
+<meta name="twitter:description" content="使用aws severless lambda 一键搭建 openai 聊天机器人 引言 在玩openai的过程中，openai 最最常用的应该是聊天接口，以此来加深下aws lambda 部署流程，以及如果"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -320,8 +320,7 @@
   <ul>
     <li>
       <ul>
-        <li><a href="#实践">实践</a></li>
-        <li><a href="#资料">资料</a></li>
+        <li><a href="#引言">引言</a></li>
       </ul>
     </li>
   </ul>
@@ -331,11 +330,11 @@
 
     
     <div class="post-content">
-      <h3 id="实践">实践</h3>
-<p>年前使用过Nolibox的生成图片的接口，使用prompt进行调整；</p>
-<p>国外的https://www.midjourney.com/ 直接整合到聊天软件discord中使用聊天命令来直接体验</p>
-<h3 id="资料">资料</h3>
-<p><a href="https://github.com/hpcaitech/ColossalAI">https://github.com/hpcaitech/ColossalAI</a> 低成本stable diffusion2.0 , GPT-3, AlphaFold等大模型，优化成本。</p>
+      <p>使用aws severless lambda 一键搭建  openai  聊天机器人</p>
+<h3 id="引言">引言</h3>
+<p>在玩openai的过程中，openai 最最常用的应该是聊天接口，以此来加深下aws lambda 部署流程，以及如果快速初步搭建系统架构，运行lambda函数，顺便可以了解底层学习lambda 运行时流程； 这里用前提条件需要开通aws 账号， 国内的话好像智能企业组织才能注册后；如果是个人开发使用，需要绑定一张visa的信用卡;这个网上查下就可以，就不细说了，开始正题。</p>
+<p>为啥想了解l</p>
+<p>首先在aws</p>
 
     </div>
 
@@ -370,7 +369,7 @@
       
       <nav class="post-nav">
         
-          <a class="prev" href="/post/happy-new-year/">
+          <a class="prev" href="/post/doraemon/aigc/">
             
             <i class="iconfont">
               <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
@@ -380,23 +379,10 @@
 </svg>
 
             </i>
-            <span class="prev-text nav-default">happy new year</span>
+            <span class="prev-text nav-default"></span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
         
-          <a class="next" href="/post/doraemon/aws-lambda-openai/">
-            <span class="next-text nav-default"></span>
-            <span class="prev-text nav-mobile">下一篇</span>
-            
-            <i class="iconfont">
-              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="18" height="18">
-  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
-</svg>
-
-            </i>
-          </a>
       </nav>
     </footer>
   </article>
@@ -423,7 +409,7 @@
   <div id="disqus_thread"></div>
   <script type="text/javascript">
     var disqus_config = function () {
-      this.page.url = "https://weedge.github.io/post/doraemon/aigc/";
+      this.page.url = "https://weedge.github.io/post/doraemon/aws-lambda-openai/";
     };
     function load_disqus() {
       

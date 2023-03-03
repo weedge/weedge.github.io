@@ -567,4 +567,10 @@
     <priority>0.5</priority>
   </url>
   
+  <url>
+    <loc>https://weedge.github.io/post/doraemon/aws-lambda-openai/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
 </urlset>
