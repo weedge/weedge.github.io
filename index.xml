@@ -88,6 +88,7 @@
 &lt;/ol&gt;
 &lt;p&gt;&lt;img src=&#34;https://mmbiz.qpic.cn/mmbiz_png/agnkQ3icZSWOApia53R6sXNeaIsgJADepxiaFUAiafm9nW8xZl31NicIXb2yJOAZWBzz4XH08iaHtP65uqpibiayDkWWlg/0?wx_fmt=png&#34; alt=&#34;openai&#34;&gt;&lt;/p&gt;
 &lt;p&gt;像国内BAT在这块也早已开始布局了，大概15,16年左右就已经开始搭建智能平台底座，只不过被国外chatGPT “大力出奇迹” 给引爆了；大模型的训练需要大量的数据和参数调整，而且需要消耗大量服务器计算资源，特别是GPU 。像百度的 &lt;a href=&#34;https://wenxin.baidu.com/&#34;&gt;文心大模型&lt;/a&gt; （塑造了一个二次元create大会） ; 中国素有基建狂魔之称，希望能在中国版的&amp;quot;大力神丸&amp;quot;上出奇迹。&lt;/p&gt;
+&lt;p&gt;Tips: 国内微信也已经有对应类似开放api，https://welm.weixin.qq.com/docs/api/  微信应该最适合的应用场景&lt;/p&gt;
 &lt;p&gt;附学习demo:&lt;/p&gt;
 &lt;p&gt;openai提供了开放接口，借这个AI东风，推进下工程方面的熟练。大部分是dev/app ops工作，业务由应用场景和idea来决定。&lt;/p&gt;
 &lt;ol&gt;
