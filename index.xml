@@ -125,6 +125,7 @@ make run
 &lt;li&gt;&lt;a href=&#34;https://piggy.to/&#34;&gt;https://piggy.to/&lt;/a&gt; ui设计师&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://soundraw.io/&#34;&gt;https://soundraw.io/&lt;/a&gt;  寻找音乐灵感&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://typeset.io/&#34;&gt;https://typeset.io/&lt;/a&gt;&lt;/strong&gt; 读论文神器，非常值得推荐，so nice~&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://you.com/&#34;&gt;https://you.com/&lt;/a&gt;&lt;/strong&gt; 新一代人工智能搜索引擎(遵从用户隐私数据，结合AI技术,chat,code,study等)，加入了社交属性，搜索质量很高；(国内搜索引擎应该有跟进一波的吧~) ；一些反馈功能还在迭代完善 &lt;a href=&#34;https://yousearch.canny.io/&#34;&gt;https://yousearch.canny.io/&lt;/a&gt;；&lt;a href=&#34;https://www.socher.org/&#34;&gt;Richard Socher&lt;/a&gt; - &lt;a href=&#34;https://www.youtube.com/playlist?list=PL3FW7Lu3i5Jsnh1rnUwq_TcylNr7EkRe6&#34;&gt;&lt;strong&gt;Natural Language Processing with Deep Learning&lt;/strong&gt;&lt;/a&gt;( &lt;a href=&#34;https://web.stanford.edu/class/cs224n/&#34;&gt;当前课程&lt;/a&gt;挺贵的,可以看下&lt;a href=&#34;https://www.youtube.com/playlist?list=PLoROMvodv4rOSH4v6133s9LFPRHjEmbmJ&#34;&gt;以前免费视频&lt;/a&gt;, 感觉听不懂先用notion记录下，再去找资料了解下，orz, ps: CMU数据库课程 &lt;a href=&#34;https://15721.courses.cs.cmu.edu/spring2023/&#34;&gt;Advanced Database Systems&lt;/a&gt; 类似学习，今年的学习OKR有了~)&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;携手AI前行，效率优先，压缩时间成本~&lt;/p&gt;
 &lt;p&gt;附3 openai 官方提供的应用类产品，&lt;/p&gt;
@@ -296,6 +297,8 @@ make run
 &lt;p&gt;第二种情况，在i之前没有分配32位变量；i被分配在一个词的开头。为了数据对齐（地址是 64 的倍数），i不能与下一个 64 的倍数j一起分配。灰色框表示 32 位填充。&lt;/p&gt;
 &lt;p&gt;所以了解了字节对齐之后，在设计数据结构的时候，需要清楚，数据结构通过编译器优化编译之后方便cpu访问 的数据对齐结构，所占内存大小；防止出现本来不需要这么多内存空间的设计。尤其在设计非常依赖缓存存储的项目中。申请内存空间越多越频繁，对于Go来说，将带来更多的GC, 影响整体应用性能。&lt;/p&gt;
 &lt;p&gt;还有一个好处是，考虑了字节对齐后的合理结构体(所占内存空间的结构体大小最小情况，&lt;strong&gt;结构体中的字段按大小降序对它们进行排序对齐&lt;/strong&gt;)；利用cache 局部性原理，可以在cpu cache line中存放更多的对象，这样在遍历对象时，需要更少的缓存行总数，性能更好。&lt;/p&gt;
+&lt;p&gt;PS: 在硬件存储设备上，也存在同样的读写IO对齐，在编写硬件存储系统，使用直接io(linux fs.open O_DIRECT 模式)的情况，硬件存储IO性能尤其注意的地方，比如磁盘最小单元扇区 512B 对齐，SSD最小单元page 4K 对齐。如果不利用好对齐，会增加额外的读写放大，比如读写一个存储单元大小数据，数据没有对齐，需要访问多个存储单元数据，存在读写放大，增加IO次数，影响性能。一次磁盘读 io 2ms 级别，ssd则在几十us；相对于cpu cache的读写 几ns级别，磁盘io通常是系统主要优化的点。不过这方面操作系统和硬件打交道都已经考虑了，除非不使用操作系统的系统调用函数操作硬件。&lt;/p&gt;
+&lt;p&gt;附：Latency Numbers Every Programmer Should Know： &lt;a href=&#34;https://colin-scott.github.io/personal_website/research/interactive_latency.html&#34;&gt;https://colin-scott.github.io/personal_website/research/interactive_latency.html&lt;/a&gt;&lt;/p&gt;
 &lt;h3 id=&#34;95不了解栈与堆&#34;&gt;95.不了解栈与堆&lt;/h3&gt;
 &lt;p&gt;在 Go 中，变量可以分配在栈上或堆上。这两种类型的内存根本不同，影响数据密集型应用程序。需要了解栈和堆这些概念，以及编译器决定变量分配位置所遵循的规则。&lt;/p&gt;
 &lt;h4 id=&#34;栈与堆&#34;&gt;栈与堆&lt;/h4&gt;
@@ -590,7 +593,7 @@ go tool pprof -http&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#
 &lt;h4 id=&#34;goroutines分析&#34;&gt;Goroutines分析&lt;/h4&gt;
 &lt;p&gt;该&lt;code&gt;goroutine&lt;/code&gt;配置文件报告应用程序中所有当前 goroutine 的堆栈跟踪。可以使用 debug/pprof/goroutine/?debug=0 下载一个文件并go tool pprof再次采集分析， 可以分析是否golang在持续上涨，进而判断是否泄露。可以查看 goroutine 分析器数据以了解系统的哪一部分是可疑的。&lt;/p&gt;
 &lt;h4 id=&#34;block分析&#34;&gt;Block分析&lt;/h4&gt;
-&lt;p&gt;配置文件&lt;code&gt;block&lt;/code&gt;报告正在进行的 goroutines 阻塞等待同步原语的位置。可能性包括&lt;/p&gt;
+&lt;p&gt;block 分析正在进行的 goroutines 阻塞等待同步原语的位置，包括&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;在无缓冲通道上发送或接收&lt;/li&gt;
 &lt;li&gt;发送到一个完整的频道&lt;/li&gt;

@@ -84,7 +84,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 
 并不意味着禁止为速度和效率优化应用程序, 了解并掌握这些优化点，以备不时之需；文中给出了常见的优化技术；有些特定于 Go 内存模型，内存分配，GPM调度模型；有些是关于了解硬件有助于写出好的代码(适用于不同语言)，其中会有硬件方面的术语，可以结合wiki进行学习；"><meta itemprop="datePublished" content="2023-02-23T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-02-23T10:26:23+08:00" />
-<meta itemprop="wordCount" content="20774">
+<meta itemprop="wordCount" content="21054">
 <meta itemprop="keywords" content="Golang," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Go tips-笔记: 优化 91-100 mistakes"/>
 <meta name="twitter:description" content="引言
@@ -504,6 +504,8 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 <p>第二种情况，在i之前没有分配32位变量；i被分配在一个词的开头。为了数据对齐（地址是 64 的倍数），i不能与下一个 64 的倍数j一起分配。灰色框表示 32 位填充。</p>
 <p>所以了解了字节对齐之后，在设计数据结构的时候，需要清楚，数据结构通过编译器优化编译之后方便cpu访问 的数据对齐结构，所占内存大小；防止出现本来不需要这么多内存空间的设计。尤其在设计非常依赖缓存存储的项目中。申请内存空间越多越频繁，对于Go来说，将带来更多的GC, 影响整体应用性能。</p>
 <p>还有一个好处是，考虑了字节对齐后的合理结构体(所占内存空间的结构体大小最小情况，<strong>结构体中的字段按大小降序对它们进行排序对齐</strong>)；利用cache 局部性原理，可以在cpu cache line中存放更多的对象，这样在遍历对象时，需要更少的缓存行总数，性能更好。</p>
+<p>PS: 在硬件存储设备上，也存在同样的读写IO对齐，在编写硬件存储系统，使用直接io(linux fs.open O_DIRECT 模式)的情况，硬件存储IO性能尤其注意的地方，比如磁盘最小单元扇区 512B 对齐，SSD最小单元page 4K 对齐。如果不利用好对齐，会增加额外的读写放大，比如读写一个存储单元大小数据，数据没有对齐，需要访问多个存储单元数据，存在读写放大，增加IO次数，影响性能。一次磁盘读 io 2ms 级别，ssd则在几十us；相对于cpu cache的读写 几ns级别，磁盘io通常是系统主要优化的点。不过这方面操作系统和硬件打交道都已经考虑了，除非不使用操作系统的系统调用函数操作硬件。</p>
+<p>附：Latency Numbers Every Programmer Should Know： <a href="https://colin-scott.github.io/personal_website/research/interactive_latency.html">https://colin-scott.github.io/personal_website/research/interactive_latency.html</a></p>
 <h3 id="95不了解栈与堆">95.不了解栈与堆</h3>
 <p>在 Go 中，变量可以分配在栈上或堆上。这两种类型的内存根本不同，影响数据密集型应用程序。需要了解栈和堆这些概念，以及编译器决定变量分配位置所遵循的规则。</p>
 <h4 id="栈与堆">栈与堆</h4>
@@ -798,7 +800,7 @@ go tool pprof -http<span class="o">=</span><span class="s2">&#34;:8080&#34;</spa
 <h4 id="goroutines分析">Goroutines分析</h4>
 <p>该<code>goroutine</code>配置文件报告应用程序中所有当前 goroutine 的堆栈跟踪。可以使用 debug/pprof/goroutine/?debug=0 下载一个文件并go tool pprof再次采集分析， 可以分析是否golang在持续上涨，进而判断是否泄露。可以查看 goroutine 分析器数据以了解系统的哪一部分是可疑的。</p>
 <h4 id="block分析">Block分析</h4>
-<p>配置文件<code>block</code>报告正在进行的 goroutines 阻塞等待同步原语的位置。可能性包括</p>
+<p>block 分析正在进行的 goroutines 阻塞等待同步原语的位置，包括</p>
 <ul>
 <li>在无缓冲通道上发送或接收</li>
 <li>发送到一个完整的频道</li>
