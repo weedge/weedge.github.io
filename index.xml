@@ -23,7 +23,7 @@
 &lt;style type=&#34;text/css&#34;&gt;.dark-theme .aplayer{background:#212121}.dark-theme .aplayer.aplayer-withlist .aplayer-info{border-bottom-color:#5c5c5c}.dark-theme .aplayer.aplayer-fixed .aplayer-list{border-color:#5c5c5c}.dark-theme .aplayer .aplayer-body{background-color:#212121}.dark-theme .aplayer .aplayer-info{border-top-color:#212121}.dark-theme .aplayer .aplayer-info .aplayer-music .aplayer-title{color:#fff}.dark-theme .aplayer .aplayer-info .aplayer-music .aplayer-author{color:#fff}.dark-theme .aplayer .aplayer-info .aplayer-controller .aplayer-time{color:#eee}.dark-theme .aplayer .aplayer-info .aplayer-controller .aplayer-time .aplayer-icon path{fill:#eee}.dark-theme .aplayer .aplayer-list{background-color:#212121}.dark-theme .aplayer .aplayer-list::-webkit-scrollbar-thumb{background-color:#999}.dark-theme .aplayer .aplayer-list::-webkit-scrollbar-thumb:hover{background-color:#bbb}.dark-theme .aplayer .aplayer-list li{color:#fff;border-top-color:#666}.dark-theme .aplayer .aplayer-list li:hover{background:#4e4e4e}.dark-theme .aplayer .aplayer-list li.aplayer-list-light{background:#6c6c6c}.dark-theme .aplayer .aplayer-list li .aplayer-list-index{color:#ddd}.dark-theme .aplayer .aplayer-list li .aplayer-list-author{color:#ddd}.dark-theme .aplayer .aplayer-lrc{text-shadow:-1px -1px 0 #666}.dark-theme .aplayer .aplayer-lrc:before{background:-moz-linear-gradient(top, #212121 0%, rgba(33,33,33,0) 100%);background:-webkit-linear-gradient(top, #212121 0%, rgba(33,33,33,0) 100%);background:linear-gradient(to bottom, #212121 0%, rgba(33,33,33,0) 100%);filter:progid:DXImageTransform.Microsoft.gradient( startColorstr=&#39;#212121&#39;, endColorstr=&#39;#00212121&#39;,GradientType=0 )}.dark-theme .aplayer .aplayer-lrc:after{background:-moz-linear-gradient(top, rgba(33,33,33,0) 0%, rgba(33,33,33,0.8) 100%);background:-webkit-linear-gradient(top, rgba(33,33,33,0) 0%, rgba(33,33,33,0.8) 100%);background:linear-gradient(to bottom, rgba(33,33,33,0) 0%, rgba(33,33,33,0.8) 100%);filter:progid:DXImageTransform.Microsoft.gradient( startColorstr=&#39;#00212121&#39;, endColorstr=&#39;#cc212121&#39;,GradientType=0 )}.dark-theme .aplayer .aplayer-lrc p{color:#fff}.dark-theme .aplayer .aplayer-miniswitcher{background:#484848}.dark-theme .aplayer .aplayer-miniswitcher .aplayer-icon path{fill:#eee}&lt;/style&gt;
 &lt;script src=&#34;https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js&#34;&gt;&lt;/script&gt;
 
-&lt;script src=&#34;https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js&#34;&gt;&lt;/script&gt;&lt;meting-js auto=&#34;https://music.163.com/#/playlist?id=2154992214&#34; theme=&#34;#2980b9&#34;&gt;&lt;/meting-js&gt;
+&lt;script src=&#34;https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js&#34;&gt;&lt;/script&gt;&lt;meting-js auto=&#34;https://music.163.com/#/playlist?id=2154916998&#34; theme=&#34;#2980b9&#34;&gt;&lt;/meting-js&gt;
 &lt;h4 id=&#34;人生&#34;&gt;人生&lt;/h4&gt;
 &lt;ol&gt;
 &lt;li&gt;
@@ -145,7 +145,7 @@ make run
 &lt;p&gt;&lt;a href=&#34;https://openai.com/blog&#34;&gt;https://openai.com/blog&lt;/a&gt; (技术宅，可以订阅一波)&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://platform.openai.com/docs/introduction/overview&#34;&gt;https://platform.openai.com/docs/introduction/overview&lt;/a&gt; (适合开发，模型微调)&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://platform.openai.com/examples/&#34;&gt;https://platform.openai.com/examples/&lt;/a&gt; (找灵感)&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://gpt3demo.com/&#34;&gt;https://gpt3demo.com/&lt;/a&gt; （潘多拉盒子）&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://gpt3demo.com/&#34;&gt;https://gpt3demo.com/&lt;/a&gt;  &lt;a href=&#34;https://gpt4demo.com/&#34;&gt;https://gpt4demo.com/&lt;/a&gt; （潘多拉盒子）&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/mli/paper-reading#%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86---transformer&#34;&gt;https://github.com/mli/paper-reading#自然语言处理-transformer&lt;/a&gt; (背后模型原理导读)&lt;/p&gt;</description>
       
     </item>
@@ -1638,8 +1638,8 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;span class=&#34;nx&#34;&gt;ss2&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[]&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int64&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;unsafe&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Pointer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;h&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
 &lt;span class=&#34;nx&#34;&gt;ss2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;100&lt;/span&gt;
 &lt;span class=&#34;c1&#34;&gt;// s1=[1 2 100],len(s1)=3,cap(s1)=3
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// s2=[2,100],len(s2)=2,cap(s2)=2
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// s3=[2 100],len(s3)=1,cap(s3)=2
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// s2=[2],len(s2)=1,cap(s2)=2
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// s3=[2 100],len(s3)=2,cap(s3)=2
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果不想改变s1和s2指向的数组数据，可以进行copy操作，然后在append数据给s3&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;nx&#34;&gt;s1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[]&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;span class=&#34;nx&#34;&gt;s2&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;s1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
@@ -1796,7 +1796,11 @@ go vet --vettool&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;
       
       <guid>https://weedge.github.io/post/zb-gift/</guid>
       
-        <description>&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
+        <description>&lt;iframe frameborder=&#34;no&#34; border=&#34;0&#34; marginwidth=&#34;0&#34; marginheight=&#34;0&#34; width=330 height=86 src=&#34;//music.163.com/outchain/player?type=2&amp;id=1933940116&amp;auto=1&amp;height=66&#34;&gt;&lt;/iframe&gt;
+
+
+
+&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
 &lt;p&gt;直播线上互动，已成为当下生活的一部分，特别是受疫情影响，成为互联网的主要流量入口；研究了下各个平台直播间送礼物的功能，发现大同小异，在礼物分组，一些定制化的礼物有区分，整体交互流程大致相同，主要是直播间主播上播，用户通过礼物打赏给主播们(一个直播间可能有多名主播在互动)，礼物是通过虚拟币(**币) 换算，早期互联网用户线上互动礼物，玩家最多的应该是QQ币了，只不过以前的打赏赠送场景是在web2.0刚开始的时候，交互的大多是文字和图片，相关产品场景，虚拟空间(个人空间，博客，种菜等娱乐互动场景)；随着底层网络基建的发展，4G之后出现了大量的视频网站，用户可以录一些视频内容来互动；到后来音视频流媒体的发展，相关的在线直播间开始涌现，用户之间享受一波直播红利带来的互动，当然影响相对于前面的形式更加实时和直接；现在的5G和未来6G，以及物联网都会给直播形式带来新的互动场景,比如：虚拟会场，人机互动；其中早期培养起来的打赏送礼行为功能经常用于有主播的娱乐互动直播中，也是增值盈利的一部分；&lt;/p&gt;
 &lt;p&gt;tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦，电商带货商品，没有主播，节目直播/转播，会议直播，自习室，基本的点赞，计数，聊天基础服务功能；还有些抽奖功能，答题功能(教育类直播居多)，投票，红包这些功能服务可在开播时设置，是否启用；有用户基础的流量平台可能还会以竞价排名的方式推荐一波；这些功能可以作为一个可管理的插件，通过组合的方式应用于直播中，方便管理，后续可以添加新功能满足某类型直播场景。&lt;/p&gt;
 &lt;h2 id=&#34;需求设计&#34;&gt;需求设计&lt;/h2&gt;

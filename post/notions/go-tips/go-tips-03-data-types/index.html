@@ -388,8 +388,8 @@
 <span class="nx">ss2</span> <span class="o">:=</span> <span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="p">[]</span><span class="kt">int64</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">h</span><span class="p">))</span>
 <span class="nx">ss2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">=</span> <span class="mi">100</span>
 <span class="c1">// s1=[1 2 100],len(s1)=3,cap(s1)=3
-</span><span class="c1">// s2=[2,100],len(s2)=2,cap(s2)=2
-</span><span class="c1">// s3=[2 100],len(s3)=1,cap(s3)=2
+</span><span class="c1">// s2=[2],len(s2)=1,cap(s2)=2
+</span><span class="c1">// s3=[2 100],len(s3)=2,cap(s3)=2
 </span></code></pre></div><p>如果不想改变s1和s2指向的数组数据，可以进行copy操作，然后在append数据给s3</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">s1</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">}</span>
 <span class="nx">s2</span> <span class="o">:=</span> <span class="nx">s1</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
