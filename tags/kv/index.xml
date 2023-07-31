@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>kv on 时间飘过</title>
+    <link>https://weedge.github.io/tags/kv/</link>
+    <description>Recent content in kv on 时间飘过</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sun, 30 Jul 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/kv/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>kv-codis迁移</title>
+      <link>https://weedge.github.io/post/codis-slot/</link>
+      <pubDate>Sun, 30 Jul 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/codis-slot/</guid>
+      <description>&lt;iframe frameborder=&#34;no&#34; border=&#34;0&#34; marginwidth=&#34;0&#34; marginheight=&#34;0&#34; width=330 height=86 src=&#34;//music.163.com/outchain/player?type=2&amp;id=1890574156&amp;auto=1&amp;height=66&#34;&gt;&lt;/iframe&gt;
+
+
+
+&lt;p&gt;最近在搞一个kv系统，想接入codis来管理slot，实现数据的迁移，进行scaling水平扩展，从网上找了点资料，然后随笔记录梳理一下，以便相应的代码可以联调接入时优化下~&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>归档 - 时间飘过</title>
+  <title>kv-codis迁移 - 时间飘过</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -23,7 +23,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="记录工作和生活" />
+  <meta name="description" content=" 最近在搞一个kv系统，想接入codis来管理slot，实现数据的迁移，进行scaling水平扩展，从网上找了点资料，然后随笔记录梳理一下，以便相应的代码可以联调接入时优化下~
+" />
+
   <meta name="keywords" content="工作, 技术, 生活" />
 
 
@@ -34,8 +36,8 @@
 <meta name="generator" content="Hugo 0.88.1" />
 
 
-<link rel="canonical" href="https://weedge.github.io/post/" />
-<link href="/post/index.xml" rel="alternate" type="application/rss+xml" title="时间飘过" />
+<link rel="canonical" href="https://weedge.github.io/post/codis-slot/" />
+
 
 
 
@@ -60,15 +62,32 @@
 <link rel="stylesheet" href="/css/copy-to-clipboard.css">
 
 
-<meta property="og:title" content="Posts" />
-<meta property="og:description" content="记录工作和生活" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://weedge.github.io/post/" />
+<meta property="og:title" content="kv-codis迁移" />
+<meta property="og:description" content="
 
-<meta itemprop="name" content="Posts">
-<meta itemprop="description" content="记录工作和生活"><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Posts"/>
-<meta name="twitter:description" content="记录工作和生活"/>
+
+
+最近在搞一个kv系统，想接入codis来管理slot，实现数据的迁移，进行scaling水平扩展，从网上找了点资料，然后随笔记录梳理一下，以便相应的代码可以联调接入时优化下~" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/codis-slot/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-07-30T10:26:23+08:00" />
+<meta property="article:modified_time" content="2023-07-30T10:26:23+08:00" />
+
+<meta itemprop="name" content="kv-codis迁移">
+<meta itemprop="description" content="
+
+
+
+最近在搞一个kv系统，想接入codis来管理slot，实现数据的迁移，进行scaling水平扩展，从网上找了点资料，然后随笔记录梳理一下，以便相应的代码可以联调接入时优化下~"><meta itemprop="datePublished" content="2023-07-30T10:26:23+08:00" />
+<meta itemprop="dateModified" content="2023-07-30T10:26:23+08:00" />
+<meta itemprop="wordCount" content="2496">
+<meta itemprop="keywords" content="kv," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="kv-codis迁移"/>
+<meta name="twitter:description" content="
+
+
+
+最近在搞一个kv系统，想接入codis来管理slot，实现数据的迁移，进行scaling水平扩展，从网上找了点资料，然后随笔记录梳理一下，以便相应的代码可以联调接入时优化下~"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -285,190 +304,215 @@
     <main id="main" class="main bg-llight">
       <div class="content-wrapper">
         <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">kv-codis迁移</h1>
+      
+      <div class="post-meta">
+        <time datetime="2023-07-30" class="post-time">
+          2023-07-30
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#codis-slot迁移">codis slot迁移</a></li>
+        <li><a href="#参考">参考：</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=1890574156&auto=1&height=66"></iframe>
+
+
+
+<p>最近在搞一个kv系统，想接入codis来管理slot，实现数据的迁移，进行scaling水平扩展，从网上找了点资料，然后随笔记录梳理一下，以便相应的代码可以联调接入时优化下~</p>
+<h3 id="codis-slot迁移">codis slot迁移</h3>
+<h4 id="同步">同步：</h4>
+<ol>
+<li>
+<p>主动调用<code>SLOTSMGRTTAGSLOT</code> 进行同步迁移,  对val dump成rdb 格式进行单个key的同步，直到db,slot同步完成</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/codis1" alt=""></p>
+</li>
+<li>
+<p>key所属的slot正在迁移，则被动调用<code>SLOTSMGRTTAGONE</code>命令将这个key迁移完成再返回给客户端，即必须要迁移这个key完成才返回给客户端。</p>
+</li>
+</ol>
+<h4 id="异步">异步：</h4>
+<p>（针对redis 处理命令的主线程的优化，因为是单线程，命令通eventloop分发在单线程中依次执行，为了缓解该问题，进行了优化 ）</p>
+<ol>
+<li>
+<p>主动调用<code>SLOTSMGRTTAGSLOT-ASYNC</code>命令，整体流程和同步差不多，主要是将耗时命令进行拆解成耗时小的命令进行批量处理。</p>
+<p>1）源Redis对key进行序列化异步发送给目标Redis；</p>
+<p>2）目标Redis通过Restore还原后回复给源Redis；</p>
+<p>3）源Redis收到目标Redis确认后标记这个key迁移完成，迁移下一个key；</p>
+<p>对于大key，如一个长度为1W的list，Codis会将key分拆成多个命令chunck，因为通过不断的rpush最终的结果一样；</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/codis2" alt=""></p>
+<p>Codis会在每一个拆分后的指令中加上一个临时TTL；等全部拆分的指令执行成功才会删除本地的key；因此即使中途迁移失败，已迁移成功的key也会超时自动删除，最终效果就好比迁移没有发生一样。 但是这里不是原子的，如果执行设置真正的过期时间expire key ttl 执行超时了，这个时候目标节点已经设置成功了，但是源节点没有收到ack，本地没有删除，返回迁移失败(其实已经成功了)，则需要重新触发迁移。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/codis3" alt=""></p>
+<p>迁移通过分批pipeline进行了优化</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/codis4" alt=""></p>
+</li>
+<li>
+<p>key所属的slot正在迁移，则被动调用<code>SLOTSMGRT-EXEC-WRAPPER</code>命令，将key请求操作发给迁移的slot节点，返回错误码(-1 参数错误，0 不存在，1.命令是写操作并且正在迁移，2.命令是读操作并且执行)</p>
+<ol>
+<li>如果正在迁移并且当前命令是写命令则返回错误码1，由Prxoy进行重试。</li>
+<li>如果是读命令则执行返回错误码2和执行结果，由proxy 返回。</li>
+<li>如果key已经迁移走，则返回错误码0，Proxy需要更新路由表。</li>
+</ol>
+</li>
+</ol>
+<h4 id="同步和异步有两个区别">同步和异步有两个区别：</h4>
+<p>一是处理请求的不同，如果当前要操作的key所属Slot正在迁移，同步处理会发送命令等待后端迁移完成才往下操作，异步则是将当前请求封装成一次SLOTSMGRT-EXEC-WRAPPER调用，并且将操作命令及参数都发送过去，后者会判断这个key是否在迁移或阻塞，如果是并且当前为写命令则直接返回失败，由Proxy重试。</p>
+<p>二是迁移逻辑不同，同步会调用SLOTSMGRTTAGSLOT迁移，异步则是调用SLOTSMGRTTAGSLOT-ASYNC，前者每次随机迁移一个key，异步的过程则复杂得多，对于小key需要确认才算迁移完成，对于大key还会分拆成多条命令，以保证不阻塞主流程，并且在拆分后的命令都加上TTL，以保证如果中途失败目标Redis的key会及时清掉而不会产生脏数据。</p>
+<p>同步,异步迁移通过dashboard配置文件设置 migration_method。</p>
+<p>Gist: <a href="https://gist.github.com/weedge/8d1d37963a2dfd7ecd47fefc7d8016b1">https://gist.github.com/weedge/8d1d37963a2dfd7ecd47fefc7d8016b1</a></p>
+<h4 id="其他kv引擎接入">其他kv引擎接入：</h4>
+<p>理论上只要实现了codis的迁移命令就可以对数据实例slot进行管理操作了，还可以进行不同类型实例的数据迁移，不同类型kv存储引擎实例来实现不同的功能slot上， 比如 热数据 可以请求到 内存kv中， 冷数据可以请求到磁盘kv中，有种乾坤大挪移的感觉~，主要是利用codis管理key-&gt; slot 与 node之间的会话关系，其实现在云原生网关中常说的控制面(control)和数据面(data)，这里分别对应dashboard(发送迁移命令)和 proxy (tcp长连,根据key-&gt;slot与node映射的路由规则转发命令)。</p>
+<p>如果管理迁移slot的kv节点处理命令不是单线程的，比如<a href="https://github.com/dragonflydb/dragonfly">dragonfly</a> 等处理命令是多线程的(多线程IO模型 <a href="https://github.com/romange/helio">helio</a> 支持io_uring)，以及 <a href="https://github.com/weedge/wedis">wedis</a>  处理命令是多协程（一个连接会话对应一个协程，本质调度执行是内核线程, 网络IO模型根据场景可以优化下），则操作只需要优化实现 同步命令 <code>SLOTSMGRTTAGSLOT</code> 和被动触发的 <code>SLOTSMGRTTAGONE</code> 可以满足需求，当然如果想对接异步操作命令也是可以的。</p>
+<p>tips:</p>
+<ol>
+<li>对于slot相关操作如果已插件的方式对接到kv引擎中实现，是比较符合工程实现的，一种是动态链接(c/c++)，通过MODULE LOAD 命令，或者loadmodule 配置项; 一种是编译时静态链接(golang 依赖注入，plugin比较鸡肋，golang本身是静态编译)</li>
+<li>如果使用redis cluster 是去中心化的scaling 方案，slot的迁移会话管理方式嵌入到node节点中，通过gossip协议进行协同，运维相对简单，但是少了些灵活，当然也可以做一层控制面来管理会话元数据，当集群节点比较多的时候。(这个实现下cluster中的slot相关命令可以在思考记录一些~)</li>
+<li>codis现在没有维护了，但是fork出来进行二次开发，和内部监控系统打通，也可以借鉴下reborndb,但是没有但是了。。。</li>
+</ol>
+<p>题外话：</p>
+<blockquote>
+<p>基础组件(中间件)如同搭积木(前后端本质上一样，后端需要考虑分布式情况)，稳固牢靠，易扩展，这就考验需求中事件本质的抽象，这个本质的抽象感觉也有点像套路；如果把开源组件进行拼装，给出需求抽象出的安装步骤，画出架构图，交给大模型， 能否给出相关详细设计文档，甚至直接代码模块化，具体细节根据业务需求来写，有套路的东东，应该可以AI化；如果反过来呢，根据业务需求，画出架构图，甚至给出ppt模版，给出模块化的代码，细节也是根据业务来填充；现在有预训练好的开源大模型黑盒，这些数据可以私有安全部署(利用开源，然后商业化闭源，想想都有意思哈~) :d ，但是前提是：提出问题者需要某个垂直领域认知提升上的经验教训(局内人从坑里爬出来过或者旁观者认真思考过前人躺过的坑)，能把控全局~</p>
+</blockquote>
+<p>声明：一些资料图片来自互联网，农夫山泉</p>
+<h3 id="参考">参考：</h3>
+<ol>
+<li><a href="https://github.com/CodisLabs/codis">https://github.com/CodisLabs/codis</a></li>
+<li><a href="https://redis.io/docs/management/scaling/">redis-cluster</a></li>
+<li><a href="https://www.dragonflydb.io/docs/managing-dragonfly/high-availability">dragonfly/high-availability</a></li>
+<li><a href="https://docs.google.com/document/d/1hJXa0LjMaGYHgL3PeQQu3QMrstxof241OVxbdDKvSbY/edit?usp=sharing">RebornDB: the Next Generation Distributed Key-Value Store</a></li>
+</ol>
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2023-07-30
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/kv/">kv</a>
           
-<section id="archive" class="archive">
-    
-      <div class="collection-title">
-        <h2 class="archive-year">2023</h2>
-      </div>
+        </div>
 
-    <div class="archive-post">
-      <time datetime="2023-02-14" class="archive-post-time">
-        2023-02-14
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/notions/go-tips/go-tips-04-control-structures/" class="archive-post-link">
-          Go tips-笔记: 控制语句 30-35 mistakes
-        </a>
-      </span>
-    </div>
-    
-
-    <div class="archive-post">
-      <time datetime="2023-02-13" class="archive-post-time">
-        2023-02-13
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/notions/go-tips/go-tips-03-data-types/" class="archive-post-link">
-          Go tips-笔记: 数据类型 17-29 mistakes
-        </a>
-      </span>
-    </div>
-    
-
-    <div class="archive-post">
-      <time datetime="2023-02-13" class="archive-post-time">
-        2023-02-13
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/notions/go-tips/go-tips-02-code-project-organization/" class="archive-post-link">
-          Go tips-笔记: 代码和项目组织 1-16 mistakes
-        </a>
-      </span>
-    </div>
-    
-      <div class="collection-title">
-        <h2 class="archive-year">2022</h2>
-      </div>
-
-    <div class="archive-post">
-      <time datetime="2022-11-21" class="archive-post-time">
-        2022-11-21
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/zb-gift/" class="archive-post-link">
-          设计-直播间赠送礼物功能
-        </a>
-      </span>
-    </div>
-    
-
-    <div class="archive-post">
-      <time datetime="2022-11-08" class="archive-post-time">
-        2022-11-08
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/let-ml-go/" class="archive-post-link">
-          让ML跑起来
-        </a>
-      </span>
-    </div>
-    
-
-    <div class="archive-post">
-      <time datetime="2022-11-02" class="archive-post-time">
-        2022-11-02
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/user-behavior-analytics-solution/" class="archive-post-link">
-          用户行为分析方案设计
-        </a>
-      </span>
-    </div>
-    
-
-    <div class="archive-post">
-      <time datetime="2022-01-02" class="archive-post-time">
-        2022-01-02
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/shop/" class="archive-post-link">
-          全栈开发
-        </a>
-      </span>
-    </div>
-    
-      <div class="collection-title">
-        <h2 class="archive-year">2021</h2>
-      </div>
-
-    <div class="archive-post">
-      <time datetime="2021-12-28" class="archive-post-time">
-        2021-12-28
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/crdt/" class="archive-post-link">
-          CRDT
-        </a>
-      </span>
-    </div>
-    
-
-    <div class="archive-post">
-      <time datetime="2021-12-02" class="archive-post-time">
-        2021-12-02
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/pool/" class="archive-post-link">
-          pool
-        </a>
-      </span>
-    </div>
-    
-
-    <div class="archive-post">
-      <time datetime="2021-11-21" class="archive-post-time">
-        2021-11-21
-      </time>
-      <span class="archive-post-title">
-        <a href="/post/wal/" class="archive-post-link">
-          WAL
-        </a>
-      </span>
-    </div></section>
-
-
-
-
-
-
-  
-  
-  
-
-  
-  
-
-  
-  
-
-  
-  
-
-  
-  
-  <nav class="pagination">
-    <ul>
       
-      <li >
-        <a href="/post/">1</a>
-      </li>
-      
-      <li  class="active" >
-        <a href="/post/page/2/">2</a>
-      </li>
-      
-      <li >
-        <a href="/post/page/3/">3</a>
-      </li>
-      
-      <li >
-        <a href="/post/page/4/">4</a>
-      </li>
-      
-      <li >
-        <a href="/post/page/5/">5</a>
-      </li>
-      
-    </ul>
-  </nav>
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/doraemon/openai/">
+            <span class="next-text nav-default">OpenAI体验</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
 
   
   
 
+  
+  
 
+  
 
+  
+  
 
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/post/codis-slot/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+    
+
+  
 
         </div>
       </div>

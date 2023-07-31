@@ -297,6 +297,41 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/pool/">pool</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2021-12-02" class="post-time">
+        2021-12-02
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <h2 id="介绍">介绍</h2>
+<p>平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(<a href="https://en.wikipedia.org/wiki/Pool_(computer_science)">pool</a>)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，<a href="https://zh.wikipedia.org/wiki/%E8%A1%8C%E7%A8%8B">进程</a>(process <a href="https://en.wikipedia.org/wiki/Process_control_block">PCB</a> 内核态)、<a href="https://zh.wikipedia.org/wiki/%E5%9F%B7%E8%A1%8C%E7%B7%92">线程</a>(thread <a href="https://en.wikipedia.org/wiki/Thread_control_block">TCB </a> 内核态)、<a href="https://zh.wikipedia.org/zh-hans/%E5%8D%8F%E7%A8%8B">协程</a>(coroutine 用户态协作式调度,尽量减少内核调度)为载体的工作任务(work task 在用户态分配栈空间)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。</p>
+    </div>
+    <div class="read-more">
+      <a href="/post/pool/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/wal/">WAL</a>
     </h1>
     
@@ -465,41 +500,6 @@
     </div>
     <div class="read-more">
       <a href="/post/servicetransformation/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/rd/">工程师六大意识</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2021-10-02" class="post-time">
-        2021-10-02
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h2 id="1时间意识"><strong>1.时间意识</strong></h2>
-<p>​    时间意识的终极目标是按时保质的完成工作。时间是一种宝贵的资源，由于每天工作时间的有限的而需要处理事情是复杂多变性的，为了按时保质的完成工作，我们首先需要有极强的时间意识，使用科学的时间管理策略。总的来说，时间管理就是让我们更有计划的知道需要做什么，什么时候做什么，而时间管理的难点为：事情具有突发性、完成时间难以预算性、执行力和预期不符合。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/rd/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>

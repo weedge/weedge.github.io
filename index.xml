@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sun, 26 Feb 2023 20:16:30 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 30 Jul 2023 10:26:23 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -45,6 +45,82 @@
 &lt;li&gt;&amp;ldquo;&lt;strong&gt;万物之始，大道至简，衍化至繁&lt;/strong&gt;&amp;rdquo; &amp;ndash; 老子《&lt;a href=&#34;https://baike.baidu.com/item/%E9%81%93%E5%BE%B7%E7%BB%8F/327138&#34;&gt;道德经&lt;/a&gt;》&lt;/li&gt;
 &lt;/ol&gt;
 </description>
+      
+    </item>
+    
+    <item>
+      <title>kv-codis迁移</title>
+      <link>https://weedge.github.io/post/codis-slot/</link>
+      <pubDate>Sun, 30 Jul 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/codis-slot/</guid>
+      
+        <description>&lt;iframe frameborder=&#34;no&#34; border=&#34;0&#34; marginwidth=&#34;0&#34; marginheight=&#34;0&#34; width=330 height=86 src=&#34;//music.163.com/outchain/player?type=2&amp;id=1890574156&amp;auto=1&amp;height=66&#34;&gt;&lt;/iframe&gt;
+
+
+
+&lt;p&gt;最近在搞一个kv系统，想接入codis来管理slot，实现数据的迁移，进行scaling水平扩展，从网上找了点资料，然后随笔记录梳理一下，以便相应的代码可以联调接入时优化下~&lt;/p&gt;
+&lt;h3 id=&#34;codis-slot迁移&#34;&gt;codis slot迁移&lt;/h3&gt;
+&lt;h4 id=&#34;同步&#34;&gt;同步：&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;主动调用&lt;code&gt;SLOTSMGRTTAGSLOT&lt;/code&gt; 进行同步迁移,  对val dump成rdb 格式进行单个key的同步，直到db,slot同步完成&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/codis1&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;key所属的slot正在迁移，则被动调用&lt;code&gt;SLOTSMGRTTAGONE&lt;/code&gt;命令将这个key迁移完成再返回给客户端，即必须要迁移这个key完成才返回给客户端。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&#34;异步&#34;&gt;异步：&lt;/h4&gt;
+&lt;p&gt;（针对redis 处理命令的主线程的优化，因为是单线程，命令通eventloop分发在单线程中依次执行，为了缓解该问题，进行了优化 ）&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;主动调用&lt;code&gt;SLOTSMGRTTAGSLOT-ASYNC&lt;/code&gt;命令，整体流程和同步差不多，主要是将耗时命令进行拆解成耗时小的命令进行批量处理。&lt;/p&gt;
+&lt;p&gt;1）源Redis对key进行序列化异步发送给目标Redis；&lt;/p&gt;
+&lt;p&gt;2）目标Redis通过Restore还原后回复给源Redis；&lt;/p&gt;
+&lt;p&gt;3）源Redis收到目标Redis确认后标记这个key迁移完成，迁移下一个key；&lt;/p&gt;
+&lt;p&gt;对于大key，如一个长度为1W的list，Codis会将key分拆成多个命令chunck，因为通过不断的rpush最终的结果一样；&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/codis2&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Codis会在每一个拆分后的指令中加上一个临时TTL；等全部拆分的指令执行成功才会删除本地的key；因此即使中途迁移失败，已迁移成功的key也会超时自动删除，最终效果就好比迁移没有发生一样。 但是这里不是原子的，如果执行设置真正的过期时间expire key ttl 执行超时了，这个时候目标节点已经设置成功了，但是源节点没有收到ack，本地没有删除，返回迁移失败(其实已经成功了)，则需要重新触发迁移。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/codis3&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;迁移通过分批pipeline进行了优化&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/codis4&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;key所属的slot正在迁移，则被动调用&lt;code&gt;SLOTSMGRT-EXEC-WRAPPER&lt;/code&gt;命令，将key请求操作发给迁移的slot节点，返回错误码(-1 参数错误，0 不存在，1.命令是写操作并且正在迁移，2.命令是读操作并且执行)&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;如果正在迁移并且当前命令是写命令则返回错误码1，由Prxoy进行重试。&lt;/li&gt;
+&lt;li&gt;如果是读命令则执行返回错误码2和执行结果，由proxy 返回。&lt;/li&gt;
+&lt;li&gt;如果key已经迁移走，则返回错误码0，Proxy需要更新路由表。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&#34;同步和异步有两个区别&#34;&gt;同步和异步有两个区别：&lt;/h4&gt;
+&lt;p&gt;一是处理请求的不同，如果当前要操作的key所属Slot正在迁移，同步处理会发送命令等待后端迁移完成才往下操作，异步则是将当前请求封装成一次SLOTSMGRT-EXEC-WRAPPER调用，并且将操作命令及参数都发送过去，后者会判断这个key是否在迁移或阻塞，如果是并且当前为写命令则直接返回失败，由Proxy重试。&lt;/p&gt;
+&lt;p&gt;二是迁移逻辑不同，同步会调用SLOTSMGRTTAGSLOT迁移，异步则是调用SLOTSMGRTTAGSLOT-ASYNC，前者每次随机迁移一个key，异步的过程则复杂得多，对于小key需要确认才算迁移完成，对于大key还会分拆成多条命令，以保证不阻塞主流程，并且在拆分后的命令都加上TTL，以保证如果中途失败目标Redis的key会及时清掉而不会产生脏数据。&lt;/p&gt;
+&lt;p&gt;同步,异步迁移通过dashboard配置文件设置 migration_method。&lt;/p&gt;
+&lt;p&gt;Gist: &lt;a href=&#34;https://gist.github.com/weedge/8d1d37963a2dfd7ecd47fefc7d8016b1&#34;&gt;https://gist.github.com/weedge/8d1d37963a2dfd7ecd47fefc7d8016b1&lt;/a&gt;&lt;/p&gt;
+&lt;h4 id=&#34;其他kv引擎接入&#34;&gt;其他kv引擎接入：&lt;/h4&gt;
+&lt;p&gt;理论上只要实现了codis的迁移命令就可以对数据实例slot进行管理操作了，还可以进行不同类型实例的数据迁移，不同类型kv存储引擎实例来实现不同的功能slot上， 比如 热数据 可以请求到 内存kv中， 冷数据可以请求到磁盘kv中，有种乾坤大挪移的感觉~，主要是利用codis管理key-&amp;gt; slot 与 node之间的会话关系，其实现在云原生网关中常说的控制面(control)和数据面(data)，这里分别对应dashboard(发送迁移命令)和 proxy (tcp长连,根据key-&amp;gt;slot与node映射的路由规则转发命令)。&lt;/p&gt;
+&lt;p&gt;如果管理迁移slot的kv节点处理命令不是单线程的，比如&lt;a href=&#34;https://github.com/dragonflydb/dragonfly&#34;&gt;dragonfly&lt;/a&gt; 等处理命令是多线程的(多线程IO模型 &lt;a href=&#34;https://github.com/romange/helio&#34;&gt;helio&lt;/a&gt; 支持io_uring)，以及 &lt;a href=&#34;https://github.com/weedge/wedis&#34;&gt;wedis&lt;/a&gt;  处理命令是多协程（一个连接会话对应一个协程，本质调度执行是内核线程, 网络IO模型根据场景可以优化下），则操作只需要优化实现 同步命令 &lt;code&gt;SLOTSMGRTTAGSLOT&lt;/code&gt; 和被动触发的 &lt;code&gt;SLOTSMGRTTAGONE&lt;/code&gt; 可以满足需求，当然如果想对接异步操作命令也是可以的。&lt;/p&gt;
+&lt;p&gt;tips:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;对于slot相关操作如果已插件的方式对接到kv引擎中实现，是比较符合工程实现的，一种是动态链接(c/c++)，通过MODULE LOAD 命令，或者loadmodule 配置项; 一种是编译时静态链接(golang 依赖注入，plugin比较鸡肋，golang本身是静态编译)&lt;/li&gt;
+&lt;li&gt;如果使用redis cluster 是去中心化的scaling 方案，slot的迁移会话管理方式嵌入到node节点中，通过gossip协议进行协同，运维相对简单，但是少了些灵活，当然也可以做一层控制面来管理会话元数据，当集群节点比较多的时候。(这个实现下cluster中的slot相关命令可以在思考记录一些~)&lt;/li&gt;
+&lt;li&gt;codis现在没有维护了，但是fork出来进行二次开发，和内部监控系统打通，也可以借鉴下reborndb,但是没有但是了。。。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;题外话：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;基础组件(中间件)如同搭积木(前后端本质上一样，后端需要考虑分布式情况)，稳固牢靠，易扩展，这就考验需求中事件本质的抽象，这个本质的抽象感觉也有点像套路；如果把开源组件进行拼装，给出需求抽象出的安装步骤，画出架构图，交给大模型， 能否给出相关详细设计文档，甚至直接代码模块化，具体细节根据业务需求来写，有套路的东东，应该可以AI化；如果反过来呢，根据业务需求，画出架构图，甚至给出ppt模版，给出模块化的代码，细节也是根据业务来填充；现在有预训练好的开源大模型黑盒，这些数据可以私有安全部署(利用开源，然后商业化闭源，想想都有意思哈~) :d ，但是前提是：提出问题者需要某个垂直领域认知提升上的经验教训(局内人从坑里爬出来过或者旁观者认真思考过前人躺过的坑)，能把控全局~&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;声明：一些资料图片来自互联网，农夫山泉&lt;/p&gt;
+&lt;h3 id=&#34;参考&#34;&gt;参考：&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/CodisLabs/codis&#34;&gt;https://github.com/CodisLabs/codis&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://redis.io/docs/management/scaling/&#34;&gt;redis-cluster&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.dragonflydb.io/docs/managing-dragonfly/high-availability&#34;&gt;dragonfly/high-availability&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://docs.google.com/document/d/1hJXa0LjMaGYHgL3PeQQu3QMrstxof241OVxbdDKvSbY/edit?usp=sharing&#34;&gt;RebornDB: the Next Generation Distributed Key-Value Store&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;</description>
       
     </item>
     
@@ -730,7 +806,7 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v -bench&lt;span class=&#34
 &lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
 &lt;p&gt;总共花了10天左右把 100-go-mistakes-and-how-to-avoid-them 这本书看完，对于一些文中不够升入的地方，进行挖掘了下，了解弄清楚了背后的原理，知其然知其所以然之后，有些mistake是一些共性的问题，而且对于文中每个mistake，都应去实践操作一下，熟悉利用好Go相关工具，编译，测试，构建等等，文中大部分是语言层面的，工程方面也有些，特别像最后介绍的在K8S docker中CPU对Go语言本身的影响，实际遇到之后才会印象更深，应该从错误中去总结，而不是总结之后继续犯错，如此折返，意义不大；从错误点中多挖掘底层逻辑多思考总结。&lt;/p&gt;
 &lt;p&gt;原书地址： &lt;a href=&#34;https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/&#34;&gt;https://learning.oreilly.com/library/view/100-go-mistakes/9781617299599/&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;TIPS： 文中对于channel 介绍的比较少，比如channel 在生产(发送)和消费(接受)之间，1:1,1:N,M:1,M:N场景下如何关闭; 还有GPM的调度模型的详细介绍，以及内存分配器(这块在每个版本中相对迭代比较多，最好结合当前开发生产环境中使用的Go版本对其源码分析) 没有详细涉及到，可参考这些资料扩展： &lt;a href=&#34;https://go101.org/article/channel-closing.html&#34;&gt;channel-closing&lt;/a&gt; , &lt;a href=&#34;https://www.google.com.hk/search?q=kavya%20golang#fpstate=ive&amp;amp;vld=cid:089b5108,vid:KBZlN0izeiY&#34;&gt;Understanding Channels&lt;/a&gt; , &lt;a href=&#34;https://medium.com/@ankur_anand/a-visual-guide-to-golang-memory-allocator-from-ground-up-e132258453ed&#34;&gt;Go Memory Allocator&lt;/a&gt; ，&lt;a href=&#34;https://www.ardanlabs.com/blog/2018/08/scheduling-in-go-part2.html&#34;&gt;scheduling-in-go&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;TIPS： 文中对于channel 介绍的比较少，比如channel 在生产(发送)和消费(接受)之间，1:1,1:N,M:1,M:N场景下如何关闭; 还有GPM的调度模型的详细介绍，以及内存分配器(这块在每个版本中相对迭代比较多，最好结合当前开发生产环境中使用的Go版本对其源码分析) 没有详细涉及到，可参考这些资料扩展： &lt;a href=&#34;https://go101.org/article/channel-closing.html&#34;&gt;channel-closing&lt;/a&gt; , &lt;a href=&#34;https://www.google.com.hk/search?q=kavya%20golang#fpstate=ive&amp;amp;vld=cid:089b5108,vid:KBZlN0izeiY&#34;&gt;Understanding Channels&lt;/a&gt; , &lt;a href=&#34;https://medium.com/@ankur_anand/a-visual-guide-to-golang-memory-allocator-from-ground-up-e132258453ed&#34;&gt;Go Memory Allocator&lt;/a&gt; ，&lt;a href=&#34;https://www.ardanlabs.com/blog/2018/08/scheduling-in-go-part2.html&#34;&gt;scheduling-in-go&lt;/a&gt; , &lt;a href=&#34;https://github.com/golang/go/wiki/LearnConcurrency&#34;&gt;&lt;strong&gt;&lt;!-- raw HTML omitted --&gt;LearnConcurrency&lt;!-- raw HTML omitted --&gt;&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;</description>
       
     </item>
     
@@ -4119,266 +4195,6 @@ slave-lazy-flush no
 &lt;li&gt;&lt;a href=&#34;https://tonybai.com/2017/06/27/an-intro-about-go-portability/&#34;&gt;也谈Go的可移植性&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=KINIAgRpkDA&#34;&gt;The Design of the Go Assembler&lt;/a&gt; &lt;a href=&#34;https://9p.io/sys/doc/asm.html&#34;&gt;A Manual for the Plan 9 assembler&lt;/a&gt; &lt;a href=&#34;https://github.com/cch123/golang-notes/blob/master/assembly.md&#34;&gt;plan9 assembly 完全解析&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://time.geekbang.org/column/article/301716&#34;&gt;Pool：性能提升大杀器&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>WAL</title>
-      <link>https://weedge.github.io/post/wal/</link>
-      <pubDate>Sun, 21 Nov 2021 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/wal/</guid>
-      
-        <description>&lt;h2 id=&#34;序言&#34;&gt;序言&lt;/h2&gt;
-&lt;p&gt;​	数据落地之前，如果出现持久化存储引擎实例重启，或者服务当机重启，如何进行故障恢复（Crash Recovery）呢？数据写操作增删改，这些操作状态数据，是如何保证事务中原子性和持久性的呢？ 这些问题数据大拿们提出了&lt;a href=&#34;https://en.wikipedia.org/wiki/Algorithms_for_Recovery_and_Isolation_Exploiting_Semantics&#34;&gt;Algorithms for Recovery and Isolation Exploiting Semantics&lt;/a&gt; ，基于语义的恢复与隔离算法,现代数据库的基础理论；当前主流关系型数据在事务实现上都受到该理论的影响，其中有两种故障恢复的方法： 预写日志(write-ahead logging (WAL) ) 和shadow-page technique；shadow-page 方法简单介绍就是每次事务操作，以page为单位，写时复制的方式，分为Current和Shadow，类似主备的形式，如果commit成功，Current中的page合并到 Shadow中; 如果abort不成功丢弃Current的page; 如果Crash了，从Shadow中的page恢复，对所有未提交事务的回滚操作； 由于shadow-page技术的实现以page为单位，page内无法并发操作，commit/回滚时会有大量垃圾回收操作；本文主要介绍WAL，以及对应持久化存储引擎的实现机制介绍。&lt;/p&gt;
-&lt;h2 id=&#34;wal&#34;&gt;WAL&lt;/h2&gt;
-&lt;p&gt;&lt;strong&gt;预写日志&lt;/strong&gt;( &lt;strong&gt;WAL&lt;/strong&gt; ) 是一系列技术，用于在&lt;a href=&#34;https://en.wikipedia.org/wiki/Database_system&#34;&gt;数据库系统中&lt;/a&gt;提供&lt;a href=&#34;https://en.wikipedia.org/wiki/Atomicity_(database_systems)&#34;&gt;原子性&lt;/a&gt;和&lt;a href=&#34;https://en.wikipedia.org/wiki/Durability_(database_systems)&#34;&gt;持久性&lt;/a&gt;（两个&lt;a href=&#34;https://en.wikipedia.org/wiki/ACID&#34;&gt;ACID&lt;/a&gt;属性）。在将更改写入数据库之前，更改首先记录在日志中，日志必须写入&lt;a href=&#34;https://en.wikipedia.org/wiki/Stable_storage&#34;&gt;稳定存储&lt;/a&gt;（保证任何给定写入操作的原子性，并允许编写对某些硬件和电源故障具有&lt;a href=&#34;https://en.wikipedia.org/wiki/Robustness_(computer_science)&#34;&gt;鲁棒性的&lt;/a&gt;软件）。&lt;/p&gt;
-&lt;p&gt;这样做的目的可以通过一个例子来说明。想象一下，当运行它的机器断电时，它正在执行某些操作。重新启动时，该程序可能需要知道它正在执行的操作是成功、部分成功还是失败。如果使用预写日志，程序可以检查此日志并将意外断电时应该执行的操作与实际执行的操作进行比较。在此比较的基础上，程序可以决定撤消已开始的内容、完成已开始的内容或保持原样。&lt;/p&gt;
-&lt;p&gt;在使用 WAL 的系统中，所有修改在应用之前都会写入&lt;a href=&#34;https://en.wikipedia.org/wiki/Database_log&#34;&gt;日志&lt;/a&gt;。通常redo和undo信息都存储在日志中。&lt;/p&gt;
-&lt;p&gt;注意：写不一定是顺序写，一般&lt;a href=&#34;https://en.wikipedia.org/wiki/Computer_data_storage&#34;&gt;计算机存储&lt;/a&gt; 非易失性的硬件结构对顺序写的性能高于随机写的性能，比如常用的磁盘HDD/SSD; 但是最近基于NVM技术(结合磁盘和内存的特性)的存储硬件PC-RAM(Phase Change Random Access Memory), STT-RAM( Spin Transfer Torque Random Access Memory),  R-RAM(Resistive Random Access Memory)，结合内存中随机访问，磁盘非易失性特性，随机写和顺序写没什么差别，&lt;a href=&#34;http://repository.bilkent.edu.tr/bitstream/handle/11693/37609/Implications%20of%20non-volatile%20memory%20as%20primary%20storage%20for%20database%20management%20systems.pdf&#34;&gt;Implications of Non-Volatile Memory as Primary Storage for Database Management Systems&lt;/a&gt; 这篇论文中提到Pg如果不部署内部的buffer cache，所有写直接写到NVM对应的存储硬件中，可以去掉redo日志，但是undo日志任然需要,在系统错误时复原; 一般学术方案要领先实际工程许多，真正落地在生产环境中，还是用躺过坑的成熟方案 （顺便想到现在一些k/v存储引擎考虑上云，支持云厂商的云盘，可以认为无限容量）。硬件结构决定上层软件存储引擎的设计的优化，以下都是以常用的磁盘HDD/SSD的硬件结构来介绍存储引擎实现WAL技术。&lt;/p&gt;
-&lt;h2 id=&#34;mysql-innodb存储引擎&#34;&gt;mysql Innodb存储引擎&lt;/h2&gt;
-&lt;p&gt;mysql Innodb存储引擎是通过 redo、undo 日志实现 WAL,主要用于crash 恢复和回滚，满足本地事务中的持久性和原子性，来保证数据一致性；当然innodb引擎为了提高并发读性能，undo log中加入了MVCC (多版本并发控制)相关信息； 另外，mysql server层执行器会写bin log，主要是用来恢复某个时间的点数据以及主从复制数据使用，bin log文件和存储引擎无关；分别简要介绍redo, undo, bin log 文件在mysql中的作用。&lt;/p&gt;
-&lt;h3 id=&#34;redolog&#34;&gt;redolog&lt;/h3&gt;
-&lt;h4 id=&#34;为什么需要redo-log&#34;&gt;为什么需要redo log？&lt;/h4&gt;
-&lt;p&gt;我们都知道，事务的四大特性里面有一个是 &lt;strong&gt;持久性&lt;/strong&gt; ，具体来说就是&lt;strong&gt;只要事务提交成功，那么对数据库做的修改就被永久保存下来了，不可能因为任何原因再回到原来的状态&lt;/strong&gt; 。那么mysql是如何保证一致性的呢？最简单的做法是在每次事务提交的时候，将该事务涉及修改的数据页全部刷新到磁盘中。但是这么做会有严重的性能问题，主要体现在两个方面：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;因为 Innodb是以页为单位进行磁盘交互的，而一个事务很可能只修改一个数据页里面的几个字节，这个时候将完整的数据页刷到磁盘的话，太浪费资源了！&lt;/li&gt;
-&lt;li&gt;一个事务可能涉及修改多个数据页，并且这些数据页在物理上并不连续，使用随机IO写入性能太差！&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;因此 mysql设计了redolog ， &lt;strong&gt;具体来说就是只记录事务对数据页做了哪些修改&lt;/strong&gt;，这样就能完美地解决性能问题了(相对而言文件更小并且是顺序IO)。&lt;/p&gt;
-&lt;h4 id=&#34;redo-log基本概念&#34;&gt;redo log基本概念&lt;/h4&gt;
-&lt;p&gt;redo log包括两部分：一个是内存中的日志缓冲( redo log buffer )，另一个是磁盘上的日志文件(  redo log file )。 mysql 每执行一条 DML 修改写语句，操作的数据在内存中(如果没有会load到内存中)，首先会记修改操作的反操作逻辑数据记录写入undo log buffer中，然后会将修改哪个物理页面做了什么操作记录写入 redo log buffer ，后续某个时间点再一次性将多个操作记录写到 redo log file 和 undo log file。这种 &lt;strong&gt;先写日志，再写磁盘&lt;/strong&gt; 的技术就是 MySQL中的 WAL。&lt;/p&gt;
-&lt;p&gt;在计算机操作系统中，用户空间( user space )下的缓冲区数据一般情况下是无法直接写入磁盘的，中间必须经过操作系统内核空间(kernel space )缓冲区( OS Buffer )。因此， redo/undo log buffer 写入 redo/undo log file; 实际上是先写入 OS Buffer ，然后再通过系统调用 fsync() 将其刷到 redo/undo log file 中，过程如下：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://image-static.segmentfault.com/755/731/755731335-aec527828a1323b6_fix732&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;mysql 支持三种将 redo/undo log buffer 写入 redo/undo log file 的时机，可以通过 innodb_flush_log_at_trx_commit  参数配置，各参数值含义如下：&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;参数值&lt;/th&gt;
-&lt;th&gt;含义&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;0（延迟写）&lt;/td&gt;
-&lt;td&gt;事务提交时不会将 redo/undo log buffer 中日志写入到 os buffer ，而是每秒写入 os buffer 并调用 fsync() 写入到 redo/undo log file 中。也就是说设置为0时是(大约)每秒刷新写入到磁盘中的，当系统崩溃，会丢失1秒钟的数据。&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;1（实时写，实时刷）&lt;/td&gt;
-&lt;td&gt;事务每次提交都会将 redo/undo log buffer 中的日志写入 os buffer 并调用 fsync() 刷到 redo/undo log file 中。这种方式即使系统崩溃也不会丢失任何数据，但是因为每次提交都写入磁盘，IO的性能较差。一般开启&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;2（实时写，延迟刷）&lt;/td&gt;
-&lt;td&gt;每次提交都仅写入到 os buffer ，然后是每秒调用 fsync() 将 os buffer 中的日志写入到 redo/undo log file 。&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;&lt;img src=&#34;https://image-static.segmentfault.com/706/634/706634199-04894beff4e7b54f_fix732&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;h4 id=&#34;redo-log记录形式&#34;&gt;redo log记录形式&lt;/h4&gt;
-&lt;p&gt;前面说过， redo log 实际上记录数据页的变更，而这种变更记录是没必要全部保存，因此 redo log实现上采用了大小固定，循环写入的方式，当写到结尾时，会回到开头循环写日志。通过&lt;code&gt;show variables like &#39;innodb_log%&#39;; &lt;/code&gt; 查看参数；记录文件形式如下图：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://image-static.segmentfault.com/390/444/3904443652-cc3225d69e1d0476_fix732&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;在innodb存储引擎中，既有 redo log 需要刷盘，还有 数据页 也需要刷盘， redo log 存在的意义主要就是降低对数据页刷盘的要求 。在上图中， write pos 表示 redo log 当前记录的 LSN (逻辑序列号)位置， check point 表示数据页更改记录刷盘后对应 redo log 所处的 LSN (逻辑序列号)位置。 write pos 到 check point 之间的部分是 redo log 空着的部分，用于记录新的记录； check point 到 write pos 之间是 redo log 待落盘的数据页更改记录。当 write pos 追上 check point 时，会先推动 check point 向前移动，空出位置再记录新的日志。&lt;/p&gt;
-&lt;p&gt;启动 innodb 的时候，不管上次是正常关闭还是异常关闭，总是会进行恢复操作。因为 redo log 记录的是数据页的物理变化，因此恢复的时候速度比逻辑日志(如 binlog )要快很多。 重启 innodb 时，首先会检查磁盘中数据页的 LSN ，如果数据页的 LSN 小于日志中的 LSN ，则会从 checkpoint 开始恢复。 还有一种情况，在宕机前正处于checkpoint 的刷盘过程，且数据页的刷盘进度超过了日志页的刷盘进度，此时会出现数据页中记录的 LSN 大于日志中的 LSN，这时超出日志进度的部分将不会重做，因为这本身就表示已经做过的事情，无需再重做。&lt;/p&gt;
-&lt;p&gt;Mysql8.0 InnoDB存储引擎写操作，对redo log的写操作进行无锁全异步设计优化，增加；具体详细见官方文档：&lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/optimizing-innodb-logging.html&#34;&gt;优化 InnoDB 重做日志&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&#34;undolog&#34;&gt;undolog&lt;/h3&gt;
-&lt;p&gt;数据库事务四大特性中有一个是 &lt;strong&gt;原子性&lt;/strong&gt; ，具体来说就是 &lt;strong&gt;原子性是指对数据库的一系列操作，要么全部成功，要么全部失败，不可能出现部分成功的情况&lt;/strong&gt;。实际上， &lt;strong&gt;原子性&lt;/strong&gt; 底层就是通过 undo log 实现的。 undo log 主要记录了数据的逻辑变化，比如一条  INSERT 语句，对应一条 DELETE 的 undo log ，对于每个 UPDATE 语句，对应一条相反的 UPDATE 的undo log ，这样在发生错误时，就能回滚到事务之前的数据状态。同时， undo log 也是 MVCC (多版本并发控制)实现的关键；通过 &lt;code&gt;show variables like &#39;%undo%&#39;; &lt;/code&gt;查看参数。&lt;/p&gt;
-&lt;h3 id=&#34;binlog&#34;&gt;binlog&lt;/h3&gt;
-&lt;p&gt;binlog 用于记录数据库执行的写入性操作(不包括查询)信息，以二进制的形式保存在磁盘中。 binlog 是 mysql的逻辑日志，并且由 Server 层进行记录，使用任何存储引擎的 mysql 数据库都会记录 binlog 日志（&lt;code&gt;log_bin&lt;/code&gt; 打开的情况下）。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;逻辑日志&lt;/strong&gt;： 可以简单理解为记录的就是sql语句 。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;物理日志&lt;/strong&gt;： mysql 数据最终是保存在数据页中的，物理日志记录的就是数据页变更 。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;binlog 是通过追加的方式进行写入的，可以通过 max_binlog_size 参数设置每个 binlog文件的大小，当文件大小达到给定值之后，会生成新的文件来保存日志。binlog相关参数通过&lt;code&gt;show variables like &amp;quot;%binlog%&amp;quot;;&lt;/code&gt; 查看；通过&lt;code&gt;show variables like &amp;quot;%log_bin%&amp;quot;;&lt;/code&gt;查看binlog是否开启,以及binlog日志目录，8.0版本默认时开启。&lt;/p&gt;
-&lt;h4 id=&#34;binlog使用场景&#34;&gt;binlog使用场景&lt;/h4&gt;
-&lt;p&gt;在实际应用中， binlog 的主要使用场景有两个，分别是 &lt;strong&gt;主从复制&lt;/strong&gt; 和 &lt;strong&gt;数据恢复&lt;/strong&gt; 。&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;主从复制&lt;/strong&gt; ：在 Master 端开启 binlog ，然后将 binlog 发送到各个 Slave 端， Slave 端重放 binlog 从而达到主从数据一致。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;数据恢复&lt;/strong&gt; ：通过使用 mysqlbinlog 工具来恢复数据。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h4 id=&#34;binlog刷盘时机&#34;&gt;binlog刷盘时机&lt;/h4&gt;
-&lt;p&gt;对于 InnoDB 存储引擎而言，只有在事务提交时才会记录 biglog ，此时记录还在内存中，那么 biglog是什么时候刷到磁盘中的呢？ mysql 通过 sync_binlog 参数控制 biglog 的刷盘时机，取值范围是 0-N：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;0：不去强制要求，由系统自行判断何时写入磁盘；&lt;/li&gt;
-&lt;li&gt;1：每次 commit 的时候都要将 binlog 写入磁盘；一般开启&lt;/li&gt;
-&lt;li&gt;N：每N个事务，才会将 binlog 写入磁盘。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;从上面可以看出， sync_binlog 最安全的是设置是 1 ，这也是 MySQL 5.7.7之后版本的默认值。但是设置一个大一些的值可以提升数据库性能，因此实际情况下也可以将值适当调大，牺牲一定的一致性来获取更好的性能。&lt;/p&gt;
-&lt;h4 id=&#34;binlog日志格式&#34;&gt;binlog日志格式&lt;/h4&gt;
-&lt;p&gt;binlog 日志有三种格式，分别为 STATMENT 、 ROW 和 MIXED 。在 MySQL 5.7.7 之前，默认的格式是 STATEMENT ， MySQL 5.7.7 之后，默认值是 ROW 。日志格式通过 binlog-format 指定; &lt;code&gt;show variables like &amp;quot;%binlog_format%&amp;quot;;&lt;/code&gt;查看&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;STATMENT ： 基于 SQL 语句的复制( statement-based replication, SBR )，每一条会修改数据的sql语句会记录到 binlog 中 。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;优点： 不需要记录每一行的变化，减少了 binlog  日志量，节约了  IO  , 从而提高了性能；&lt;/li&gt;
-&lt;li&gt;缺点： 在某些情况下会导致主从数据不一致，比如执行本地时间操作； &lt;code&gt;SELECT NOW(),SYSDATE(),SLEEP(3),NOW(),SYSDATE();&lt;/code&gt;。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;ROW ： 基于行的复制( row-based replication, RBR )，不记录每条sql语句的上下文信息，仅需记录哪条数据被修改了 。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;优点： 不会出现某些特定情况下的存储过程、或function、或trigger的调用和触发无法被正确复制的问题 ；&lt;/li&gt;
-&lt;li&gt;缺点： 会产生大量的日志，尤其是 alter table 的时候会让日志暴涨；&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;MIXED ： 基于 STATMENT 和 ROW 两种模式的混合复制( mixed-based replication, MBR )，一般的复制使用 STATEMENT 模式保存 binlog ，对于 STATEMENT 模式无法复制的操作使用 ROW 模式保存 binlog；&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;binlog日志主要是用来主从同步复制数据以及数据恢复，是mysql server层执行器进行操作(主)写入和(从)读入(relaylog)；&lt;/p&gt;
-&lt;p&gt;数据可以按天按周进行备份，顺序写入，没有大小限制(文件大小有限，但是整体没有限制，多个文件binlog.**可以通过binlog.index定位)；&lt;/p&gt;
-&lt;h3 id=&#34;redo-log与binlog区别&#34;&gt;redo log与binlog区别&lt;/h3&gt;
-&lt;p&gt;不同于redo log, 虽然两者都可以用来恢复数据，但是在mysql中innodb存储引擎的wal机制下生成的redolog有大小限制， redo log 实际上记录数据页的变更，而这种变更记录是没必要全部保存，因此 redo log实现上采用了大小固定，循环写入的方式，当写到结尾时，会回到开头循环写日志；而binlog主要是用来数据恢复，如果备份时间长，用户在某段时间有误操作，需要回滚操作，就可以同binlog来恢复到某个时间点的日志状态；对于redo log是做不到的；而且binlog 不是存储引擎特有的，所以可以在不同的存储引擎公用来恢复数据场景；区别如下：&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;&lt;/th&gt;
-&lt;th&gt;redo log&lt;/th&gt;
-&lt;th&gt;binlog&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;文件大小&lt;/td&gt;
-&lt;td&gt;redo log 的大小是固定的。&lt;/td&gt;
-&lt;td&gt;binlog 可通过配置参数 max_binlog_size 设置每个 binlog 文件的大小。&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;实现方式&lt;/td&gt;
-&lt;td&gt;redo log 是 InnoDB 引擎层实现的，并不是所有引擎都有。&lt;/td&gt;
-&lt;td&gt;binlog 是 Server 层实现的，MySQL 3.23.14 中引入的，所有引擎都可以使用 binlog 日志，服务器运行期间生成的服务器全局状态更改的跟踪日志&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;记录方式&lt;/td&gt;
-&lt;td&gt;redo log 采用循环写的方式记录，当写到结尾时，会回到开头循环写日志。&lt;/td&gt;
-&lt;td&gt;binlog通过追加的方式记录，当文件大小大于给定值后，后续的日志会记录到新的文件上&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;适用场景&lt;/td&gt;
-&lt;td&gt;redo log 适用于崩溃恢复(crash-safe)，重启恢复的时候，通过check point和write pos 来恢复数据&lt;/td&gt;
-&lt;td&gt;binlog 适用于主从复制和数据恢复，某个时间点的操作记录归档，可以按时间点进行恢复；以及主从之间的复制重放, 实现高可用的基础，以及订阅binlog进行不同分布式存储数据的同步&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;由 binlog 和 redo log 的区别可知：因为mysql 早期自带的MyISAM存储引擎设计用 binlog 日志只用于归档，进行数据恢复，只依靠 binlog 是没有 crash-safe 能力的。innodb存储引擎引入mysql之后，引入redo/undo log文件来支持事务持久性和原子性来保证写入数据的一致性；但只有 redo log 也不行，因为 redo log 是 InnoDB 特有的，循环写入，无法还原不在这个redo log中的记录，比如从服务启动或者记录数据落后很多(除非是shared storage架构机制的云厂商数据库，像&lt;a href=&#34;https://www.allthingsdistributed.com/files/p1041-verbitski.pdf&#34;&gt;Aurora&lt;/a&gt;,&lt;a href=&#34;https://www.vldb.org/pvldb/vol11/p1849-cao.pdf&#34;&gt;PolarDB&lt;/a&gt;)；因此需要 binlog 和 redo log二者同时记录，才能保证当数据库发生误删或者宕机重启时，数据不会丢失。&lt;/p&gt;
-&lt;h3 id=&#34;两阶段提交&#34;&gt;两阶段提交&lt;/h3&gt;
-&lt;p&gt;为了保证写入两份日志redo log, binlog 最终恢复数据是一致的，采用&lt;a href=&#34;https://en.wikipedia.org/wiki/Two-phase_commit_protocol&#34;&gt;两阶段提交(2pc)&lt;/a&gt;的机制(XA,内部/全局事务 innodb提供一样的操作)，mysql server 执行器 在调用innodb存储引擎接口进行写操作的时候，起到一个事务协调者的作用,通过TC_LOG(Transaction Coordinator Log)基类定义了事务日志需要实现的接口: open, prepare, commit, rollback, close；实现这些接口的类：TC_LOG_DUMMY(disable the logging), TC_LOG_MMAP(mmap logging), MYSQL_BIN_LOG(binlog)；主要是是查看MYSQL_BIN_LOG类中&lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/binlog.cc#L7881&#34;&gt;prepare&lt;/a&gt; 和 &lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/binlog.cc#L7934&#34;&gt;commit&lt;/a&gt; 的实现；prepare 和 commit最终会调用存储引擎初始化时指向的handlerton对象对应函数；（这种接口隔离的常用设计，将调用方和实现方进行解耦，根据参数配置来绑定实现方，运行时动态调用）&lt;/p&gt;
-&lt;p&gt;mysql是以plugin的方式管理存储引擎，replication(主从副本同步)插件和其他插件（通过&lt;code&gt;SHOW PLUGINS;&lt;/code&gt;查看)；具体的插件代码在&lt;a href=&#34;https://github.com/mysql/mysql-server/tree/8.0/plugin&#34;&gt;plugin&lt;/a&gt;文件中，简单的插件示例&lt;a href=&#34;https://github.com/mysql/mysql-server/tree/8.0/plugin/rewrite_example&#34;&gt;rewrite_example&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;mysqld 启动时通过配置初始的存储引擎(默认innodb)，调用&lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/mysqld.cc#L5815&#34;&gt;init_server_components&lt;/a&gt; 调用innodb存储引擎的接口进行初始化ha_handler, 在&lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/storage/innobase/handler/ha_innodb.cc#L4935&#34;&gt;innodb_init&lt;/a&gt;中进行初始化, 比如刷盘操作 innobase_hton-&amp;gt;flush_logs = innobase_flush_logs; 然后在sql/handler中定义的相关接口调用, 比如&lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/handler.cc#L2459&#34;&gt;ha_flush_logs&lt;/a&gt;。&lt;/p&gt;
-&lt;p&gt;安装replication插件时会注册插件中相应的方法加入observer 列表中，运行触发的时候以AOP的方式RUN_HOOK 扫描observer列表Observer_info-&amp;gt;observer调用对应插件函数；replication插件需要实现以下&lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/replication.h&#34;&gt;replication文件中&lt;/a&gt;相关结构体的方法(接口) 才能加载：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;struct Trans_observer /* Observes and extends transaction execution */
-struct Server_state_observer /* Observer server state */
-struct Binlog_transmit_observer /* Observe and extends the binlog dumping thread. */
-struct Binlog_relay_IO_observer /* Observes and extends the service of slave IO thread. */
-struct Binlog_storage_observer /* Observe binlog logging storage */
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里会有各种日志的刷新机制，可以通过&lt;code&gt;show variables like &#39;%innodb%flush%&#39;; show variables like &#39;sync_binlog&#39;;&lt;/code&gt;获取对应的参数，可以去官网&lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/server-option-variable-reference.html&#34;&gt;Server Option, System Variable, and Status Variable Reference&lt;/a&gt; 查找对应的详情进行配置优化；&lt;/p&gt;
-&lt;p&gt;当开启binlog时, MySQL默认使用该隐式XA模式，开启自动提交事务autocommit。事务的提交流程相对比较复杂，执行简单的update操作，简述如下：&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;0. 执行器数据获取修改：&lt;/strong&gt;&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;执行器调用innodb存储引擎接口获取满足条件的数据，通过树索引查找/全表查找， 如果数据在buffer pool中查找到，返回数据；否则从磁盘表空间文件中读取数据page到buffer pool  clean page中，返回数据；无数据，流程终止返回；&lt;/li&gt;
-&lt;li&gt;执行器修改找到的数据，将修改的数据 调用innodb存储引擎接口写入新数据，进行两阶段提交；&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;事务的提交过程入口点位于 &lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/handler.cc#L1592&#34;&gt;ha_commit_trans&lt;/a&gt;函数，以mysql binlog 为事务2pc协调者为例，事务提交的过程如下：&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;1. mysql bin log 事务2pc协调者 处理 准备prepare阶段&lt;/strong&gt;：(tc_log-&amp;gt;prepare)&lt;/p&gt;
-&lt;p&gt;MYSQL_BIN_LOG::prepare(THD *thd, bool all)  设置 thd-&amp;gt;durability_property = HA_IGNORE_DURABILITY; 用于在存储引擎准备阶段不刷新事务日志redo/undo log 到磁盘日志文件中；&lt;/p&gt;
-&lt;p&gt;调用流程：ha_prepare_low → innobase_xa_prepare → trx_prepare_for_mysql →   &lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/storage/innobase/trx/trx0trx.cc#L2919&#34;&gt;static void trx_prepare(trx_t *trx)&lt;/a&gt;   → trx_prepare_low → trx_undo_set_state_at_prepare&lt;/p&gt;
-&lt;ol start=&#34;3&#34;&gt;
-&lt;li&gt;
-&lt;p&gt;执行器调用innodb存储引擎接口进行修改操作，首先写入数据的旧值至undo log buffer中，更新InnoDB的undo回滚段，将其设置为Prepare状态（&lt;code&gt;TRX_UNDO_PREPARED&lt;/code&gt;）写入mlog中，返回 redo log 的LSN,&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;更新buffer pool中的数据(如果插入需要从free(free list)变成clean page(lru list)，free list 不够时需要从flush ist或者lru list淘汰一定的page变成free page 加入free list); 修改的clean page(lru list)变成 dirty page(lru list)(更新的数据页在缓存中，还未刷盘)；dirty page写入flush list； 为了提高写性能异步线程刷盘(刷盘时机可以在commit之后；MySQL 5.7引入了page cleaner线程)&lt;/p&gt;
-&lt;p&gt;Tips: 在flush list上的页面一定在lru List上，但是反之则不成立。一个数据页可能会在不同的时刻被修改多次，在数据页上记录了最老(也就是第一次)的一次修改的LSN，即oldest_modification。不同数据页有不同的oldest_modification，flush list中的节点按照oldest_modification排序，链表尾是最小的，也就是最早被修改的数据页，当需要从flush list中淘汰页面时候，从链表尾部开始淘汰。加入flush list，需要使用flush_list_mutex保护，所以能保证flush list中节点的顺序。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;同时将数据页的修改记录LSN写入redo log buffer中，准备提交事务，此时 redo log 处于 prepare 状态，如果thd-&amp;gt;durability_property = HA_IGNORE_DURABILITY, 将&lt;code&gt;LSN&lt;/code&gt; 写入redo log 磁盘文件中；原子化操作&lt;code&gt;trx_t&lt;/code&gt; 事务状态为 PREPARED (用于事务隔离操作)； 将&lt;code&gt;gtid_desc&lt;/code&gt;写入undolog 表空间中；然后告知执行器执行完成了，随时可以提交事务。&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;Tips: 这里会出现redo log file写满的情况，buffer 写入会hang住，MySQL就会停下手头的任务，先把脏页刷到磁盘里，才能继续干活，会导致MySQL的服务器的tps有明显的波动； 默认开启了innodb_adaptive_flushing 算法进行优化，在redo log file还没有满的时候，会根据redo log file生成的速度和刷新频率来将redo log file中的脏页刷入磁盘表空间文件中；&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;2. mysql binlog 事务2pc协调者 处理 提交commit阶段：&lt;/strong&gt;(tc_log-&amp;gt;commit)&lt;/p&gt;
-&lt;p&gt;调用流程：TC_LOG::enum_result MYSQL_BIN_LOG::commit(THD *thd, bool all) →&lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/binlog.cc#L8717&#34;&gt;int MYSQL_BIN_LOG::ordered_commit(THD *thd, bool all, bool skip_commit)&lt;/a&gt;  , 如果没有开启log_bin，没有bin log文件，直接跳至commit阶段；&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;组提交&lt;/strong&gt; (流程见代码中介绍 &lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/binlog.h#L568-L641&#34;&gt;ordered_commit&lt;/a&gt; )：组提交第一眼看着有点懵逼，可以结合这片文章 &lt;a href=&#34;https://developer.aliyun.com/article/617776&#34;&gt;[图解MySQL]MySQL组提交(group commit)&lt;/a&gt; 了解；主要是为了提升事务吞吐量设计的方案(&lt;strong&gt;原则：尽量减少磁盘IO, 利用持久盘的特性顺序写&lt;/strong&gt;)；如同木桶效应一样，redo log 和 binlog 两者其中有一个没有组提交，都会降低事务吞吐量，所以最好的方式redo log 和 binlog 两者都组队提交; mysql设计者将组提交从flush阶段开始优化，将其分为几个阶段： flush 阶段、sync 阶段、(replication复制阶段) 、commit 阶段；其中replication复制阶段以HOOK的方式动态运行对于的replication复制策略，默认是异步复制。&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;binlog_order_commits&lt;/code&gt;参数控制innodb commit顺序和binlog写入顺序是否一致，默认启用保证顺序一致，方便备份和快速恢复；和binlog组提交配合使用，这个参数来自官网的介绍：&lt;/p&gt;
-&lt;p&gt;当在复制源服务器上启用此变量时（这是默认设置），发送给存储引擎的事务提交指令在单个leader线程上被序列化，因此事务总是按照写入binlog的相同顺序提交。禁用此变量允许使用多个线程发出事务提交指令。与binlog组提交结合使用，这可以防止单个事务的提交率成为吞吐量的瓶颈，因此可能会产生性能改进。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Flush阶段：&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;调用流程：TC_LOG::enum_result MYSQL_BIN_LOG::commit(THD *thd, bool all) →&lt;a href=&#34;&#34;&gt;int MYSQL_BIN_LOG::ordered_commit(THD *thd, bool all, bool skip_commit)&lt;/a&gt;  →  &lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/binlog.cc#L8301&#34;&gt;int MYSQL_BIN_LOG::process_flush_stage_queue&lt;/a&gt; ;&lt;/p&gt;
-&lt;p&gt;RUN_HOOK 去获取加载的插件，rpl handler Binlog_storage_delegate::after_flush FOREACH_OBSERVER宏 遍历observer列表Observer_info-&amp;gt;observer调用对应replication插件函数&lt;/p&gt;
-&lt;p&gt;最终调用&lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/storage/innobase/os/os0file.cc#L2847&#34;&gt;os_file_fsync_posix&lt;/a&gt; flush redolog to disk ; 根据不同的操作系统来调用，unix操作系统调用fsync/fdatasync函数刷盘, fsync会确保OS cache中的数据直到写磁盘操作结束才会返回，并且写入元数据，而fdatasync不会; 如果想不走OS cache直接写磁盘，对打开/创建的文件句柄加上O_DIRECT属性，一般用于写系统表空间数据落盘；&lt;/p&gt;
-&lt;p&gt;此时process_flush_stage_queue处理会形成一组队列，由组leader(一个组中最早开始的事务)依次为别的线程写binlog文件 在准备写binlog前，会先调用ha_flush_logs -&amp;gt; innobase_flush_logs接口，将存储的日志写到最新的LSN；然后再写binlog到文件; 这样做的目的是为了提升组提交的效率。&lt;/p&gt;
-&lt;ol start=&#34;6&#34;&gt;
-&lt;li&gt;执行器 调用innodb存储引擎innobase_flush_logs-&amp;gt;log_flush_low-&amp;gt;redo_space_flush-&amp;gt;os_file_flush-&amp;gt;&lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/storage/innobase/os/os0file.cc#L2847&#34;&gt;os_file_fsync_posix&lt;/a&gt; 接口 将 redo/undo log buffer中的数据写入redo/undo log file 磁盘中；&lt;/li&gt;
-&lt;li&gt;执行器 调用 MYSQL_BIN_LOG::flush_thread_caches 将 thread caches binlog缓冲数据  写入 bin log(xid,GTID)中(还未刷盘),通过 &lt;code&gt;show variables like &#39;%binlog_cache%&#39;;&lt;/code&gt;查看缓冲大小； 并且设置好事务的写入位置m_trans_end_pos，当事务提交commit阶段的时候，直接获取位置提交；&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;&lt;strong&gt;Sync_binlog阶段：&lt;/strong&gt; &lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/sql/binlog.cc#L8506&#34;&gt;std::pair&amp;lt;bool, bool&amp;gt; MYSQL_BIN_LOG::sync_binlog_file(bool force)&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;RUN_HOOK 去获取加载的插件，rpl handler Binlog_storage_delegate::after_sync FOREACH_OBSERVER宏遍历observer列表Observer_info-&amp;gt;observer调用对应replication插件函数；&lt;/p&gt;
-&lt;p&gt;最终调用 &lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/mysys/my_sync.cc#L84&#34;&gt;int my_sync(File fd, myf my_flags)&lt;/a&gt;  Sync binlog data in file to disk&lt;/p&gt;
-&lt;p&gt;如果&lt;code&gt;sync_binlog&lt;/code&gt;计数超过配置值，则进行一次文件fsync，n&amp;gt;1 开启组提交，参数&lt;code&gt;sync_binlog&lt;/code&gt;的含义不是指的这么多个事务之后做一次fsync，而是多个事务一组之后做一次fsync，&lt;code&gt;binlog_group_commit_sync_delay&lt;/code&gt;,&lt;code&gt;binlog_group_commit_sync_no_delay_count&lt;/code&gt; 这些参数见官网文档；&lt;/p&gt;
-&lt;ol start=&#34;8&#34;&gt;
-&lt;li&gt;开始生成这个时间点的逻辑操作日志格式，通过&lt;code&gt;sync_binlog&lt;/code&gt; flush策略异步将thead caches中的数据批量写入到磁盘binlog文件binlog.**/binlog.index中； 通过 &lt;code&gt;show binlog events;&lt;/code&gt;来查看binlog文件相关的信息，也可以对单个文件查看；&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;&lt;strong&gt;Async/Semisync/Group 异步/半同步/组复制阶段：&lt;/strong&gt; (写操作都在主上)&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;异步复制&lt;/strong&gt;：主库在记录完binlog，执行完自己的事务之后就会直接返回，mysql主从模式默认是异步复制；异步复制流程如下图：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://dev.mysql.com/doc/refman/8.0/en/images/async-replication-diagram.png&#34; alt=&#34;async-replication-diagram&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;半同步复制&lt;/strong&gt;：主的事务需要等一台从同步binlog日志提交到Relay Log中(sync_relay=1)，返回ack，主库提交事务；半同步流程如下图：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://dev.mysql.com/doc/refman/8.0/en/images/semisync-replication-diagram.png&#34; alt=&#34;semisync-replication-diagram&#34;&gt;&lt;/p&gt;
-&lt;p&gt;从MySQL5.5开始 以插件的形式支持半同步复制；如果需要支持，主从都需要安装半同步插件库；对应的代码在&lt;a href=&#34;https://github.com/mysql/mysql-server/tree/8.0/plugin/semisync&#34;&gt;plugin/semisync&lt;/a&gt;文件夹中。&lt;/p&gt;
-&lt;p&gt;主 &lt;code&gt;install plugin rpl_semi_sync_master soname &#39;semisync_master.so&#39;;&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;从 &lt;code&gt;install plugin rpl_semi_sync_slave soname &#39;semisync_slave.so&#39;;&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;并且打开半同步复制，&lt;code&gt;set global rpl_semi_sync_master_enabled=1;&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;其中通过参数&lt;code&gt;rpl_semi_sync_master_wait_point&lt;/code&gt;来决定什么时候提交事务：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;after_sync&lt;/strong&gt; 主库先不提交事务，等待某一个从库返回了结果之后，再提交事务，在返回结构通知客户端。这样一来，如果从库在没有任何返回的情况下宕机了，master这边也无法提交事务。主从仍然是一致的，mysql5.7之后默认值。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;after_commit&lt;/strong&gt; 主库先提交事务，等待从库返回结果再通知客户端。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;strong&gt;组复制&lt;/strong&gt;：基于原生复制及 paxos 协议，提供一致数据安全保证，一种可用于实现容错系统的技术；具体详情见官方文档：&lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/group-replication.html&#34;&gt;MySQL8.0 Group Replication&lt;/a&gt;；组复制流程如下图：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://dev.mysql.com/doc/refman/8.0/en/images/gr-replication-diagram.png&#34; alt=&#34;gr-replication-diagram&#34;&gt;&lt;/p&gt;
-&lt;p&gt;MySQL 5.7.17版本中引入MySQL 组复制，同样也是以插件的形式支持; 对应的代码在&lt;a href=&#34;https://github.com/mysql/mysql-server/tree/8.0/plugin/group_replication&#34;&gt;plugin/group_replication&lt;/a&gt;文件夹中。一组副本机器安装插件都是&lt;code&gt;INSTALL PLUGIN group_replication SONAME &#39;group_replication.so&#39;;&lt;/code&gt;&lt;/p&gt;
-&lt;ol start=&#34;8&#34;&gt;
-&lt;li&gt;如果开启的主从复制(默认异步)1:n，主库会等待从库I/O线程建立连接之后，创建binlog dump线程，通知slave有数据更新，当I/O线程请求日志内容时，会将此时的binlog名称和当前更新的位置pos同时传给slave的I/O线程, 把binlog event发送给从库I/O线程，从库I/O线程获取到binlog event之后将其写入到自己的Relay Log中，然后从库启动SQL线程，将Relay中的数据进行重放，完成从库的数据更新；为了保证不重复更新，binlog/relaylog 中记录了GTID（mysql5.6加入）, 全局唯一, 如果relaylog中已有GTID, 则执行GTID自动跳过，意味着在源上提交的事务只能在副本上应用一次，这有助于保证一致性;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;另外如果主从复制过程突然中断了，或者主从切换了，重启之后发现SQL线程实际执行到位置和数据库记录的不一致；mysql5.6之后将复制的进度放在系统的&lt;code&gt;mysql.slave_relay_log_info&lt;/code&gt;innodb表里，并且把更新进度、SQL线程执行用户事务绑定成一个事务执行。即使宕机了，可以通过MySQL内建的崩溃恢复机制来使实际执行的位置和数据库保存的进度恢复到一致。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Commit阶段:&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;调用流程：int MYSQL_BIN_LOG::finish_commit(THD *thd) -&amp;gt; ha_commit_low -&amp;gt; innobase_commit -&amp;gt; &lt;a href=&#34;https://github.com/mysql/mysql-server/blob/8.0/storage/innobase/trx/trx0trx.cc#L2199&#34;&gt;void trx_commit(trx_t *trx)&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;RUN_HOOK 去获取加载的插件，rpl handler Trans_delegate::after_commit  FOREACH_OBSERVER宏遍历observer列表Observer_info-&amp;gt;observer调用对应replication插件函数；&lt;/p&gt;
-&lt;ol start=&#34;9&#34;&gt;
-&lt;li&gt;
-&lt;p&gt;只有binlog写入磁盘成功之后，执行器才会调用innodb存储引擎接口，从队列中获取事务组依次进行innodb commit 提交释放事务，将redo log中已经prepare的事务提交写入commit标记，并且写入binlog位点；最后调用MYSQL_BIN_LOG::rotate 是否切换binlog文件(在切换文件期间，使用一个防止新的提交组执行刷新阶段的锁，并等待直到准备好的事务的计数器变为0，然后才创建新文件)，如果切成新文件， 调用MYSQL_BIN_LOG::purge()刷盘；结束ordered_commit 组提交流程,返回提交；&lt;/p&gt;
-&lt;p&gt;Tips: Commit阶段不用刷盘，Flush阶段中的redo log刷盘已经足够保证数据库崩溃时的数据安全了; Commit阶段队列的作用是承接Sync阶段的事务，完成最后的引擎提交，使得Sync可以尽早的处理下一组事务，最大化组提交的效率。&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h4 id=&#34;整体更新流程&#34;&gt;整体更新流程：&lt;/h4&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/mysql-innodb-w.drawio.png&#34; alt=&#34;mysql-innodb-w&#34;&gt;&lt;/p&gt;
-&lt;h3 id=&#34;崩溃恢复&#34;&gt;崩溃恢复&lt;/h3&gt;
-&lt;p&gt;更新流程中写入redo log的过程拆成了两个步骤prepare和commit 两个阶段；如果不使用两阶段提交，数据库的状态就有可能和用它的日志恢复出来的库的状态不一致。在崩溃恢复中，&lt;!-- raw HTML omitted --&gt;是以 binlog 中的 xid 和 redolog 中的 xid 进行比较，xid 在 binlog 里存在则提交，不存在则回滚，以及判断redo log中是否有commit标识&lt;!-- raw HTML omitted --&gt;；崩溃恢复时具体的情况:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;binlog无记录，redolog无记录：在redolog写之前crash, 无prepare状态，无undo log 记录，恢复操作：无，无需关心；&lt;/li&gt;
-&lt;li&gt;binlog无记录，redolog无记录：在redolog写之前crash, 无prepare状态，有undo log 记录，恢复操作：通过undo log回滚事务；&lt;/li&gt;
-&lt;li&gt;binlog有记录，redolog有记录：redolog状态prepare， 则判断对应的事务是否存在完整的binlog，恢复操作：如果是, 则提交事务，否则, 通过undo log回滚事务;&lt;/li&gt;
-&lt;li&gt;如果redo log里面的事务是完整的, 也就是有了commit标识, 恢复操作：直接提交事务；&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
-&lt;p&gt;对于需要持久化的数据库系统，避免不了事务在处理过程中，突然中断的情况；WAL通过预写日志的方式在事务提交之前，需要把修改重放记录和撤销详细记录写入日志文件中，以便在故障后恢复数据；事务开始后，所有对数据库的修改在发送到缓冲池之前都被记录在内存中的WAL缓冲区中；事务提交之前，必须把WAL缓冲区刷新到磁盘。mysql innodb存储引擎引入redo/undo log文件来支持事务持久性和原子性，由于mysql binlog用来归档数据记录恢复和复制，为了保证写入两份日志redo log, binlog 最终恢复数据是一致的，采用两阶段提交机制，通过源码了解了些整体WAL的实现；以及崩溃时候需要用日志进行恢复。(其他持久化存储系统的WAL实现，待续)&lt;/p&gt;
-&lt;h2 id=&#34;references&#34;&gt;references&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Write-ahead_logging&#34;&gt;Write-ahead_logging&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Algorithms_for_Recovery_and_Isolation_Exploiting_Semantics&#34;&gt;ARIES:Algorithms_for_Recovery_and_Isolation_Exploiting_Semantics&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://cs.stanford.edu/people/chrismre/cs345/rl/aries.pdf&#34;&gt;aries.pdf&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/OceanBase-Partner/lectures-on-dbms-implementation/blob/main/lecture-6.md#642-%E7%BC%93%E5%86%B2%E6%B1%A0%E7%AE%A1%E7%90%86%E7%AD%96%E7%95%A5&#34;&gt;缓冲池管理策略&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://mesl.ucsd.edu/pubs/SOSP2013-MARS.pdf&#34;&gt;From ARIES to MARS: Transaction Support for Next-Generation, Solid-State Drives.pdf&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://repository.bilkent.edu.tr/bitstream/handle/11693/37609/Implications%20of%20non-volatile%20memory%20as%20primary%20storage%20for%20database%20management%20systems.pdf&#34;&gt;Implications of Non-Volatile Memory as Primary Storage for Database Management Systems.pdf&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://infoscience.epfl.ch/record/170505/files/aether-smpfulltext.pdf&#34;&gt;Scalability of write-ahead logging on multicore and multisocket hardware.pdf&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.vldb.org/pvldb/vol10/p337-arulraj.pdf&#34;&gt;WBL.pdf&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=S9nctHdkggk&#34;&gt;ARIES Overview, Types of Log Records, ARIES Helper Structures&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=4VGkRXVM5fk&#34;&gt;ARIES Database Recovery (CMU Databases Systems / Fall 2019)&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://dev.mysql.com/doc/internals/en/binary-log.html&#34;&gt;mysql binary-log&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://mysql.taobao.org/monthly/2021/10/01/&#34;&gt;MySQL · 引擎特性 · 庖丁解InnoDB之UNDO LOG&lt;/a&gt;  &lt;a href=&#34;http://catkang.github.io/2020/02/27/mysql-redo.html&#34;&gt;庖丁解InnoDB之REDO LOG&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://mysql.taobao.org/monthly/2020/05/09/&#34;&gt;MySQL · 引擎特性 · 基于GTID复制实现的工作原理&lt;/a&gt;  &lt;a href=&#34;http://mysql.taobao.org/monthly/2020/05/07/&#34;&gt;MySQL · 源码分析 · 内部 XA 和组提交&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://time.geekbang.org/column/article/73161&#34;&gt;日志和索引相关问题&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://developer.aliyun.com/article/617776&#34;&gt;[图解MySQL]MySQL组提交(group commit)&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://mysql.taobao.org/monthly/2018/07/01/&#34;&gt;MySQL · 引擎特性 · WAL那些事儿&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://zhuanlan.zhihu.com/p/372300181&#34;&gt;无处不在的 MySQL XA 事务&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/server-option-variable-reference.html&#34;&gt;Server Option, System Variable, and Status Variable Reference&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://icyfenix.cn/architect-perspective/general-architecture/transaction/local.html&#34;&gt;凤凰架构-本地事务&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>

@@ -6,7 +6,20 @@
     <description>Recent content in 技术 on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Thu, 23 Feb 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 30 Jul 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>kv-codis迁移</title>
+      <link>https://weedge.github.io/post/codis-slot/</link>
+      <pubDate>Sun, 30 Jul 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/codis-slot/</guid>
+      <description>&lt;iframe frameborder=&#34;no&#34; border=&#34;0&#34; marginwidth=&#34;0&#34; marginheight=&#34;0&#34; width=330 height=86 src=&#34;//music.163.com/outchain/player?type=2&amp;id=1890574156&amp;auto=1&amp;height=66&#34;&gt;&lt;/iframe&gt;
+
+
+
+&lt;p&gt;最近在搞一个kv系统，想接入codis来管理slot，实现数据的迁移，进行scaling水平扩展，从网上找了点资料，然后随笔记录梳理一下，以便相应的代码可以联调接入时优化下~&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>Go tips-笔记: 优化 91-100 mistakes</title>
       <link>https://weedge.github.io/post/notions/go-tips/go-tips-12-optimizations/</link>
@@ -255,19 +268,6 @@
       <guid>https://weedge.github.io/post/conf/</guid>
       <description>&lt;h3 id=&#34;介绍&#34;&gt;介绍&lt;/h3&gt;
 &lt;p&gt;业务服务在启动时加载配置，配置分为静态配置和动态配置，静态配置如服务监听的端口，日志路径，访问依赖服务单元不同云(region / zone) 域名地址等；动态配置包括业务配置，流程管理配置，策略配置等；静态配置服务启动之后不会更改，而动态配置在服务启动运行时可以动态热加载；将配置的内容和版本进行分离，关注配置的管理而无需关注配置的内容，配置内容用户可以自定义配置内容，使用json-schema进行校验，提供自定义配置内容json给后台ui前端进行单个整体配置的交互，配置后台只需加载json-schema进行校验提交内容，json-schema由用户上传提供地址即可。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>工具盒子-ping/traceroute</title>
-      <link>https://weedge.github.io/post/ping/</link>
-      <pubDate>Mon, 15 Nov 2021 14:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/ping/</guid>
-      <description>&lt;h2 id=&#34;序言&#34;&gt;序言&lt;/h2&gt;
-&lt;p&gt;在访问网络是否ok, 通常喜欢用ping 命令来访问&lt;code&gt;ping www.baidu.com&lt;/code&gt; 看是否出现超时；ping在不同的操作系统平台实现方式差不多，底层都是用ICMP协议，每次发ICMP ECHO_REQUEST packet (IP地址/Host, ttl，icmp_seq序列号，&lt;a href=&#34;https://en.wikipedia.org/wiki/Round-trip_delay&#34;&gt;RTD/RTT&lt;/a&gt;(往返延时)记录 ),  运行结束后统计每个RTT, 最大RTT, 最小RTT, 平均RTT, &lt;a href=&#34;https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford&#34;&gt;标准偏差&lt;/a&gt;RTT, 发送/接受packets总数，丢包率 等数据，ping工具在PING(8)中的定义如下：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;The ping utility uses the ICMP protocol&amp;rsquo;s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.  ECHO_REQUEST datagrams  (&amp;ldquo;pings&#39;&#39;) have an IP and ICMP header, followed by a &amp;ldquo;struct timeval&#39;&#39; and then an arbitrary number of &amp;ldquo;pad&amp;rdquo; bytes used to fill out the packet.&lt;/p&gt;
-&lt;/blockquote&gt;</description>
     </item>
     
   </channel>

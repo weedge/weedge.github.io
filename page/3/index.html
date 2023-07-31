@@ -297,6 +297,44 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/notions/go-tips/go-tips-02-code-project-organization/">Go tips-笔记: 代码和项目组织 1-16 mistakes</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2023-02-13" class="post-time">
+        2023-02-13
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <h2 id="引言">引言</h2>
+<p>从错误中学习效率更高，而且从错误失败的场景下学习，往往比直接交代正确性的理论知识，没有上下文的结果去 记忆巩固知识，在错误失败场景下往往印象更深刻；可以帮助更好地避免错误并做出更明智、更有意识的决定，因为现在了解了错误背后的基本原理，有种该死的，恍然大悟的感觉，拨开雨雾见月明；</p>
+<p>涵盖了可能导致各种软件错误的案例，包括数据竞争、泄漏、逻辑错误和其他缺陷。虽然准确的测试应该是尽早发现此类错误的一种方式，但有时可能会因为时间限制或复杂性等不同因素而错过案例。因此，使用Golang开发，确保避免常见错误至关重要。</p>
+<p>有些坑可能曾经踩过，通过这些mistakes产生共鸣，加深印象，同时可以继续追加一些新的坑来填充,比如系统性能调优，包括IO,  网络，数据编解码压缩，分布式系统，业务系统组织架构，逐步学习实践试错过程。学习笔记开个头。</p>
+    </div>
+    <div class="read-more">
+      <a href="/post/notions/go-tips/go-tips-02-code-project-organization/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/zb-gift/">设计-直播间赠送礼物功能</a>
     </h1>
     
@@ -487,41 +525,6 @@
     </div>
     <div class="read-more">
       <a href="/post/crdt/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/pool/">pool</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2021-12-02" class="post-time">
-        2021-12-02
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h2 id="介绍">介绍</h2>
-<p>平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(<a href="https://en.wikipedia.org/wiki/Pool_(computer_science)">pool</a>)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，<a href="https://zh.wikipedia.org/wiki/%E8%A1%8C%E7%A8%8B">进程</a>(process <a href="https://en.wikipedia.org/wiki/Process_control_block">PCB</a> 内核态)、<a href="https://zh.wikipedia.org/wiki/%E5%9F%B7%E8%A1%8C%E7%B7%92">线程</a>(thread <a href="https://en.wikipedia.org/wiki/Thread_control_block">TCB </a> 内核态)、<a href="https://zh.wikipedia.org/zh-hans/%E5%8D%8F%E7%A8%8B">协程</a>(coroutine 用户态协作式调度,尽量减少内核调度)为载体的工作任务(work task 在用户态分配栈空间)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/pool/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
