@@ -80,7 +80,7 @@
 
 最近在搞一个kv系统，想接入codis来管理slot，实现数据的迁移，进行scaling水平扩展，从网上找了点资料，然后随笔记录梳理一下，以便相应的代码可以联调接入时优化下~"><meta itemprop="datePublished" content="2023-07-30T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-07-30T10:26:23+08:00" />
-<meta itemprop="wordCount" content="2496">
+<meta itemprop="wordCount" content="2543">
 <meta itemprop="keywords" content="kv," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="kv-codis迁移"/>
 <meta name="twitter:description" content="
@@ -393,8 +393,8 @@
 <p>同步,异步迁移通过dashboard配置文件设置 migration_method。</p>
 <p>Gist: <a href="https://gist.github.com/weedge/8d1d37963a2dfd7ecd47fefc7d8016b1">https://gist.github.com/weedge/8d1d37963a2dfd7ecd47fefc7d8016b1</a></p>
 <h4 id="其他kv引擎接入">其他kv引擎接入：</h4>
-<p>理论上只要实现了codis的迁移命令就可以对数据实例slot进行管理操作了，还可以进行不同类型实例的数据迁移，不同类型kv存储引擎实例来实现不同的功能slot上， 比如 热数据 可以请求到 内存kv中， 冷数据可以请求到磁盘kv中，有种乾坤大挪移的感觉~，主要是利用codis管理key-&gt; slot 与 node之间的会话关系，其实现在云原生网关中常说的控制面(control)和数据面(data)，这里分别对应dashboard(发送迁移命令)和 proxy (tcp长连,根据key-&gt;slot与node映射的路由规则转发命令)。</p>
-<p>如果管理迁移slot的kv节点处理命令不是单线程的，比如<a href="https://github.com/dragonflydb/dragonfly">dragonfly</a> 等处理命令是多线程的(多线程IO模型 <a href="https://github.com/romange/helio">helio</a> 支持io_uring)，以及 <a href="https://github.com/weedge/wedis">wedis</a>  处理命令是多协程（一个连接会话对应一个协程，本质调度执行是内核线程, 网络IO模型根据场景可以优化下），则操作只需要优化实现 同步命令 <code>SLOTSMGRTTAGSLOT</code> 和被动触发的 <code>SLOTSMGRTTAGONE</code> 可以满足需求，当然如果想对接异步操作命令也是可以的。</p>
+<p>理论上只要实现了codis的迁移命令就可以对数据实例slot进行管理操作了，还可以进行不同类型实例的数据迁移，不同类型kv存储引擎实例来实现不同的功能slot上， 比如 热数据 可以请求到 内存kv中， 冷数据可以请求到磁盘kv中，有种乾坤大挪移的感觉~，主要是利用codis管理key-&gt; slot 与 node之间的会话关系，其实现在云原生网关中常说的控制面(control)和数据面(data)，这里分别对应dashboard(发送迁移命令)和 proxy (tcp长连,根据session db , key-&gt;slot与node映射的路由规则转发命令)。</p>
+<p>如果管理迁移slot的kv节点处理命令不是单线程的，比如<a href="https://github.com/dragonflydb/dragonfly">dragonfly</a> 等处理命令是多线程的sharding 内存(多线程IO模型 <a href="https://github.com/romange/helio">helio</a> 支持io_uring)，以及 <a href="https://github.com/weedge/wedis">wedis</a>  处理命令是多协程（一个连接会话对应一个协程，本质调度执行是内核线程, 网络IO模型根据场景使用netpoll可以优化下,以及批量迁移batch put 尽量减少io），则操作只需要优化实现 同步命令 <code>SLOTSMGRTTAGSLOT</code> 和被动触发的 <code>SLOTSMGRTTAGONE</code> 可以满足需求，当然如果想对接异步操作命令也是可以的。</p>
 <p>tips:</p>
 <ol>
 <li>对于slot相关操作如果已插件的方式对接到kv引擎中实现，是比较符合工程实现的，一种是动态链接(c/c++)，通过MODULE LOAD 命令，或者loadmodule 配置项; 一种是编译时静态链接(golang 依赖注入，plugin比较鸡肋，golang本身是静态编译)</li>
@@ -449,6 +449,19 @@
       
       <nav class="post-nav">
         
+          <a class="prev" href="/post/oneday/how-did-uber-solve-data-consistency-problem/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">译：Uber是如何解决数据一致性问题的？</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
         
           <a class="next" href="/post/doraemon/openai/">
             <span class="next-text nav-default">OpenAI体验</span>

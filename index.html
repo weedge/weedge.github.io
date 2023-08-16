@@ -297,6 +297,42 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/oneday/how-did-uber-solve-data-consistency-problem/">译：Uber是如何解决数据一致性问题的？</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2023-08-16" class="post-time">
+        2023-08-16
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <h1 id="介绍">介绍</h1>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/how-did-uber-solv-data-consistency-problem/1.png" alt=""></p>
+<p>Uber 的请求流程相当复杂，从上图可以看出，他们使用 Spanner 来存储大量数据。Spanner 是一种完全托管的关键任务关系数据库服务，可提供全球范围内的事务一致性、自动同步复制以实现高可用性。</p>
+    </div>
+    <div class="read-more">
+      <a href="/post/oneday/how-did-uber-solve-data-consistency-problem/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/codis-slot/">kv-codis迁移</a>
     </h1>
     
@@ -485,49 +521,6 @@
     </div>
     <div class="read-more">
       <a href="/post/notions/go-tips/go-tips-10-standard-lib/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/notions/go-tips/go-tips-09-concurrency-practice/">Go tips-笔记: 并发实践 61-74 mistakes</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-02-18" class="post-time">
-        2023-02-18
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h2 id="引言">引言</h2>
-<p>这里主要介绍并发实践中遇到的问题，这些问题在golang开源项目中也经常会出现，如果编写并发也会一直伴随在开发当中出现，也有工程实践相关的论文进行统计归纳总结(PS: 用这种方式发个论文还是比较轻松的~)：</p>
-<p><strong><a href="https://songlh.github.io/paper/go-study.pdf">Understanding Real-World Concurrency Bugs in Go</a></strong></p>
-<p>tips: 作者对golang和rust都有研究，结合相关的代码都可以一起学习下, 语言方面的小细节</p>
-<p><a href="https://arxiv.org/pdf/2204.00764.pdf"><strong>A Study of Real-World Data Races in Golang</strong></a></p>
-<p>Go 官方提供race工具来检查并发场景下的数据竞争问题： <a href="https://go.dev/doc/articles/race_detector">https://go.dev/doc/articles/race_detector</a></p>
-<p><a href="https://github.com/google/sanitizers/wiki/ThreadSanitizerGoManual">https://github.com/google/sanitizers/wiki/ThreadSanitizerGoManual</a></p>
-<p>注：Go要使用-race，需启用CGO，依赖sanitizers；一般用于开发测试进行检测</p>
-<p>如果想更加深入的了解并发并行，可以一起学习这本书： <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/perfbook/perfbook.html"><strong>Is Parallel Programming Hard, And, If So, What Can You Do About It?</strong></a></p>
-    </div>
-    <div class="read-more">
-      <a href="/post/notions/go-tips/go-tips-09-concurrency-practice/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>

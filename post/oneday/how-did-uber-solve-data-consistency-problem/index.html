@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>时间飘过</title>
+  <title>译：Uber是如何解决数据一致性问题的？ - 时间飘过</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -23,7 +23,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="记录工作和生活" />
+  <meta name="description" content="介绍 Uber 的请求流程相当复杂，从上图可以看出，他们使用 Spanner 来存储大量数据。Spanner 是一种完全托管的关键任务关系数据库服务，可提供全球范围内的事务一致性、自动同步复制以实现高可用性。
+" />
+
   <meta name="keywords" content="工作, 技术, 生活" />
 
 
@@ -34,8 +36,8 @@
 <meta name="generator" content="Hugo 0.88.1" />
 
 
-<link rel="canonical" href="https://weedge.github.io/" />
-<link href="/index.xml" rel="alternate" type="application/rss+xml" title="时间飘过" />
+<link rel="canonical" href="https://weedge.github.io/post/oneday/how-did-uber-solve-data-consistency-problem/" />
+
 
 
 
@@ -60,15 +62,26 @@
 <link rel="stylesheet" href="/css/copy-to-clipboard.css">
 
 
-<meta property="og:title" content="时间飘过" />
-<meta property="og:description" content="记录工作和生活" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://weedge.github.io/" />
+<meta property="og:title" content="译：Uber是如何解决数据一致性问题的？" />
+<meta property="og:description" content="介绍
 
-<meta itemprop="name" content="时间飘过">
-<meta itemprop="description" content="记录工作和生活"><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="时间飘过"/>
-<meta name="twitter:description" content="记录工作和生活"/>
+Uber 的请求流程相当复杂，从上图可以看出，他们使用 Spanner 来存储大量数据。Spanner 是一种完全托管的关键任务关系数据库服务，可提供全球范围内的事务一致性、自动同步复制以实现高可用性。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/oneday/how-did-uber-solve-data-consistency-problem/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-08-16T10:26:23+08:00" />
+<meta property="article:modified_time" content="2023-08-16T10:26:23+08:00" />
+
+<meta itemprop="name" content="译：Uber是如何解决数据一致性问题的？">
+<meta itemprop="description" content="介绍
+
+Uber 的请求流程相当复杂，从上图可以看出，他们使用 Spanner 来存储大量数据。Spanner 是一种完全托管的关键任务关系数据库服务，可提供全球范围内的事务一致性、自动同步复制以实现高可用性。"><meta itemprop="datePublished" content="2023-08-16T10:26:23+08:00" />
+<meta itemprop="dateModified" content="2023-08-16T10:26:23+08:00" />
+<meta itemprop="wordCount" content="1594">
+<meta itemprop="keywords" content="oneday," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="译：Uber是如何解决数据一致性问题的？"/>
+<meta name="twitter:description" content="介绍
+
+Uber 的请求流程相当复杂，从上图可以看出，他们使用 Spanner 来存储大量数据。Spanner 是一种完全托管的关键任务关系数据库服务，可提供全球范围内的事务一致性、自动同步复制以实现高可用性。"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -285,204 +298,194 @@
     <main id="main" class="main bg-llight">
       <div class="content-wrapper">
         <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">译：Uber是如何解决数据一致性问题的？</h1>
+      
+      <div class="post-meta">
+        <time datetime="2023-08-16" class="post-time">
+          2023-08-16
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#总结">总结</a></li>
+        <li><a href="#reference">reference</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <h1 id="介绍">介绍</h1>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/how-did-uber-solv-data-consistency-problem/1.png" alt=""></p>
+<p>Uber 的请求流程相当复杂，从上图可以看出，他们使用 Spanner 来存储大量数据。Spanner 是一种完全托管的关键任务关系数据库服务，可提供全球范围内的事务一致性、自动同步复制以实现高可用性。</p>
+<p>但在此之前，最初的架构有本地数据库。更具体地说，他们使用 Cassandra 来存储实时数据。另外，在 Cassandra 之上，他们还使用了 Ringpop。有关更多详细信息，您可以查看<a href="https://www.uber.com/blog/ringpop-open-source-nodejs-library/">此博客文章</a>。</p>
+<p>但当扩展到数百万个并发请求时，Cassandra 很难保证低延迟写入。另一个问题是工程团队开始注意到需要多行和多表写入的复杂存储交互（我不知道这意味着什么）。但无论如何，本地 Cassandra DB 开始变得非常具有挑战性。</p>
+<p>对于 Uber 来说，数据不一致可能会导致两名司机接送同一位顾客。</p>
+<p>解决方案是构建一个应用层框架，引入中间层(间), 使用<strong>Saga 模式</strong>来编排数据库操作。</p>
+<p><strong>Saga设计模式</strong></p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/how-did-uber-solv-data-consistency-problem/2.png" alt=""></p>
+<p>Saga设计模式是一种在分布式事务场景中管理跨微服务的数据一致性的方法。传奇是更新每个服务并发布消息或事件以触发下一个事务步骤的事务序列。如果某个步骤失败，saga 会执行补偿事务来抵消前面的事务。</p>
+<p>简而言之，如果事务期间出现问题（<em>事务</em>是单个逻辑或工作单元，有时由多个操作组成），则应恢复之前的更改。</p>
+<p><strong>什么是事务？</strong></p>
+<p>事务是单个逻辑或工作单元，有时由多个操作组成。在事务中，<em>事件</em>是实体发生的状态更改，<em>命令</em>封装了执行操作或触发后续事件所需的所有信息。</p>
+<p>事务必须是<em>原子的、一致的、隔离的和持久的（ACID）</em>。单个服务内的事务是ACID的，但是跨服务的数据一致性需要跨服务的事务管理策略。</p>
+<p>在多服务架构中：</p>
+<ul>
+<li><em>原子性</em> 是一组不可分割且不可简化的操作，要么全部发生，要么不发生。</li>
+<li><em>一致性</em> 是指事务仅将数据从一种有效状态带到另一种有效状态。</li>
+<li><em>隔离性</em> 保证并发事务产生与顺序执行的事务产生的数据状态相同的数据状态。</li>
+<li><em>持久性</em> 确保即使在系统故障或断电的情况下，已提交的事务仍保持提交状态。</li>
+</ul>
+<p><strong>解决方案</strong></p>
+<p><em>Saga 模式使用本地事务</em>序列提供事务管理。本地事务是 saga 参与者执行的原子工作。每个本地事务都会更新数据库并发布消息或事件以触发Sagas中的下一个本地事务。如果本地事务失败，saga 会执行一系列<em>补偿事务</em>，以撤消先前本地事务所做的更改。</p>
+<p>有两种常见的 saga 实现方法：choreography 和 orchestration。每种方法都有自己的一套挑战和技术来协调工作流程。</p>
+<p>**编排(choreography)**是一种协调sagas的方法，参与者可以在没有集中控制点的情况下交换事件。通过编排，每个本地事务都会发布触发其他服务中的本地事务的域事件。rocketMQ中的消息事务采用的这种编排模式，满足RC隔离(<em>Read Committed</em>)。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/how-did-uber-solv-data-consistency-problem/3.png" alt=""></p>
+<p>**编排(orchestration)**是一种协调sagas的方法，其中集中控制器告诉传奇参与者要执行哪些本地事务。saga 协调器处理所有事务并告诉参与者根据事件执行哪个操作。编排器执行 saga 请求，存储和解释每个任务的状态，并通过补偿事务处理故障恢复。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/how-did-uber-solv-data-consistency-problem/4.png" alt=""></p>
+<p>观看视频<a href="https://www.youtube.com/watch?v=DY2AR8Wzg3Y">How does Uber scale to millions of concurrent requests?</a>了解有关 Uber 迁移及其挑战的更多信息。如果您想了解有关 Saga 模式的更多详细信息参考<a href="https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/saga/saga">此链接</a>。</p>
+<p><strong>数据迁移：</strong></p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/how-did-uber-solv-data-consistency-problem/5.png" alt=""></p>
+<h3 id="总结">总结</h3>
+<p>主要是为了保证数据一致性， 不出现司机乘客对同一个事务操作异常，从原来的nosql 转向 newsql， 引入了google cloudy spanner (new SQL) 提供全球范围内的事务一致性、自动同步复制以实现高可用性。结合uber这个场景，然后看下spanner的论文去寻求解决方案，了解下细节结合场景进行设计。视频中提到了大规模数据迁移的挑战，特别是全球跨数据中心的迁移同步，有相应的网络优化技术（这些技术解决方案刚出来的时候国内有跟进，当然技术文章介绍肯定少不了）</p>
+<p>题外话：</p>
+<blockquote>
+<p>需求场景驱动技术方案去落地，技术方案不一定最优解， 能满足当前需求场景，过度设计优化产生无意义的消耗，不过可以留下接口可以去扩展，满足不同场景的进一步优化，软件中没有通用的解决方案银弹。</p>
+</blockquote>
+<h3 id="reference">reference</h3>
+<ol>
+<li><a href="https://medium.com/@dmosyan/how-did-uber-solve-data-consistency-problem-dcdd39bd3ed6">https://medium.com/@dmosyan/how-did-uber-solve-data-consistency-problem-dcdd39bd3ed6</a></li>
+<li><a href="https://www.uber.com/blog/ringpop-open-source-nodejs-library/">https://www.uber.com/blog/ringpop-open-source-nodejs-library/</a></li>
+<li><a href="https://www.uber.com/blog/fulfillment-platform-rearchitecture/">https://www.uber.com/blog/fulfillment-platform-rearchitecture/</a></li>
+<li><a href="https://www.uber.com/blog/building-ubers-fulfillment-platform/">https://www.uber.com/blog/building-ubers-fulfillment-platform/</a></li>
+<li><a href="https://www.youtube.com/watch?v=DY2AR8Wzg3Y">https://www.youtube.com/watch?v=DY2AR8Wzg3Y</a></li>
+</ol>
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2023-08-16
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/oneday/">oneday</a>
           
-<section id="posts" class="posts">
-  
-  
-    
-  
-  
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
+        </div>
+
       
-      <a class="post-link" href="/post/doraemon/aws-lambda-openai/"></a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="0001-01-01" class="post-time">
-        0001-01-01
-      </time>
-      
-      
-      
-      
-    </div>
-  </header>
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/codis-slot/">
+            <span class="next-text nav-default">kv-codis迁移</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
   
-  <div class="post-content">
-    
-    <div class="post-summary">
-      使用aws severless lambda 一键搭建 openai 聊天机器人 引言 在玩openai的过程中，openai 最最常用的应该是聊天接口，以此来加深下aws lambda 部署流程，以及如果
-    </div>
-    <div class="read-more">
-      <a href="/post/doraemon/aws-lambda-openai/" class="read-more-link">阅读全文</a>
-    </div>
-    
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
   </div>
-</article>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/post/oneday/how-did-uber-solve-data-consistency-problem/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
 
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
   
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/io_uring/async_intro/"></a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="0001-01-01" class="post-time">
-        0001-01-01
-      </time>
-      
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      Linux 下的异步编程 我们生活在一个我们使用的大多数应用程序都在云端的时代。每次用户连接到基于云的应用程序时，通常在某种 Web 框架之上编写的大多数业务逻
-    </div>
-    <div class="read-more">
-      <a href="/post/io_uring/async_intro/" class="read-more-link">阅读全文</a>
-    </div>
-    
   </div>
-</article>
 
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/notions/database/cmu-database-history/"></a>
-    </h1>
     
-    <div class="post-meta">
-      <time datetime="0001-01-01" class="post-time">
-        0001-01-01
-      </time>
-      
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      
-    </div>
-    <div class="read-more">
-      <a href="/post/notions/database/cmu-database-history/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
 
   
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/notions/database/storage-io/"></a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="0001-01-01" class="post-time">
-        0001-01-01
-      </time>
-      
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      存储io 数据存放在磁盘ssd上, 需要使用操作系统IO调用，在生产环境中，常使用unix系统，对于IO-Bound的应用，抛开线程池，epol
-    </div>
-    <div class="read-more">
-      <a href="/post/notions/database/storage-io/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-</section>
-
-
-
-
-
-
-  
-  
-  
-
-  
-  
-
-  
-  
-
-  
-  
-
-  
-  
-  <nav class="pagination">
-    <ul>
-      
-      <li >
-        <a href="/">1</a>
-      </li>
-      
-      <li >
-        <a href="/page/2/">2</a>
-      </li>
-      
-      <li >
-        <a href="/page/3/">3</a>
-      </li>
-      
-      <li >
-        <a href="/page/4/">4</a>
-      </li>
-      
-      <li >
-        <a href="/page/5/">5</a>
-      </li>
-      
-      <li >
-        <a href="/page/6/">6</a>
-      </li>
-      
-      <li >
-        <a href="/page/7/">7</a>
-      </li>
-      
-      <li  class="active" >
-        <a href="/page/8/">8</a>
-      </li>
-      
-    </ul>
-  </nav>
-
-  
-  
-
-
-
-
 
         </div>
       </div>

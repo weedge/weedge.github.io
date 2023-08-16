@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>oneday on 时间飘过</title>
+    <link>https://weedge.github.io/tags/oneday/</link>
+    <description>Recent content in oneday on 时间飘过</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Wed, 16 Aug 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/oneday/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>译：Uber是如何解决数据一致性问题的？</title>
+      <link>https://weedge.github.io/post/oneday/how-did-uber-solve-data-consistency-problem/</link>
+      <pubDate>Wed, 16 Aug 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/oneday/how-did-uber-solve-data-consistency-problem/</guid>
+      <description>&lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/how-did-uber-solv-data-consistency-problem/1.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Uber 的请求流程相当复杂，从上图可以看出，他们使用 Spanner 来存储大量数据。Spanner 是一种完全托管的关键任务关系数据库服务，可提供全球范围内的事务一致性、自动同步复制以实现高可用性。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>
