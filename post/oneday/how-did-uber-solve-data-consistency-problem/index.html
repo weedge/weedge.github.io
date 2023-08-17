@@ -76,7 +76,7 @@ Uber 的请求流程相当复杂，从上图可以看出，他们使用 Spanner 
 
 Uber 的请求流程相当复杂，从上图可以看出，他们使用 Spanner 来存储大量数据。Spanner 是一种完全托管的关键任务关系数据库服务，可提供全球范围内的事务一致性、自动同步复制以实现高可用性。"><meta itemprop="datePublished" content="2023-08-16T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-08-16T10:26:23+08:00" />
-<meta itemprop="wordCount" content="1594">
+<meta itemprop="wordCount" content="1593">
 <meta itemprop="keywords" content="oneday," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：Uber是如何解决数据一致性问题的？"/>
 <meta name="twitter:description" content="介绍
@@ -350,7 +350,7 @@ Uber 的请求流程相当复杂，从上图可以看出，他们使用 Spanner 
 <p>解决方案是构建一个应用层框架，引入中间层(间), 使用<strong>Saga 模式</strong>来编排数据库操作。</p>
 <p><strong>Saga设计模式</strong></p>
 <p><img src="https://github.com/weedge/mypic/raw/master/oneday/how-did-uber-solv-data-consistency-problem/2.png" alt=""></p>
-<p>Saga设计模式是一种在分布式事务场景中管理跨微服务的数据一致性的方法。传奇是更新每个服务并发布消息或事件以触发下一个事务步骤的事务序列。如果某个步骤失败，saga 会执行补偿事务来抵消前面的事务。</p>
+<p>Saga设计模式是一种在分布式事务场景中管理跨微服务的数据一致性的方法。saga是更新每个服务并发布消息或事件以触发下一个事务步骤的事务序列。如果某个步骤失败，saga 会执行补偿事务来抵消前面的事务。</p>
 <p>简而言之，如果事务期间出现问题（<em>事务</em>是单个逻辑或工作单元，有时由多个操作组成），则应恢复之前的更改。</p>
 <p><strong>什么是事务？</strong></p>
 <p>事务是单个逻辑或工作单元，有时由多个操作组成。在事务中，<em>事件</em>是实体发生的状态更改，<em>命令</em>封装了执行操作或触发后续事件所需的所有信息。</p>
@@ -365,15 +365,15 @@ Uber 的请求流程相当复杂，从上图可以看出，他们使用 Spanner 
 <p><strong>解决方案</strong></p>
 <p><em>Saga 模式使用本地事务</em>序列提供事务管理。本地事务是 saga 参与者执行的原子工作。每个本地事务都会更新数据库并发布消息或事件以触发Sagas中的下一个本地事务。如果本地事务失败，saga 会执行一系列<em>补偿事务</em>，以撤消先前本地事务所做的更改。</p>
 <p>有两种常见的 saga 实现方法：choreography 和 orchestration。每种方法都有自己的一套挑战和技术来协调工作流程。</p>
-<p>**编排(choreography)**是一种协调sagas的方法，参与者可以在没有集中控制点的情况下交换事件。通过编排，每个本地事务都会发布触发其他服务中的本地事务的域事件。rocketMQ中的消息事务采用的这种编排模式，满足RC隔离(<em>Read Committed</em>)。</p>
+<p><strong>choreography</strong>是一种协调sagas的方法，参与者可以在没有集中控制点的情况下交换事件。通过编排，每个本地事务都会发布触发其他服务中的本地事务的域事件。rocketMQ中的消息事务采用的这种编排模式，满足RC隔离(<em>Read Committed</em>)。</p>
 <p><img src="https://github.com/weedge/mypic/raw/master/oneday/how-did-uber-solv-data-consistency-problem/3.png" alt=""></p>
-<p>**编排(orchestration)**是一种协调sagas的方法，其中集中控制器告诉传奇参与者要执行哪些本地事务。saga 协调器处理所有事务并告诉参与者根据事件执行哪个操作。编排器执行 saga 请求，存储和解释每个任务的状态，并通过补偿事务处理故障恢复。</p>
+<p><strong>orchestration</strong>是一种协调sagas的方法，其中集中控制器告诉saga参与者要执行哪些本地事务。saga 协调器处理所有事务并告诉参与者根据事件执行哪个操作。编排器执行 saga 请求，存储和解释每个任务的状态，并通过补偿事务处理故障恢复，本质是2PC。</p>
 <p><img src="https://github.com/weedge/mypic/raw/master/oneday/how-did-uber-solv-data-consistency-problem/4.png" alt=""></p>
 <p>观看视频<a href="https://www.youtube.com/watch?v=DY2AR8Wzg3Y">How does Uber scale to millions of concurrent requests?</a>了解有关 Uber 迁移及其挑战的更多信息。如果您想了解有关 Saga 模式的更多详细信息参考<a href="https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/saga/saga">此链接</a>。</p>
-<p><strong>数据迁移：</strong></p>
+<p><strong>spanner：</strong></p>
 <p><img src="https://github.com/weedge/mypic/raw/master/oneday/how-did-uber-solv-data-consistency-problem/5.png" alt=""></p>
 <h3 id="总结">总结</h3>
-<p>主要是为了保证数据一致性， 不出现司机乘客对同一个事务操作异常，从原来的nosql 转向 newsql， 引入了google cloudy spanner (new SQL) 提供全球范围内的事务一致性、自动同步复制以实现高可用性。结合uber这个场景，然后看下spanner的论文去寻求解决方案，了解下细节结合场景进行设计。视频中提到了大规模数据迁移的挑战，特别是全球跨数据中心的迁移同步，有相应的网络优化技术（这些技术解决方案刚出来的时候国内有跟进，当然技术文章介绍肯定少不了）</p>
+<p>主要是为了保证数据一致性， 不出现司机乘客对同一个事务操作异常，从原来的nosql 转向 newsql， 引入了google cloud spanner (new SQL) 提供全球范围内的事务一致性、自动同步复制以实现高可用性。结合uber这个场景，然后看下spanner的论文去寻求解决方案，了解下细节结合场景进行设计。视频中提到了大规模数据迁移的挑战，特别是全球跨数据中心的迁移同步，有相应的网络优化技术（这些技术解决方案刚出来的时候国内有跟进，当然技术文章介绍肯定少不了）</p>
 <p>题外话：</p>
 <blockquote>
 <p>需求场景驱动技术方案去落地，技术方案不一定最优解， 能满足当前需求场景，过度设计优化产生无意义的消耗，不过可以留下接口可以去扩展，满足不同场景的进一步优化，软件中没有通用的解决方案银弹。</p>
@@ -385,6 +385,7 @@ Uber 的请求流程相当复杂，从上图可以看出，他们使用 Spanner 
 <li><a href="https://www.uber.com/blog/fulfillment-platform-rearchitecture/">https://www.uber.com/blog/fulfillment-platform-rearchitecture/</a></li>
 <li><a href="https://www.uber.com/blog/building-ubers-fulfillment-platform/">https://www.uber.com/blog/building-ubers-fulfillment-platform/</a></li>
 <li><a href="https://www.youtube.com/watch?v=DY2AR8Wzg3Y">https://www.youtube.com/watch?v=DY2AR8Wzg3Y</a></li>
+<li><a href="https://research.google/pubs/pub39966/">https://research.google/pubs/pub39966/</a></li>
 </ol>
     </div>
 
