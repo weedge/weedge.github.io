@@ -6,7 +6,22 @@
     <description>Recent content in oneday on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 16 Aug 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/oneday/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 26 Aug 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/oneday/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>译：如何避免事务期间读取不一致</title>
+      <link>https://weedge.github.io/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/</link>
+      <pubDate>Sat, 26 Aug 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/</guid>
+      <description>&lt;p&gt;想象一下，当您尝试将 100 美元从账户 A 转账到账户 B，并且两个账户都在同一家银行时。启动传输后，您刷新屏幕。然而，当您刷新屏幕时，您的总余额就会下降——那 100 美元似乎凭空消失了。您看到帐户 A 少了 100 美元。然而，B账户并没有多出100美元。然后，您刷新屏幕几次，可以看到帐户 B 获得了 100 美元。&lt;/p&gt;
+&lt;p&gt;您在事务期间遇到的这个问题称为读取偏差。当您在不幸运的时间（写入交易期间和之后）读取交易时，就会发生异常。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://edward-huang.com/images/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/Distributed%20System%20Question_%20How%20to%20Avoid%20Read%20Inconsistency%20during%20a%20Transaction-%20bank%20transfer.png&#34; alt=&#34;银行转账时序图&#34;&gt;&lt;/p&gt;
+&lt;p&gt;这可能会带来不好的用户体验，但如果转账交易成功后刷新页面，这不会造成任何问题。&lt;/p&gt;
+&lt;p&gt;然而，在进行数据库备份或分析查询时，读取偏差会成为一个问题。&lt;/p&gt;
+&lt;p&gt;在数据库备份中，我们需要制作数据库的副本。备份过程中可能会有写请求进来，如果出现读倾斜不一致的情况，可能会导致备份结果不一致。部分数据为旧版本，部分数据为新版本。通过这样的操作，这种不一致的问题可能会永久存在。&lt;/p&gt;
+&lt;p&gt;我们需要在分析查询中扫描大型数据库并定期检查数据损坏。读取偏差可能会导致搜索和检查不一致 - 通常可能会产生不一致的结果并引发有关数据损坏的错误警报。&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>译：Uber是如何解决数据一致性问题的？</title>
       <link>https://weedge.github.io/post/oneday/how-did-uber-solve-data-consistency-problem/</link>

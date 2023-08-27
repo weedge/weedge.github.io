@@ -297,6 +297,46 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/">译：如何避免事务期间读取不一致</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2023-08-26" class="post-time">
+        2023-08-26
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <p>想象一下，当您尝试将 100 美元从账户 A 转账到账户 B，并且两个账户都在同一家银行时。启动传输后，您刷新屏幕。然而，当您刷新屏幕时，您的总余额就会下降——那 100 美元似乎凭空消失了。您看到帐户 A 少了 100 美元。然而，B账户并没有多出100美元。然后，您刷新屏幕几次，可以看到帐户 B 获得了 100 美元。</p>
+<p>您在事务期间遇到的这个问题称为读取偏差。当您在不幸运的时间（写入交易期间和之后）读取交易时，就会发生异常。</p>
+<p><img src="https://edward-huang.com/images/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/Distributed%20System%20Question_%20How%20to%20Avoid%20Read%20Inconsistency%20during%20a%20Transaction-%20bank%20transfer.png" alt="银行转账时序图"></p>
+<p>这可能会带来不好的用户体验，但如果转账交易成功后刷新页面，这不会造成任何问题。</p>
+<p>然而，在进行数据库备份或分析查询时，读取偏差会成为一个问题。</p>
+<p>在数据库备份中，我们需要制作数据库的副本。备份过程中可能会有写请求进来，如果出现读倾斜不一致的情况，可能会导致备份结果不一致。部分数据为旧版本，部分数据为新版本。通过这样的操作，这种不一致的问题可能会永久存在。</p>
+<p>我们需要在分析查询中扫描大型数据库并定期检查数据损坏。读取偏差可能会导致搜索和检查不一致 - 通常可能会产生不一致的结果并引发有关数据损坏的错误警报。</p>
+    </div>
+    <div class="read-more">
+      <a href="/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/oneday/how-did-uber-solve-data-consistency-problem/">译：Uber是如何解决数据一致性问题的？</a>
     </h1>
     
@@ -485,42 +525,6 @@
     </div>
     <div class="read-more">
       <a href="/post/notions/go-tips/go-tips-11-testing/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/notions/go-tips/go-tips-10-standard-lib/">Go tips-笔记: 标准库 75-81 mistakes</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-02-19" class="post-time">
-        2023-02-19
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h2 id="引言">引言</h2>
-<p>从程序中产生的错误中大多是使用姿势的不对，以及没有仔细阅读标准库相关包的开发文档，未查看源码导致，但是没有实践过这些问题，即使熟读文档和源码也可能避免不了。笔记中会以书中的mistake为切入点，结合源码升入分析其背后产生的原因，以及提出解决方案来避免。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/notions/go-tips/go-tips-10-standard-lib/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>

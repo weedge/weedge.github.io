@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>kv-codis迁移 - 时间飘过</title>
+  <title>译：如何避免事务期间读取不一致 - 时间飘过</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -23,7 +23,12 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content=" 最近在搞一个kv系统，想接入codis来管理slot，实现数据的迁移，进行scaling水平扩展，从网上找了点资料，然后随笔记录梳理一下，以便相应的代码可以联调接入时优化下~
+  <meta name="description" content="想象一下，当您尝试将 100 美元从账户 A 转账到账户 B，并且两个账户都在同一家银行时。启动传输后，您刷新屏幕。然而，当您刷新屏幕时，您的总余额就会下降——那 100 美元似乎凭空消失了。您看到帐户 A 少了 100 美元。然而，B账户并没有多出100美元。然后，您刷新屏幕几次，可以看到帐户 B 获得了 100 美元。
+您在事务期间遇到的这个问题称为读取偏差。当您在不幸运的时间（写入交易期间和之后）读取交易时，就会发生异常。
+这可能会带来不好的用户体验，但如果转账交易成功后刷新页面，这不会造成任何问题。
+然而，在进行数据库备份或分析查询时，读取偏差会成为一个问题。
+在数据库备份中，我们需要制作数据库的副本。备份过程中可能会有写请求进来，如果出现读倾斜不一致的情况，可能会导致备份结果不一致。部分数据为旧版本，部分数据为新版本。通过这样的操作，这种不一致的问题可能会永久存在。
+我们需要在分析查询中扫描大型数据库并定期检查数据损坏。读取偏差可能会导致搜索和检查不一致 - 通常可能会产生不一致的结果并引发有关数据损坏的错误警报。
 " />
 
   <meta name="keywords" content="工作, 技术, 生活" />
@@ -36,7 +41,7 @@
 <meta name="generator" content="Hugo 0.88.1" />
 
 
-<link rel="canonical" href="https://weedge.github.io/post/codis-slot/" />
+<link rel="canonical" href="https://weedge.github.io/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/" />
 
 
 
@@ -62,32 +67,38 @@
 <link rel="stylesheet" href="/css/copy-to-clipboard.css">
 
 
-<meta property="og:title" content="kv-codis迁移" />
-<meta property="og:description" content="
+<meta property="og:title" content="译：如何避免事务期间读取不一致" />
+<meta property="og:description" content="想象一下，当您尝试将 100 美元从账户 A 转账到账户 B，并且两个账户都在同一家银行时。启动传输后，您刷新屏幕。然而，当您刷新屏幕时，您的总余额就会下降——那 100 美元似乎凭空消失了。您看到帐户 A 少了 100 美元。然而，B账户并没有多出100美元。然后，您刷新屏幕几次，可以看到帐户 B 获得了 100 美元。
+您在事务期间遇到的这个问题称为读取偏差。当您在不幸运的时间（写入交易期间和之后）读取交易时，就会发生异常。
 
-
-
-最近在搞一个kv系统，想接入codis来管理slot，实现数据的迁移，进行scaling水平扩展，从网上找了点资料，然后随笔记录梳理一下，以便相应的代码可以联调接入时优化下~" />
+这可能会带来不好的用户体验，但如果转账交易成功后刷新页面，这不会造成任何问题。
+然而，在进行数据库备份或分析查询时，读取偏差会成为一个问题。
+在数据库备份中，我们需要制作数据库的副本。备份过程中可能会有写请求进来，如果出现读倾斜不一致的情况，可能会导致备份结果不一致。部分数据为旧版本，部分数据为新版本。通过这样的操作，这种不一致的问题可能会永久存在。
+我们需要在分析查询中扫描大型数据库并定期检查数据损坏。读取偏差可能会导致搜索和检查不一致 - 通常可能会产生不一致的结果并引发有关数据损坏的错误警报。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://weedge.github.io/post/codis-slot/" /><meta property="article:section" content="post" />
-<meta property="article:published_time" content="2023-07-30T10:26:23+08:00" />
-<meta property="article:modified_time" content="2023-07-30T10:26:23+08:00" />
+<meta property="og:url" content="https://weedge.github.io/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-08-26T10:26:23+08:00" />
+<meta property="article:modified_time" content="2023-08-26T10:26:23+08:00" />
 
-<meta itemprop="name" content="kv-codis迁移">
-<meta itemprop="description" content="
+<meta itemprop="name" content="译：如何避免事务期间读取不一致">
+<meta itemprop="description" content="想象一下，当您尝试将 100 美元从账户 A 转账到账户 B，并且两个账户都在同一家银行时。启动传输后，您刷新屏幕。然而，当您刷新屏幕时，您的总余额就会下降——那 100 美元似乎凭空消失了。您看到帐户 A 少了 100 美元。然而，B账户并没有多出100美元。然后，您刷新屏幕几次，可以看到帐户 B 获得了 100 美元。
+您在事务期间遇到的这个问题称为读取偏差。当您在不幸运的时间（写入交易期间和之后）读取交易时，就会发生异常。
 
+这可能会带来不好的用户体验，但如果转账交易成功后刷新页面，这不会造成任何问题。
+然而，在进行数据库备份或分析查询时，读取偏差会成为一个问题。
+在数据库备份中，我们需要制作数据库的副本。备份过程中可能会有写请求进来，如果出现读倾斜不一致的情况，可能会导致备份结果不一致。部分数据为旧版本，部分数据为新版本。通过这样的操作，这种不一致的问题可能会永久存在。
+我们需要在分析查询中扫描大型数据库并定期检查数据损坏。读取偏差可能会导致搜索和检查不一致 - 通常可能会产生不一致的结果并引发有关数据损坏的错误警报。"><meta itemprop="datePublished" content="2023-08-26T10:26:23+08:00" />
+<meta itemprop="dateModified" content="2023-08-26T10:26:23+08:00" />
+<meta itemprop="wordCount" content="2814">
+<meta itemprop="keywords" content="oneday," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="译：如何避免事务期间读取不一致"/>
+<meta name="twitter:description" content="想象一下，当您尝试将 100 美元从账户 A 转账到账户 B，并且两个账户都在同一家银行时。启动传输后，您刷新屏幕。然而，当您刷新屏幕时，您的总余额就会下降——那 100 美元似乎凭空消失了。您看到帐户 A 少了 100 美元。然而，B账户并没有多出100美元。然后，您刷新屏幕几次，可以看到帐户 B 获得了 100 美元。
+您在事务期间遇到的这个问题称为读取偏差。当您在不幸运的时间（写入交易期间和之后）读取交易时，就会发生异常。
 
-
-最近在搞一个kv系统，想接入codis来管理slot，实现数据的迁移，进行scaling水平扩展，从网上找了点资料，然后随笔记录梳理一下，以便相应的代码可以联调接入时优化下~"><meta itemprop="datePublished" content="2023-07-30T10:26:23+08:00" />
-<meta itemprop="dateModified" content="2023-07-30T10:26:23+08:00" />
-<meta itemprop="wordCount" content="2587">
-<meta itemprop="keywords" content="kv," /><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="kv-codis迁移"/>
-<meta name="twitter:description" content="
-
-
-
-最近在搞一个kv系统，想接入codis来管理slot，实现数据的迁移，进行scaling水平扩展，从网上找了点资料，然后随笔记录梳理一下，以便相应的代码可以联调接入时优化下~"/>
+这可能会带来不好的用户体验，但如果转账交易成功后刷新页面，这不会造成任何问题。
+然而，在进行数据库备份或分析查询时，读取偏差会成为一个问题。
+在数据库备份中，我们需要制作数据库的副本。备份过程中可能会有写请求进来，如果出现读倾斜不一致的情况，可能会导致备份结果不一致。部分数据为旧版本，部分数据为新版本。通过这样的操作，这种不一致的问题可能会永久存在。
+我们需要在分析查询中扫描大型数据库并定期检查数据损坏。读取偏差可能会导致搜索和检查不一致 - 通常可能会产生不一致的结果并引发有关数据损坏的错误警报。"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -307,11 +318,11 @@
           <article class="post bg-white">
     
     <header class="post-header">
-      <h1 class="post-title">kv-codis迁移</h1>
+      <h1 class="post-title">译：如何避免事务期间读取不一致</h1>
       
       <div class="post-meta">
-        <time datetime="2023-07-30" class="post-time">
-          2023-07-30
+        <time datetime="2023-08-26" class="post-time">
+          2023-08-26
         </time>
         <div class="post-category">
             <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
@@ -334,12 +345,11 @@
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li>
-      <ul>
-        <li><a href="#codis-slot迁移">codis slot迁移</a></li>
-        <li><a href="#参考">参考：</a></li>
-      </ul>
-    </li>
+    <li><a href="#解决读取偏差">解决读取偏差</a></li>
+    <li><a href="#实施快照隔离">实施快照隔离</a></li>
+    <li><a href="#对分布式环境进行快照隔离">对分布式环境进行快照隔离</a></li>
+    <li><a href="#概括">概括</a></li>
+    <li><a href="#reference">reference</a></li>
   </ul>
 </nav>
   </div>
@@ -347,71 +357,55 @@
 
     
     <div class="post-content">
-      <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=1890574156&auto=1&height=66"></iframe>
-
-
-
-<p>最近在搞一个kv系统，想接入codis来管理slot，实现数据的迁移，进行scaling水平扩展，从网上找了点资料，然后随笔记录梳理一下，以便相应的代码可以联调接入时优化下~</p>
-<h3 id="codis-slot迁移">codis slot迁移</h3>
-<h4 id="同步">同步：</h4>
+      <p>想象一下，当您尝试将 100 美元从账户 A 转账到账户 B，并且两个账户都在同一家银行时。启动传输后，您刷新屏幕。然而，当您刷新屏幕时，您的总余额就会下降——那 100 美元似乎凭空消失了。您看到帐户 A 少了 100 美元。然而，B账户并没有多出100美元。然后，您刷新屏幕几次，可以看到帐户 B 获得了 100 美元。</p>
+<p>您在事务期间遇到的这个问题称为读取偏差。当您在不幸运的时间（写入交易期间和之后）读取交易时，就会发生异常。</p>
+<p><img src="https://edward-huang.com/images/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/Distributed%20System%20Question_%20How%20to%20Avoid%20Read%20Inconsistency%20during%20a%20Transaction-%20bank%20transfer.png" alt="银行转账时序图"></p>
+<p>这可能会带来不好的用户体验，但如果转账交易成功后刷新页面，这不会造成任何问题。</p>
+<p>然而，在进行数据库备份或分析查询时，读取偏差会成为一个问题。</p>
+<p>在数据库备份中，我们需要制作数据库的副本。备份过程中可能会有写请求进来，如果出现读倾斜不一致的情况，可能会导致备份结果不一致。部分数据为旧版本，部分数据为新版本。通过这样的操作，这种不一致的问题可能会永久存在。</p>
+<p>我们需要在分析查询中扫描大型数据库并定期检查数据损坏。读取偏差可能会导致搜索和检查不一致 - 通常可能会产生不一致的结果并引发有关数据损坏的错误警报。</p>
+<h2 id="解决读取偏差">解决读取偏差</h2>
+<p>读取倾斜的问题是读事务在旧数据库版本中读取一次，在新数据库版本中读取另一次。</p>
+<p><img src="https://edward-huang.com/images/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/Distributed%20System%20Question_%20How%20to%20Avoid%20Read%20Inconsistency%20during%20a%20Transaction-reading%20skew.png" alt="读取倾斜的图像"></p>
+<p>这里重要的一点是读取事务需要一致 - 它不需要是最新版本。从事务开始到结束需要保持一致，所以我们需要保持数据版本相同。</p>
+<p>例如，如果 Bob 正在以数据版本 1 运行读事务，则在整个事务中，Bob 应该只能读取数据库数据版本 1。如果在事务处理过程中，发生新的写事务，这将导致更新数据库中的数据。Bob 将不会在他的交易中看到该新版本。</p>
+<p>因此，我们可以使事务从数据库的一致快照中读取——事务将从事务开始时其他事务在数据库中提交的所有数据中看到。</p>
+<p>此功能称为快照隔离，许多关系数据库都提供此功能，例如 PostgreSQL 和 MySQL。</p>
+<p><img src="https://edward-huang.com/images/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/Distributed%20System%20Question_%20How%20to%20Avoid%20Read%20Inconsistency%20during%20a%20Transaction-snapshot%20isolation%20sequence%20diagram.png" alt="快照隔离序列图的图像"></p>
+<h2 id="实施快照隔离">实施快照隔离</h2>
+<p>我们需要在数据库中保留各种快照版本来实现快照隔离。每次事务开始时，数据库都会将最新提交的快照版本赋予该事务。然后，数据库将跟踪每个事务及其相应的快照版本，以保持读取的一致性。</p>
+<p>每个事务都有一个<code>transactionId</code>，并且<code>transactionId</code>是从数据库中检索的。因此，<code>transactionId</code>总是在增加。数据库跟踪每个<code>transactionId</code>写入数据库的使用<code>createdAt</code>和<code>deletedAt</code>值。<code>transactionId</code>提交事务后，数据库使用事务中的 对该操作创建了一个标记。数据库进一步制作新交易的快照，并用最新的 transactionId 标记该快照。当有新的事务从数据库读取时，数据库会检索该事务之前最新提交的事务，有以下几个规则：</p>
 <ol>
-<li>
-<p>主动调用<code>SLOTSMGRTTAGSLOT</code> 进行同步迁移,  对val dump成rdb 格式进行单个key的同步，直到db,slot同步完成</p>
-<p><img src="https://github.com/weedge/mypic/raw/master/codis1" alt=""></p>
-</li>
-<li>
-<p>key所属的slot正在迁移，则被动调用<code>SLOTSMGRTTAGONE</code>命令将这个key迁移完成再返回给客户端，即必须要迁移这个key完成才返回给客户端。</p>
-</li>
+<li>即使提交了后续事务，也不会显示当前尚未提交到数据库的任何 transactionId。</li>
+<li>任何中止的交易也不会显示。</li>
+<li>数据库不会显示任何晚于<code>transactionId</code>（大于）当前的事务<code>transactionId</code>。</li>
+<li>数据库将向读取数据库的其他传入事务显示任何其他事务。</li>
 </ol>
-<h4 id="异步">异步：</h4>
-<p>（针对redis 处理命令的主线程的优化，因为是单线程，命令通eventloop分发在单线程中依次执行，为了缓解该问题，进行了优化 ）</p>
+<p>让我们看看 Bob 的场景中会发生什么：</p>
+<p><img src="https://edward-huang.com/images/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/Distributed%20System%20Question_%20How%20to%20Avoid%20Read%20Inconsistency%20during%20a%20Transaction-snapshot%20isolation%20on%20Bob%20banking%20scenario%20with%20the%20algorithm%20implementation.png" alt="Bob 银行业务场景的快照隔离图像以及算法实现"></p>
 <ol>
-<li>
-<p>主动调用<code>SLOTSMGRTTAGSLOT-ASYNC</code>命令，整体流程和同步差不多，主要是将耗时命令进行拆解成耗时小的命令进行批量处理。</p>
-<p>1）源Redis对key进行序列化异步发送给目标Redis；</p>
-<p>2）目标Redis通过Restore还原后回复给源Redis；</p>
-<p>3）源Redis收到目标Redis确认后标记这个key迁移完成，迁移下一个key；</p>
-<p>对于大key，如一个长度为1W的list，Codis会将key分拆成多个命令chunck，因为通过不断的rpush最终的结果一样；</p>
-<p><img src="https://github.com/weedge/mypic/raw/master/codis2" alt=""></p>
-<p>Codis会在每一个拆分后的指令中加上一个临时TTL；等全部拆分的指令执行成功才会删除本地的key；因此即使中途迁移失败，已迁移成功的key也会超时自动删除，最终效果就好比迁移没有发生一样。 但是这里不是原子的，如果执行设置真正的过期时间expire key ttl 执行超时了，这个时候目标节点已经设置成功了，但是源节点没有收到ack，本地没有删除，返回迁移失败(其实已经成功了)，则需要重新触发迁移。</p>
-<p><img src="https://github.com/weedge/mypic/raw/master/codis3" alt=""></p>
-<p>迁移通过分批pipeline进行了优化</p>
-<p><img src="https://github.com/weedge/mypic/raw/master/codis4" alt=""></p>
-</li>
-<li>
-<p>key所属的slot正在迁移，则被动调用<code>SLOTSMGRT-EXEC-WRAPPER</code>命令，将key请求操作发给迁移的slot节点，返回错误码(-1 参数错误，0 不存在，1.命令是写操作并且正在迁移，2.命令是读操作并且执行)</p>
-<ol>
-<li>如果正在迁移并且当前命令是写命令则返回错误码1，由Prxoy进行重试。</li>
-<li>如果是读命令则执行返回错误码2和执行结果，由proxy 返回。</li>
-<li>如果key已经迁移走，则返回错误码0，Proxy需要更新路由表。</li>
+<li>当 Bob 发起转账交易时，它会启动一个后台进程，将 100 美元从账户 A 转账到账户 B。该交易将首先调用数据库或辅助服务来获取增量，然后发起交易 - 假设交易是<code>transactionId</code>1234 。</li>
+<li>后续的读取事务将需要通过获取增量<code>transactionId</code>并向数据库调用读取请求来执行相同的操作 - 假设是<code>transactionId</code>1345。</li>
+<li>当传输尚未完成时，数据库不会向 Bob 显示<code>transactionId</code>1234（规则 1）应用的数据。</li>
+<li>如果在 1345 之后启动另一个写入事务<code>transactionId</code>，因为该事务具有更大的<code>transactionId</code>，数据库将不会向<code>transactionId</code>1345 显示该事务（规则号 3）。</li>
 </ol>
-</li>
-</ol>
-<h4 id="同步和异步有两个区别">同步和异步有两个区别：</h4>
-<p>一是处理请求的不同，如果当前要操作的key所属Slot正在迁移，同步处理会发送命令等待后端迁移完成才往下操作，异步则是将当前请求封装成一次SLOTSMGRT-EXEC-WRAPPER调用，并且将操作命令及参数都发送过去，后者会判断这个key是否在迁移或阻塞，如果是并且当前为写命令则直接返回失败，由Proxy重试。</p>
-<p>二是迁移逻辑不同，同步会调用SLOTSMGRTTAGSLOT迁移，异步则是调用SLOTSMGRTTAGSLOT-ASYNC，前者每次随机迁移一个key，异步的过程则复杂得多，对于小key需要确认才算迁移完成，对于大key还会分拆成多条命令，以保证不阻塞主流程，并且在拆分后的命令都加上TTL，以保证如果中途失败目标Redis的key会及时清掉而不会产生脏数据。</p>
-<p>同步,异步迁移通过dashboard配置文件设置 migration_method。</p>
-<p>Gist: <a href="https://gist.github.com/weedge/8d1d37963a2dfd7ecd47fefc7d8016b1">https://gist.github.com/weedge/8d1d37963a2dfd7ecd47fefc7d8016b1</a></p>
-<h4 id="其他kv引擎接入">其他kv引擎接入：</h4>
-<p>理论上只要实现了codis的迁移命令就可以对数据实例slot进行管理操作了，还可以进行不同类型实例的数据迁移，不同类型kv存储引擎实例来实现不同的功能slot上， 比如 热数据 可以请求到 内存kv中， 冷数据可以请求到磁盘kv中，有种乾坤大挪移的感觉~，主要是利用codis管理key-&gt; slot 与 node之间的会话关系，其实现在云原生网关中常说的控制面(control)和数据面(data)，这里分别对应dashboard(发送迁移命令)和 proxy (tcp长连,根据session db , key-&gt;slot与node映射的路由规则转发命令)。</p>
-<p>如果管理迁移slot的kv节点处理命令不是单线程的，比如<a href="https://github.com/dragonflydb/dragonfly">dragonfly</a> 等处理命令是多线程的sharding 内存(多线程IO模型 <a href="https://github.com/romange/helio">helio</a> 支持io_uring)，以及 <a href="https://github.com/weedge/wedis">wedis</a>  处理命令是多协程（一个连接会话对应一个协程，本质调度执行是内核线程, 网络IO模型根据场景使用netpoll可以优化下,以及批量迁移batch put 尽量减少io），则操作只需要优化实现 同步命令 <code>SLOTSMGRTTAGSLOT</code> 和被动触发的 <code>SLOTSMGRTTAGONE</code> 可以满足需求，当然如果想对接异步操作命令也是可以的。</p>
-<p>tips:</p>
+<p>在删除过程中，数据库不会立即删除该字段中的值，而是会在该字段上标记一个<a href="https://en.wikipedia.org/wiki/Tombstone_(data_store)#:~:text=A%20tombstone%20is%20a%20deleted,is%20considered%20to%20be%20successful.">墓碑</a> 逻辑删除。不立即删除该值的原因之一是那些早期的交易可能仍然使用该值。因此，一旦所有事务都使用提交给其事务的值，我们就可以利用垃圾收集来异步检查和删除该值。</p>
+<h2 id="对分布式环境进行快照隔离">对分布式环境进行快照隔离</h2>
+<p>到目前为止，我们已经探索了如何解决单节点环境中的读取倾斜——我们假设数据库不分布在多个集群上。</p>
+<p>如何在分布式环境中扩展快照隔离？</p>
+<p><code>transactionId</code>在分布式环境中很难得到一个全局的、不断增长的。出于一个原因，可能驻留在不同数据库中的每台计算机可能都有其 UUID 计数器，我们需要进行一些协调以确保因果关系。如果事务B从事务A读取值，我们要确保事务B的值大于<code>transactionId</code>事务A。我们如何处理复制数据库中的一致快照？</p>
+<p>我们可以使用时钟或一天中的时间作为<code>transactionId</code>写入数据库吗？当天时钟不可靠，因为 NTP 同步基于不可靠的网络。因此，有些机器可能会出现时钟偏差，在时间上任意向后移动。一个节点的时间也可能与另一节点的时间不同。然而，如果我们能让时钟足够准确，它就可以作为<code>transactionId</code>——时钟的时间晚意味着事件产生的晚。我们如何确保时钟对于 transactionId 来说足够准确？</p>
+<p>当检索每台机器中的时间值时，我们希望它返回一个置信区间，<code>[Tbegin, Tlast]</code>而不是获取单个值。置信区间表示时钟的标准偏差为正负范围<code>Begin</code>和<code>Tlast</code>。如果有两笔交易，<code>transactionX</code>，<code>transactionY</code>进来，<code>[TbeginX, TlastX]</code>，<code>[TbeginY, TlastY]</code>， 和<code>TlastX &lt; TbeginY</code>。我们可以确保<code>transactionX</code>早于<code>tranasctionY</code>。但是，如果值重叠，我们就无法确定顺序。<a href="https://cloud.google.com/spanner/docs/true-time-external-consistency">Google Spanner</a>使用的是这种方法实现其快照隔离。Spanner 会故意等到超过前一个事务的置信区间而不重叠时才提交当前事务。因此，他们需要保持机器上每个时钟的置信时间间隔尽可能小，以避免延迟。Google 在每个数据中心部署原子钟或 GPS 服务器，以实现时钟同步。</p>
+<p>为了确保每个数据库副本上的快照都是最新的，我们可以使用<a href="https://en.wikipedia.org/wiki/Quorum_(distributed_computing)#:~:text=A%20quorum%20is%20the%20minimum,operation%20in%20a%20distributed%20system.">Quorum</a>仲裁策略从其所有数据库集群中获取所有最新的事务快照。我们可以使用的另一个策略是确保事务始终路由到同一数据库实例以获得一致的快照结果。</p>
+<h2 id="概括">概括</h2>
+<p>当由于后台发生另一个写入事务而无法从读取数据库数据中看到一致的结果时，就会发生读取偏差。一致性快照是单节点数据库读取倾斜的解决方案。</p>
+<p>一致性快照是一种隔离级别，可保证每个事务都从数据库的一致性快照中读取数据，通常是当前启动的事务之前的最新快照。</p>
+<p>实现快照隔离需要一个单调递增的计数器transactionId来确定返回哪个版本给事务调用。然而，在处理分布式环境时，这可能很困难，因为需要协调才能产生因果关系。解决此问题的一种解决方案是使用时钟返回置信区间来创建不断增加的<code>transactionId</code>.</p>
+<p>最后，为了确保每个事务获得一致的快照，我们可以使用仲裁策略始终返回大多数节点返回的当前事务的最新快照，或者在事务调用和数据库实例上具有会话关联性。</p>
+<p>如何确保分布式系统中的读取一致性？将如何解决创建全局的问题<code>transactionId</code>？</p>
+<h2 id="reference">reference</h2>
 <ol>
-<li>对于slot相关操作如果已插件的方式对接到kv引擎中实现，是比较符合工程实现的，一种是动态链接(c/c++)，通过MODULE LOAD 命令，或者loadmodule 配置项，可以参考<a href="https://github.com/weedge/RedisXSlot">RedisXSlot</a> module，实现异步非阻塞执行  <code>SLOTSMGRTTAGSLOT</code> 和被动触发的 <code>SLOTSMGRTTAGONE</code> 等同步命令; 一种是编译时静态链接(golang 依赖注入，plugin比较鸡肋，golang本身是静态编译)</li>
-<li>如果使用redis cluster 是去中心化的scaling 方案，slot的迁移会话管理方式嵌入到node节点中，通过gossip协议进行协同，运维相对简单，但是少了些灵活，当然也可以做一层控制面来管理会话元数据，当集群节点比较多的时候。(这个实现下cluster中的slot相关命令可以在思考记录一些~)</li>
-<li>codis现在没有维护了，但是fork出来进行二次开发，和内部监控系统打通，也可以借鉴下reborndb,但是没有但是了。。。</li>
-</ol>
-<p>题外话：</p>
-<blockquote>
-<p>基础组件(中间件)如同搭积木(前后端本质上一样，后端需要考虑分布式情况)，稳固牢靠，易扩展，这就考验需求中事件本质的抽象，这个本质的抽象感觉也有点像套路；如果把开源组件进行拼装，给出需求抽象出的安装步骤，画出架构图，交给大模型， 能否给出相关详细设计文档，甚至直接代码模块化，具体细节根据业务需求来写，有套路的东东，应该可以AI化；如果反过来呢，根据业务需求，画出架构图，甚至给出ppt模版，给出模块化的代码，细节也是根据业务来填充；现在有预训练好的开源大模型黑盒，这些数据可以私有安全部署(利用开源，然后商业化闭源，想想都有意思哈~) :d ，但是前提是：提出问题者需要某个垂直领域认知提升上的经验教训(局内人从坑里爬出来过或者旁观者认真思考过前人躺过的坑)，能把控全局~</p>
-</blockquote>
-<p>声明：一些资料图片来自互联网，农夫山泉</p>
-<h3 id="参考">参考：</h3>
-<ol>
-<li><a href="https://github.com/CodisLabs/codis">https://github.com/CodisLabs/codis</a></li>
-<li><a href="https://redis.io/docs/management/scaling/">redis-cluster</a></li>
-<li><a href="https://www.dragonflydb.io/docs/managing-dragonfly/high-availability">dragonfly/high-availability</a></li>
-<li><a href="https://docs.google.com/document/d/1hJXa0LjMaGYHgL3PeQQu3QMrstxof241OVxbdDKvSbY/edit?usp=sharing">RebornDB: the Next Generation Distributed Key-Value Store</a></li>
+<li><a href="https://edward-huang.com/distributed-system/2022/04/03/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/">https://edward-huang.com/distributed-system/2022/04/03/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/</a></li>
 </ol>
     </div>
 
@@ -425,7 +419,7 @@
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
     <span class="item-content">
-      2023-07-30
+      2023-08-26
       
     </span>
   </p>
@@ -442,29 +436,16 @@
 
     <footer class="post-footer">
       <div class="post-tags">
-          <a href="https://weedge.github.io/tags/kv/">kv</a>
+          <a href="https://weedge.github.io/tags/oneday/">oneday</a>
           
         </div>
 
       
       <nav class="post-nav">
         
-          <a class="prev" href="/post/oneday/how-did-uber-solve-data-consistency-problem/">
-            
-            <i class="iconfont">
-              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="18" height="18">
-  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
-</svg>
-
-            </i>
-            <span class="prev-text nav-default">译：Uber是如何解决数据一致性问题的？</span>
-            <span class="prev-text nav-mobile">上一篇</span>
-          </a>
         
-          <a class="next" href="/post/doraemon/openai/">
-            <span class="next-text nav-default">OpenAI体验</span>
+          <a class="next" href="/post/oneday/how-did-uber-solve-data-consistency-problem/">
+            <span class="next-text nav-default">译：Uber是如何解决数据一致性问题的？</span>
             <span class="prev-text nav-mobile">下一篇</span>
             
             <i class="iconfont">
@@ -502,7 +483,7 @@
   <div id="disqus_thread"></div>
   <script type="text/javascript">
     var disqus_config = function () {
-      this.page.url = "https://weedge.github.io/post/codis-slot/";
+      this.page.url = "https://weedge.github.io/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/";
     };
     function load_disqus() {
       

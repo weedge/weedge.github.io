@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 16 Aug 2023 10:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 26 Aug 2023 10:26:23 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -45,6 +45,66 @@
 &lt;li&gt;&amp;ldquo;&lt;strong&gt;万物之始，大道至简，衍化至繁&lt;/strong&gt;&amp;rdquo; &amp;ndash; 老子《&lt;a href=&#34;https://baike.baidu.com/item/%E9%81%93%E5%BE%B7%E7%BB%8F/327138&#34;&gt;道德经&lt;/a&gt;》&lt;/li&gt;
 &lt;/ol&gt;
 </description>
+      
+    </item>
+    
+    <item>
+      <title>译：如何避免事务期间读取不一致</title>
+      <link>https://weedge.github.io/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/</link>
+      <pubDate>Sat, 26 Aug 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/</guid>
+      
+        <description>&lt;p&gt;想象一下，当您尝试将 100 美元从账户 A 转账到账户 B，并且两个账户都在同一家银行时。启动传输后，您刷新屏幕。然而，当您刷新屏幕时，您的总余额就会下降——那 100 美元似乎凭空消失了。您看到帐户 A 少了 100 美元。然而，B账户并没有多出100美元。然后，您刷新屏幕几次，可以看到帐户 B 获得了 100 美元。&lt;/p&gt;
+&lt;p&gt;您在事务期间遇到的这个问题称为读取偏差。当您在不幸运的时间（写入交易期间和之后）读取交易时，就会发生异常。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://edward-huang.com/images/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/Distributed%20System%20Question_%20How%20to%20Avoid%20Read%20Inconsistency%20during%20a%20Transaction-%20bank%20transfer.png&#34; alt=&#34;银行转账时序图&#34;&gt;&lt;/p&gt;
+&lt;p&gt;这可能会带来不好的用户体验，但如果转账交易成功后刷新页面，这不会造成任何问题。&lt;/p&gt;
+&lt;p&gt;然而，在进行数据库备份或分析查询时，读取偏差会成为一个问题。&lt;/p&gt;
+&lt;p&gt;在数据库备份中，我们需要制作数据库的副本。备份过程中可能会有写请求进来，如果出现读倾斜不一致的情况，可能会导致备份结果不一致。部分数据为旧版本，部分数据为新版本。通过这样的操作，这种不一致的问题可能会永久存在。&lt;/p&gt;
+&lt;p&gt;我们需要在分析查询中扫描大型数据库并定期检查数据损坏。读取偏差可能会导致搜索和检查不一致 - 通常可能会产生不一致的结果并引发有关数据损坏的错误警报。&lt;/p&gt;
+&lt;h2 id=&#34;解决读取偏差&#34;&gt;解决读取偏差&lt;/h2&gt;
+&lt;p&gt;读取倾斜的问题是读事务在旧数据库版本中读取一次，在新数据库版本中读取另一次。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://edward-huang.com/images/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/Distributed%20System%20Question_%20How%20to%20Avoid%20Read%20Inconsistency%20during%20a%20Transaction-reading%20skew.png&#34; alt=&#34;读取倾斜的图像&#34;&gt;&lt;/p&gt;
+&lt;p&gt;这里重要的一点是读取事务需要一致 - 它不需要是最新版本。从事务开始到结束需要保持一致，所以我们需要保持数据版本相同。&lt;/p&gt;
+&lt;p&gt;例如，如果 Bob 正在以数据版本 1 运行读事务，则在整个事务中，Bob 应该只能读取数据库数据版本 1。如果在事务处理过程中，发生新的写事务，这将导致更新数据库中的数据。Bob 将不会在他的交易中看到该新版本。&lt;/p&gt;
+&lt;p&gt;因此，我们可以使事务从数据库的一致快照中读取——事务将从事务开始时其他事务在数据库中提交的所有数据中看到。&lt;/p&gt;
+&lt;p&gt;此功能称为快照隔离，许多关系数据库都提供此功能，例如 PostgreSQL 和 MySQL。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://edward-huang.com/images/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/Distributed%20System%20Question_%20How%20to%20Avoid%20Read%20Inconsistency%20during%20a%20Transaction-snapshot%20isolation%20sequence%20diagram.png&#34; alt=&#34;快照隔离序列图的图像&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;实施快照隔离&#34;&gt;实施快照隔离&lt;/h2&gt;
+&lt;p&gt;我们需要在数据库中保留各种快照版本来实现快照隔离。每次事务开始时，数据库都会将最新提交的快照版本赋予该事务。然后，数据库将跟踪每个事务及其相应的快照版本，以保持读取的一致性。&lt;/p&gt;
+&lt;p&gt;每个事务都有一个&lt;code&gt;transactionId&lt;/code&gt;，并且&lt;code&gt;transactionId&lt;/code&gt;是从数据库中检索的。因此，&lt;code&gt;transactionId&lt;/code&gt;总是在增加。数据库跟踪每个&lt;code&gt;transactionId&lt;/code&gt;写入数据库的使用&lt;code&gt;createdAt&lt;/code&gt;和&lt;code&gt;deletedAt&lt;/code&gt;值。&lt;code&gt;transactionId&lt;/code&gt;提交事务后，数据库使用事务中的 对该操作创建了一个标记。数据库进一步制作新交易的快照，并用最新的 transactionId 标记该快照。当有新的事务从数据库读取时，数据库会检索该事务之前最新提交的事务，有以下几个规则：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;即使提交了后续事务，也不会显示当前尚未提交到数据库的任何 transactionId。&lt;/li&gt;
+&lt;li&gt;任何中止的交易也不会显示。&lt;/li&gt;
+&lt;li&gt;数据库不会显示任何晚于&lt;code&gt;transactionId&lt;/code&gt;（大于）当前的事务&lt;code&gt;transactionId&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;数据库将向读取数据库的其他传入事务显示任何其他事务。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;让我们看看 Bob 的场景中会发生什么：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://edward-huang.com/images/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/Distributed%20System%20Question_%20How%20to%20Avoid%20Read%20Inconsistency%20during%20a%20Transaction-snapshot%20isolation%20on%20Bob%20banking%20scenario%20with%20the%20algorithm%20implementation.png&#34; alt=&#34;Bob 银行业务场景的快照隔离图像以及算法实现&#34;&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;当 Bob 发起转账交易时，它会启动一个后台进程，将 100 美元从账户 A 转账到账户 B。该交易将首先调用数据库或辅助服务来获取增量，然后发起交易 - 假设交易是&lt;code&gt;transactionId&lt;/code&gt;1234 。&lt;/li&gt;
+&lt;li&gt;后续的读取事务将需要通过获取增量&lt;code&gt;transactionId&lt;/code&gt;并向数据库调用读取请求来执行相同的操作 - 假设是&lt;code&gt;transactionId&lt;/code&gt;1345。&lt;/li&gt;
+&lt;li&gt;当传输尚未完成时，数据库不会向 Bob 显示&lt;code&gt;transactionId&lt;/code&gt;1234（规则 1）应用的数据。&lt;/li&gt;
+&lt;li&gt;如果在 1345 之后启动另一个写入事务&lt;code&gt;transactionId&lt;/code&gt;，因为该事务具有更大的&lt;code&gt;transactionId&lt;/code&gt;，数据库将不会向&lt;code&gt;transactionId&lt;/code&gt;1345 显示该事务（规则号 3）。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;在删除过程中，数据库不会立即删除该字段中的值，而是会在该字段上标记一个&lt;a href=&#34;https://en.wikipedia.org/wiki/Tombstone_(data_store)#:~:text=A%20tombstone%20is%20a%20deleted,is%20considered%20to%20be%20successful.&#34;&gt;墓碑&lt;/a&gt; 逻辑删除。不立即删除该值的原因之一是那些早期的交易可能仍然使用该值。因此，一旦所有事务都使用提交给其事务的值，我们就可以利用垃圾收集来异步检查和删除该值。&lt;/p&gt;
+&lt;h2 id=&#34;对分布式环境进行快照隔离&#34;&gt;对分布式环境进行快照隔离&lt;/h2&gt;
+&lt;p&gt;到目前为止，我们已经探索了如何解决单节点环境中的读取倾斜——我们假设数据库不分布在多个集群上。&lt;/p&gt;
+&lt;p&gt;如何在分布式环境中扩展快照隔离？&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;transactionId&lt;/code&gt;在分布式环境中很难得到一个全局的、不断增长的。出于一个原因，可能驻留在不同数据库中的每台计算机可能都有其 UUID 计数器，我们需要进行一些协调以确保因果关系。如果事务B从事务A读取值，我们要确保事务B的值大于&lt;code&gt;transactionId&lt;/code&gt;事务A。我们如何处理复制数据库中的一致快照？&lt;/p&gt;
+&lt;p&gt;我们可以使用时钟或一天中的时间作为&lt;code&gt;transactionId&lt;/code&gt;写入数据库吗？当天时钟不可靠，因为 NTP 同步基于不可靠的网络。因此，有些机器可能会出现时钟偏差，在时间上任意向后移动。一个节点的时间也可能与另一节点的时间不同。然而，如果我们能让时钟足够准确，它就可以作为&lt;code&gt;transactionId&lt;/code&gt;——时钟的时间晚意味着事件产生的晚。我们如何确保时钟对于 transactionId 来说足够准确？&lt;/p&gt;
+&lt;p&gt;当检索每台机器中的时间值时，我们希望它返回一个置信区间，&lt;code&gt;[Tbegin, Tlast]&lt;/code&gt;而不是获取单个值。置信区间表示时钟的标准偏差为正负范围&lt;code&gt;Begin&lt;/code&gt;和&lt;code&gt;Tlast&lt;/code&gt;。如果有两笔交易，&lt;code&gt;transactionX&lt;/code&gt;，&lt;code&gt;transactionY&lt;/code&gt;进来，&lt;code&gt;[TbeginX, TlastX]&lt;/code&gt;，&lt;code&gt;[TbeginY, TlastY]&lt;/code&gt;， 和&lt;code&gt;TlastX &amp;lt; TbeginY&lt;/code&gt;。我们可以确保&lt;code&gt;transactionX&lt;/code&gt;早于&lt;code&gt;tranasctionY&lt;/code&gt;。但是，如果值重叠，我们就无法确定顺序。&lt;a href=&#34;https://cloud.google.com/spanner/docs/true-time-external-consistency&#34;&gt;Google Spanner&lt;/a&gt;使用的是这种方法实现其快照隔离。Spanner 会故意等到超过前一个事务的置信区间而不重叠时才提交当前事务。因此，他们需要保持机器上每个时钟的置信时间间隔尽可能小，以避免延迟。Google 在每个数据中心部署原子钟或 GPS 服务器，以实现时钟同步。&lt;/p&gt;
+&lt;p&gt;为了确保每个数据库副本上的快照都是最新的，我们可以使用&lt;a href=&#34;https://en.wikipedia.org/wiki/Quorum_(distributed_computing)#:~:text=A%20quorum%20is%20the%20minimum,operation%20in%20a%20distributed%20system.&#34;&gt;Quorum&lt;/a&gt;仲裁策略从其所有数据库集群中获取所有最新的事务快照。我们可以使用的另一个策略是确保事务始终路由到同一数据库实例以获得一致的快照结果。&lt;/p&gt;
+&lt;h2 id=&#34;概括&#34;&gt;概括&lt;/h2&gt;
+&lt;p&gt;当由于后台发生另一个写入事务而无法从读取数据库数据中看到一致的结果时，就会发生读取偏差。一致性快照是单节点数据库读取倾斜的解决方案。&lt;/p&gt;
+&lt;p&gt;一致性快照是一种隔离级别，可保证每个事务都从数据库的一致性快照中读取数据，通常是当前启动的事务之前的最新快照。&lt;/p&gt;
+&lt;p&gt;实现快照隔离需要一个单调递增的计数器transactionId来确定返回哪个版本给事务调用。然而，在处理分布式环境时，这可能很困难，因为需要协调才能产生因果关系。解决此问题的一种解决方案是使用时钟返回置信区间来创建不断增加的&lt;code&gt;transactionId&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;最后，为了确保每个事务获得一致的快照，我们可以使用仲裁策略始终返回大多数节点返回的当前事务的最新快照，或者在事务调用和数据库实例上具有会话关联性。&lt;/p&gt;
+&lt;p&gt;如何确保分布式系统中的读取一致性？将如何解决创建全局的问题&lt;code&gt;transactionId&lt;/code&gt;？&lt;/p&gt;
+&lt;h2 id=&#34;reference&#34;&gt;reference&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://edward-huang.com/distributed-system/2022/04/03/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/&#34;&gt;https://edward-huang.com/distributed-system/2022/04/03/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;</description>
       
     </item>
     
@@ -161,7 +221,7 @@
 &lt;p&gt;如果管理迁移slot的kv节点处理命令不是单线程的，比如&lt;a href=&#34;https://github.com/dragonflydb/dragonfly&#34;&gt;dragonfly&lt;/a&gt; 等处理命令是多线程的sharding 内存(多线程IO模型 &lt;a href=&#34;https://github.com/romange/helio&#34;&gt;helio&lt;/a&gt; 支持io_uring)，以及 &lt;a href=&#34;https://github.com/weedge/wedis&#34;&gt;wedis&lt;/a&gt;  处理命令是多协程（一个连接会话对应一个协程，本质调度执行是内核线程, 网络IO模型根据场景使用netpoll可以优化下,以及批量迁移batch put 尽量减少io），则操作只需要优化实现 同步命令 &lt;code&gt;SLOTSMGRTTAGSLOT&lt;/code&gt; 和被动触发的 &lt;code&gt;SLOTSMGRTTAGONE&lt;/code&gt; 可以满足需求，当然如果想对接异步操作命令也是可以的。&lt;/p&gt;
 &lt;p&gt;tips:&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;对于slot相关操作如果已插件的方式对接到kv引擎中实现，是比较符合工程实现的，一种是动态链接(c/c++)，通过MODULE LOAD 命令，或者loadmodule 配置项; 一种是编译时静态链接(golang 依赖注入，plugin比较鸡肋，golang本身是静态编译)&lt;/li&gt;
+&lt;li&gt;对于slot相关操作如果已插件的方式对接到kv引擎中实现，是比较符合工程实现的，一种是动态链接(c/c++)，通过MODULE LOAD 命令，或者loadmodule 配置项，可以参考&lt;a href=&#34;https://github.com/weedge/RedisXSlot&#34;&gt;RedisXSlot&lt;/a&gt; module，实现异步非阻塞执行  &lt;code&gt;SLOTSMGRTTAGSLOT&lt;/code&gt; 和被动触发的 &lt;code&gt;SLOTSMGRTTAGONE&lt;/code&gt; 等同步命令; 一种是编译时静态链接(golang 依赖注入，plugin比较鸡肋，golang本身是静态编译)&lt;/li&gt;
 &lt;li&gt;如果使用redis cluster 是去中心化的scaling 方案，slot的迁移会话管理方式嵌入到node节点中，通过gossip协议进行协同，运维相对简单，但是少了些灵活，当然也可以做一层控制面来管理会话元数据，当集群节点比较多的时候。(这个实现下cluster中的slot相关命令可以在思考记录一些~)&lt;/li&gt;
 &lt;li&gt;codis现在没有维护了，但是fork出来进行二次开发，和内部监控系统打通，也可以借鉴下reborndb,但是没有但是了。。。&lt;/li&gt;
 &lt;/ol&gt;
@@ -4059,62 +4119,6 @@ npm run dev
 &lt;li&gt;Element-Plus UI: &lt;a href=&#34;https://element-plus.gitee.io/zh-CN/guide/installation.html&#34;&gt;https://element-plus.gitee.io/zh-CN/guide/installation.html&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;webpack: &lt;a href=&#34;https://webpack.docschina.org/concepts/&#34;&gt;https://webpack.docschina.org/concepts/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;web开发: &lt;strong&gt;&lt;a href=&#34;https://developer.mozilla.org/zh-CN/docs/Web&#34;&gt;https://developer.mozilla.org/zh-CN/docs/Web&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
-&lt;/ol&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>CRDT</title>
-      <link>https://weedge.github.io/post/crdt/</link>
-      <pubDate>Tue, 28 Dec 2021 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/crdt/</guid>
-      
-        <description>&lt;h2 id=&#34;介绍&#34;&gt;介绍&lt;/h2&gt;
-&lt;p&gt;&lt;strong&gt;无冲突复制数据类型&lt;/strong&gt;(CRDT: &lt;strong&gt;conflict-free replicated data type&lt;/strong&gt;) 是一种简化分布式数据存储系统和多用户应用程序的数据结构。&lt;/p&gt;
-&lt;p&gt;在许多系统中，某些数据的副本需要存储在多台计算机上。此类系统的示例包括：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;在本地设备上存储数据，并且需要将该数据同步到属于同一用户的其他设备（同一用户多端设备同步，例如日历、笔记、联系人或提醒）的移动应用程序；&lt;/li&gt;
-&lt;li&gt;分布式数据库，维护数据的多个副本（在同一数据中心或不同位置,一般是不同数据中心的多活场景），以便在某些副本离线时系统继续正常工作；&lt;/li&gt;
-&lt;li&gt;协作软件，例如 Google Docs、Trello、Figma 或许多其他软件，其中多个用户可以同时更改同一文件或数据；&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://docs.microsoft.com/en-us/shows/tech-exceptions/concordant-always-know-what-to-expect-from-your-data&#34;&gt;边缘计算场景&lt;/a&gt;，比如多个手机/车载app 在无信号的森林中，产生的本地离线协同数据，多个设备同步到云上处理;&lt;/li&gt;
-&lt;li&gt;大规模数据存储和处理系统，复制数据以实现全球可扩展性。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;所有此类系统都需要处理数据可能在不同副本上同时修改的事实。从广义上讲，有两种可能的方法来处理此类数据修改：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;强一致性复制：&lt;/p&gt;
-&lt;p&gt;在这个模型中，副本相互协调以决定何时以及如何应用修改。这种方法支持强一致性模型，例如可序列化事务和可线性化。然而，等待这种协调会降低这些系统的性能；此外，CAP 定理告诉我们，当副本与系统的其余部分断开连接时（例如，由于网络分区，或者因为它是具有间歇性连接的移动设备），不可能对副本进行任何数据更改。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;乐观复制：&lt;/p&gt;
-&lt;p&gt;在此模型中，用户可以独立于任何其他副本修改任何副本上的数据，即使该副本离线或与其他副本断开连接。这种方法可实现最大的性能和可用性，但当多个客户端或用户同时修改同一条数据时，它可能会导致冲突。当副本相互通信时，需要解决这些冲突。&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;无冲突复制数据类型 (CRDT) 用于具有乐观复制的系统，它们负责解决冲突。CRDT 确保，无论在不同的副本上进行什么数据修改，数据始终可以合并到一致的状态。此合并由 CRDT 自动执行，无需任何特殊的冲突解决代码或用户干预。&lt;/p&gt;
-&lt;h2 id=&#34;原理&#34;&gt;原理&lt;/h2&gt;
-&lt;h2 id=&#34;实现&#34;&gt;实现&lt;/h2&gt;
-&lt;h3 id=&#34;automergehttpsgithubcomautomergeautomerge&#34;&gt;&lt;a href=&#34;https://github.com/automerge/automerge&#34;&gt;automerge&lt;/a&gt;&lt;/h3&gt;
-&lt;h3 id=&#34;yjshttpsgithubcomyjsyjs&#34;&gt;&lt;a href=&#34;https://github.com/yjs/yjs&#34;&gt;Yjs&lt;/a&gt;&lt;/h3&gt;
-&lt;h3 id=&#34;redis-crdbhttpsrediscomredis-enterprisetechnologyactive-active-geo-distribution&#34;&gt;&lt;a href=&#34;https://redis.com/redis-enterprise/technology/active-active-geo-distribution/&#34;&gt;redis (CRDB)&lt;/a&gt;&lt;/h3&gt;
-&lt;h2 id=&#34;references&#34;&gt;references&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type&#34;&gt;wiki: Conflict-free replicated data type&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/alangibson/awesome-crdt#know-before-you-go&#34;&gt;awesome-crdt#know-before-you-go&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://crdt.tech/resources&#34;&gt;crdt.tech-resources&lt;/a&gt;&lt;/strong&gt; &lt;strong&gt;&lt;a href=&#34;https://crdt.tech/implementations&#34;&gt;crdt.tech-implementations&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://hal.inria.fr/hal-00932836/file/CRDTs_SSS-2011.pdf&#34;&gt;Conflict-free Replicated Data Types.pdf&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://hal.inria.fr/file/index/docid/555588/filename/techreport.pdf?spm=a2c6h.12873639.0.0.a25177aaoVMJMH&amp;amp;file=techreport.pdf&#34;&gt;A comprehensive study of Convergent and Commutative Replicated Data Types.pdf&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://arxiv.org/pdf/1806.10254.pdf&#34;&gt;Conflict-free Replicated Data Types: An Overview.pdf&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.isa-afp.org/browser_info/current/AFP/CRDT/document.pdf&#34;&gt;A framework for establishing Strong Eventual Consistency for Conflict-free Replicated Data types.pdf&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://arxiv.org/pdf/1608.03960.pdf&#34;&gt;A Conflict-Free Replicated JSON Datatype.pdf&lt;/a&gt;&lt;/strong&gt; &lt;a href=&#34;https://cs.paperswithcode.com/paper/a-conflict-free-replicated-json-datatype&#34;&gt;code&lt;/a&gt; &lt;a href=&#34;https://www.youtube.com/watch?v=TRvQzwDyVro&#34;&gt;vedio introduce&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=GXJ0D2tfZCM&#34;&gt;Automerge: Making Servers Optional for Real-Time Collaboration&lt;/a&gt;&lt;/strong&gt; &lt;a href=&#34;https://speakerdeck.com/ept/automerge-making-servers-optional-for-real-time-collaboration&#34;&gt;slide&lt;/a&gt; &lt;a href=&#34;https://github.com/automerge&#34;&gt;github.com/automerge&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.researchgate.net/publication/310212186_Near_Real-Time_Peer-to-Peer_Shared_Editing_on_Extensible_Data_Types&#34;&gt;Near Real-Time Peer-to-Peer Shared Editing on Extensible Data Types.pdf&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.sciencedirect.com/science/article/pii/S1877050921014101&#34;&gt;Toward Fast and Reliable Active-Active Geo-Replication for a Distributed Data Caching Service in the Mobile Cloud&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://redis.com/redis-enterprise/technology/active-active-geo-distribution/&#34;&gt;redis: active-active-geo-distribution&lt;/a&gt; &lt;a href=&#34;https://docs.redis.com/latest/rs/references/developing-for-active-active/&#34;&gt;redis: Developing applications with Active-Active databases&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://docs.riak.com/riak/kv/2.0.0/developing/data-types/?spm=a2c6h.12873639.0.0.a25177aaoVMJMH&#34;&gt;riak-kv:Data Types&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://developer.aliyun.com/article/635632&#34;&gt;阿里云redis：CRDT——解决最终一致问题的利器&lt;/a&gt;&lt;/strong&gt;  &lt;a href=&#34;https://developer.aliyun.com/article/781709?utm_content=g_1000239229&#34;&gt;多中心容灾实践：如何实现真正的异地多活？&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://zhuanlan.51cto.com/art/202107/674513.htm&#34;&gt;基于CRDT的数据最终一致性&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://ddia.vonng.com/#/ch5?id=%E5%A4%9A%E4%B8%BB%E5%A4%8D%E5%88%B6&#34;&gt;多主复制&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>

@@ -297,6 +297,41 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/lru/">缓存淘汰策略-LRU</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2021-11-08" class="post-time">
+        2021-11-08
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <h2 id="序言">序言</h2>
+<p>​	在计算机硬件中缓/内存设计是用来机器启动的时候加载程序，分配运行空间数据，停机，缓/内存中的数据会丢失；磁盘用来持久化存储，提供数据加载到内存中，内存的读写速度比磁盘快很多，以下是<a href="https://research.google/people/jeff/">Jeff Dean</a>  &ldquo;<a href="http://brenocon.com/dean_perf.html">Numbers Everyone Should Know</a>&rdquo; 中提供的数据(虽然过去10多年了)， 读取1MB数据，从内存中读比从磁盘中读取快100+倍；但是缓/内存的空间比磁盘空间少，为了加快数据的访问，减少缓存/磁盘io，大概分为三种：1. 可以提前将数据从磁盘加载到内/缓存中(page)、2. 内/缓存miss从下层存储获取数据(cache,pool,page)、3. 无需加载，直接内/缓存evict；如果提供给进程的最大内/缓存资源到了最大限制，需要对存储资源进行evict操作，常用的evict策略可以从<a href="https://en.wikipedia.org/wiki/Cache_replacement_policies">Cache_replacement_policies</a>中了解；有关特定于分页的详细算法，请参阅<a href="https://en.wikipedia.org/wiki/Page_replacement_algorithm">页面替换算法</a>；有关特定于 CPU 和 RAM 之间缓存的详细算法，请参阅<a href="https://en.wikipedia.org/wiki/CPU_cache">CPU 缓存</a>。这里主要关注LRU evict相关策略。</p>
+    </div>
+    <div class="read-more">
+      <a href="/post/lru/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/servicetransformation/">服务改造简述</a>
     </h1>
     
@@ -464,40 +499,6 @@
     </div>
     <div class="read-more">
       <a href="/post/jxzb/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/jxzbim/">直播系列之消息模块演进</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2020-11-02" class="post-time">
-        2020-11-02
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      整体服务框架
-    </div>
-    <div class="read-more">
-      <a href="/post/jxzbim/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>

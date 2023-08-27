@@ -6,7 +6,22 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 16 Aug 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 26 Aug 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>译：如何避免事务期间读取不一致</title>
+      <link>https://weedge.github.io/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/</link>
+      <pubDate>Sat, 26 Aug 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/</guid>
+      <description>&lt;p&gt;想象一下，当您尝试将 100 美元从账户 A 转账到账户 B，并且两个账户都在同一家银行时。启动传输后，您刷新屏幕。然而，当您刷新屏幕时，您的总余额就会下降——那 100 美元似乎凭空消失了。您看到帐户 A 少了 100 美元。然而，B账户并没有多出100美元。然后，您刷新屏幕几次，可以看到帐户 B 获得了 100 美元。&lt;/p&gt;
+&lt;p&gt;您在事务期间遇到的这个问题称为读取偏差。当您在不幸运的时间（写入交易期间和之后）读取交易时，就会发生异常。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://edward-huang.com/images/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/Distributed%20System%20Question_%20How%20to%20Avoid%20Read%20Inconsistency%20during%20a%20Transaction-%20bank%20transfer.png&#34; alt=&#34;银行转账时序图&#34;&gt;&lt;/p&gt;
+&lt;p&gt;这可能会带来不好的用户体验，但如果转账交易成功后刷新页面，这不会造成任何问题。&lt;/p&gt;
+&lt;p&gt;然而，在进行数据库备份或分析查询时，读取偏差会成为一个问题。&lt;/p&gt;
+&lt;p&gt;在数据库备份中，我们需要制作数据库的副本。备份过程中可能会有写请求进来，如果出现读倾斜不一致的情况，可能会导致备份结果不一致。部分数据为旧版本，部分数据为新版本。通过这样的操作，这种不一致的问题可能会永久存在。&lt;/p&gt;
+&lt;p&gt;我们需要在分析查询中扫描大型数据库并定期检查数据损坏。读取偏差可能会导致搜索和检查不一致 - 通常可能会产生不一致的结果并引发有关数据损坏的错误警报。&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>译：Uber是如何解决数据一致性问题的？</title>
       <link>https://weedge.github.io/post/oneday/how-did-uber-solve-data-consistency-problem/</link>
@@ -262,16 +277,6 @@
 &lt;li&gt;&lt;a href=&#34;https://docs.microsoft.com/en-us/shows/tech-exceptions/concordant-always-know-what-to-expect-from-your-data&#34;&gt;边缘计算场景&lt;/a&gt;，比如多个手机/车载app 在无信号的森林中，产生的本地离线协同数据，多个设备同步到云上处理;&lt;/li&gt;
 &lt;li&gt;大规模数据存储和处理系统，复制数据以实现全球可扩展性。&lt;/li&gt;
 &lt;/ul&gt;</description>
-    </item>
-    
-    <item>
-      <title>pool</title>
-      <link>https://weedge.github.io/post/pool/</link>
-      <pubDate>Thu, 02 Dec 2021 12:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/pool/</guid>
-      <description>&lt;h2 id=&#34;介绍&#34;&gt;介绍&lt;/h2&gt;
-&lt;p&gt;平常想到不浪费资源的方法，是对资源进行复用，减少资源消耗和浪费(小时候大人经常在吃饭时说的那句话)；在计算机工程领域，存在大量消耗资源的场景，多路复用和池化是最常用的性能优化手段；多路复用存在系统调用，由系统内核层面去支持优化(I/O多路复用select/poll/epoll/kqueue)，而池化可以应用用户使用层面来优化；池化(&lt;a href=&#34;https://en.wikipedia.org/wiki/Pool_(computer_science)&#34;&gt;pool&lt;/a&gt;)是一种资源复用优化技术，减少资源回收处理，提高资源利用率，资源最好是固定大小，如果在复用资源过程中，资源在逐渐增大，一直复用，也会导致资源消耗过多，到了一定大小之后，通过系统释放掉；在程序启动的时候提前申请加载好资源放到池子中，运行时根据不同的调度管理资源策略从池子中获取准备好的资源，或者运行时新建资源放入池子中，用户程序中进行自定义处理操作，操作完之后将资源重新放入池子中复用，有些资源可以动态扩缩； 资源主要是程序运行时对象，当然这些操作资源实际都是分配在虚拟内存空间的内核空间和用户空间中，比如，&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E8%A1%8C%E7%A8%8B&#34;&gt;进程&lt;/a&gt;(process &lt;a href=&#34;https://en.wikipedia.org/wiki/Process_control_block&#34;&gt;PCB&lt;/a&gt; 内核态)、&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E5%9F%B7%E8%A1%8C%E7%B7%92&#34;&gt;线程&lt;/a&gt;(thread &lt;a href=&#34;https://en.wikipedia.org/wiki/Thread_control_block&#34;&gt;TCB &lt;/a&gt; 内核态)、&lt;a href=&#34;https://zh.wikipedia.org/zh-hans/%E5%8D%8F%E7%A8%8B&#34;&gt;协程&lt;/a&gt;(coroutine 用户态协作式调度,尽量减少内核调度)为载体的工作任务(work task 在用户态分配栈空间)；内存对象(heap object)，长链接(tcp connect) 等；主要对这些资源对象进行池化技术进行介绍，了解池化对应场景。&lt;/p&gt;</description>
     </item>
     
   </channel>
