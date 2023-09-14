@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="zh-cn" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>译：Manas：高性能定制搜索系统 - 时间飘过</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="weedge" />
+  <meta name="description" content="Manas：高性能定制搜索系统 Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出&amp;ldquo;Search&amp;quot;和&amp;quot;Lens&amp;rdquo;，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。
+为了继续扩展搜索，的系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，的搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着的发展和引入新的发现功能，的遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C&#43;&#43; 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。
+" />
+
+  <meta name="keywords" content="工作, 技术, 生活" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.88.1" />
+
+
+<link rel="canonical" href="https://weedge.github.io/post/oneday/manas-a-high-performing-customized-search-system/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css" integrity="sha256-&#43;ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
+
+<meta property="og:title" content="译：Manas：高性能定制搜索系统" />
+<meta property="og:description" content="Manas：高性能定制搜索系统
+Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出&ldquo;Search&quot;和&quot;Lens&rdquo;，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。
+为了继续扩展搜索，的系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，的搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着的发展和引入新的发现功能，的遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C&#43;&#43; 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/oneday/manas-a-high-performing-customized-search-system/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-09-14T10:26:23+08:00" />
+<meta property="article:modified_time" content="2023-09-14T10:26:23+08:00" />
+
+<meta itemprop="name" content="译：Manas：高性能定制搜索系统">
+<meta itemprop="description" content="Manas：高性能定制搜索系统
+Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出&ldquo;Search&quot;和&quot;Lens&rdquo;，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。
+为了继续扩展搜索，的系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，的搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着的发展和引入新的发现功能，的遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C&#43;&#43; 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。"><meta itemprop="datePublished" content="2023-09-14T10:26:23+08:00" />
+<meta itemprop="dateModified" content="2023-09-14T10:26:23+08:00" />
+<meta itemprop="wordCount" content="10971">
+<meta itemprop="keywords" content="oneday," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="译：Manas：高性能定制搜索系统"/>
+<meta name="twitter:description" content="Manas：高性能定制搜索系统
+Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出&ldquo;Search&quot;和&quot;Lens&rdquo;，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。
+为了继续扩展搜索，的系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，的搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着的发展和引入新的发现功能，的遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C&#43;&#43; 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">时间飘过</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      时间飘过
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">译：Manas：高性能定制搜索系统</h1>
+      
+      <div class="post-meta">
+        <time datetime="2023-09-14" class="post-time">
+          2023-09-14
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#挑战"><strong>挑战</strong></a></li>
+    <li><a href="#概述">概述</a></li>
+    <li><a href="#索引">索引</a>
+      <ul>
+        <li><a href="#索引格式"><strong>索引格式</strong></a></li>
+        <li><a href="#manas-doc"><strong>Manas doc</strong></a></li>
+        <li><a href="#索引构建器"><strong>索引构建器</strong></a></li>
+        <li><a href="#索引管道"><strong>索引管道</strong></a></li>
+      </ul>
+    </li>
+    <li><a href="#服务">服务</a>
+      <ul>
+        <li><a href="#叶子服务">叶子服务</a></li>
+      </ul>
+    </li>
+    <li><a href="#候选检索和轻量级评分">候选检索和轻量级评分</a>
+      <ul>
+        <li><a href="#wand"><strong>WAND</strong></a></li>
+        <li><a href="#squery"><strong>Squery</strong></a></li>
+        <li><a href="#满分"><strong>满分</strong></a></li>
+        <li><a href="#ssd"><strong>SSD</strong></a></li>
+        <li><a href="#索引交换"><strong>索引交换</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+
+  <ul>
+    <li><a href="#挑战-1">挑战</a>
+      <ul>
+        <li><a href="#索引延迟">索引延迟</a></li>
+        <li><a href="#索引刷新能力">索引刷新能力</a></li>
+        <li><a href="#针对不断变化的数据进行扩展">针对不断变化的数据进行扩展</a></li>
+        <li><a href="#错误恢复">错误恢复</a></li>
+        <li><a href="#从静态转向实时">从静态转向实时</a></li>
+        <li><a href="#索引接口">索引接口</a></li>
+      </ul>
+    </li>
+    <li><a href="#架构概述">架构概述</a>
+      <ul>
+        <li><a href="#实时分段构建realtime-segment-build">实时分段构建(Realtime Segment Build)</a></li>
+        <li><a href="#索引落盘index-flush">索引落盘(index flush)</a></li>
+        <li><a href="#索引压缩index-compaction">索引压缩(Index Compaction)</a></li>
+      </ul>
+    </li>
+    <li><a href="#详细设计">详细设计</a>
+      <ul>
+        <li><a href="#并发模型">并发模型</a></li>
+        <li><a href="#索引刷新index-refresh">索引刷新(Index Refresh)</a></li>
+        <li><a href="#故障转移和自动缩放failover-and-auto-scaling">故障转移和自动缩放(Failover and Auto-scaling)</a></li>
+        <li><a href="#错误恢复-1">错误恢复</a></li>
+      </ul>
+    </li>
+    <li><a href="#下一步是什么">下一步是什么</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#manas-realtime">Manas Realtime</a>
+      <ul>
+        <li><a href="#实时-hnsw-图表realtime-hnsw-graph">实时 HNSW 图表(Realtime HNSW Graph)</a></li>
+        <li><a href="#无锁实现lock-free-implementation">无锁实现(Lock-free Implementation)</a></li>
+      </ul>
+    </li>
+    <li><a href="#hnsw-图压缩hnsw-graph-compaction">HNSW 图压缩(HNSW Graph Compaction)</a>
+      <ul>
+        <li><a href="#清白合并clean-slate-merger">清白合并(Clean Slate Merger)</a></li>
+        <li><a href="#添加合并add-on-merger">添加合并(Add on Merger)</a></li>
+        <li><a href="#持久删除persisting-deletions">持久删除(Persisting Deletions)</a></li>
+        <li><a href="#将已删除的节点与其最近的活动节点分组grouping-deleted-nodes-with-their-closest-alive-nodes">将已删除的节点与其最近的活动节点分组(Grouping Deleted Nodes with their Closest Alive Nodes)</a></li>
+      </ul>
+    </li>
+    <li><a href="#在线召回监控online-recall-monitoring">在线召回监控(Online Recall Monitoring)</a></li>
+    <li><a href="#下一步是什么-1">下一步是什么</a>
+      <ul>
+        <li><a href="#效率和实验efficiency-and-experimentation">效率和实验(Efficiency and Experimentation)</a></li>
+        <li><a href="#流媒体过滤streaming-filtering">流媒体过滤(Streaming Filtering)</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <h1 id="manas高性能定制搜索系统">Manas：高性能定制搜索系统</h1>
+<p>Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出<a href="https://blog.pinterest.com/en/search-and-lens-move-front-and-center">&ldquo;Search&quot;和&quot;Lens&rdquo;</a>，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。</p>
+<p>为了继续扩展搜索，的系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，的搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着的发展和引入新的发现功能，的遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C++ 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。</p>
+<h2 id="挑战"><strong>挑战</strong></h2>
+<p>随着 Pinterest 上的搜索使用量快速增长，基于 <a href="https://github.com/apache/lucene">Lucene</a> 的解决方案日益面临挑战，包括：</p>
+<ul>
+<li>查询量和索引大小增长如此之快，以至于需要减少服务延迟并提高容量。</li>
+<li>除了搜索之外，该系统还为 Pinterest 内的多个用例提供支持，包括 Pinner 搜索、图板搜索、相关 Pin 图、主页推送推荐等。需要灵活地定制搜索过程，这在以前是不可能的。</li>
+<li>希望将该系统应用于复杂而强大的排名模型，但 Lucene 索引格式和评分器界面不适合这些模型。</li>
+<li>还希望个性化搜索结果，这是标准 Lucene 系统无法支持的。</li>
+<li>构建 Manas 来解决这些挑战。Manas被设计为一个具有高性能、高可用性和高可扩展性的通用搜索框架。与旧系统相比，搜索后端延迟减少了一半，容量增加了30%。</li>
+</ul>
+<h2 id="概述">概述</h2>
+<p>Manas 是一个全栈搜索索引和服务系统。服务系统由几个阶段组成：查询理解、候选检索、轻量级评分、全面评分和混合。</p>
+<h2 id="索引">索引</h2>
+<h3 id="索引格式"><strong>索引格式</strong></h3>
+<p>Manas索引包括倒排索引和正向索引。</p>
+<p>与普通倒排索引相同，Manas倒排索引存储term到帖子列表的映射。每个发布都会记录内部文档 ID 和有效负载。为了优化索引大小和服务延迟，实现了密集倒排列表和分割倒排列表，这是根据所有文档中关键term的分布对倒排列表进行编码的两种方法。倒排索引用于候选生成和轻量级评分。</p>
+<p>另一方面，Manas的正向索引存储了从内部文档ID到实际文档的映射。为了优化数据局部性，前向索引支持列族，类似于HFile。前向指数用于全面评分。</p>
+<h3 id="manas-doc"><strong>Manas doc</strong></h3>
+<p>将Manas doc定义为不同应用程序的统一模式，用于描述他们想要为每个文档索引哪些数据。在Manas文档中，可以指定匹配的term进行检索，并且可以添加文档的属性以进行过滤和轻量级评分。例如，系统在按语言属性过滤结果后只能返回英文文档。</p>
+<h3 id="索引构建器"><strong>索引构建器</strong></h3>
+<p>索引构建器采用一批 Manas 文档并构建索引。定义了统一的 Manas 文档架构，以便可以为不同的用例共享索引构建器。</p>
+<h3 id="索引管道"><strong>索引管道</strong></h3>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/1.png" alt="img"></p>
+<p>上图说明了索引管道。</p>
+<ol>
+<li>不同的应用程序为其语料库生成 Manas 文档。</li>
+<li>Manas 文档被划分为多个组。</li>
+<li>索引构建器将分区中的所有 Manas 文档转换为索引段。每个索引段都是完整索引的一小部分。</li>
+</ol>
+<h2 id="服务">服务</h2>
+<p>下图展示了Manas的搜索周期。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/2.png" alt="img"></p>
+<p>当查询进入系统时会发生以下情况：</p>
+<ol>
+<li>查询理解服务处理原始查询并生成执行计划。</li>
+<li>语料库由服务树提供。Blender 将请求扇出到不同语料库的根，收集这些不同的结果并将它们混合。将这些混合结果存储在缓存中以进行分页。</li>
+<li>Root 是一种分散-聚集服务。它聚合叶子的结果并对它们重新排序。</li>
+<li>Leaf 首先加载由索引管道构建的索引段。它检索候选人并进行轻量级和全面评分。</li>
+</ol>
+<h3 id="叶子服务">叶子服务</h3>
+<p>Manas Leaf 是可扩展的，允许定制多个不同的应用程序。这是通过在索引中封装特定于应用程序的信息来实现的。可以嵌入特定于应用程序的评分逻辑，以便 Manas 在对文档评分时仅执行应用程序执行的任务。</p>
+<p>服务架构设计为多层，层与层之间定义良好的接口，使得每一层都是可扩展的。Leaf节点的架构如下：</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/3.png" alt="img"></p>
+<p>如上所述，存储层负责加载索引并提供抽象，允许在给定标识符的情况下获取连续的大量二进制数据。这一层允许轻松地改变索引的底层存储。在存储层之上，索引层将二进制数据解码为索引，并提供读取索引的接口。倒排列表层使能够灵活地实现倒排索引。算子层定义了用于实现查询算子的接口，模型运行器定义了用于全面评分的模型接口。最后，API 层指定叶节点评估的查询格式。</p>
+<h2 id="候选检索和轻量级评分">候选检索和轻量级评分</h2>
+<h3 id="wand"><strong>WAND</strong></h3>
+<p>除了支持普通的“AND”、“OR”和“NOT”操作之外，还在 Leaf 中构建了“Weak And”支持（基于本文<a href="http://cis.poly.edu/westlab/papers/cntdstrb/p426-broder.pdf">）</a>。这使能够快速跳过posting list。</p>
+<h3 id="squery"><strong>Squery</strong></h3>
+<p>使用Squery 以树的形式表示结构化查询。它描述了 Leaf 如何从索引中检索候选者并对其进行轻量级评分。Leaf 理解 Squery 并在索引上执行它。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/4.png" alt="img"></p>
+<p>上图是 Squery 要求 Leaf 检索纯英文文档并匹配term“cute”和“cat”或“kitten”的示例。如果文档的点击率较高，则得分较高。</p>
+<h3 id="满分"><strong>满分</strong></h3>
+<p>不同的应用程序使用不同的算法来计算最终分数。为了使 Manas 具有通用性，引入了前向索引，它是一个二进制 blob，可以是任何东西。实际上，前向索引是一个序列化的 Thrift 对象。Manas 不会解释前向索引，而是将其注入到 DSL 模型中并执行 DSL 模型来计算分数。DSL 是 Pinterest 使用的一种领域特定语言，用于定制从前向索引中提取特征，并选择机器学习模型来根据提取的特征计算分数。不同的应用程序可以创建不同的 DSL 模型并指定应注入哪个前向索引。</p>
+<h3 id="ssd"><strong>SSD</strong></h3>
+<p>具有相当大的前向索引以支持复杂的评分算法，总索引大小显着增加。为了支持未来更复杂的评分，将向索引添加更多信号。将所有索引加载到内存中是不可扩展的，因此 Manas 仅加载用于候选检索和轻量级评分的倒排索引，并从 SSD 和本地缓存提供正向索引。</p>
+<h3 id="索引交换"><strong>索引交换</strong></h3>
+<p>们定期执行索引管道来构建索引。一旦新索引准备就绪，就会从 AWS 分配新实例来创建集群。将新索引部署到新创建的集群。然后 Blender 会将流量切换到新集群，旧集群将被弃用。</p>
+<h1 id="manas-realtime--使更改能够在眨眼间被搜索到">Manas Realtime — 使更改能够在眨眼间被搜索到</h1>
+<p>Manas 是 Pinterest 的内部搜索引擎，是一个通用信息检索平台。正如在<a href="https://medium.com/pinterest-engineering/manas-a-high-performing-customized-search-system-cf189f6ca40f">上一篇文章</a>中讨论的那样，Manas 被设计为具有高性能、可用性和可扩展性的搜索框架。如今，Manas 为大多数 Pinterest 产品提供搜索功能，包括广告、搜索、Homefeed、相关 Pin 图、视觉效果和购物。</p>
+<p>搜索系统的关键指标之一是索引延迟，即更新搜索索引以反映更改所需的时间。随着不断增强系统功能并引入新的用例，即时索引新文档的能力变得更加重要。Manas已经支持增量索引，能够提供数十分钟左右的索引延迟。不幸的是，这无法满足不断增长的广告和关注源的业务需求。决定在 Manas 中构建一个新模块，以进一步将索引延迟减少到几分之一秒。</p>
+<p>在这篇博文中，描述了系统的架构及其主要挑战，并提供了有关所做的权衡的详细信息。</p>
+<h2 id="挑战-1">挑战</h2>
+<p>新要求伴随着新挑战。以下是面临的几个主要挑战。</p>
+<h3 id="索引延迟">索引延迟</h3>
+<p>小批量方法，又称近实时方法，是<a href="https://lucene.apache.org/">Lucene</a>、<a href="https://vespa.ai/">Vespa</a>等开源项目最流行的选择。通过这种方法，新编写的文档在调用索引提交之前不可搜索。因此，您需要在索引延迟和吞吐量之间进行权衡。不幸的是，无法利用这种方法将索引延迟减少到秒级。</p>
+<h3 id="索引刷新能力">索引刷新能力</h3>
+<p>实时服务的缺点之一是缺乏索引刷新敏捷性。对于批处理管道，重新运行索引作业以立即获取所有架构更改非常简单。然而，当涉及到实时服务管道时，高效的索引刷新支持变得复杂。</p>
+<h3 id="针对不断变化的数据进行扩展">针对不断变化的数据进行扩展</h3>
+<p>为了避免过度配置，采用自动缩放来根据实际查询负载调整副本。如果索引是不可变的，则创建新副本相对容易：您只需将索引复制到新节点即可。所有的困难都在于处理不断变化的索引：如何确保所有副本最终都有相同的索引？</p>
+<h3 id="错误恢复">错误恢复</h3>
+<p>Manas 是一项数据密集型服务，其中每个主机可以提供高达数百 GB 的索引。Manas也是一个有状态的系统。错误的二进制文件可能会引入回滚无法修复的数据问题。需要构建一个支持容错和错误恢复的系统，以便可以从二进制错误和数据损坏中恢复。</p>
+<h3 id="从静态转向实时">从静态转向实时</h3>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/5.png" alt="img"></p>
+<p>简单看一下传统静态服务和实时服务的区别。如上图所示，实时服务的主要工作是将索引管道从离线转移到在线。</p>
+<p>对于静态服务，索引是通过批处理工作流程离线生成的，然后将它们复制到叶子以进行在线服务。对于批处理工作流程，由于框架开销较高，几乎不可能在几分之一秒内构建可服务的索引。对于实时服务，所有写入都在服务内动态处理，而不是使用离线工作流程。此外，实时索引管道以生成与静态索引管道相同的索引格式的方式处理写入，从而允许重用整个索引读取逻辑。考虑到这一点，让继续了解实时服务的工作原理。</p>
+<h3 id="索引接口">索引接口</h3>
+<p>没有直接使用<a href="https://en.wikipedia.org/wiki/Remote_procedure_call">RPC</a>，而是使用<a href="https://kafka.apache.org/"><strong>Kafka作为的高写入吞吐量流。</strong></a>叶子服务器不断拉动突变来构建增量索引。事实证明，这个决定在多个方面极大地简化了的系统：</p>
+<ul>
+<li>数据复制和写入失败由 Kafka 负责。</li>
+<li>有了回溯能力，Kafka队列也充当了<a href="https://en.wikipedia.org/wiki/Write-ahead_logging">WAL</a>角色。</li>
+<li>每个分区都有严格的顺序保证，系统可以盲目应用删除，而无需担心正确性。</li>
+</ul>
+<h2 id="架构概述">架构概述</h2>
+<p>由于服务逻辑可以通过共享索引格式重用，因此将重点关注索引数据流。</p>
+<p>本质上，实时Manas leaf是一个<a href="https://en.wikipedia.org/wiki/Log-structured_merge-tree">LSM</a>引擎，它将随机IO写入转换为顺序IO，并为读放大和写放大应用程序提供高效服务。如下所示，整个索引过程由三个关键步骤组成。来一一讨论。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/6.png" alt="img"></p>
+<h3 id="实时分段构建realtime-segment-build">实时分段构建(Realtime Segment Build)</h3>
+<p>除了现有的静态段之外，还引入了实时段。如上图所示，系统中的实时段有两种类型：活动实时段和密封实时段。（**注：**这个类似leveldb/rocksdb LSMtree, 同样是append-only write顺序IO , 不同的是kafka充当了WAL, 内部数据结构变成了正排和倒排索引结构，分段存储）</p>
+<ul>
+<li>活动实时段是唯一的可变组件，用于累积从 Kafka 拉取的突变（添加/删除）。值得指出的是，将文档添加到实时段后，在文档级提交后立即可以搜索它。</li>
+<li>一旦活动实时段达到可配置的阈值，它就会被密封(<strong>sealed</strong>)，变得不可变，并被放入刷新队列中。同时，创建一个新的活动实时片段以继续累积突变。</li>
+</ul>
+<p>在服务重启的情况下，可以通过重放来自 Kafka 的消息来重建实时片段。</p>
+<h3 id="索引落盘index-flush">索引落盘(index flush)</h3>
+<p>索引落盘是将内存中数据从实时段持久保存到紧凑索引文件中的过程。当实时段被密封时，flush落盘会自动触发，也可以使用调试命令手动触发flush落盘。</p>
+<p>索引落盘是一个有益的操作，它可以保证数据持久性，这样就不需要在重启期间从头开始重建内存中的段。此外，flush落盘还可以减少段的内存占用，并通过紧凑的不可变索引提高服务效率。</p>
+<h3 id="索引压缩index-compaction">索引压缩(Index Compaction)</h3>
+<p>随着时间的推移，多个生成的小段会损害服务性能。为了克服这个问题，引入了后台压缩线程来将小段合并为更大的段。由于删除操作只是将文档标记为已删除，而不是物理删除它们，因此压缩线程还会保留这些已删除/过期的文档。</p>
+<p>在每个刷新和压缩操作之后，将生成一个由所有静态段组成的新索引清单。用作检查点的 Kafka 偏移量也会添加到每个清单中。根据检查点，服务知道重启后在哪里消费消息。</p>
+<h2 id="详细设计">详细设计</h2>
+<p>在本节中，将更详细地介绍几个关键领域。让从最有趣的部分开始，即并发模型。</p>
+<h3 id="并发模型">并发模型</h3>
+<p>如上所述，实时段是需要同时处理读取和写入的唯一可变组件。不幸的是，开源项目采用的近实时方法无法满足的业务需求。相反，选择了一种不同的方法，使能够在添加到索引后立即提交文档，而无需等待索引刷新。出于性能考虑，针对适合用途的数据结构采用了<a href="https://en.wikipedia.org/wiki/Non-blocking_algorithm">无锁技术。</a>现在来开箱吧！</p>
+<h4 id="实时片段realtime-segment"><strong>实时片段(Realtime Segment)</strong></h4>
+<p>每个实时段由一个倒排索引和一个正向索引组成。倒排索引在逻辑上是term到posting list（用于检索的文档 ID 列表）的映射。同时，前向索引存储用于完整评分和数据获取的任意二进制 blob。只关注实时倒排索引部分，与正向索引相比，实时倒排索引更有趣且更具挑战性。</p>
+<p>在较高的层面上，实时段和静态段之间的主要区别是可变性。对于实时倒排索引，从term到倒排列表的映射需要是并发的。这得到了像 <a href="https://github.com/facebook/folly"><strong>folly</strong></a> 的并发hashmap这样的开源的良好支持。更关心的是posting list的内部表示，它可以有效地支持的并发模型。</p>
+<h4 id="仅附加向量append-only-vector"><strong>仅附加向量(Append-only Vector)</strong></h4>
+<p>通常single-writer、multiple-readers模型更高效、更容易推理。选择了与<a href="https://hadoop.apache.org/docs/r1.2.1/hdfs_design.html">HDFS</a>类似的数据模型(注:CF)，具有仅附加无锁数据结构。了解reader和writer如何交互如下：</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/7.png" alt="img"></p>
+<ul>
+<li>Writer将文档 ID 附加到向量中，然后提交大小以使其可供读者访问</li>
+<li>Reader在访问数据之前,获取快照(snapshot)直至提交大小</li>
+</ul>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/8.png" alt="img"></p>
+<p>为了避免随着posting list的增长而产生内存复制开销，在内部将数据作为存储桶列表进行管理。当容量用完时，只需要添加一个新的存储桶，而无需触及旧的存储桶。另外，通常搜索引擎使用跳跃列表来加速跳跃操作。由于这种格式，可以很方便地支持单级跳表，这对于实时倒排索引来说已经足够了，因为它的大小通常很小。</p>
+<h4 id="文档原子性document-atomicity"><strong>文档原子性(Document Atomicity)</strong></h4>
+<p>现在，通过仅附加向量，能够实现单个posting list的原子性。但是，文档可以包含term列表，最终可能会返回带有部分更新索引的意外文档。为了解决这个潜在问题，引入了文档级提交来保证文档原子性。在服务管道中，使用附加过滤器来确保仅返回已提交的文档。</p>
+<p>说到文档原子性，文档更新是这里值得一提的另一个场景。对于每个文档更新，特意将其转换为两个操作：添加新文档，然后从索引中删除旧文档。虽然每个操作符都是原子性的，但在一起不能保证原子性。考虑到在很短的时间窗口内返回旧版本或新版本都可以，但尽管如此，还是在服务管道中添加了重复数据删除逻辑，以便在两者都返回时过滤掉旧版本。</p>
+<h4 id="写入缩放writes-scaling"><strong>写入缩放(Writes Scaling)</strong></h4>
+<p>自然而然出现的一个问题是，如果你的数据结构只支持单写多读并发模型，那么如果单个线程无法及时处理所有写操作怎么办？仅仅为了扩展写入吞吐量而盲目添加更多分片似乎不是一个好主意。这是一个合理的担忧，在设计中已经考虑到了这一点。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/9.png" alt="img"></p>
+<p>用于数据结构的单写多读并发模型并不意味着不能使用多线程进行写操作。使用了term分片策略来支持多线程写入。如上图所示，对于给定的包含term列表的文档，每个term将始终映射到固定线程，以便所有为单写和多读定制的数据结构都可以直接重用，没有任何限制。(**注：**加快索引构建，map/reduce分而治之思考方式(分而治之算法的工作原理是将问题递归地分解为两个或多个相同或相关类型的子问题，直到这些问题变得简单到可以直接解决。然后将子问题的解决方案组合起来以给出原始问题的解决方案)，no block彼此独立可并发执行,可以结合硬件与操作系统异步io操作加速写入)</p>
+<h3 id="索引刷新index-refresh">索引刷新(Index Refresh)</h3>
+<p>索引刷新能力是产品的一项关键功能，可以实现快速周转并提高开发速度。一般来说，可以使用两种方法来有效地刷新索引，分别是动态回填和从离线构建的索引恢复。</p>
+<h4 id="回填索引backfilling-index"><strong>回填索引(Backfilling Index)</strong></h4>
+<p>能够以合理的吞吐量回填文档。为了避免影响生产新鲜度(freshness)，需要一个单独的流来处理优先级较低的回填流量。因此，两个流中可能存在文档的两个版本，并且旧版本会覆盖新版本。为了克服这个问题，需要在实时索引管道中引入版本控制机制和冲突解决程序来决定哪个更新鲜。</p>
+<h4 id="从离线构建索引恢复reinstating-from-offline-built-index"><strong>从离线构建索引恢复(Reinstating from Offline Built Index)</strong></h4>
+<p>有时，以给定速度回填完整数据集会非常耗时。支持的另一种更快的索引刷新方法是离线构建索引，然后通过离线构建的索引和 Kafka 流之间的同步机制从中恢复。()</p>
+<h3 id="故障转移和自动缩放failover-and-auto-scaling">故障转移和自动缩放(Failover and Auto-scaling)</h3>
+<p>有时，需要出于各种原因启动新实例，例如故障转移和自动扩展等。对于静态服务，可以很容易地使用从索引存储下载的不可变索引来启动新实例(注：这个类似rocksdb <a href="https://github.com/facebook/rocksdb/wiki/Creating-and-Ingesting-SST-files#ingesting-sst-files">bulkloading</a> SSTable文件)。然而，对于索引不断变化的实时服务来说，它变得很复杂。如何确保新实例最终具有与其他实例相同的索引副本？</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/10.png" alt="img"></p>
+<p>决定使用基于领导者的复制，如上图所示。的流程如下所示：(**注：**这个和分布式存储系统中多副本replica同步操作一样，大多是通过一致性协议来保证，比如<a href="https://en.wikipedia.org/wiki/Raft_(algorithm)">raft</a>/<a href="https://en.wikipedia.org/wiki/Paxos_(computer_science)">Paxos</a> 协议，如果follower落后，从快照中恢复数据，不同的是这里快照是放在支持S3协议云存储服务，使用kafka充当WAL从最新checkpoint开始恢复日志消息，同步完成，提供流量访问；这个看着流程容易，实现起来细节还是挺多的)</p>
+<ol>
+<li>领导者定期dump新快照(snapshots)并将其上传到持久索引存储</li>
+<li>新实例默认从索引存储下载最新快照</li>
+<li>新实例根据快照索引中的检查点恢复消费来自 Kafka 的消息</li>
+<li>新实例赶上后就开始提供流量</li>
+</ol>
+<p>设计中有一些要点值得指出：</p>
+<h4 id="领导人选举"><strong>领导人选举</strong></h4>
+<p>Leader 的唯一职责是定期dump快照并上传索引。这意味着可以承受在短时间内（最多几个小时）没有领导者或有多个领导者的情况。因此，在选择领导者选举算法时具有一定的灵活性。为简单起见，选择使用集群维护作业来静态选择领导者，并定期检查是否有好的领导者。(**注：**因为这里场景是单写多读模式，只写leader,当leader failover时，业务可以接受一段时间检索不到最新的数据，这个不影响业务使用，但是没有了最新的召回数据)</p>
+<h4 id="快照上传"><strong>快照上传</strong></h4>
+<p>通常，新实例只是连接到领导者以下载最新的快照。在这种方法中，从新实例下载快照可能会使领导者过载，从而导致级联故障。相反，选择定期将快照上传到索引存储、交易空间和新鲜度以确保稳定性。此外，上传的快照对于错误恢复很有用，稍后将对此进行介绍。(<strong>注：</strong> 上传快照，主要是kafka中的数据有错误数据时，用于快速恢复(从历史快照中恢复正确的历史数据，然后从正确数据的checkpoint点开始从kafka中消费日志数据进行恢复，<!-- raw HTML omitted -->跳过损坏的消息，使用修复好的新消息，fix操作<!-- raw HTML omitted -->)，aws s3成本是很低的，常存放大量一段时间的冷日志数据)</p>
+<h3 id="错误恢复-1">错误恢复</h3>
+<p>如上所述，错误恢复是实时服务系统的另一个挑战。需要处理一些涉及数据损坏的特定场景。</p>
+<h4 id="输入数据损坏"><strong>输入数据损坏</strong></h4>
+<p>使用 Kafka 作为输入写入流；不幸的是，这些消息是不可变的，因为生产者只能将消息附加到其中，但不能更改现有消息的内容。这意味着一旦数据损坏被引入 Kafka 消息中，它就是永久性的。借助上传的快照，能够将索引倒回到没有损坏的位置，跳过损坏的消息，然后使用修复后的新消息。</p>
+<h4 id="二进制错误导致数据损坏"><strong>二进制错误导致数据损坏</strong></h4>
+<p>尽管有一个成熟的静态集群索引验证管道，可以保证在换入新版本之前新索引和新二进制文件不会出现问题，但仍然可能会出现一些错误潜入生产环境。幸运的是，可以通过回滚二进制文件或索引来解决该问题。对于实时服务来说，回滚二进制文件无法回滚索引中的错误变得更加困难。使用的快照上传机制，能够回滚二进制文件以及回滚索引，然后重播来自 Kafka 的消息以修复索引中的错误。</p>
+<h2 id="下一步是什么">下一步是什么</h2>
+<p>随着Manas接入的场景越来越多，需要不断提升系统的效率、扩展性和能力。的路线图中一些有趣的项目如下：</p>
+<ul>
+<li>共同托管静态和实时集群以简化的服务堆栈</li>
+<li>优化系统以支持大数据集</li>
+<li>构建基于通用embedding的检索来支持高级场景</li>
+</ul>
+<h1 id="manas-hnsw-realtime为基于embedding的实时检索提供支持">Manas HNSW Realtime：为基于embedding的实时检索提供支持</h1>
+<p>在之前的<a href="https://medium.com/pinterest-engineering/manas-a-high-performing-customized-search-system-cf189f6ca40f">博文</a>中，介绍了的内部搜索引擎 - Manas - 并分享了如何大规模提供基于term的搜索。自推出以来，Manas 已发展成为 Pinterest 的关键候选生成器之一，服务于许多超出其最初目的的用例。</p>
+<p>特别是，基于embedding的检索是 Pinterest 发现和推荐引擎的关键组成部分。Manas 传统上通过倒排索引上的局部敏感哈希 (LSH) 支持近似最近邻 (ANN) 搜索，倒排索引是基于term的搜索引擎的自然扩展。在发布新的最先进技术（例如分层可导航小世界图 (HNSW)<a href="https://arxiv.org/abs/1603.09320">论文</a>，<a href="https://github.com/nmslib/hnswlib">开源库</a>实现了metric space：L2(Euclidean Squared L2),IP(Inner product),Cosine(Cosine similarity)，一般用cosine，归一化处理；其中facebook <a href="https://github.com/facebookresearch/faiss">Faiss</a>加入<a href="https://github.com/facebookresearch/faiss/wiki/Additive-quantizers">量化处理(Additive-quantizers)</a>)后，在 Manas 中构建了一个灵活的基于embedding的检索框架，这使能够轻松采用新的 ANN 技术。使用新框架将 HNSW 启动到批量索引集群（索引延迟从几分钟到几天不等），与 LSH 相比，可以节省大量服务成本并减少延迟。</p>
+<p>计划中的下一个里程碑是将 HNSW 启动到的实时流集群（秒级索引延迟）。实时、大规模地为 HNSW 提供服务并不是一项简单的任务，部分原因是正在开辟新的领域，而无法依赖任何开源实现。</p>
+<p>在这篇博客中，将分享为 HNSW 提供实时服务的历程——解决这个问题的方法、面临的挑战以及为生产系统所做的一些优化。</p>
+<h2 id="manas-realtime">Manas Realtime</h2>
+<p>该项目的本质是为 HNSW 构建实时组件并将其集成到<a href="https://medium.com/pinterest-engineering/manas-realtime-enabling-changes-to-be-searchable-in-a-blink-of-an-eye-36acc3506843">Manas Realtime</a>中。为了更好地了解这些组件如何适应更大的情况，让简要了解一下 Manas Realtime 的高级架构。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/11.png" alt="img"></p>
+<p>Manas Realtime本质上是一个<a href="https://en.wikipedia.org/wiki/Log-structured_merge-tree">LSM</a>引擎，它将随机IO写入转换为顺序IO写入。写入不是公开写入端点，而是从 Kafka 摄取，这使能够简化系统并依赖 Kafka 作为 WAL。写入分为三种类型，以下是它们的处理方式：</p>
+<ol>
+<li>新文档被写入内存中的实时段，最终被密封并刷新到磁盘上的静态段</li>
+<li>使用内存中标记应用删除，并在服务期间过滤掉</li>
+<li>更新是通过删除旧文档并添加新文档来完成的</li>
+</ol>
+<p>后台压缩过程有时会组合各种静态段，以减少因段过多而产生的服务开销。还依靠压缩过程通过从索引中删除文档来执行实际删除。</p>
+<p>从服务的角度来看，Manas Realtime 与 Manas Static 没有太大区别。对索引进行了抽象，以便存储层对整个检索过程是透明的。因此，随着 HNSW 已经为 Manas Static 启动，大多数服务组件已经存在。的工作主要是与Manas Realtime 的LSM 索引组件集成。需要构建和优化两个核心组件，将在下面的部分中详细介绍：</p>
+<ol>
+<li>实时 HNSW 图表</li>
+<li>HNSW 图压缩</li>
+</ol>
+<h3 id="实时-hnsw-图表realtime-hnsw-graph">实时 HNSW 图表(Realtime HNSW Graph)</h3>
+<p>实时段是系统中唯一可变的组件，因此该区域的优化对于确保良好的并发读写性能至关重要。</p>
+<p>HNSW 索引本质上是一个多层稀疏图。选择一个邻接列表来表示图，其中键是节点 id，值是邻居 id 列表。从基于锁的版本开始，每个节点都拥有一个锁，在更新邻居列表之前，该锁将由读取器和写入器持有。它很容易实现和推理。然而，由于锁争用，系统 CPU 使用率较高，别无选择，只能使用<a href="https://en.wikipedia.org/wiki/Non-blocking_algorithm">无锁</a>技术。</p>
+<h3 id="无锁实现lock-free-implementation">无锁实现(Lock-free Implementation)</h3>
+<p>让来剖析一下如何以直观的方式处理写入。HNSW的思想源于著名的<a href="https://en.wikipedia.org/wiki/Skip_list">跳表</a>结构。因此，HNSW 的无锁实现也类似于无锁跳表。一般来说，为了向图中添加新节点，每一层都涉及两个步骤，如下图所示。</p>
+<ol>
+<li>在层内查找新节点的邻居并将新节点连接到选定的邻居</li>
+<li>更新选定的邻居以连接到新节点。</li>
+</ol>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/12.png" alt="img"></p>
+<p>同样，在 HNSW 图中从基础层开始向上层添加新节点，以避免出现新节点被选为上层的进入点但下层实际上没有为其建立连接的情况，从而导致没有结果问题。</p>
+<p>对于删除，避免了将它们应用到图表中的成本和复杂性。相反，使用内存中的删除标记在图外处理它们，依靠过滤器在服务期间过滤掉已删除的节点。</p>
+<p>一些细节优化值得简单提及：</p>
+<ul>
+<li><strong>单写多读</strong>：为了简单起见，延续了使用单写多读并发模式的传统，从而使代码整洁且易于推理。</li>
+<li><strong>预分配图</strong>：由于实时图通常较小且大小固定，因此为图预分配内存以避免调整大小带来的复杂性。</li>
+<li><strong>定制邻居选择算法</strong>：使用标准邻居选择算法，更新邻居列表有三种可能：添加一个新邻居、减少邻居和替换一个邻居。当涉及到无锁实现时，通过回填最近邻居来消除“减少邻居”场景实际上大大简化了逻辑，能够使用原子操作。</li>
+<li><strong>“原子”变量</strong>：即使使用释放-获取顺序，c++ std::atomic 变量实际上也是昂贵的。相反，使用对齐内存来保证原子性，并使用全局原子变量作为内存屏障，使能够仅一次显式提交一个节点的所有更改。<!-- raw HTML omitted -->一些部分更新仍然有可能泄漏到读取线程可见，从而在短时间内损害全局连接。由于观察没有明显的召回率下降，将其视为性能和质量之间的合理权衡<!-- raw HTML omitted -->。</li>
+</ul>
+<h2 id="hnsw-图压缩hnsw-graph-compaction">HNSW 图压缩(HNSW Graph Compaction)</h2>
+<p>压缩需要解决的主要问题是压缩速度。如前所述，压缩是减少同时服务的段总数的方法。最好的情况是，较长的压缩时间会导致较高的 CPU 使用率；最坏的情况是，系统停止摄取，导致新的更新无法反映和提供。</p>
+<h3 id="清白合并clean-slate-merger">清白合并(Clean Slate Merger)</h3>
+<p>对 hnsw 压缩算法的第一次尝试就是所说的 clean slate；本质上，该算法根据所有输入段的未删除embedding构建一个全新的图。这种方法对于的一些用例来说太慢了，所以需要优化算法。</p>
+<h3 id="添加合并add-on-merger">添加合并(Add on Merger)</h3>
+<p>的下一个策略是尽可能多地重用索引；从所有要压缩的段中选择最大的段，并将索引转换为可以重用的内存结构。然后将其他段的剩余embedding添加到重用图中。</p>
+<p>剩下的问题是如何处理从重用段中删除的embedding。尝试了两种不同的方法：1）持久删除并重新选择邻居，2）将已删除的embedding与附近的活动embedding分组。尽管这两个选项都适合客户，但事实证明第一个选项在某些情况下速度太慢。</p>
+<h3 id="持久删除persisting-deletions">持久删除(Persisting Deletions)</h3>
+<p>需要维护图的小世界属性，并且简单地删除已删除的节点及其输入/输出边缘可能会破坏图中的连接性。为了解决这个问题，使用称为邻居重选的过程，其中节点可能连接到已删除节点的邻居以保持连接。</p>
+<p>发现，如果存在大量删除节点，压缩时间实际上会比 clean slate 算法慢，这并不理想。</p>
+<h3 id="将已删除的节点与其最近的活动节点分组grouping-deleted-nodes-with-their-closest-alive-nodes">将已删除的节点与其最近的活动节点分组(Grouping Deleted Nodes with their Closest Alive Nodes)</h3>
+<p>持久删除可能比使用全新算法慢的原因有两个。</p>
+<ul>
+<li>正在重用段中回填节点与其邻居之间的距离，从而导致大量昂贵的距离计算。</li>
+<li>邻居重选过程可能非常昂贵，尤其是在删除许多节点的情况下。这是因为如果删除节点的邻居也被删除，则需要更多的重选迭代。</li>
+</ul>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/13.png" alt="img"></p>
+<p>第二个优化是将已删除的节点与附近的活动节点分组，从而避免昂贵的重选过程。原始图与以前相同，但现在多个节点映射到相同的embedding。由于图形未更改，因此保持连接性。此外，延迟计算节点与其邻居之间的距离，而不是主动回填它们，从而避免了不必要的距离计算。还需要在算法中添加重复数据删除步骤，因为多个节点可以对应相同的embedding。</p>
+<h2 id="在线召回监控online-recall-monitoring">在线召回监控(Online Recall Monitoring)</h2>
+<p>到目前为止，一直专注于如何构建和优化系统中的组件。但生产系统还有另一个非常重要的方面——质量验证。对于 HNSW，召回率是用来验证索引质量的指标。它是通过将近似最近邻 (ANN) 搜索的结果与精确最近邻 (KNN) 搜索返回的理想结果进行比较来计算的。</p>
+<p>监控召回也特别重要，因为某些优化可能涉及为了更好的系统性能而进行的质量权衡。需要跟踪这些质量下降情况，以确保仍然为客户提供良好的结果。</p>
+<p>通过一组不可变的embedding，计算给定查询的召回率相对容易。可以使用离线批处理作业预先计算 KNN，并通过生成索引并向其发出查询来计算 ANN。由于embedding集是恒定的，KNN 结果永远不会改变，可以调整索引构建参数来优化召回率。</p>
+<p>然而，在实时场景中，embedding不断被添加和删除，使得预先计算的 KNN 集无法使用。为了解决这个问题，开发了一个在线召回工具；在服务集群中添加了计算 ANN 和 KNN 结果的功能，这使能够计算给定时间点的召回率。</p>
+<h2 id="下一步是什么-1">下一步是什么</h2>
+<p>对于来说，在批量索引集群上启动 HNSW 并通过为 HNSW 提供实时服务来突破的能力界限是一次激动人心的旅程。但 HNSW 只是基于embedding的检索系统愿景的第一步。</p>
+<h3 id="效率和实验efficiency-and-experimentation">效率和实验(Efficiency and Experimentation)</h3>
+<p>构建了一个系统，可以为基于embedding的检索进行生产化，从而使的机器学习工程师能够尝试新的embedding或新算法，而无需从头开始构建新的生产系统。将继续迭代该系统，改进服务性能、渠道效率和促进轻松实验等方面。</p>
+<h3 id="流媒体过滤streaming-filtering">流媒体过滤(Streaming Filtering)</h3>
+<p>当前的过滤方法是从 HNSW 图中预取 K 个 ANN，然后应用过滤器来获得最终的候选集。这不是非常有效的漏斗，并且很难弄清楚 K 的值将给带来需要的最终候选者的数量。计划以流式方式实现 HNSW 算法，其中可以在获取期间应用过滤器，并且流式获取仅在检索到所需数量的候选者时才终止。</p>
+<p>敬请关注！</p>
+<p>PS: 以上翻译文章最新截止2021年一月份。</p>
+<h1 id="reference">reference</h1>
+<ol>
+<li><a href="https://en.wikipedia.org/wiki/Non-blocking_algorithm">https://en.wikipedia.org/wiki/Non-blocking_algorithm</a></li>
+<li><a href="https://fulmanski.pl/tutorials/computer-science/nosql/column-family-bigtable-stores/">https://fulmanski.pl/tutorials/computer-science/nosql/column-family-bigtable-stores/</a> (from PL)</li>
+<li><a href="https://medium.com/pinterest-engineering/manas-a-high-performing-customized-search-system-cf189f6ca40f">https://medium.com/pinterest-engineering/manas-a-high-performing-customized-search-system-cf189f6ca40f</a></li>
+<li><a href="https://medium.com/pinterest-engineering/manas-realtime-enabling-changes-to-be-searchable-in-a-blink-of-an-eye-36acc3506843">https://medium.com/pinterest-engineering/manas-realtime-enabling-changes-to-be-searchable-in-a-blink-of-an-eye-36acc3506843</a></li>
+<li><a href="https://medium.com/pinterest-engineering/manas-hnsw-realtime-powering-realtime-embedding-based-retrieval-dc71dfd6afdd">https://medium.com/pinterest-engineering/manas-hnsw-realtime-powering-realtime-embedding-based-retrieval-dc71dfd6afdd</a></li>
+<li><a href="https://mp.weixin.qq.com/s/rXXm6c8LrTqqP4iWf9mtxA">为什么微信推荐这么快？</a></li>
+<li><a href="https://mp.weixin.qq.com/s/1a2bl983bGKM713xI_3v_A">小红书高时效推荐系统背后的技术升级</a></li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/8.0/knn-search.html">ES8.0/knn-search</a></li>
+<li><a href="https://redis.io/docs/interact/search-and-query/search/vectors/">Redis Stack7.2/vss</a></li>
+<li><a href="https://github.com/baidu/puck/blob/main/docs/README.md">baidu puck</a></li>
+<li><a href="https://blog.research.google/2020/07/announcing-scann-efficient-vector.html">Announcing ScaNN: Efficient Vector Similarity Search</a></li>
+</ol>
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2023-09-14
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/oneday/">oneday</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/">
+            <span class="next-text nav-default">译：如何避免事务期间读取不一致</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/post/oneday/manas-a-high-performing-customized-search-system/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:weege007@gmail.com" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/weedge" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://weibo.com/weedge" rel="me noopener" class="iconfont"
+      title="weibo"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M385.714286 733.714286q12-19.428571 6.285714-39.428571t-25.714286-28.571429q-19.428571-8-41.714286-0.571429t-34.285714 26.285714q-12.571429 19.428571-7.428571 39.142857t24.571429 28.857143 42.571429 1.428571 35.714286-27.142857zm53.714286-69.142857q4.571429-7.428571 2-15.142857t-10-10.571429q-8-2.857143-16.285714 2.857143t-12.285714 10.571429q-9.714286 17.714286 7.428571 25.714286 8 2.857143 16.571429 2.857143t12.571429-10.571429zm99.428571 61.142857q-25.714286 58.285714-90.285714 85.714286t-128 6.857143q-61.142857-19.428571-84.285714-72.285714t3.714286-107.142857q26.857143-53.142857 86.571429-79.428571t120.285714-10.857143q63.428571 16.571429 90.571429 68.285714t1.428571 108.857143zm178.285714-91.428571q-5.142857-54.857143-50.857143-97.142857t-119.142857-62.285714-156.857143-12q-127.428571 13.142857-211.142857 80.857143t-75.714286 151.142857q5.142857 54.857143 50.857143 97.142857t119.142857 62.285714 156.857143 12q127.428571-13.142857 211.142857-80.857143t75.714286-151.142857zm176 2.285714q0 38.857143-21.142857 79.714286t-62.285714 78.285714-96.285714 67.142857-129.142857 47.428571-154.571429 17.714286-157.142857-19.142857-137.428571-53.142857-98-86.285714-37.142857-114q0-65.714286 39.714286-140t112.857143-147.428571q96.571429-96.571429 195.142857-134.857143t140.857143 4q37.142857 36.571429 11.428571 119.428571-2.285714 8-0.571429 11.428571t5.714286 4 8.285714 2.857143 7.714286-2l3.428571-1.142857q79.428571-33.714286 140.571429-33.714286t87.428571 34.857143q25.714286 36 0 101.714286-1.142857 7.428571-2.571429 11.428571t2.571429 7.142857 6.857143 4.285714 9.714286 3.428571q32.571429 10.285714 58.857143 26.857143t45.714286 46.571429 19.428571 66.571429zm-42.285714-356.571429q24 26.857143 31.142857 62t-3.714286 67.142857q-4.571429 13.142857-16.857143 19.428571t-25.428571 2.285714q-13.142857-4.571429-19.428571-16.857143t-2.285714-25.428571q11.428571-36-13.714286-63.428571t-61.142857-20q-13.714286 2.857143-25.714286-4.571429t-14.285714-21.142857q-2.857143-13.714286 4.571429-25.428571t21.142857-14.571429q34.285714-7.428571 68 3.142857t57.714286 37.428571zm103.428571-93.142857q49.714286 54.857143 64.285714 127.142857t-7.714286 138q-5.142857 15.428571-19.428571 22.857143t-29.714286 2.285714-22.857143-19.428571-2.857143-29.714286q16-46.857143 5.714286-98.285714t-45.714286-90.285714q-35.428571-39.428571-84.571429-54.571429t-98.857143-4.857143q-16 3.428571-29.714286-5.428571t-17.142857-24.857143 5.428571-29.428571 24.857143-16.857143q70.285714-14.857143 139.428571 6.571429t118.857143 76.857143z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://weedge.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2013 -
+    2023
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        weedge
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//weedge.disqus.com/count.js" async></script>
+
+
+
+
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
+
+
+</body>
+</html>

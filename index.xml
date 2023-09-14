@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sat, 26 Aug 2023 10:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 14 Sep 2023 10:26:23 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -45,6 +45,258 @@
 &lt;li&gt;&amp;ldquo;&lt;strong&gt;万物之始，大道至简，衍化至繁&lt;/strong&gt;&amp;rdquo; &amp;ndash; 老子《&lt;a href=&#34;https://baike.baidu.com/item/%E9%81%93%E5%BE%B7%E7%BB%8F/327138&#34;&gt;道德经&lt;/a&gt;》&lt;/li&gt;
 &lt;/ol&gt;
 </description>
+      
+    </item>
+    
+    <item>
+      <title>译：Manas：高性能定制搜索系统</title>
+      <link>https://weedge.github.io/post/oneday/manas-a-high-performing-customized-search-system/</link>
+      <pubDate>Thu, 14 Sep 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/oneday/manas-a-high-performing-customized-search-system/</guid>
+      
+        <description>&lt;h1 id=&#34;manas高性能定制搜索系统&#34;&gt;Manas：高性能定制搜索系统&lt;/h1&gt;
+&lt;p&gt;Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出&lt;a href=&#34;https://blog.pinterest.com/en/search-and-lens-move-front-and-center&#34;&gt;&amp;ldquo;Search&amp;quot;和&amp;quot;Lens&amp;rdquo;&lt;/a&gt;，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。&lt;/p&gt;
+&lt;p&gt;为了继续扩展搜索，的系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，的搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着的发展和引入新的发现功能，的遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C++ 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。&lt;/p&gt;
+&lt;h2 id=&#34;挑战&#34;&gt;&lt;strong&gt;挑战&lt;/strong&gt;&lt;/h2&gt;
+&lt;p&gt;随着 Pinterest 上的搜索使用量快速增长，基于 &lt;a href=&#34;https://github.com/apache/lucene&#34;&gt;Lucene&lt;/a&gt; 的解决方案日益面临挑战，包括：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;查询量和索引大小增长如此之快，以至于需要减少服务延迟并提高容量。&lt;/li&gt;
+&lt;li&gt;除了搜索之外，该系统还为 Pinterest 内的多个用例提供支持，包括 Pinner 搜索、图板搜索、相关 Pin 图、主页推送推荐等。需要灵活地定制搜索过程，这在以前是不可能的。&lt;/li&gt;
+&lt;li&gt;希望将该系统应用于复杂而强大的排名模型，但 Lucene 索引格式和评分器界面不适合这些模型。&lt;/li&gt;
+&lt;li&gt;还希望个性化搜索结果，这是标准 Lucene 系统无法支持的。&lt;/li&gt;
+&lt;li&gt;构建 Manas 来解决这些挑战。Manas被设计为一个具有高性能、高可用性和高可扩展性的通用搜索框架。与旧系统相比，搜索后端延迟减少了一半，容量增加了30%。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;概述&#34;&gt;概述&lt;/h2&gt;
+&lt;p&gt;Manas 是一个全栈搜索索引和服务系统。服务系统由几个阶段组成：查询理解、候选检索、轻量级评分、全面评分和混合。&lt;/p&gt;
+&lt;h2 id=&#34;索引&#34;&gt;索引&lt;/h2&gt;
+&lt;h3 id=&#34;索引格式&#34;&gt;&lt;strong&gt;索引格式&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;Manas索引包括倒排索引和正向索引。&lt;/p&gt;
+&lt;p&gt;与普通倒排索引相同，Manas倒排索引存储term到帖子列表的映射。每个发布都会记录内部文档 ID 和有效负载。为了优化索引大小和服务延迟，实现了密集倒排列表和分割倒排列表，这是根据所有文档中关键term的分布对倒排列表进行编码的两种方法。倒排索引用于候选生成和轻量级评分。&lt;/p&gt;
+&lt;p&gt;另一方面，Manas的正向索引存储了从内部文档ID到实际文档的映射。为了优化数据局部性，前向索引支持列族，类似于HFile。前向指数用于全面评分。&lt;/p&gt;
+&lt;h3 id=&#34;manas-doc&#34;&gt;&lt;strong&gt;Manas doc&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;将Manas doc定义为不同应用程序的统一模式，用于描述他们想要为每个文档索引哪些数据。在Manas文档中，可以指定匹配的term进行检索，并且可以添加文档的属性以进行过滤和轻量级评分。例如，系统在按语言属性过滤结果后只能返回英文文档。&lt;/p&gt;
+&lt;h3 id=&#34;索引构建器&#34;&gt;&lt;strong&gt;索引构建器&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;索引构建器采用一批 Manas 文档并构建索引。定义了统一的 Manas 文档架构，以便可以为不同的用例共享索引构建器。&lt;/p&gt;
+&lt;h3 id=&#34;索引管道&#34;&gt;&lt;strong&gt;索引管道&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;上图说明了索引管道。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;不同的应用程序为其语料库生成 Manas 文档。&lt;/li&gt;
+&lt;li&gt;Manas 文档被划分为多个组。&lt;/li&gt;
+&lt;li&gt;索引构建器将分区中的所有 Manas 文档转换为索引段。每个索引段都是完整索引的一小部分。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;服务&#34;&gt;服务&lt;/h2&gt;
+&lt;p&gt;下图展示了Manas的搜索周期。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/2.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;当查询进入系统时会发生以下情况：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;查询理解服务处理原始查询并生成执行计划。&lt;/li&gt;
+&lt;li&gt;语料库由服务树提供。Blender 将请求扇出到不同语料库的根，收集这些不同的结果并将它们混合。将这些混合结果存储在缓存中以进行分页。&lt;/li&gt;
+&lt;li&gt;Root 是一种分散-聚集服务。它聚合叶子的结果并对它们重新排序。&lt;/li&gt;
+&lt;li&gt;Leaf 首先加载由索引管道构建的索引段。它检索候选人并进行轻量级和全面评分。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;叶子服务&#34;&gt;叶子服务&lt;/h3&gt;
+&lt;p&gt;Manas Leaf 是可扩展的，允许定制多个不同的应用程序。这是通过在索引中封装特定于应用程序的信息来实现的。可以嵌入特定于应用程序的评分逻辑，以便 Manas 在对文档评分时仅执行应用程序执行的任务。&lt;/p&gt;
+&lt;p&gt;服务架构设计为多层，层与层之间定义良好的接口，使得每一层都是可扩展的。Leaf节点的架构如下：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/3.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;如上所述，存储层负责加载索引并提供抽象，允许在给定标识符的情况下获取连续的大量二进制数据。这一层允许轻松地改变索引的底层存储。在存储层之上，索引层将二进制数据解码为索引，并提供读取索引的接口。倒排列表层使能够灵活地实现倒排索引。算子层定义了用于实现查询算子的接口，模型运行器定义了用于全面评分的模型接口。最后，API 层指定叶节点评估的查询格式。&lt;/p&gt;
+&lt;h2 id=&#34;候选检索和轻量级评分&#34;&gt;候选检索和轻量级评分&lt;/h2&gt;
+&lt;h3 id=&#34;wand&#34;&gt;&lt;strong&gt;WAND&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;除了支持普通的“AND”、“OR”和“NOT”操作之外，还在 Leaf 中构建了“Weak And”支持（基于本文&lt;a href=&#34;http://cis.poly.edu/westlab/papers/cntdstrb/p426-broder.pdf&#34;&gt;）&lt;/a&gt;。这使能够快速跳过posting list。&lt;/p&gt;
+&lt;h3 id=&#34;squery&#34;&gt;&lt;strong&gt;Squery&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;使用Squery 以树的形式表示结构化查询。它描述了 Leaf 如何从索引中检索候选者并对其进行轻量级评分。Leaf 理解 Squery 并在索引上执行它。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/4.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;上图是 Squery 要求 Leaf 检索纯英文文档并匹配term“cute”和“cat”或“kitten”的示例。如果文档的点击率较高，则得分较高。&lt;/p&gt;
+&lt;h3 id=&#34;满分&#34;&gt;&lt;strong&gt;满分&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;不同的应用程序使用不同的算法来计算最终分数。为了使 Manas 具有通用性，引入了前向索引，它是一个二进制 blob，可以是任何东西。实际上，前向索引是一个序列化的 Thrift 对象。Manas 不会解释前向索引，而是将其注入到 DSL 模型中并执行 DSL 模型来计算分数。DSL 是 Pinterest 使用的一种领域特定语言，用于定制从前向索引中提取特征，并选择机器学习模型来根据提取的特征计算分数。不同的应用程序可以创建不同的 DSL 模型并指定应注入哪个前向索引。&lt;/p&gt;
+&lt;h3 id=&#34;ssd&#34;&gt;&lt;strong&gt;SSD&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;具有相当大的前向索引以支持复杂的评分算法，总索引大小显着增加。为了支持未来更复杂的评分，将向索引添加更多信号。将所有索引加载到内存中是不可扩展的，因此 Manas 仅加载用于候选检索和轻量级评分的倒排索引，并从 SSD 和本地缓存提供正向索引。&lt;/p&gt;
+&lt;h3 id=&#34;索引交换&#34;&gt;&lt;strong&gt;索引交换&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;们定期执行索引管道来构建索引。一旦新索引准备就绪，就会从 AWS 分配新实例来创建集群。将新索引部署到新创建的集群。然后 Blender 会将流量切换到新集群，旧集群将被弃用。&lt;/p&gt;
+&lt;h1 id=&#34;manas-realtime--使更改能够在眨眼间被搜索到&#34;&gt;Manas Realtime — 使更改能够在眨眼间被搜索到&lt;/h1&gt;
+&lt;p&gt;Manas 是 Pinterest 的内部搜索引擎，是一个通用信息检索平台。正如在&lt;a href=&#34;https://medium.com/pinterest-engineering/manas-a-high-performing-customized-search-system-cf189f6ca40f&#34;&gt;上一篇文章&lt;/a&gt;中讨论的那样，Manas 被设计为具有高性能、可用性和可扩展性的搜索框架。如今，Manas 为大多数 Pinterest 产品提供搜索功能，包括广告、搜索、Homefeed、相关 Pin 图、视觉效果和购物。&lt;/p&gt;
+&lt;p&gt;搜索系统的关键指标之一是索引延迟，即更新搜索索引以反映更改所需的时间。随着不断增强系统功能并引入新的用例，即时索引新文档的能力变得更加重要。Manas已经支持增量索引，能够提供数十分钟左右的索引延迟。不幸的是，这无法满足不断增长的广告和关注源的业务需求。决定在 Manas 中构建一个新模块，以进一步将索引延迟减少到几分之一秒。&lt;/p&gt;
+&lt;p&gt;在这篇博文中，描述了系统的架构及其主要挑战，并提供了有关所做的权衡的详细信息。&lt;/p&gt;
+&lt;h2 id=&#34;挑战-1&#34;&gt;挑战&lt;/h2&gt;
+&lt;p&gt;新要求伴随着新挑战。以下是面临的几个主要挑战。&lt;/p&gt;
+&lt;h3 id=&#34;索引延迟&#34;&gt;索引延迟&lt;/h3&gt;
+&lt;p&gt;小批量方法，又称近实时方法，是&lt;a href=&#34;https://lucene.apache.org/&#34;&gt;Lucene&lt;/a&gt;、&lt;a href=&#34;https://vespa.ai/&#34;&gt;Vespa&lt;/a&gt;等开源项目最流行的选择。通过这种方法，新编写的文档在调用索引提交之前不可搜索。因此，您需要在索引延迟和吞吐量之间进行权衡。不幸的是，无法利用这种方法将索引延迟减少到秒级。&lt;/p&gt;
+&lt;h3 id=&#34;索引刷新能力&#34;&gt;索引刷新能力&lt;/h3&gt;
+&lt;p&gt;实时服务的缺点之一是缺乏索引刷新敏捷性。对于批处理管道，重新运行索引作业以立即获取所有架构更改非常简单。然而，当涉及到实时服务管道时，高效的索引刷新支持变得复杂。&lt;/p&gt;
+&lt;h3 id=&#34;针对不断变化的数据进行扩展&#34;&gt;针对不断变化的数据进行扩展&lt;/h3&gt;
+&lt;p&gt;为了避免过度配置，采用自动缩放来根据实际查询负载调整副本。如果索引是不可变的，则创建新副本相对容易：您只需将索引复制到新节点即可。所有的困难都在于处理不断变化的索引：如何确保所有副本最终都有相同的索引？&lt;/p&gt;
+&lt;h3 id=&#34;错误恢复&#34;&gt;错误恢复&lt;/h3&gt;
+&lt;p&gt;Manas 是一项数据密集型服务，其中每个主机可以提供高达数百 GB 的索引。Manas也是一个有状态的系统。错误的二进制文件可能会引入回滚无法修复的数据问题。需要构建一个支持容错和错误恢复的系统，以便可以从二进制错误和数据损坏中恢复。&lt;/p&gt;
+&lt;h3 id=&#34;从静态转向实时&#34;&gt;从静态转向实时&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/5.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;简单看一下传统静态服务和实时服务的区别。如上图所示，实时服务的主要工作是将索引管道从离线转移到在线。&lt;/p&gt;
+&lt;p&gt;对于静态服务，索引是通过批处理工作流程离线生成的，然后将它们复制到叶子以进行在线服务。对于批处理工作流程，由于框架开销较高，几乎不可能在几分之一秒内构建可服务的索引。对于实时服务，所有写入都在服务内动态处理，而不是使用离线工作流程。此外，实时索引管道以生成与静态索引管道相同的索引格式的方式处理写入，从而允许重用整个索引读取逻辑。考虑到这一点，让继续了解实时服务的工作原理。&lt;/p&gt;
+&lt;h3 id=&#34;索引接口&#34;&gt;索引接口&lt;/h3&gt;
+&lt;p&gt;没有直接使用&lt;a href=&#34;https://en.wikipedia.org/wiki/Remote_procedure_call&#34;&gt;RPC&lt;/a&gt;，而是使用&lt;a href=&#34;https://kafka.apache.org/&#34;&gt;&lt;strong&gt;Kafka作为的高写入吞吐量流。&lt;/strong&gt;&lt;/a&gt;叶子服务器不断拉动突变来构建增量索引。事实证明，这个决定在多个方面极大地简化了的系统：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;数据复制和写入失败由 Kafka 负责。&lt;/li&gt;
+&lt;li&gt;有了回溯能力，Kafka队列也充当了&lt;a href=&#34;https://en.wikipedia.org/wiki/Write-ahead_logging&#34;&gt;WAL&lt;/a&gt;角色。&lt;/li&gt;
+&lt;li&gt;每个分区都有严格的顺序保证，系统可以盲目应用删除，而无需担心正确性。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;架构概述&#34;&gt;架构概述&lt;/h2&gt;
+&lt;p&gt;由于服务逻辑可以通过共享索引格式重用，因此将重点关注索引数据流。&lt;/p&gt;
+&lt;p&gt;本质上，实时Manas leaf是一个&lt;a href=&#34;https://en.wikipedia.org/wiki/Log-structured_merge-tree&#34;&gt;LSM&lt;/a&gt;引擎，它将随机IO写入转换为顺序IO，并为读放大和写放大应用程序提供高效服务。如下所示，整个索引过程由三个关键步骤组成。来一一讨论。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/6.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;实时分段构建realtime-segment-build&#34;&gt;实时分段构建(Realtime Segment Build)&lt;/h3&gt;
+&lt;p&gt;除了现有的静态段之外，还引入了实时段。如上图所示，系统中的实时段有两种类型：活动实时段和密封实时段。（**注：**这个类似leveldb/rocksdb LSMtree, 同样是append-only write顺序IO , 不同的是kafka充当了WAL, 内部数据结构变成了正排和倒排索引结构，分段存储）&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;活动实时段是唯一的可变组件，用于累积从 Kafka 拉取的突变（添加/删除）。值得指出的是，将文档添加到实时段后，在文档级提交后立即可以搜索它。&lt;/li&gt;
+&lt;li&gt;一旦活动实时段达到可配置的阈值，它就会被密封(&lt;strong&gt;sealed&lt;/strong&gt;)，变得不可变，并被放入刷新队列中。同时，创建一个新的活动实时片段以继续累积突变。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在服务重启的情况下，可以通过重放来自 Kafka 的消息来重建实时片段。&lt;/p&gt;
+&lt;h3 id=&#34;索引落盘index-flush&#34;&gt;索引落盘(index flush)&lt;/h3&gt;
+&lt;p&gt;索引落盘是将内存中数据从实时段持久保存到紧凑索引文件中的过程。当实时段被密封时，flush落盘会自动触发，也可以使用调试命令手动触发flush落盘。&lt;/p&gt;
+&lt;p&gt;索引落盘是一个有益的操作，它可以保证数据持久性，这样就不需要在重启期间从头开始重建内存中的段。此外，flush落盘还可以减少段的内存占用，并通过紧凑的不可变索引提高服务效率。&lt;/p&gt;
+&lt;h3 id=&#34;索引压缩index-compaction&#34;&gt;索引压缩(Index Compaction)&lt;/h3&gt;
+&lt;p&gt;随着时间的推移，多个生成的小段会损害服务性能。为了克服这个问题，引入了后台压缩线程来将小段合并为更大的段。由于删除操作只是将文档标记为已删除，而不是物理删除它们，因此压缩线程还会保留这些已删除/过期的文档。&lt;/p&gt;
+&lt;p&gt;在每个刷新和压缩操作之后，将生成一个由所有静态段组成的新索引清单。用作检查点的 Kafka 偏移量也会添加到每个清单中。根据检查点，服务知道重启后在哪里消费消息。&lt;/p&gt;
+&lt;h2 id=&#34;详细设计&#34;&gt;详细设计&lt;/h2&gt;
+&lt;p&gt;在本节中，将更详细地介绍几个关键领域。让从最有趣的部分开始，即并发模型。&lt;/p&gt;
+&lt;h3 id=&#34;并发模型&#34;&gt;并发模型&lt;/h3&gt;
+&lt;p&gt;如上所述，实时段是需要同时处理读取和写入的唯一可变组件。不幸的是，开源项目采用的近实时方法无法满足的业务需求。相反，选择了一种不同的方法，使能够在添加到索引后立即提交文档，而无需等待索引刷新。出于性能考虑，针对适合用途的数据结构采用了&lt;a href=&#34;https://en.wikipedia.org/wiki/Non-blocking_algorithm&#34;&gt;无锁技术。&lt;/a&gt;现在来开箱吧！&lt;/p&gt;
+&lt;h4 id=&#34;实时片段realtime-segment&#34;&gt;&lt;strong&gt;实时片段(Realtime Segment)&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;每个实时段由一个倒排索引和一个正向索引组成。倒排索引在逻辑上是term到posting list（用于检索的文档 ID 列表）的映射。同时，前向索引存储用于完整评分和数据获取的任意二进制 blob。只关注实时倒排索引部分，与正向索引相比，实时倒排索引更有趣且更具挑战性。&lt;/p&gt;
+&lt;p&gt;在较高的层面上，实时段和静态段之间的主要区别是可变性。对于实时倒排索引，从term到倒排列表的映射需要是并发的。这得到了像 &lt;a href=&#34;https://github.com/facebook/folly&#34;&gt;&lt;strong&gt;folly&lt;/strong&gt;&lt;/a&gt; 的并发hashmap这样的开源的良好支持。更关心的是posting list的内部表示，它可以有效地支持的并发模型。&lt;/p&gt;
+&lt;h4 id=&#34;仅附加向量append-only-vector&#34;&gt;&lt;strong&gt;仅附加向量(Append-only Vector)&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;通常single-writer、multiple-readers模型更高效、更容易推理。选择了与&lt;a href=&#34;https://hadoop.apache.org/docs/r1.2.1/hdfs_design.html&#34;&gt;HDFS&lt;/a&gt;类似的数据模型(注:CF)，具有仅附加无锁数据结构。了解reader和writer如何交互如下：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/7.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Writer将文档 ID 附加到向量中，然后提交大小以使其可供读者访问&lt;/li&gt;
+&lt;li&gt;Reader在访问数据之前,获取快照(snapshot)直至提交大小&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/8.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;为了避免随着posting list的增长而产生内存复制开销，在内部将数据作为存储桶列表进行管理。当容量用完时，只需要添加一个新的存储桶，而无需触及旧的存储桶。另外，通常搜索引擎使用跳跃列表来加速跳跃操作。由于这种格式，可以很方便地支持单级跳表，这对于实时倒排索引来说已经足够了，因为它的大小通常很小。&lt;/p&gt;
+&lt;h4 id=&#34;文档原子性document-atomicity&#34;&gt;&lt;strong&gt;文档原子性(Document Atomicity)&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;现在，通过仅附加向量，能够实现单个posting list的原子性。但是，文档可以包含term列表，最终可能会返回带有部分更新索引的意外文档。为了解决这个潜在问题，引入了文档级提交来保证文档原子性。在服务管道中，使用附加过滤器来确保仅返回已提交的文档。&lt;/p&gt;
+&lt;p&gt;说到文档原子性，文档更新是这里值得一提的另一个场景。对于每个文档更新，特意将其转换为两个操作：添加新文档，然后从索引中删除旧文档。虽然每个操作符都是原子性的，但在一起不能保证原子性。考虑到在很短的时间窗口内返回旧版本或新版本都可以，但尽管如此，还是在服务管道中添加了重复数据删除逻辑，以便在两者都返回时过滤掉旧版本。&lt;/p&gt;
+&lt;h4 id=&#34;写入缩放writes-scaling&#34;&gt;&lt;strong&gt;写入缩放(Writes Scaling)&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;自然而然出现的一个问题是，如果你的数据结构只支持单写多读并发模型，那么如果单个线程无法及时处理所有写操作怎么办？仅仅为了扩展写入吞吐量而盲目添加更多分片似乎不是一个好主意。这是一个合理的担忧，在设计中已经考虑到了这一点。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/9.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;用于数据结构的单写多读并发模型并不意味着不能使用多线程进行写操作。使用了term分片策略来支持多线程写入。如上图所示，对于给定的包含term列表的文档，每个term将始终映射到固定线程，以便所有为单写和多读定制的数据结构都可以直接重用，没有任何限制。(**注：**加快索引构建，map/reduce分而治之思考方式(分而治之算法的工作原理是将问题递归地分解为两个或多个相同或相关类型的子问题，直到这些问题变得简单到可以直接解决。然后将子问题的解决方案组合起来以给出原始问题的解决方案)，no block彼此独立可并发执行,可以结合硬件与操作系统异步io操作加速写入)&lt;/p&gt;
+&lt;h3 id=&#34;索引刷新index-refresh&#34;&gt;索引刷新(Index Refresh)&lt;/h3&gt;
+&lt;p&gt;索引刷新能力是产品的一项关键功能，可以实现快速周转并提高开发速度。一般来说，可以使用两种方法来有效地刷新索引，分别是动态回填和从离线构建的索引恢复。&lt;/p&gt;
+&lt;h4 id=&#34;回填索引backfilling-index&#34;&gt;&lt;strong&gt;回填索引(Backfilling Index)&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;能够以合理的吞吐量回填文档。为了避免影响生产新鲜度(freshness)，需要一个单独的流来处理优先级较低的回填流量。因此，两个流中可能存在文档的两个版本，并且旧版本会覆盖新版本。为了克服这个问题，需要在实时索引管道中引入版本控制机制和冲突解决程序来决定哪个更新鲜。&lt;/p&gt;
+&lt;h4 id=&#34;从离线构建索引恢复reinstating-from-offline-built-index&#34;&gt;&lt;strong&gt;从离线构建索引恢复(Reinstating from Offline Built Index)&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;有时，以给定速度回填完整数据集会非常耗时。支持的另一种更快的索引刷新方法是离线构建索引，然后通过离线构建的索引和 Kafka 流之间的同步机制从中恢复。()&lt;/p&gt;
+&lt;h3 id=&#34;故障转移和自动缩放failover-and-auto-scaling&#34;&gt;故障转移和自动缩放(Failover and Auto-scaling)&lt;/h3&gt;
+&lt;p&gt;有时，需要出于各种原因启动新实例，例如故障转移和自动扩展等。对于静态服务，可以很容易地使用从索引存储下载的不可变索引来启动新实例(注：这个类似rocksdb &lt;a href=&#34;https://github.com/facebook/rocksdb/wiki/Creating-and-Ingesting-SST-files#ingesting-sst-files&#34;&gt;bulkloading&lt;/a&gt; SSTable文件)。然而，对于索引不断变化的实时服务来说，它变得很复杂。如何确保新实例最终具有与其他实例相同的索引副本？&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/10.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;决定使用基于领导者的复制，如上图所示。的流程如下所示：(**注：**这个和分布式存储系统中多副本replica同步操作一样，大多是通过一致性协议来保证，比如&lt;a href=&#34;https://en.wikipedia.org/wiki/Raft_(algorithm)&#34;&gt;raft&lt;/a&gt;/&lt;a href=&#34;https://en.wikipedia.org/wiki/Paxos_(computer_science)&#34;&gt;Paxos&lt;/a&gt; 协议，如果follower落后，从快照中恢复数据，不同的是这里快照是放在支持S3协议云存储服务，使用kafka充当WAL从最新checkpoint开始恢复日志消息，同步完成，提供流量访问；这个看着流程容易，实现起来细节还是挺多的)&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;领导者定期dump新快照(snapshots)并将其上传到持久索引存储&lt;/li&gt;
+&lt;li&gt;新实例默认从索引存储下载最新快照&lt;/li&gt;
+&lt;li&gt;新实例根据快照索引中的检查点恢复消费来自 Kafka 的消息&lt;/li&gt;
+&lt;li&gt;新实例赶上后就开始提供流量&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;设计中有一些要点值得指出：&lt;/p&gt;
+&lt;h4 id=&#34;领导人选举&#34;&gt;&lt;strong&gt;领导人选举&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;Leader 的唯一职责是定期dump快照并上传索引。这意味着可以承受在短时间内（最多几个小时）没有领导者或有多个领导者的情况。因此，在选择领导者选举算法时具有一定的灵活性。为简单起见，选择使用集群维护作业来静态选择领导者，并定期检查是否有好的领导者。(**注：**因为这里场景是单写多读模式，只写leader,当leader failover时，业务可以接受一段时间检索不到最新的数据，这个不影响业务使用，但是没有了最新的召回数据)&lt;/p&gt;
+&lt;h4 id=&#34;快照上传&#34;&gt;&lt;strong&gt;快照上传&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;通常，新实例只是连接到领导者以下载最新的快照。在这种方法中，从新实例下载快照可能会使领导者过载，从而导致级联故障。相反，选择定期将快照上传到索引存储、交易空间和新鲜度以确保稳定性。此外，上传的快照对于错误恢复很有用，稍后将对此进行介绍。(&lt;strong&gt;注：&lt;/strong&gt; 上传快照，主要是kafka中的数据有错误数据时，用于快速恢复(从历史快照中恢复正确的历史数据，然后从正确数据的checkpoint点开始从kafka中消费日志数据进行恢复，&lt;!-- raw HTML omitted --&gt;跳过损坏的消息，使用修复好的新消息，fix操作&lt;!-- raw HTML omitted --&gt;)，aws s3成本是很低的，常存放大量一段时间的冷日志数据)&lt;/p&gt;
+&lt;h3 id=&#34;错误恢复-1&#34;&gt;错误恢复&lt;/h3&gt;
+&lt;p&gt;如上所述，错误恢复是实时服务系统的另一个挑战。需要处理一些涉及数据损坏的特定场景。&lt;/p&gt;
+&lt;h4 id=&#34;输入数据损坏&#34;&gt;&lt;strong&gt;输入数据损坏&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;使用 Kafka 作为输入写入流；不幸的是，这些消息是不可变的，因为生产者只能将消息附加到其中，但不能更改现有消息的内容。这意味着一旦数据损坏被引入 Kafka 消息中，它就是永久性的。借助上传的快照，能够将索引倒回到没有损坏的位置，跳过损坏的消息，然后使用修复后的新消息。&lt;/p&gt;
+&lt;h4 id=&#34;二进制错误导致数据损坏&#34;&gt;&lt;strong&gt;二进制错误导致数据损坏&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;尽管有一个成熟的静态集群索引验证管道，可以保证在换入新版本之前新索引和新二进制文件不会出现问题，但仍然可能会出现一些错误潜入生产环境。幸运的是，可以通过回滚二进制文件或索引来解决该问题。对于实时服务来说，回滚二进制文件无法回滚索引中的错误变得更加困难。使用的快照上传机制，能够回滚二进制文件以及回滚索引，然后重播来自 Kafka 的消息以修复索引中的错误。&lt;/p&gt;
+&lt;h2 id=&#34;下一步是什么&#34;&gt;下一步是什么&lt;/h2&gt;
+&lt;p&gt;随着Manas接入的场景越来越多，需要不断提升系统的效率、扩展性和能力。的路线图中一些有趣的项目如下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;共同托管静态和实时集群以简化的服务堆栈&lt;/li&gt;
+&lt;li&gt;优化系统以支持大数据集&lt;/li&gt;
+&lt;li&gt;构建基于通用embedding的检索来支持高级场景&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;manas-hnsw-realtime为基于embedding的实时检索提供支持&#34;&gt;Manas HNSW Realtime：为基于embedding的实时检索提供支持&lt;/h1&gt;
+&lt;p&gt;在之前的&lt;a href=&#34;https://medium.com/pinterest-engineering/manas-a-high-performing-customized-search-system-cf189f6ca40f&#34;&gt;博文&lt;/a&gt;中，介绍了的内部搜索引擎 - Manas - 并分享了如何大规模提供基于term的搜索。自推出以来，Manas 已发展成为 Pinterest 的关键候选生成器之一，服务于许多超出其最初目的的用例。&lt;/p&gt;
+&lt;p&gt;特别是，基于embedding的检索是 Pinterest 发现和推荐引擎的关键组成部分。Manas 传统上通过倒排索引上的局部敏感哈希 (LSH) 支持近似最近邻 (ANN) 搜索，倒排索引是基于term的搜索引擎的自然扩展。在发布新的最先进技术（例如分层可导航小世界图 (HNSW)&lt;a href=&#34;https://arxiv.org/abs/1603.09320&#34;&gt;论文&lt;/a&gt;，&lt;a href=&#34;https://github.com/nmslib/hnswlib&#34;&gt;开源库&lt;/a&gt;实现了metric space：L2(Euclidean Squared L2),IP(Inner product),Cosine(Cosine similarity)，一般用cosine，归一化处理；其中facebook &lt;a href=&#34;https://github.com/facebookresearch/faiss&#34;&gt;Faiss&lt;/a&gt;加入&lt;a href=&#34;https://github.com/facebookresearch/faiss/wiki/Additive-quantizers&#34;&gt;量化处理(Additive-quantizers)&lt;/a&gt;)后，在 Manas 中构建了一个灵活的基于embedding的检索框架，这使能够轻松采用新的 ANN 技术。使用新框架将 HNSW 启动到批量索引集群（索引延迟从几分钟到几天不等），与 LSH 相比，可以节省大量服务成本并减少延迟。&lt;/p&gt;
+&lt;p&gt;计划中的下一个里程碑是将 HNSW 启动到的实时流集群（秒级索引延迟）。实时、大规模地为 HNSW 提供服务并不是一项简单的任务，部分原因是正在开辟新的领域，而无法依赖任何开源实现。&lt;/p&gt;
+&lt;p&gt;在这篇博客中，将分享为 HNSW 提供实时服务的历程——解决这个问题的方法、面临的挑战以及为生产系统所做的一些优化。&lt;/p&gt;
+&lt;h2 id=&#34;manas-realtime&#34;&gt;Manas Realtime&lt;/h2&gt;
+&lt;p&gt;该项目的本质是为 HNSW 构建实时组件并将其集成到&lt;a href=&#34;https://medium.com/pinterest-engineering/manas-realtime-enabling-changes-to-be-searchable-in-a-blink-of-an-eye-36acc3506843&#34;&gt;Manas Realtime&lt;/a&gt;中。为了更好地了解这些组件如何适应更大的情况，让简要了解一下 Manas Realtime 的高级架构。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/11.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Manas Realtime本质上是一个&lt;a href=&#34;https://en.wikipedia.org/wiki/Log-structured_merge-tree&#34;&gt;LSM&lt;/a&gt;引擎，它将随机IO写入转换为顺序IO写入。写入不是公开写入端点，而是从 Kafka 摄取，这使能够简化系统并依赖 Kafka 作为 WAL。写入分为三种类型，以下是它们的处理方式：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;新文档被写入内存中的实时段，最终被密封并刷新到磁盘上的静态段&lt;/li&gt;
+&lt;li&gt;使用内存中标记应用删除，并在服务期间过滤掉&lt;/li&gt;
+&lt;li&gt;更新是通过删除旧文档并添加新文档来完成的&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;后台压缩过程有时会组合各种静态段，以减少因段过多而产生的服务开销。还依靠压缩过程通过从索引中删除文档来执行实际删除。&lt;/p&gt;
+&lt;p&gt;从服务的角度来看，Manas Realtime 与 Manas Static 没有太大区别。对索引进行了抽象，以便存储层对整个检索过程是透明的。因此，随着 HNSW 已经为 Manas Static 启动，大多数服务组件已经存在。的工作主要是与Manas Realtime 的LSM 索引组件集成。需要构建和优化两个核心组件，将在下面的部分中详细介绍：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;实时 HNSW 图表&lt;/li&gt;
+&lt;li&gt;HNSW 图压缩&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;实时-hnsw-图表realtime-hnsw-graph&#34;&gt;实时 HNSW 图表(Realtime HNSW Graph)&lt;/h3&gt;
+&lt;p&gt;实时段是系统中唯一可变的组件，因此该区域的优化对于确保良好的并发读写性能至关重要。&lt;/p&gt;
+&lt;p&gt;HNSW 索引本质上是一个多层稀疏图。选择一个邻接列表来表示图，其中键是节点 id，值是邻居 id 列表。从基于锁的版本开始，每个节点都拥有一个锁，在更新邻居列表之前，该锁将由读取器和写入器持有。它很容易实现和推理。然而，由于锁争用，系统 CPU 使用率较高，别无选择，只能使用&lt;a href=&#34;https://en.wikipedia.org/wiki/Non-blocking_algorithm&#34;&gt;无锁&lt;/a&gt;技术。&lt;/p&gt;
+&lt;h3 id=&#34;无锁实现lock-free-implementation&#34;&gt;无锁实现(Lock-free Implementation)&lt;/h3&gt;
+&lt;p&gt;让来剖析一下如何以直观的方式处理写入。HNSW的思想源于著名的&lt;a href=&#34;https://en.wikipedia.org/wiki/Skip_list&#34;&gt;跳表&lt;/a&gt;结构。因此，HNSW 的无锁实现也类似于无锁跳表。一般来说，为了向图中添加新节点，每一层都涉及两个步骤，如下图所示。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;在层内查找新节点的邻居并将新节点连接到选定的邻居&lt;/li&gt;
+&lt;li&gt;更新选定的邻居以连接到新节点。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/12.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;同样，在 HNSW 图中从基础层开始向上层添加新节点，以避免出现新节点被选为上层的进入点但下层实际上没有为其建立连接的情况，从而导致没有结果问题。&lt;/p&gt;
+&lt;p&gt;对于删除，避免了将它们应用到图表中的成本和复杂性。相反，使用内存中的删除标记在图外处理它们，依靠过滤器在服务期间过滤掉已删除的节点。&lt;/p&gt;
+&lt;p&gt;一些细节优化值得简单提及：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;单写多读&lt;/strong&gt;：为了简单起见，延续了使用单写多读并发模式的传统，从而使代码整洁且易于推理。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;预分配图&lt;/strong&gt;：由于实时图通常较小且大小固定，因此为图预分配内存以避免调整大小带来的复杂性。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;定制邻居选择算法&lt;/strong&gt;：使用标准邻居选择算法，更新邻居列表有三种可能：添加一个新邻居、减少邻居和替换一个邻居。当涉及到无锁实现时，通过回填最近邻居来消除“减少邻居”场景实际上大大简化了逻辑，能够使用原子操作。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;“原子”变量&lt;/strong&gt;：即使使用释放-获取顺序，c++ std::atomic 变量实际上也是昂贵的。相反，使用对齐内存来保证原子性，并使用全局原子变量作为内存屏障，使能够仅一次显式提交一个节点的所有更改。&lt;!-- raw HTML omitted --&gt;一些部分更新仍然有可能泄漏到读取线程可见，从而在短时间内损害全局连接。由于观察没有明显的召回率下降，将其视为性能和质量之间的合理权衡&lt;!-- raw HTML omitted --&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;hnsw-图压缩hnsw-graph-compaction&#34;&gt;HNSW 图压缩(HNSW Graph Compaction)&lt;/h2&gt;
+&lt;p&gt;压缩需要解决的主要问题是压缩速度。如前所述，压缩是减少同时服务的段总数的方法。最好的情况是，较长的压缩时间会导致较高的 CPU 使用率；最坏的情况是，系统停止摄取，导致新的更新无法反映和提供。&lt;/p&gt;
+&lt;h3 id=&#34;清白合并clean-slate-merger&#34;&gt;清白合并(Clean Slate Merger)&lt;/h3&gt;
+&lt;p&gt;对 hnsw 压缩算法的第一次尝试就是所说的 clean slate；本质上，该算法根据所有输入段的未删除embedding构建一个全新的图。这种方法对于的一些用例来说太慢了，所以需要优化算法。&lt;/p&gt;
+&lt;h3 id=&#34;添加合并add-on-merger&#34;&gt;添加合并(Add on Merger)&lt;/h3&gt;
+&lt;p&gt;的下一个策略是尽可能多地重用索引；从所有要压缩的段中选择最大的段，并将索引转换为可以重用的内存结构。然后将其他段的剩余embedding添加到重用图中。&lt;/p&gt;
+&lt;p&gt;剩下的问题是如何处理从重用段中删除的embedding。尝试了两种不同的方法：1）持久删除并重新选择邻居，2）将已删除的embedding与附近的活动embedding分组。尽管这两个选项都适合客户，但事实证明第一个选项在某些情况下速度太慢。&lt;/p&gt;
+&lt;h3 id=&#34;持久删除persisting-deletions&#34;&gt;持久删除(Persisting Deletions)&lt;/h3&gt;
+&lt;p&gt;需要维护图的小世界属性，并且简单地删除已删除的节点及其输入/输出边缘可能会破坏图中的连接性。为了解决这个问题，使用称为邻居重选的过程，其中节点可能连接到已删除节点的邻居以保持连接。&lt;/p&gt;
+&lt;p&gt;发现，如果存在大量删除节点，压缩时间实际上会比 clean slate 算法慢，这并不理想。&lt;/p&gt;
+&lt;h3 id=&#34;将已删除的节点与其最近的活动节点分组grouping-deleted-nodes-with-their-closest-alive-nodes&#34;&gt;将已删除的节点与其最近的活动节点分组(Grouping Deleted Nodes with their Closest Alive Nodes)&lt;/h3&gt;
+&lt;p&gt;持久删除可能比使用全新算法慢的原因有两个。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;正在重用段中回填节点与其邻居之间的距离，从而导致大量昂贵的距离计算。&lt;/li&gt;
+&lt;li&gt;邻居重选过程可能非常昂贵，尤其是在删除许多节点的情况下。这是因为如果删除节点的邻居也被删除，则需要更多的重选迭代。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/13.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;第二个优化是将已删除的节点与附近的活动节点分组，从而避免昂贵的重选过程。原始图与以前相同，但现在多个节点映射到相同的embedding。由于图形未更改，因此保持连接性。此外，延迟计算节点与其邻居之间的距离，而不是主动回填它们，从而避免了不必要的距离计算。还需要在算法中添加重复数据删除步骤，因为多个节点可以对应相同的embedding。&lt;/p&gt;
+&lt;h2 id=&#34;在线召回监控online-recall-monitoring&#34;&gt;在线召回监控(Online Recall Monitoring)&lt;/h2&gt;
+&lt;p&gt;到目前为止，一直专注于如何构建和优化系统中的组件。但生产系统还有另一个非常重要的方面——质量验证。对于 HNSW，召回率是用来验证索引质量的指标。它是通过将近似最近邻 (ANN) 搜索的结果与精确最近邻 (KNN) 搜索返回的理想结果进行比较来计算的。&lt;/p&gt;
+&lt;p&gt;监控召回也特别重要，因为某些优化可能涉及为了更好的系统性能而进行的质量权衡。需要跟踪这些质量下降情况，以确保仍然为客户提供良好的结果。&lt;/p&gt;
+&lt;p&gt;通过一组不可变的embedding，计算给定查询的召回率相对容易。可以使用离线批处理作业预先计算 KNN，并通过生成索引并向其发出查询来计算 ANN。由于embedding集是恒定的，KNN 结果永远不会改变，可以调整索引构建参数来优化召回率。&lt;/p&gt;
+&lt;p&gt;然而，在实时场景中，embedding不断被添加和删除，使得预先计算的 KNN 集无法使用。为了解决这个问题，开发了一个在线召回工具；在服务集群中添加了计算 ANN 和 KNN 结果的功能，这使能够计算给定时间点的召回率。&lt;/p&gt;
+&lt;h2 id=&#34;下一步是什么-1&#34;&gt;下一步是什么&lt;/h2&gt;
+&lt;p&gt;对于来说，在批量索引集群上启动 HNSW 并通过为 HNSW 提供实时服务来突破的能力界限是一次激动人心的旅程。但 HNSW 只是基于embedding的检索系统愿景的第一步。&lt;/p&gt;
+&lt;h3 id=&#34;效率和实验efficiency-and-experimentation&#34;&gt;效率和实验(Efficiency and Experimentation)&lt;/h3&gt;
+&lt;p&gt;构建了一个系统，可以为基于embedding的检索进行生产化，从而使的机器学习工程师能够尝试新的embedding或新算法，而无需从头开始构建新的生产系统。将继续迭代该系统，改进服务性能、渠道效率和促进轻松实验等方面。&lt;/p&gt;
+&lt;h3 id=&#34;流媒体过滤streaming-filtering&#34;&gt;流媒体过滤(Streaming Filtering)&lt;/h3&gt;
+&lt;p&gt;当前的过滤方法是从 HNSW 图中预取 K 个 ANN，然后应用过滤器来获得最终的候选集。这不是非常有效的漏斗，并且很难弄清楚 K 的值将给带来需要的最终候选者的数量。计划以流式方式实现 HNSW 算法，其中可以在获取期间应用过滤器，并且流式获取仅在检索到所需数量的候选者时才终止。&lt;/p&gt;
+&lt;p&gt;敬请关注！&lt;/p&gt;
+&lt;p&gt;PS: 以上翻译文章最新截止2021年一月份。&lt;/p&gt;
+&lt;h1 id=&#34;reference&#34;&gt;reference&lt;/h1&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Non-blocking_algorithm&#34;&gt;https://en.wikipedia.org/wiki/Non-blocking_algorithm&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://fulmanski.pl/tutorials/computer-science/nosql/column-family-bigtable-stores/&#34;&gt;https://fulmanski.pl/tutorials/computer-science/nosql/column-family-bigtable-stores/&lt;/a&gt; (from PL)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://medium.com/pinterest-engineering/manas-a-high-performing-customized-search-system-cf189f6ca40f&#34;&gt;https://medium.com/pinterest-engineering/manas-a-high-performing-customized-search-system-cf189f6ca40f&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://medium.com/pinterest-engineering/manas-realtime-enabling-changes-to-be-searchable-in-a-blink-of-an-eye-36acc3506843&#34;&gt;https://medium.com/pinterest-engineering/manas-realtime-enabling-changes-to-be-searchable-in-a-blink-of-an-eye-36acc3506843&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://medium.com/pinterest-engineering/manas-hnsw-realtime-powering-realtime-embedding-based-retrieval-dc71dfd6afdd&#34;&gt;https://medium.com/pinterest-engineering/manas-hnsw-realtime-powering-realtime-embedding-based-retrieval-dc71dfd6afdd&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/rXXm6c8LrTqqP4iWf9mtxA&#34;&gt;为什么微信推荐这么快？&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/1a2bl983bGKM713xI_3v_A&#34;&gt;小红书高时效推荐系统背后的技术升级&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.elastic.co/guide/en/elasticsearch/reference/8.0/knn-search.html&#34;&gt;ES8.0/knn-search&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://redis.io/docs/interact/search-and-query/search/vectors/&#34;&gt;Redis Stack7.2/vss&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/baidu/puck/blob/main/docs/README.md&#34;&gt;baidu puck&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://blog.research.google/2020/07/announcing-scann-efficient-vector.html&#34;&gt;Announcing ScaNN: Efficient Vector Similarity Search&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;</description>
       
     </item>
     
@@ -3640,486 +3892,6 @@ cdk destroy --all
 &lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://d1.awsstatic.com/whitepapers/aws-cloud-data-ingestion-patterns-practices.pdf&#34;&gt;AWS Cloud Data Ingestion Patterns and Practices&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://catalog.us-east-1.prod.workshops.aws/workshops/c342c6d1-2baf-4827-ba42-52ef9eb173f6/en-US/flink-on-kda&#34;&gt;Flink-on-KDS Workshop&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://catalog.us-east-1.prod.workshops.aws/workshops/2300137e-f2ac-4eb9-a4ac-3d25026b235f/en-US&#34;&gt;Real time streaming with kinesis Workshop&lt;/a&gt;&lt;/p&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>全栈开发</title>
-      <link>https://weedge.github.io/post/shop/</link>
-      <pubDate>Sun, 02 Jan 2022 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/shop/</guid>
-      
-        <description>&lt;h2 id=&#34;介绍&#34;&gt;介绍&lt;/h2&gt;
-&lt;p&gt;以前工作中有过前端的开发经验，使用后端模版Smarty(主要是外部需求，现在新项目中应该很少使用这个了)，前端模版Mustache，页面中使用 js jquery交互逻辑，直接服用一些开源的UI组件Bootstrap，开源的后台UI系统，主要是建设内部后台的时候使用，自动生成CRUD页面；前端的技术栈更新迭代相对后端快些，通过以全栈技术栈为切入点，通过一个简单的系统，学习下最新技术栈工具，主要目的如下：&lt;/p&gt;
-&lt;p&gt;根据需求，实现一个简单功能的购物系统，目的是为了学习ts-&amp;gt;js on node.js全栈开发，了解整体开发构建工具，熟悉下工具开发流程，主要还是了解前端框架工具的使用，以及熟悉通过js运行时环境运行在后端服务上的应用开发工具，以便在后续开发后台系统的时候可以熟练使用这些技术进行开发，这些工具的设计思想可以借鉴到其他后端业务开发语言中。&lt;/p&gt;
-&lt;h2 id=&#34;功能要求&#34;&gt;功能要求&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;⽤户可以浏览商品，提供按商品名字搜索功能。&lt;/li&gt;
-&lt;li&gt;⽤户可以下单购买某样商品（⽀付过程可以省略），购买成功后系统需要异步通知下游系统（如仓库 系统、物流系统等，下游系统可简单实现）。&lt;/li&gt;
-&lt;li&gt;提供后台管理⻚⾯录⼊商品，包括商品名称、商品描述、商品价格、库存等。&lt;/li&gt;
-&lt;li&gt;要求记录⽤户访问⽇志，供审计使⽤。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id=&#34;实现要求&#34;&gt;实现要求&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;前端使⽤Vue.js + elementUI，后台使⽤ AdonisJS 框架（AdonisJS 版本要求5.0以上）。&lt;/li&gt;
-&lt;li&gt;数据库使⽤ mysql，结合 AdonisJS 的 ORM 能⼒。&lt;/li&gt;
-&lt;li&gt;设计时需要考虑必要的系统安全性。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id=&#34;设计实现&#34;&gt;设计实现&lt;/h2&gt;
-&lt;h3 id=&#34;需求分析&#34;&gt;需求分析&lt;/h3&gt;
-&lt;p&gt;整体交互主要是实现购买系统，以及用户购买商品的访问日志，以及用户行为日志，给审计系统，进行漏洞分析等，考虑到前期用户比较少，交互使用，5天设计开发时间，先提供v1简单版本，满足商家和买家用户的基本购买功能&lt;/p&gt;
-&lt;p&gt;买家基本需求：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;通过页面查看上架商品列表；查看商品详情页；通过商品名关键字搜索商品；&lt;/li&gt;
-&lt;li&gt;购买商品，查看订单(为了简化需求，无购物车功能，假设用户订单只能购买一件商品，及用户和订单是一对多，订单和商品是多对一)；&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;卖家基本需求：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;后台录入查看修改删除商品(一个用户编辑多个商品项，一个商品项也可以给多个用户编辑，及用户和商品是多对多，为了简单考虑，不考虑协同的情况)；&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;后台需求：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;记录访问日志，审计需求；&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h3 id=&#34;功能设计&#34;&gt;功能设计&lt;/h3&gt;
-&lt;ol&gt;
-&lt;li&gt;Shop-frontend  数据页面展现，满足商品列表展现；通过商品名搜索；详情页查看；&lt;/li&gt;
-&lt;li&gt;Shop-backend  商品后台，提供http RESTful api ，满足页面需求，以及相应auth权限验证，日志记录，购买订单发送；&lt;/li&gt;
-&lt;li&gt;Shop-admin-frontend 商品数据管理页面展现，操作商品增删查改功能页面；&lt;/li&gt;
-&lt;li&gt;Shop-admin-backend 商品数据管理后台，提供http RESTful api， 满足页面CRUD功能；&lt;/li&gt;
-&lt;li&gt;Shop-backend  记录用户访问日志， 适用pb格式记录日志，产生日志实时写入消息队列中，提供给审计系统使用&lt;/li&gt;
-&lt;li&gt;其他服务；&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;整体架构设计如下图所示：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/shop-system.drawio.png&#34; alt=&#34;simple-shop-system&#34;&gt;&lt;/p&gt;
-&lt;h3 id=&#34;数据库设计&#34;&gt;数据库设计&lt;/h3&gt;
-&lt;p&gt;单独数据库实例shop, 简单实现，未根据未来几年的数据量来评估表的容量，分库分表的情况等。&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;商品表  tbl_shop_items&lt;/p&gt;
-&lt;p&gt;(Tips: 这里为了简化，没有定义复杂业务实体关系了，比如产品单元(CPU), 商品单元(SKU)，产品容器(Container) 等，不要脱离业务耍流氓)&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;字段&lt;/th&gt;
-&lt;th&gt;类型&lt;/th&gt;
-&lt;th&gt;描述&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;id&lt;/td&gt;
-&lt;td&gt;int64&lt;/td&gt;
-&lt;td&gt;商品id&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;name&lt;/td&gt;
-&lt;td&gt;varchar(32)&lt;/td&gt;
-&lt;td&gt;商品名称&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;desc&lt;/td&gt;
-&lt;td&gt;varchar(1024)&lt;/td&gt;
-&lt;td&gt;商品描述&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;price&lt;/td&gt;
-&lt;td&gt;unsigned int&lt;/td&gt;
-&lt;td&gt;价格（分）&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;stock&lt;/td&gt;
-&lt;td&gt;unsigned int&lt;/td&gt;
-&lt;td&gt;库存数目&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;sell_cn&lt;/td&gt;
-&lt;td&gt;unsigned int&lt;/td&gt;
-&lt;td&gt;售卖数目&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;is_released&lt;/td&gt;
-&lt;td&gt;bool&lt;/td&gt;
-&lt;td&gt;是否上架&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;is_soldout&lt;/td&gt;
-&lt;td&gt;bool&lt;/td&gt;
-&lt;td&gt;是否售匿&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;is_del&lt;/td&gt;
-&lt;td&gt;bool&lt;/td&gt;
-&lt;td&gt;是否删除&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;owner_id&lt;/td&gt;
-&lt;td&gt;unsigned int64&lt;/td&gt;
-&lt;td&gt;添加者用户id&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;create_at&lt;/td&gt;
-&lt;td&gt;timestamp&lt;/td&gt;
-&lt;td&gt;创建时间&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;update_at&lt;/td&gt;
-&lt;td&gt;timestamp&lt;/td&gt;
-&lt;td&gt;修改时间&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;ext&lt;/td&gt;
-&lt;td&gt;varchar&lt;/td&gt;
-&lt;td&gt;扩展字段&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;ol start=&#34;2&#34;&gt;
-&lt;li&gt;用户商品操作表 tbl_user_items&lt;/li&gt;
-&lt;/ol&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;字段&lt;/th&gt;
-&lt;th&gt;类型&lt;/th&gt;
-&lt;th&gt;描述&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;id&lt;/td&gt;
-&lt;td&gt;unsigned int64&lt;/td&gt;
-&lt;td&gt;操作id&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;user_id&lt;/td&gt;
-&lt;td&gt;unsigned int64&lt;/td&gt;
-&lt;td&gt;商品管理后台用户id&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;item_id&lt;/td&gt;
-&lt;td&gt;unsigned int64&lt;/td&gt;
-&lt;td&gt;商品id&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;create_at&lt;/td&gt;
-&lt;td&gt;timestamp&lt;/td&gt;
-&lt;td&gt;创建时间&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;update_at&lt;/td&gt;
-&lt;td&gt;timestamp&lt;/td&gt;
-&lt;td&gt;修改时间&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;ext&lt;/td&gt;
-&lt;td&gt;varchar&lt;/td&gt;
-&lt;td&gt;扩展字段&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;ol start=&#34;3&#34;&gt;
-&lt;li&gt;用户订单表  tbl_user_orders （为了简化，一个用户只能选一个商品直接下单购买，无购物车）&lt;/li&gt;
-&lt;/ol&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;字段&lt;/th&gt;
-&lt;th&gt;类型&lt;/th&gt;
-&lt;th&gt;描述&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;user_id&lt;/td&gt;
-&lt;td&gt;unsigned int64&lt;/td&gt;
-&lt;td&gt;用户id&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;item_id&lt;/td&gt;
-&lt;td&gt;unsigned int64&lt;/td&gt;
-&lt;td&gt;商品id&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;order_id&lt;/td&gt;
-&lt;td&gt;unsigned int64&lt;/td&gt;
-&lt;td&gt;订单id&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;pay_amount&lt;/td&gt;
-&lt;td&gt;unsigned int64&lt;/td&gt;
-&lt;td&gt;支付金额&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;create_at&lt;/td&gt;
-&lt;td&gt;timestamp&lt;/td&gt;
-&lt;td&gt;创建时间&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;update_at&lt;/td&gt;
-&lt;td&gt;timestamp&lt;/td&gt;
-&lt;td&gt;修改时间&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;ext&lt;/td&gt;
-&lt;td&gt;varchar&lt;/td&gt;
-&lt;td&gt;扩展字段&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;ol start=&#34;4&#34;&gt;
-&lt;li&gt;用户表 tbl_users (users)&lt;/li&gt;
-&lt;/ol&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;字段&lt;/th&gt;
-&lt;th&gt;类型&lt;/th&gt;
-&lt;th&gt;描述&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;id&lt;/td&gt;
-&lt;td&gt;unsigned int64&lt;/td&gt;
-&lt;td&gt;用户id&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;name&lt;/td&gt;
-&lt;td&gt;varchar&lt;/td&gt;
-&lt;td&gt;用户名&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;email&lt;/td&gt;
-&lt;td&gt;varchar&lt;/td&gt;
-&lt;td&gt;邮件&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;password&lt;/td&gt;
-&lt;td&gt;varchar&lt;/td&gt;
-&lt;td&gt;加密密码&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;remember_me_token&lt;/td&gt;
-&lt;td&gt;varchar&lt;/td&gt;
-&lt;td&gt;api Opaque Access Token&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;is_admin&lt;/td&gt;
-&lt;td&gt;bool&lt;/td&gt;
-&lt;td&gt;是否是管理员&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;created_at&lt;/td&gt;
-&lt;td&gt;timestamp&lt;/td&gt;
-&lt;td&gt;创建时间&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;updated_at&lt;/td&gt;
-&lt;td&gt;timestamp&lt;/td&gt;
-&lt;td&gt;修改时间&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;ER关系：&lt;/p&gt;
-&lt;p&gt;[tbl_shop_items] &amp;lt;-N&amp;mdash;1-&amp;gt; (create) [tbl_users]&lt;/p&gt;
-&lt;p&gt;[tbl_shop_items] &amp;lt;-1&amp;mdash;N-&amp;gt; [tbl_user_items] (record)   &amp;lt;-M&amp;mdash;1-&amp;gt; [tbl_users]&lt;/p&gt;
-&lt;p&gt;[tbl_shop_items] &amp;lt;-1&amp;mdash;N-&amp;gt; [tbl_user_orders] (order) &amp;lt;-M&amp;mdash;1-&amp;gt; [users]&lt;/p&gt;
-&lt;h3 id=&#34;消息设计&#34;&gt;消息设计&lt;/h3&gt;
-&lt;p&gt;订单生成后，通知下游系统，订阅消息，暂不考虑。&lt;/p&gt;
-&lt;h3 id=&#34;后端接口设计&#34;&gt;后端接口设计&lt;/h3&gt;
-&lt;p&gt;因为逻辑简单，就没有画出接口功能的时序图和流程图。&lt;/p&gt;
-&lt;h4 id=&#34;shop-backend--服务端口2021&#34;&gt;Shop-backend  服务端口：2021&lt;/h4&gt;
-&lt;ol&gt;
-&lt;li&gt;GET /shop/api/v1/itmes  商品列表&lt;/li&gt;
-&lt;li&gt;GET /shop/api/v1/items/:id 商品详情&lt;/li&gt;
-&lt;li&gt;GET /shop/api/v1/items/search?q=** 更具名称搜索商品&lt;/li&gt;
-&lt;li&gt;POST /shop/api/v1/order  商品下单&lt;/li&gt;
-&lt;li&gt;GET  /shop/api/v1/orders/:orderId  获取订单详情&lt;/li&gt;
-&lt;li&gt;GET /shop/api/v1/users/:uid/orders 用户商品订单列表&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h4 id=&#34;shop-admin-backend-服务端口2022&#34;&gt;Shop-admin-backend 服务端口：2022&lt;/h4&gt;
-&lt;ol&gt;
-&lt;li&gt;shop items CRUD RESTful api  for resource methods (&lt;a href=&#34;https://docs.adonisjs.com/guides/controllers#resourceful-routes-and-controllers&#34;&gt;route RESTful resource&lt;/a&gt;)&lt;/li&gt;
-&lt;li&gt;POST /shopadmin/api/v1/items/:id/check 商品审核&lt;/li&gt;
-&lt;li&gt;GET /shopadmin/api/v1/items/:uid  获取用户创建的商品&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h3 id=&#34;前端页面交互设计&#34;&gt;前端页面交互设计&lt;/h3&gt;
-&lt;p&gt;前端页面调试，本地起页面服务端口进行本地调试&lt;/p&gt;
-&lt;h4 id=&#34;shop-frontend-vue-route-component-page&#34;&gt;Shop-frontend (vue route component page)&lt;/h4&gt;
-&lt;ol&gt;
-&lt;li&gt;/     主页面/搜索结构页，列表页面 ，展示搜索框&lt;/li&gt;
-&lt;li&gt;/items/:id   详细页面， 展示购买按钮&lt;/li&gt;
-&lt;li&gt;/user/:id/orders 用户商品订单列表页面&lt;/li&gt;
-&lt;li&gt;/error  访问不到的页面&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h4 id=&#34;shop-admin-frontend-crud-edge-template-layout-page&#34;&gt;Shop-admin-frontend (CRUD edge template layout page)&lt;/h4&gt;
-&lt;p&gt;CRUD RESTful api  for resource methods to render edge page&lt;/p&gt;
-&lt;h2 id=&#34;开发&#34;&gt;开发&lt;/h2&gt;
-&lt;p&gt;初期整体使用前端js全栈开发技术栈；Typescript 静态语言，通过 tsc 将ts编译成js 减少错误；通过npm管理依赖包(vim vundle/python pip/php composer/go module/rust cargo)；使用VS Code IDE开发神器编码(All in ONE，可远程ssh连接安装了linux 内核虚拟服务调试学习，查看源码很方便)，安装所需插件。&lt;/p&gt;
-&lt;p&gt;具体开发工具如下：&lt;/p&gt;
-&lt;p&gt;Typescript 编程语言(JavaScript超级 tsc 4.5.4 ts-&amp;gt;js) + Node.js 运行时环境(v17.2 V8 JavaScript 引擎 from Google Chrome 的内核) + Adonis.js MVC后端框架(v5.0+) + Vue.js前端框架(v3.0+)  + Element-plus UI 前端页面UI模版(v1.3)&lt;/p&gt;
-&lt;p&gt;tips：业务模块设计尽量满足SOLID原则，最终满足&lt;strong&gt;高内聚，低耦合&lt;/strong&gt;, 尽量让开发框架来满足。&lt;/p&gt;
-&lt;h3 id=&#34;后端服务开发&#34;&gt;后端服务开发&lt;/h3&gt;
-&lt;p&gt;shop-backend, shop-admin-backend 服务逻辑， 使用ts语言，AdonisJS (MVC+IoC开发框架,适合后台开发框架) 5.0+开发环境：&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/database/introduction&#34;&gt;Model&lt;/a&gt;: app ER(entity relationship) data model -&amp;gt; table schema by migration -&amp;gt; create table -&amp;gt; make  table model&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/controllers&#34;&gt;Controller&lt;/a&gt;: make controller for api logic&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/routing&#34;&gt;Routing&lt;/a&gt;: http RESTful api router (start preload routes)&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/views/introduction&#34;&gt;View&lt;/a&gt;: view  edge template reander frontend page&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/validator/introduction&#34;&gt;Validator&lt;/a&gt;: validate data schema&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/validator/custom-rules&#34;&gt;Rules&lt;/a&gt;: validate rules(common &amp;amp; DIY  start preload rules)&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/middleware&#34;&gt;Middleware&lt;/a&gt;:  Middleware are a series of functions that are executed during an HTTP request before it reaches the route handler. Every function in the chain has the ability to end the request or forward it to the &lt;code&gt;next&lt;/code&gt; function. &lt;strong&gt;&lt;del&gt;server&lt;/del&gt;&lt;/strong&gt; Middleware, &lt;strong&gt;Global&lt;/strong&gt; Middleware, &lt;strong&gt;Naming&lt;/strong&gt; Middleware&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/auth/introduction&#34;&gt;Authentication&lt;/a&gt;: using &lt;strong&gt;sessions&lt;/strong&gt;, &lt;strong&gt;basic auth&lt;/strong&gt; or &lt;strong&gt;API tokens(JWT, OAT)&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://docs.adonisjs.com/guides/events&#34;&gt;Events&lt;/a&gt;: define evens listener  to listen async event on(eventName,callback) , then emit event to tigger regist event&amp;rsquo;s callback; eg: new user to emit event callback to send email (DIY events Listenner, start preload events)&lt;/p&gt;
-&lt;p&gt;通过adonis-ts-app demo 初始化一个app:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;c1&#34;&gt;#new project&lt;/span&gt;
-npm init adonis-ts-app@latest shop-backend
-npm init adonis-ts-app@latest shop-admin-backend
-&lt;span class=&#34;c1&#34;&gt;#install package for mysql &lt;/span&gt;
-npm i @adonisjs/lucid@alpha
-&lt;span class=&#34;c1&#34;&gt;#invoke package to select mysql for ace make:model and migration table&lt;/span&gt;
-node ace configure&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;invoke&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; @adonisjs/lucid
-&lt;span class=&#34;c1&#34;&gt;#install mysql2&lt;/span&gt;
-npm install mysql2
-&lt;span class=&#34;c1&#34;&gt;#modify config/database.ts use mysql client: mysql2&lt;/span&gt;
-
-&lt;span class=&#34;c1&#34;&gt;#install auth middleware&lt;/span&gt;
-npm i @adonisjs/auth@alpha
-&lt;span class=&#34;c1&#34;&gt;#install Argon2 password hashing algorithm following the PHC string format&lt;/span&gt;
-npm install phc-argon2
-&lt;span class=&#34;c1&#34;&gt;#invoke package to select lucid and api tokens&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;# https://docs.adonisjs.com/guides/auth/introduction&lt;/span&gt;
-node ace invoke @adonisjs/auth
-&lt;span class=&#34;c1&#34;&gt;# rigister auth naming middleware in start/kernel.js  auth: &amp;#39;App/Middleware/Auth&amp;#39;,&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;# add auth middleware for router in start/router.js  &lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;# use database-backed opaque access token&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;# demo: https://dev.to/tngeene/adonisjs-understanding-user-registration-and-authentication-2ojl&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;# for session auth&lt;/span&gt;
-npm i @adonisjs/session 
-&lt;span class=&#34;c1&#34;&gt;# for CSRF token protection&lt;/span&gt;
-npm i @adonisjs/shield 
-&lt;span class=&#34;c1&#34;&gt;#invoke add fhield global middleware in start/kernel.js () =&amp;gt; import(&amp;#39;@ioc:Adonis/Addons/Shield&amp;#39;)&lt;/span&gt;
-node ace invoke @adonisjs/shield
-
-&lt;span class=&#34;c1&#34;&gt;#change .env modify mysql conf&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;#migration table&lt;/span&gt;
-node ace make:migration &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;table&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;#migration create/rollback table&lt;/span&gt;
-node ace migration:run / node ace migration:rollback
-
-&lt;span class=&#34;c1&#34;&gt;#then u can use ace to make a new model app/Models/***.ts&lt;/span&gt;
-node ace make:model ***
-&lt;span class=&#34;c1&#34;&gt;#then u can use ace to make a new app/Controllers/Http/***Controller.ts&lt;/span&gt;
-node ace make:controller ***
-&lt;span class=&#34;c1&#34;&gt;#if use edge tpl, u can use ace to make a new view to render tpl&lt;/span&gt;
-node ace make:view ***
-&lt;span class=&#34;c1&#34;&gt;#if valide request param, u can use ace to make a new volidator&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;#https://docs.adonisjs.com/guides/validator/introduction&lt;/span&gt;
-node ace make:validator ***
-&lt;span class=&#34;c1&#34;&gt;#or diy validate rules&lt;/span&gt;
-node ace make:prldfile validator
-
-&lt;span class=&#34;c1&#34;&gt;#make events to gen start/events.ts for listen on(eventName,callback)&lt;/span&gt;
-node ace make:prldfile events
-&lt;span class=&#34;c1&#34;&gt;#or make listener to listen on eventsList &lt;/span&gt;
-node ace make:listener ***
-
-
-&lt;span class=&#34;c1&#34;&gt;#make a middleware like auth middleware;&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;#transmit by ctx, ctx-&amp;gt;ctx-&amp;gt;ctx to next()&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;#eg: u can make a user action log middleware to analyse or A/B test for recommended system&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;#https://docs.adonisjs.com/guides/middleware&lt;/span&gt;
-node ace make:middleware ***
-
-&lt;span class=&#34;c1&#34;&gt;# https://github.com/luin/ioredis/blob/master/API.md&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;# https://docs.adonisjs.com/guides/redis&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;#install redis&lt;/span&gt;
-npm i @adonisjs/redis
-node ace configure @adonisjs/redis
-
-&lt;span class=&#34;c1&#34;&gt;# https://www.npmjs.com/package/@elastic/elasticsearch&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;# https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/typescript.html&lt;/span&gt;
-npm i @elastic/elasticsearch
-
-
-&lt;span class=&#34;c1&#34;&gt;# watch run &lt;/span&gt;
-node ace serve --watch
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;前端开发&#34;&gt;前端开发&lt;/h3&gt;
-&lt;p&gt;Shop-frontend, shop-admin-frontend 前端页面逻辑，使用TypeScript+ Vue.js(前端开发框架) + ElementUI组件 通过vite构建本地开发(CI过程通过webpack打包生成静态资源，通过CD部署到边缘CDN节点)，开发环境具体操作如下：&lt;/p&gt;
-&lt;p&gt;Vue.js 3 + TypeScript + Vite + ElementUI-plus&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://next.router.vuejs.org/zh/&#34;&gt;vue router&lt;/a&gt;: 通过 Vue.js，用组件组成应用；通过 Vue Router 将组件映射到路由上，让 Vue Router 知道在哪里渲染它们;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://axios-http.com/zh/docs/intro&#34;&gt;axios&lt;/a&gt;: HTTP 网络client请求库;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://next.vuex.vuejs.org/zh/index.html&#34;&gt;vuex&lt;/a&gt;: state management pattern + library stat/view/actions like MVC;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://vee-validate.logaretm.com/v4/guide/overview&#34;&gt;vee-validate&lt;/a&gt;: form validation;  &lt;a href=&#34;https://www.npmjs.com/package/yup&#34;&gt;yup&lt;/a&gt;:  data schema validation;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# install vue cli&lt;/span&gt;
-npm install -g @vue/cli
-&lt;span class=&#34;c1&#34;&gt;# u can use vue create app use vue.js v3&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;# vue create vue-app &amp;amp; cd vue-app&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;# vue add element-plus&lt;/span&gt;
-
-&lt;span class=&#34;c1&#34;&gt;# or use vite build vue.js v3 project app&lt;/span&gt;
-npm init @vitejs/app shop-frontend 
-npm init @vitejs/app shop-admin-frontend
-
-&lt;span class=&#34;c1&#34;&gt;# eg: shop-frontend&lt;/span&gt;
-&lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; shop-frontend &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;shop-admin-frontend&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;# choose vue-ts when install&lt;/span&gt;
-npm install
-
-&lt;span class=&#34;c1&#34;&gt;# install vue-router4, https://next.router.vuejs.org/zh/&lt;/span&gt;
-npm install vue-router@4
-
-&lt;span class=&#34;c1&#34;&gt;# install axios https://axios-http.com/zh/docs/intro&lt;/span&gt;
-npm install axios
-
-&lt;span class=&#34;c1&#34;&gt;# install vuex, nice design(state management pattern + library stat/view/actions like MVC)  &lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;# https://next.vuex.vuejs.org/zh/index.html&lt;/span&gt;
-npm install vuex@next --save
-
-&lt;span class=&#34;c1&#34;&gt;# install vee-validate, https://vee-validate.logaretm.com/v4/guide/overview&lt;/span&gt;
-npm i vee-validate@next --save
-
-
-&lt;span class=&#34;c1&#34;&gt;#install element-plus ui&lt;/span&gt;
-npm install element-plus --save
-npm i -D sass
-&lt;span class=&#34;c1&#34;&gt;#auto import &lt;/span&gt;
-npm install -D unplugin-vue-components unplugin-auto-import
-
-&lt;span class=&#34;c1&#34;&gt;# run local vue dev runtime app service (vite --port 5000 --host)&lt;/span&gt;
-npm run dev
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;附具体代码(Monolith版本, 后端状态存储数据读写使用同一个数据源)：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/backend-adonisjs-api/tree/main/shop-admin-backend&#34;&gt;Shop-admin-backend&lt;/a&gt; : 后台管理系统，为了方便后续根据数据库表一键生成CURD代码，采用后端模版edge template；用户管理可以采用内部公司用户平台SSO单点登录获取ticket的方式，或者使用框架本身的身份认证功能进行后台模块的权限管理(web authentication)&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/backend-adonisjs-api/tree/main/adonisjs-shop-backend-api&#34;&gt;Shop-backend-api&lt;/a&gt;：后端接口，获取接口数据，需要登录验证，和token鉴权，记录用户行为日志，读写操作数据库和缓存等；&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/frontend-vue/tree/main/vue-shop-frontend&#34;&gt;Shop-frontend-vue&lt;/a&gt;：前端页面，使用vue框架开发，访问后端API使用axios，状态管理使用vuex，页面路由使vue-router，表单验证和数据验证分别使用vee-valdate和yup，组件的使用需要结合文档使用；首页/搜索结果页展示商品列表，点击更多进入商品详细页面进行购买，购买需要登录/注册，登录后进入订单列表页，具体需求推动；&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h3 id=&#34;整体联调&#34;&gt;整体联调&lt;/h3&gt;
-&lt;p&gt;这里前后端统一技术栈采用js on node  by (AdonisJS 5 + Vue 3 + Element-plus UI)， 如果熟悉node js  很方便调试，开发1人工全栈搞定就行，至于外部需求UI的调整美化由PM和设计师确定好，尽量通过工具自动化， 降低沟通成本；&lt;/p&gt;
-&lt;p&gt;当然当后续系统切成微服务，把1人工全栈的活分成多个人来维护，从公司和组织架构层面来说，虽然增加了开发沟通成本，但是对公司来说是有利的，人员离职对系统影响会降低很多吧(from: 郭老师的架构课,以心理学+认知等方面)；&lt;/p&gt;
-&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
-&lt;p&gt;前端的技术迭代速度是快于后端的，主要是前端有大量的需求开发，不管是外部业务还是内部需求开发，所以需要满足业务场景下的高效迭代速度，衍生出高效的开发框架工具和UI组件复用，同时需要保持工具在项目中的迭代升级，而且在基于前端技术发展触及到后端开发，演变出前后技术栈统一的全栈开发，但是需求增多，需要更多的资源来承载用户请求，对于后端一些基础组件服务和性能优化的场景，还是需要根据&lt;strong&gt;语言特性，人力，组织结构&lt;/strong&gt;等因素考虑；前端技术底层引擎和原理性基础知识是不易变的，可以在关注变化的过程中，深入浅出共性的底层逻辑，以不变应万变；工欲善其事，必先利其器；(不管是前端/后端开发，DevOps, 以及大数据开发，甚至AI，&lt;strong&gt;熟练&lt;/strong&gt;利用好工具，工具是在应用场景下沉淀下来的，&lt;strong&gt;理解&lt;/strong&gt;基础原理和工具设计原理，结合使用场景，快速定位(文档，问题)，输出最大化，技术工具没有银弹，应用在适用场景达到事半功倍效果，学会在巨人的肩膀上考虑问题，搞事情)。&lt;/p&gt;
-&lt;h2 id=&#34;reference&#34;&gt;reference&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;ECMAScript: &lt;a href=&#34;https://tc39.es/ecma262/&#34;&gt;https://tc39.es/ecma262/&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;ts: &lt;a href=&#34;https://www.typescriptlang.org/&#34;&gt;https://www.typescriptlang.org/&lt;/a&gt;      &lt;a href=&#34;https://typescript.bootcss.com/&#34;&gt;https://typescript.bootcss.com/&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;why-ts: &lt;a href=&#34;https://serokell.io/blog/why-typescript&#34;&gt;https://serokell.io/blog/why-typescript&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Node.js: &lt;a href=&#34;http://nodejs.cn/learn&#34;&gt;http://nodejs.cn/learn&lt;/a&gt;  &lt;strong&gt;&lt;a href=&#34;https://nodejs.org/dist/latest-v17.x/docs/api/&#34;&gt;https://nodejs.org/dist/latest-v17.x/docs/api/&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
-&lt;li&gt;V8 JavaScript/&lt;a href=&#34;https://developer.mozilla.org/zh-CN/docs/WebAssembly/Concepts&#34;&gt;WebAssembly&lt;/a&gt; Engine: &lt;strong&gt;&lt;a href=&#34;https://chromium.googlesource.com/v8/v8.git&#34;&gt;https://chromium.googlesource.com/v8/v8.git&lt;/a&gt;&lt;/strong&gt; &lt;strong&gt;&lt;a href=&#34;https://v8.dev/docs&#34;&gt;https://v8.dev/docs&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
-&lt;li&gt;Adonis.js5: &lt;a href=&#34;https://adonisjs.com/&#34;&gt;https://adonisjs.com/&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Adonis.js5 + Edge template demo: &lt;a href=&#34;https://masteringbackend.com/posts/adonisjs-tutorial-the-ultimate-guide&#34;&gt;https://masteringbackend.com/posts/adonisjs-tutorial-the-ultimate-guide&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Adonis.js5 + Vue.js3 demo: &lt;a href=&#34;https://www.section.io/engineering-education/build-a-ticketing-app-with-adonisjs-and-vuejs/&#34;&gt;https://www.section.io/engineering-education/build-a-ticketing-app-with-adonisjs-and-vuejs/&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Vue.js3: &lt;a href=&#34;https://v3.cn.vuejs.org/guide/introduction.html&#34;&gt;https://v3.cn.vuejs.org/guide/introduction.html&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Vite: &lt;a href=&#34;https://cn.vitejs.dev/guide/&#34;&gt;https://cn.vitejs.dev/guide/&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Vue CLI: &lt;a href=&#34;https://cli.vuejs.org/zh/guide/&#34;&gt;https://cli.vuejs.org/zh/guide/&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Element-Plus UI: &lt;a href=&#34;https://element-plus.gitee.io/zh-CN/guide/installation.html&#34;&gt;https://element-plus.gitee.io/zh-CN/guide/installation.html&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;webpack: &lt;a href=&#34;https://webpack.docschina.org/concepts/&#34;&gt;https://webpack.docschina.org/concepts/&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;web开发: &lt;strong&gt;&lt;a href=&#34;https://developer.mozilla.org/zh-CN/docs/Web&#34;&gt;https://developer.mozilla.org/zh-CN/docs/Web&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
-&lt;/ol&gt;</description>
       
     </item>
     
