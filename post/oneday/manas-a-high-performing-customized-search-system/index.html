@@ -77,7 +77,7 @@ Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin �
 Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出&ldquo;Search&quot;和&quot;Lens&rdquo;，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。
 为了继续扩展搜索，的系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，的搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着的发展和引入新的发现功能，的遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C&#43;&#43; 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。"><meta itemprop="datePublished" content="2023-09-14T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-09-14T10:26:23+08:00" />
-<meta itemprop="wordCount" content="10969">
+<meta itemprop="wordCount" content="10953">
 <meta itemprop="keywords" content="oneday," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：Manas：高性能定制搜索系统"/>
 <meta name="twitter:description" content="Manas：高性能定制搜索系统
@@ -502,7 +502,7 @@ Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin �
 <p>本质上，实时Manas leaf是一个<a href="https://en.wikipedia.org/wiki/Log-structured_merge-tree">LSM</a>引擎，它将随机IO写入转换为顺序IO，并为读放大和写放大应用程序提供高效服务。如下所示，整个索引过程由三个关键步骤组成。来一一讨论。</p>
 <p><img src="https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/6.png" alt="img"></p>
 <h3 id="实时分段构建realtime-segment-build">实时分段构建(Realtime Segment Build)</h3>
-<p>除了现有的静态段之外，还引入了实时段。如上图所示，系统中的实时段有两种类型：活动实时段和密封实时段。（**注：**这个类似leveldb/rocksdb LSMtree, 同样是append-only write顺序IO , 不同的是kafka充当了WAL, 内部数据结构变成了正排和倒排索引结构，分段存储）</p>
+<p>除了现有的静态段之外，还引入了实时段。如上图所示，系统中的实时段有两种类型：活动实时段和密封实时段。（<strong>注</strong>: 这个类似leveldb/rocksdb LSMtree, 同样是append-only write顺序IO , 不同的是kafka充当了WAL, 内部数据结构变成了正排和倒排索引结构，分段存储）</p>
 <ul>
 <li>活动实时段是唯一的可变组件，用于累积从 Kafka 拉取的突变（添加/删除）。值得指出的是，将文档添加到实时段后，在文档级提交后立即可以搜索它。</li>
 <li>一旦活动实时段达到可配置的阈值，它就会被密封(<strong>sealed</strong>)，变得不可变，并被放入刷新队列中。同时，创建一个新的活动实时片段以继续累积突变。</li>
@@ -536,7 +536,7 @@ Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin �
 <h4 id="写入缩放writes-scaling"><strong>写入缩放(Writes Scaling)</strong></h4>
 <p>自然而然出现的一个问题是，如果你的数据结构只支持单写多读并发模型，那么如果单个线程无法及时处理所有写操作怎么办？仅仅为了扩展写入吞吐量而盲目添加更多分片似乎不是一个好主意。这是一个合理的担忧，在设计中已经考虑到了这一点。</p>
 <p><img src="https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/9.png" alt="img"></p>
-<p>用于数据结构的单写多读并发模型并不意味着不能使用多线程进行写操作。使用了term分片策略来支持多线程写入。如上图所示，对于给定的包含term列表的文档，每个term将始终映射到固定线程，以便所有为单写和多读定制的数据结构都可以直接重用，没有任何限制。(**注：**加快索引构建，map/reduce分而治之思考方式(分而治之算法的工作原理是将问题递归地分解为两个或多个相同或相关类型的子问题，直到这些问题变得简单到可以直接解决。然后将子问题的解决方案组合起来以给出原始问题的解决方案)，no block彼此独立可并发执行,可以结合硬件与操作系统异步io操作加速写入)</p>
+<p>用于数据结构的单写多读并发模型并不意味着不能使用多线程进行写操作。使用了term分片策略来支持多线程写入。如上图所示，对于给定的包含term列表的文档，每个term将始终映射到固定线程，以便所有为单写和多读定制的数据结构都可以直接重用，没有任何限制。(<strong>注</strong>：加快索引构建，map/reduce分而治之思考方式(分而治之算法的工作原理是将问题递归地分解为两个或多个相同或相关类型的子问题，直到这些问题变得简单到可以直接解决。然后将子问题的解决方案组合起来以给出原始问题的解决方案)，no block彼此独立可并发执行,可以结合硬件与操作系统异步io操作加速写入)</p>
 <h3 id="索引刷新index-refresh">索引刷新(Index Refresh)</h3>
 <p>索引刷新能力是产品的一项关键功能，可以实现快速周转并提高开发速度。一般来说，可以使用两种方法来有效地刷新索引，分别是动态回填和从离线构建的索引恢复。</p>
 <h4 id="回填索引backfilling-index"><strong>回填索引(Backfilling Index)</strong></h4>
@@ -544,9 +544,9 @@ Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin �
 <h4 id="从离线构建索引恢复reinstating-from-offline-built-index"><strong>从离线构建索引恢复(Reinstating from Offline Built Index)</strong></h4>
 <p>有时，以给定速度回填完整数据集会非常耗时。支持的另一种更快的索引刷新方法是离线构建索引，然后通过离线构建的索引和 Kafka 流之间的同步机制从中恢复。()</p>
 <h3 id="故障转移和自动缩放failover-and-auto-scaling">故障转移和自动缩放(Failover and Auto-scaling)</h3>
-<p>有时，需要出于各种原因启动新实例，例如故障转移和自动扩展等。对于静态服务，可以很容易地使用从索引存储下载的不可变索引来启动新实例(注：这个类似rocksdb <a href="https://github.com/facebook/rocksdb/wiki/Creating-and-Ingesting-SST-files#ingesting-sst-files">bulkloading</a> SSTable文件)。然而，对于索引不断变化的实时服务来说，它变得很复杂。如何确保新实例最终具有与其他实例相同的索引副本？</p>
+<p>有时，需要出于各种原因启动新实例，例如故障转移和自动扩展等。对于静态服务，可以很容易地使用从索引存储下载的不可变索引来启动新实例(<strong>注</strong>：这个类似rocksdb <a href="https://github.com/facebook/rocksdb/wiki/Creating-and-Ingesting-SST-files#ingesting-sst-files">bulkloading</a> SSTable文件)。然而，对于索引不断变化的实时服务来说，它变得很复杂。如何确保新实例最终具有与其他实例相同的索引副本？</p>
 <p><img src="https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/10.png" alt="img"></p>
-<p>决定使用基于领导者的复制，如上图所示。的流程如下所示：(**注：**这个和分布式存储系统中多副本replica同步操作一样，大多是通过一致性协议来保证，比如<a href="https://en.wikipedia.org/wiki/Raft_(algorithm)">raft</a>/<a href="https://en.wikipedia.org/wiki/Paxos_(computer_science)">Paxos</a> 协议，如果follower落后，从快照中恢复数据，不同的是这里快照是放在支持S3协议云存储服务，使用kafka充当WAL从最新checkpoint开始恢复日志消息，同步完成，提供流量访问；这个看着流程容易，实现起来细节还是挺多的)</p>
+<p>决定使用基于领导者的复制，如上图所示。的流程如下所示：(<strong>注</strong>：这个和分布式存储系统中多副本replica同步操作一样，大多是通过一致性协议来保证，比如<a href="https://en.wikipedia.org/wiki/Raft_(algorithm)">raft</a>/<a href="https://en.wikipedia.org/wiki/Paxos_(computer_science)">Paxos</a> 协议，如果follower落后，从快照中恢复数据，不同的是这里快照是放在支持S3协议云存储服务，使用kafka充当WAL从最新checkpoint开始恢复日志消息，同步完成，提供流量访问；这个看着流程容易，实现起来细节还是挺多的)</p>
 <ol>
 <li>领导者定期dump新快照(snapshots)并将其上传到持久索引存储</li>
 <li>新实例默认从索引存储下载最新快照</li>
@@ -555,9 +555,9 @@ Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin �
 </ol>
 <p>设计中有一些要点值得指出：</p>
 <h4 id="领导人选举"><strong>领导人选举</strong></h4>
-<p>Leader 的唯一职责是定期dump快照并上传索引。这意味着可以承受在短时间内（最多几个小时）没有领导者或有多个领导者的情况。因此，在选择领导者选举算法时具有一定的灵活性。为简单起见，选择使用集群维护作业来静态选择领导者，并定期检查是否有好的领导者。(**注：**因为这里场景是单写多读模式，只写leader,当leader failover时，业务可以接受一段时间检索不到最新的数据，这个不影响业务使用，但是没有了最新的召回数据)</p>
+<p>Leader 的唯一职责是定期dump快照并上传索引。这意味着可以承受在短时间内（最多几个小时）没有领导者或有多个领导者的情况。因此，在选择领导者选举算法时具有一定的灵活性。为简单起见，选择使用集群维护作业来静态选择领导者，并定期检查是否有好的领导者。(<strong>注</strong>：因为这里场景是单写多读模式，只写leader,当leader failover时，业务可以接受一段时间检索不到最新的数据，这个不影响业务使用，但是没有了最新的召回数据)</p>
 <h4 id="快照上传"><strong>快照上传</strong></h4>
-<p>通常，新实例只是连接到领导者以下载最新的快照。在这种方法中，从新实例下载快照可能会使领导者过载，从而导致级联故障。相反，选择定期将快照上传到索引存储、交易空间和新鲜度以确保稳定性。此外，上传的快照对于错误恢复很有用，稍后将对此进行介绍。(<strong>注：</strong> 上传快照，主要是kafka中的数据有错误数据时，用于快速恢复(从历史快照中恢复正确的历史数据，然后从正确数据的checkpoint点开始从kafka中消费日志数据进行恢复，<!-- raw HTML omitted -->跳过损坏的消息，使用修复好的新消息，fix操作<!-- raw HTML omitted -->)，aws s3成本是很低的，常存放大量一段时间的冷日志数据)</p>
+<p>通常，新实例只是连接到领导者以下载最新的快照。在这种方法中，从新实例下载快照可能会使领导者过载，从而导致级联故障。相反，选择定期将快照上传到索引存储、交易空间和新鲜度以确保稳定性。此外，上传的快照对于错误恢复很有用，稍后将对此进行介绍。(<strong>注</strong>： 上传快照，主要是kafka中的数据有错误数据时，用于快速恢复(从历史快照中恢复正确的历史数据，然后从正确数据的checkpoint点开始从kafka中消费日志数据进行恢复，<!-- raw HTML omitted -->跳过损坏的消息，使用修复好的新消息，fix操作<!-- raw HTML omitted -->)，aws s3成本是很低的，常存放大量一段时间的冷日志数据)</p>
 <h3 id="错误恢复-1">错误恢复</h3>
 <p>如上所述，错误恢复是实时服务系统的另一个挑战。需要处理一些涉及数据损坏的特定场景。</p>
 <h4 id="输入数据损坏"><strong>输入数据损坏</strong></h4>

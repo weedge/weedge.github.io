@@ -144,7 +144,7 @@
 &lt;p&gt;本质上，实时Manas leaf是一个&lt;a href=&#34;https://en.wikipedia.org/wiki/Log-structured_merge-tree&#34;&gt;LSM&lt;/a&gt;引擎，它将随机IO写入转换为顺序IO，并为读放大和写放大应用程序提供高效服务。如下所示，整个索引过程由三个关键步骤组成。来一一讨论。&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/6.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;实时分段构建realtime-segment-build&#34;&gt;实时分段构建(Realtime Segment Build)&lt;/h3&gt;
-&lt;p&gt;除了现有的静态段之外，还引入了实时段。如上图所示，系统中的实时段有两种类型：活动实时段和密封实时段。（**注：**这个类似leveldb/rocksdb LSMtree, 同样是append-only write顺序IO , 不同的是kafka充当了WAL, 内部数据结构变成了正排和倒排索引结构，分段存储）&lt;/p&gt;
+&lt;p&gt;除了现有的静态段之外，还引入了实时段。如上图所示，系统中的实时段有两种类型：活动实时段和密封实时段。（&lt;strong&gt;注&lt;/strong&gt;: 这个类似leveldb/rocksdb LSMtree, 同样是append-only write顺序IO , 不同的是kafka充当了WAL, 内部数据结构变成了正排和倒排索引结构，分段存储）&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;活动实时段是唯一的可变组件，用于累积从 Kafka 拉取的突变（添加/删除）。值得指出的是，将文档添加到实时段后，在文档级提交后立即可以搜索它。&lt;/li&gt;
 &lt;li&gt;一旦活动实时段达到可配置的阈值，它就会被密封(&lt;strong&gt;sealed&lt;/strong&gt;)，变得不可变，并被放入刷新队列中。同时，创建一个新的活动实时片段以继续累积突变。&lt;/li&gt;
@@ -178,7 +178,7 @@
 &lt;h4 id=&#34;写入缩放writes-scaling&#34;&gt;&lt;strong&gt;写入缩放(Writes Scaling)&lt;/strong&gt;&lt;/h4&gt;
 &lt;p&gt;自然而然出现的一个问题是，如果你的数据结构只支持单写多读并发模型，那么如果单个线程无法及时处理所有写操作怎么办？仅仅为了扩展写入吞吐量而盲目添加更多分片似乎不是一个好主意。这是一个合理的担忧，在设计中已经考虑到了这一点。&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/9.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;用于数据结构的单写多读并发模型并不意味着不能使用多线程进行写操作。使用了term分片策略来支持多线程写入。如上图所示，对于给定的包含term列表的文档，每个term将始终映射到固定线程，以便所有为单写和多读定制的数据结构都可以直接重用，没有任何限制。(**注：**加快索引构建，map/reduce分而治之思考方式(分而治之算法的工作原理是将问题递归地分解为两个或多个相同或相关类型的子问题，直到这些问题变得简单到可以直接解决。然后将子问题的解决方案组合起来以给出原始问题的解决方案)，no block彼此独立可并发执行,可以结合硬件与操作系统异步io操作加速写入)&lt;/p&gt;
+&lt;p&gt;用于数据结构的单写多读并发模型并不意味着不能使用多线程进行写操作。使用了term分片策略来支持多线程写入。如上图所示，对于给定的包含term列表的文档，每个term将始终映射到固定线程，以便所有为单写和多读定制的数据结构都可以直接重用，没有任何限制。(&lt;strong&gt;注&lt;/strong&gt;：加快索引构建，map/reduce分而治之思考方式(分而治之算法的工作原理是将问题递归地分解为两个或多个相同或相关类型的子问题，直到这些问题变得简单到可以直接解决。然后将子问题的解决方案组合起来以给出原始问题的解决方案)，no block彼此独立可并发执行,可以结合硬件与操作系统异步io操作加速写入)&lt;/p&gt;
 &lt;h3 id=&#34;索引刷新index-refresh&#34;&gt;索引刷新(Index Refresh)&lt;/h3&gt;
 &lt;p&gt;索引刷新能力是产品的一项关键功能，可以实现快速周转并提高开发速度。一般来说，可以使用两种方法来有效地刷新索引，分别是动态回填和从离线构建的索引恢复。&lt;/p&gt;
 &lt;h4 id=&#34;回填索引backfilling-index&#34;&gt;&lt;strong&gt;回填索引(Backfilling Index)&lt;/strong&gt;&lt;/h4&gt;
@@ -186,9 +186,9 @@
 &lt;h4 id=&#34;从离线构建索引恢复reinstating-from-offline-built-index&#34;&gt;&lt;strong&gt;从离线构建索引恢复(Reinstating from Offline Built Index)&lt;/strong&gt;&lt;/h4&gt;
 &lt;p&gt;有时，以给定速度回填完整数据集会非常耗时。支持的另一种更快的索引刷新方法是离线构建索引，然后通过离线构建的索引和 Kafka 流之间的同步机制从中恢复。()&lt;/p&gt;
 &lt;h3 id=&#34;故障转移和自动缩放failover-and-auto-scaling&#34;&gt;故障转移和自动缩放(Failover and Auto-scaling)&lt;/h3&gt;
-&lt;p&gt;有时，需要出于各种原因启动新实例，例如故障转移和自动扩展等。对于静态服务，可以很容易地使用从索引存储下载的不可变索引来启动新实例(注：这个类似rocksdb &lt;a href=&#34;https://github.com/facebook/rocksdb/wiki/Creating-and-Ingesting-SST-files#ingesting-sst-files&#34;&gt;bulkloading&lt;/a&gt; SSTable文件)。然而，对于索引不断变化的实时服务来说，它变得很复杂。如何确保新实例最终具有与其他实例相同的索引副本？&lt;/p&gt;
+&lt;p&gt;有时，需要出于各种原因启动新实例，例如故障转移和自动扩展等。对于静态服务，可以很容易地使用从索引存储下载的不可变索引来启动新实例(&lt;strong&gt;注&lt;/strong&gt;：这个类似rocksdb &lt;a href=&#34;https://github.com/facebook/rocksdb/wiki/Creating-and-Ingesting-SST-files#ingesting-sst-files&#34;&gt;bulkloading&lt;/a&gt; SSTable文件)。然而，对于索引不断变化的实时服务来说，它变得很复杂。如何确保新实例最终具有与其他实例相同的索引副本？&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/10.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;决定使用基于领导者的复制，如上图所示。的流程如下所示：(**注：**这个和分布式存储系统中多副本replica同步操作一样，大多是通过一致性协议来保证，比如&lt;a href=&#34;https://en.wikipedia.org/wiki/Raft_(algorithm)&#34;&gt;raft&lt;/a&gt;/&lt;a href=&#34;https://en.wikipedia.org/wiki/Paxos_(computer_science)&#34;&gt;Paxos&lt;/a&gt; 协议，如果follower落后，从快照中恢复数据，不同的是这里快照是放在支持S3协议云存储服务，使用kafka充当WAL从最新checkpoint开始恢复日志消息，同步完成，提供流量访问；这个看着流程容易，实现起来细节还是挺多的)&lt;/p&gt;
+&lt;p&gt;决定使用基于领导者的复制，如上图所示。的流程如下所示：(&lt;strong&gt;注&lt;/strong&gt;：这个和分布式存储系统中多副本replica同步操作一样，大多是通过一致性协议来保证，比如&lt;a href=&#34;https://en.wikipedia.org/wiki/Raft_(algorithm)&#34;&gt;raft&lt;/a&gt;/&lt;a href=&#34;https://en.wikipedia.org/wiki/Paxos_(computer_science)&#34;&gt;Paxos&lt;/a&gt; 协议，如果follower落后，从快照中恢复数据，不同的是这里快照是放在支持S3协议云存储服务，使用kafka充当WAL从最新checkpoint开始恢复日志消息，同步完成，提供流量访问；这个看着流程容易，实现起来细节还是挺多的)&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;领导者定期dump新快照(snapshots)并将其上传到持久索引存储&lt;/li&gt;
 &lt;li&gt;新实例默认从索引存储下载最新快照&lt;/li&gt;
@@ -197,9 +197,9 @@
 &lt;/ol&gt;
 &lt;p&gt;设计中有一些要点值得指出：&lt;/p&gt;
 &lt;h4 id=&#34;领导人选举&#34;&gt;&lt;strong&gt;领导人选举&lt;/strong&gt;&lt;/h4&gt;
-&lt;p&gt;Leader 的唯一职责是定期dump快照并上传索引。这意味着可以承受在短时间内（最多几个小时）没有领导者或有多个领导者的情况。因此，在选择领导者选举算法时具有一定的灵活性。为简单起见，选择使用集群维护作业来静态选择领导者，并定期检查是否有好的领导者。(**注：**因为这里场景是单写多读模式，只写leader,当leader failover时，业务可以接受一段时间检索不到最新的数据，这个不影响业务使用，但是没有了最新的召回数据)&lt;/p&gt;
+&lt;p&gt;Leader 的唯一职责是定期dump快照并上传索引。这意味着可以承受在短时间内（最多几个小时）没有领导者或有多个领导者的情况。因此，在选择领导者选举算法时具有一定的灵活性。为简单起见，选择使用集群维护作业来静态选择领导者，并定期检查是否有好的领导者。(&lt;strong&gt;注&lt;/strong&gt;：因为这里场景是单写多读模式，只写leader,当leader failover时，业务可以接受一段时间检索不到最新的数据，这个不影响业务使用，但是没有了最新的召回数据)&lt;/p&gt;
 &lt;h4 id=&#34;快照上传&#34;&gt;&lt;strong&gt;快照上传&lt;/strong&gt;&lt;/h4&gt;
-&lt;p&gt;通常，新实例只是连接到领导者以下载最新的快照。在这种方法中，从新实例下载快照可能会使领导者过载，从而导致级联故障。相反，选择定期将快照上传到索引存储、交易空间和新鲜度以确保稳定性。此外，上传的快照对于错误恢复很有用，稍后将对此进行介绍。(&lt;strong&gt;注：&lt;/strong&gt; 上传快照，主要是kafka中的数据有错误数据时，用于快速恢复(从历史快照中恢复正确的历史数据，然后从正确数据的checkpoint点开始从kafka中消费日志数据进行恢复，&lt;!-- raw HTML omitted --&gt;跳过损坏的消息，使用修复好的新消息，fix操作&lt;!-- raw HTML omitted --&gt;)，aws s3成本是很低的，常存放大量一段时间的冷日志数据)&lt;/p&gt;
+&lt;p&gt;通常，新实例只是连接到领导者以下载最新的快照。在这种方法中，从新实例下载快照可能会使领导者过载，从而导致级联故障。相反，选择定期将快照上传到索引存储、交易空间和新鲜度以确保稳定性。此外，上传的快照对于错误恢复很有用，稍后将对此进行介绍。(&lt;strong&gt;注&lt;/strong&gt;： 上传快照，主要是kafka中的数据有错误数据时，用于快速恢复(从历史快照中恢复正确的历史数据，然后从正确数据的checkpoint点开始从kafka中消费日志数据进行恢复，&lt;!-- raw HTML omitted --&gt;跳过损坏的消息，使用修复好的新消息，fix操作&lt;!-- raw HTML omitted --&gt;)，aws s3成本是很低的，常存放大量一段时间的冷日志数据)&lt;/p&gt;
 &lt;h3 id=&#34;错误恢复-1&#34;&gt;错误恢复&lt;/h3&gt;
 &lt;p&gt;如上所述，错误恢复是实时服务系统的另一个挑战。需要处理一些涉及数据损坏的特定场景。&lt;/p&gt;
 &lt;h4 id=&#34;输入数据损坏&#34;&gt;&lt;strong&gt;输入数据损坏&lt;/strong&gt;&lt;/h4&gt;
