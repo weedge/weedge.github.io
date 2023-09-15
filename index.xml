@@ -279,11 +279,10 @@
 &lt;p&gt;对于来说，在批量索引集群上启动 HNSW 并通过为 HNSW 提供实时服务来突破的能力界限是一次激动人心的旅程。但 HNSW 只是基于embedding的检索系统愿景的第一步。&lt;/p&gt;
 &lt;h3 id=&#34;效率和实验efficiency-and-experimentation&#34;&gt;效率和实验(Efficiency and Experimentation)&lt;/h3&gt;
 &lt;p&gt;构建了一个系统，可以为基于embedding的检索进行生产化，从而使机器学习工程师能够尝试新的embedding或新算法，而无需从头开始构建新的生产系统。将继续迭代该系统，改进服务性能、渠道效率和促进轻松实验等方面。&lt;/p&gt;
-&lt;h3 id=&#34;流媒体过滤streaming-filtering&#34;&gt;流媒体过滤(Streaming Filtering)&lt;/h3&gt;
+&lt;h3 id=&#34;流式过滤streaming-filtering&#34;&gt;流式过滤(Streaming Filtering)&lt;/h3&gt;
 &lt;p&gt;当前的过滤方法是从 HNSW 图中预取 K 个 ANN，然后应用过滤器来获得最终的候选集。这不是非常有效的漏斗，并且很难弄清楚 K 的值将给带来需要的最终候选者的数量。计划以流式方式实现 HNSW 算法，其中可以在获取期间应用过滤器，并且流式获取仅在检索到所需数量的候选者时才终止。&lt;/p&gt;
 &lt;p&gt;敬请关注！&lt;/p&gt;
-&lt;p&gt;PS: 以上翻译文章最新截止2021年一月份。&lt;/p&gt;
-&lt;h1 id=&#34;章节四-manas-hnsw-流媒体过滤器&#34;&gt;章节四 Manas HNSW 流媒体过滤器&lt;/h1&gt;
+&lt;h1 id=&#34;章节四-manas-hnsw-流式过滤器&#34;&gt;章节四 Manas HNSW 流式过滤器&lt;/h1&gt;
 &lt;h2 id=&#34;介绍&#34;&gt;介绍&lt;/h2&gt;
 &lt;p&gt;基于embedding的检索是 Pinterest 推荐引擎的核心部分。支持无数的用例，从基于内容相似性的检索到学习检索。它由内部搜索引擎&lt;a href=&#34;https://medium.com/pinterest-engineering/manas-a-high-performing-customized-search-system-cf189f6ca40f&#34;&gt;Manas&lt;/a&gt;提供支持，该引擎提供近似最近邻 (ANN) 搜索服务，主要使用&lt;a href=&#34;https://arxiv.org/abs/1603.09320&#34;&gt;分层可导航小世界图 (HNSW)&lt;/a&gt;。&lt;/p&gt;
 &lt;p&gt;传统的基于token的搜索根据具有 AND 和 OR 等逻辑连接，匹配term在对应term树结构中来检索文档，而 ANN 搜索则基于embedding相似性进行检索。通常希望进行将两者结合起来的混合搜索查询。例如，“找到与这双鞋相似、价格低于 100 美元、评级为 4 星或以上的产品，然后运送到英国。” 这是一个常见问题，并非完全没有解决，但每种解决方案都有各自的注意事项和权衡。&lt;/p&gt;
