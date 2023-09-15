@@ -77,7 +77,7 @@ Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin �
 Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出 Search 和 Lens，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。
 为了继续扩展搜索，系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着业务发展和引入新的发现功能，遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C&#43;&#43; 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。"><meta itemprop="datePublished" content="2023-09-14T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-09-14T10:26:23+08:00" />
-<meta itemprop="wordCount" content="10920">
+<meta itemprop="wordCount" content="11113">
 <meta itemprop="keywords" content="oneday," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：Manas：高性能定制搜索系统"/>
 <meta name="twitter:description" content="Manas：高性能定制搜索系统
@@ -407,6 +407,10 @@ Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin �
       </ul>
     </li>
   </ul>
+
+  <ul>
+    <li><a href="#附相关向量数据库hnsw使用一般都会支持">附：相关向量数据库HNSW使用(一般都会支持)</a></li>
+  </ul>
 </nav>
   </div>
 </div>
@@ -586,14 +590,14 @@ Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin �
 <li>更新是通过删除旧文档并添加新文档来完成的</li>
 </ol>
 <p>后台压缩过程有时会组合各种静态段，以减少因段过多而产生的服务开销。还依靠压缩过程通过从索引中删除文档来执行实际删除。</p>
-<p>从服务的角度来看，Manas Realtime 与 Manas Static 没有太大区别。对索引进行了抽象，以便存储层对整个检索过程是透明的。因此，随着 HNSW 已经为 Manas Static 启动，大多数服务组件已经存在。的工作主要是与Manas Realtime 的LSM 索引组件集成。需要构建和优化两个核心组件，将在下面的部分中详细介绍：</p>
+<p>从服务的角度来看，Manas Realtime 与 Manas Static 没有太大区别。对索引进行了抽象，以便存储层对整个检索过程是透明的。因此，随着 HNSW 已经为 Manas Static 启动，大多数服务组件已经存在。工作主要是与Manas Realtime 的LSM 索引组件集成。需要构建和优化两个核心组件，将在下面的部分中详细介绍：</p>
 <ol>
 <li>实时 HNSW 图表</li>
 <li>HNSW 图压缩</li>
 </ol>
 <h3 id="实时-hnsw-图表realtime-hnsw-graph">实时 HNSW 图表(Realtime HNSW Graph)</h3>
 <p>实时段是系统中唯一可变的组件，因此该区域的优化对于确保良好的并发读写性能至关重要。</p>
-<p>HNSW 索引本质上是一个多层稀疏图。选择一个邻接列表来表示图，其中键是节点 id，值是邻居 id 列表。从基于锁的版本开始，每个节点都拥有一个锁，在更新邻居列表之前，该锁将由读取器和写入器持有。它很容易实现和推理。然而，由于锁争用，系统 CPU 使用率较高，别无选择，只能使用<a href="https://en.wikipedia.org/wiki/Non-blocking_algorithm">无锁</a>技术。</p>
+<p>HNSW 索引本质上是一个多层稀疏图。选择一个邻接列表来表示图，其中键是节点 id，值是邻居 id 列表。从基于锁的版本开始，每个节点都拥有一个锁，在更新邻居列表之前，该锁将由reader和writer持有。它很容易实现和推理。然而，由于锁争用，系统 CPU 使用率较高，别无选择，只能使用<a href="https://en.wikipedia.org/wiki/Non-blocking_algorithm">无锁</a>技术。</p>
 <h3 id="无锁实现lock-free-implementation">无锁实现(Lock-free Implementation)</h3>
 <p>让来剖析一下如何以直观的方式处理写入。HNSW的思想源于著名的<a href="https://en.wikipedia.org/wiki/Skip_list">跳表</a>结构。因此，HNSW 的无锁实现也类似于无锁跳表。一般来说，为了向图中添加新节点，每一层都涉及两个步骤，如下图所示。</p>
 <ol>
@@ -641,6 +645,9 @@ Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin �
 <p>当前的过滤方法是从 HNSW 图中预取 K 个 ANN，然后应用过滤器来获得最终的候选集。这不是非常有效的漏斗，并且很难弄清楚 K 的值将给带来需要的最终候选者的数量。计划以流式方式实现 HNSW 算法，其中可以在获取期间应用过滤器，并且流式获取仅在检索到所需数量的候选者时才终止。</p>
 <p>敬请关注！</p>
 <p>PS: 以上翻译文章最新截止2021年一月份。</p>
+<blockquote>
+<p>没有上下文引发的问题，何来解决方案；只谈结果，拿果子，忽了略上下文case, YY~</p>
+</blockquote>
 <h1 id="reference">reference</h1>
 <ol>
 <li><a href="https://en.wikipedia.org/wiki/Non-blocking_algorithm">https://en.wikipedia.org/wiki/Non-blocking_algorithm</a></li>
@@ -650,10 +657,23 @@ Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin �
 <li><a href="https://medium.com/pinterest-engineering/manas-hnsw-realtime-powering-realtime-embedding-based-retrieval-dc71dfd6afdd">https://medium.com/pinterest-engineering/manas-hnsw-realtime-powering-realtime-embedding-based-retrieval-dc71dfd6afdd</a></li>
 <li><a href="https://mp.weixin.qq.com/s/rXXm6c8LrTqqP4iWf9mtxA">为什么微信推荐这么快？</a></li>
 <li><a href="https://mp.weixin.qq.com/s/1a2bl983bGKM713xI_3v_A">小红书高时效推荐系统背后的技术升级</a></li>
-<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/8.0/knn-search.html">ES8.0/knn-search</a></li>
-<li><a href="https://redis.io/docs/interact/search-and-query/search/vectors/">Redis Stack7.2/vss</a></li>
 <li><a href="https://github.com/baidu/puck/blob/main/docs/README.md">baidu puck</a></li>
 <li><a href="https://blog.research.google/2020/07/announcing-scann-efficient-vector.html">Announcing ScaNN: Efficient Vector Similarity Search</a></li>
+</ol>
+<h2 id="附相关向量数据库hnsw使用一般都会支持">附：相关向量数据库HNSW使用(一般都会支持)</h2>
+<ol>
+<li><a href="https://github.com/vearch/vearch/wiki/Hnsw%E5%AE%9E%E6%97%B6%E7%B4%A2%E5%BC%95%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1">vearch-Hnsw Real time Index Detailed Design</a> 国产相对不太活跃，了解下~ 可能是追随开源idea吧</li>
+<li><a href="https://weaviate.io/developers/weaviate/concepts/vector-index">weaviate-Vector Indexing</a>。文档不错，知其然知其所以然~
+<ol>
+<li><a href="https://weaviate.io/blog/why-is-vector-search-so-fast">Why is Vector Search so fast?</a></li>
+<li><a href="https://weaviate.io/blog/ann-algorithms-vamana-vs-hnsw">Vamana vs. HNSW - Exploring ANN algorithms Part 1</a> (In-memory Index 和 DiskANN)</li>
+<li><a href="https://weaviate.io/blog/ann-algorithms-hnsw-pq">HNSW+PQ - Exploring ANN algorithms Part 2.1</a></li>
+<li><a href="https://weaviate.io/blog/ann-algorithms-tiles-enocoder">The Tile Encoder - Exploring ANN algorithms Part 2.2</a></li>
+</ol>
+</li>
+<li><a href="https://milvus.io/docs/index.md">milvus-Vector Index</a> (In-memory Index 和 DiskANN)  包括新ANN算法支持跟进活跃，比如ScANN ；好的开源生态~</li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/8.0/knn-search.html">ES8.0/knn-search</a></li>
+<li><a href="https://redis.io/docs/interact/search-and-query/search/vectors/">Redis Stack7.2/vss</a></li>
 </ol>
     </div>
 
