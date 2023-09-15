@@ -23,8 +23,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="Manas：高性能定制搜索系统 Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出&amp;ldquo;Search&amp;quot;和&amp;quot;Lens&amp;rdquo;，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。
-为了继续扩展搜索，的系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，的搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着的发展和引入新的发现功能，的遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C&#43;&#43; 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。
+  <meta name="description" content="Manas：高性能定制搜索系统 Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出 Search 和 Lens，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。
+为了继续扩展搜索，系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着业务发展和引入新的发现功能，遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C&#43;&#43; 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。
 " />
 
   <meta name="keywords" content="工作, 技术, 生活" />
@@ -65,8 +65,8 @@
 
 <meta property="og:title" content="译：Manas：高性能定制搜索系统" />
 <meta property="og:description" content="Manas：高性能定制搜索系统
-Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出&ldquo;Search&quot;和&quot;Lens&rdquo;，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。
-为了继续扩展搜索，的系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，的搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着的发展和引入新的发现功能，的遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C&#43;&#43; 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。" />
+Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出 Search 和 Lens，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。
+为了继续扩展搜索，系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着业务发展和引入新的发现功能，遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C&#43;&#43; 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://weedge.github.io/post/oneday/manas-a-high-performing-customized-search-system/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2023-09-14T10:26:23+08:00" />
@@ -74,15 +74,15 @@ Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin �
 
 <meta itemprop="name" content="译：Manas：高性能定制搜索系统">
 <meta itemprop="description" content="Manas：高性能定制搜索系统
-Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出&ldquo;Search&quot;和&quot;Lens&rdquo;，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。
-为了继续扩展搜索，的系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，的搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着的发展和引入新的发现功能，的遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C&#43;&#43; 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。"><meta itemprop="datePublished" content="2023-09-14T10:26:23+08:00" />
+Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出 Search 和 Lens，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。
+为了继续扩展搜索，系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着业务发展和引入新的发现功能，遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C&#43;&#43; 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。"><meta itemprop="datePublished" content="2023-09-14T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-09-14T10:26:23+08:00" />
-<meta itemprop="wordCount" content="10953">
+<meta itemprop="wordCount" content="10920">
 <meta itemprop="keywords" content="oneday," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：Manas：高性能定制搜索系统"/>
 <meta name="twitter:description" content="Manas：高性能定制搜索系统
-Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出&ldquo;Search&quot;和&quot;Lens&rdquo;，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。
-为了继续扩展搜索，的系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，的搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着的发展和引入新的发现功能，的遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C&#43;&#43; 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。"/>
+Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出 Search 和 Lens，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。
+为了继续扩展搜索，系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着业务发展和引入新的发现功能，遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C&#43;&#43; 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -346,11 +346,11 @@ Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin �
     </li>
     <li><a href="#候选检索和轻量级评分">候选检索和轻量级评分</a>
       <ul>
-        <li><a href="#wand"><strong>WAND</strong></a></li>
-        <li><a href="#squery"><strong>Squery</strong></a></li>
-        <li><a href="#满分"><strong>满分</strong></a></li>
-        <li><a href="#ssd"><strong>SSD</strong></a></li>
-        <li><a href="#索引交换"><strong>索引交换</strong></a></li>
+        <li><a href="#wand">WAND</a></li>
+        <li><a href="#squery">Squery</a></li>
+        <li><a href="#满分">满分</a></li>
+        <li><a href="#ssd">SSD</a></li>
+        <li><a href="#索引交换">索引交换</a></li>
       </ul>
     </li>
   </ul>
@@ -414,8 +414,8 @@ Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin �
     
     <div class="post-content">
       <h1 id="manas高性能定制搜索系统">Manas：高性能定制搜索系统</h1>
-<p>Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出<a href="https://blog.pinterest.com/en/search-and-lens-move-front-and-center">&ldquo;Search&quot;和&quot;Lens&rdquo;</a>，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。</p>
-<p>为了继续扩展搜索，的系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，的搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着的发展和引入新的发现功能，的遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C++ 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。</p>
+<p>Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出 <a href="https://blog.pinterest.com/en/search-and-lens-move-front-and-center">Search 和 Lens</a>，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。</p>
+<p>为了继续扩展搜索，系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着业务发展和引入新的发现功能，遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C++ 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。</p>
 <h2 id="挑战"><strong>挑战</strong></h2>
 <p>随着 Pinterest 上的搜索使用量快速增长，基于 <a href="https://github.com/apache/lucene">Lucene</a> 的解决方案日益面临挑战，包括：</p>
 <ul>
@@ -460,18 +460,18 @@ Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin �
 <p><img src="https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/3.png" alt="img"></p>
 <p>如上所述，存储层负责加载索引并提供抽象，允许在给定标识符的情况下获取连续的大量二进制数据。这一层允许轻松地改变索引的底层存储。在存储层之上，索引层将二进制数据解码为索引，并提供读取索引的接口。倒排列表层使能够灵活地实现倒排索引。算子层定义了用于实现查询算子的接口，模型运行器定义了用于全面评分的模型接口。最后，API 层指定叶节点评估的查询格式。</p>
 <h2 id="候选检索和轻量级评分">候选检索和轻量级评分</h2>
-<h3 id="wand"><strong>WAND</strong></h3>
-<p>除了支持普通的“AND”、“OR”和“NOT”操作之外，还在 Leaf 中构建了“Weak And”支持（基于本文<a href="http://cis.poly.edu/westlab/papers/cntdstrb/p426-broder.pdf">）</a>。这使能够快速跳过posting list。</p>
-<h3 id="squery"><strong>Squery</strong></h3>
+<h3 id="wand">WAND</h3>
+<p>除了支持普通的“AND”、“OR”和“NOT”操作之外，还在 Leaf 中构建了“Weak And”支持（<a href="https://www.semanticscholar.org/paper/Efficient-query-evaluation-using-a-two-level-Broder-Carmel/89d27fc4c5bf15762d001a39f0a74f84c89d3681">paper</a>)。这使能够快速跳过posting list。</p>
+<h3 id="squery">Squery</h3>
 <p>使用Squery 以树的形式表示结构化查询。它描述了 Leaf 如何从索引中检索候选者并对其进行轻量级评分。Leaf 理解 Squery 并在索引上执行它。</p>
 <p><img src="https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/4.png" alt="img"></p>
 <p>上图是 Squery 要求 Leaf 检索纯英文文档并匹配term“cute”和“cat”或“kitten”的示例。如果文档的点击率较高，则得分较高。</p>
-<h3 id="满分"><strong>满分</strong></h3>
+<h3 id="满分">满分</h3>
 <p>不同的应用程序使用不同的算法来计算最终分数。为了使 Manas 具有通用性，引入了前向索引，它是一个二进制 blob，可以是任何东西。实际上，前向索引是一个序列化的 Thrift 对象。Manas 不会解释前向索引，而是将其注入到 DSL 模型中并执行 DSL 模型来计算分数。DSL 是 Pinterest 使用的一种领域特定语言，用于定制从前向索引中提取特征，并选择机器学习模型来根据提取的特征计算分数。不同的应用程序可以创建不同的 DSL 模型并指定应注入哪个前向索引。</p>
-<h3 id="ssd"><strong>SSD</strong></h3>
+<h3 id="ssd">SSD</h3>
 <p>具有相当大的前向索引以支持复杂的评分算法，总索引大小显着增加。为了支持未来更复杂的评分，将向索引添加更多信号。将所有索引加载到内存中是不可扩展的，因此 Manas 仅加载用于候选检索和轻量级评分的倒排索引，并从 SSD 和本地缓存提供正向索引。</p>
-<h3 id="索引交换"><strong>索引交换</strong></h3>
-<p>们定期执行索引管道来构建索引。一旦新索引准备就绪，就会从 AWS 分配新实例来创建集群。将新索引部署到新创建的集群。然后 Blender 会将流量切换到新集群，旧集群将被弃用。</p>
+<h3 id="索引交换">索引交换</h3>
+<p>定期执行索引管道来构建索引。一旦新索引准备就绪，就会从 AWS 分配新实例来创建集群。将新索引部署到新创建的集群。然后 Blender 会将流量切换到新集群，旧集群将被弃用。</p>
 <h1 id="manas-realtime--使更改能够在眨眼间被搜索到">Manas Realtime — 使更改能够在眨眼间被搜索到</h1>
 <p>Manas 是 Pinterest 的内部搜索引擎，是一个通用信息检索平台。正如在<a href="https://medium.com/pinterest-engineering/manas-a-high-performing-customized-search-system-cf189f6ca40f">上一篇文章</a>中讨论的那样，Manas 被设计为具有高性能、可用性和可扩展性的搜索框架。如今，Manas 为大多数 Pinterest 产品提供搜索功能，包括广告、搜索、Homefeed、相关 Pin 图、视觉效果和购物。</p>
 <p>搜索系统的关键指标之一是索引延迟，即更新搜索索引以反映更改所需的时间。随着不断增强系统功能并引入新的用例，即时索引新文档的能力变得更加重要。Manas已经支持增量索引，能够提供数十分钟左右的索引延迟。不幸的是，这无法满足不断增长的广告和关注源的业务需求。决定在 Manas 中构建一个新模块，以进一步将索引延迟减少到几分之一秒。</p>

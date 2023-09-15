@@ -56,8 +56,8 @@
       <guid>https://weedge.github.io/post/oneday/manas-a-high-performing-customized-search-system/</guid>
       
         <description>&lt;h1 id=&#34;manas高性能定制搜索系统&#34;&gt;Manas：高性能定制搜索系统&lt;/h1&gt;
-&lt;p&gt;Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出&lt;a href=&#34;https://blog.pinterest.com/en/search-and-lens-move-front-and-center&#34;&gt;&amp;ldquo;Search&amp;quot;和&amp;quot;Lens&amp;rdquo;&lt;/a&gt;，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。&lt;/p&gt;
-&lt;p&gt;为了继续扩展搜索，的系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，的搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着的发展和引入新的发现功能，的遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C++ 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。&lt;/p&gt;
+&lt;p&gt;Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出 &lt;a href=&#34;https://blog.pinterest.com/en/search-and-lens-move-front-and-center&#34;&gt;Search 和 Lens&lt;/a&gt;，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。&lt;/p&gt;
+&lt;p&gt;为了继续扩展搜索，系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着业务发展和引入新的发现功能，遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C++ 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。&lt;/p&gt;
 &lt;h2 id=&#34;挑战&#34;&gt;&lt;strong&gt;挑战&lt;/strong&gt;&lt;/h2&gt;
 &lt;p&gt;随着 Pinterest 上的搜索使用量快速增长，基于 &lt;a href=&#34;https://github.com/apache/lucene&#34;&gt;Lucene&lt;/a&gt; 的解决方案日益面临挑战，包括：&lt;/p&gt;
 &lt;ul&gt;
@@ -102,18 +102,18 @@
 &lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/3.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
 &lt;p&gt;如上所述，存储层负责加载索引并提供抽象，允许在给定标识符的情况下获取连续的大量二进制数据。这一层允许轻松地改变索引的底层存储。在存储层之上，索引层将二进制数据解码为索引，并提供读取索引的接口。倒排列表层使能够灵活地实现倒排索引。算子层定义了用于实现查询算子的接口，模型运行器定义了用于全面评分的模型接口。最后，API 层指定叶节点评估的查询格式。&lt;/p&gt;
 &lt;h2 id=&#34;候选检索和轻量级评分&#34;&gt;候选检索和轻量级评分&lt;/h2&gt;
-&lt;h3 id=&#34;wand&#34;&gt;&lt;strong&gt;WAND&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;除了支持普通的“AND”、“OR”和“NOT”操作之外，还在 Leaf 中构建了“Weak And”支持（基于本文&lt;a href=&#34;http://cis.poly.edu/westlab/papers/cntdstrb/p426-broder.pdf&#34;&gt;）&lt;/a&gt;。这使能够快速跳过posting list。&lt;/p&gt;
-&lt;h3 id=&#34;squery&#34;&gt;&lt;strong&gt;Squery&lt;/strong&gt;&lt;/h3&gt;
+&lt;h3 id=&#34;wand&#34;&gt;WAND&lt;/h3&gt;
+&lt;p&gt;除了支持普通的“AND”、“OR”和“NOT”操作之外，还在 Leaf 中构建了“Weak And”支持（&lt;a href=&#34;https://www.semanticscholar.org/paper/Efficient-query-evaluation-using-a-two-level-Broder-Carmel/89d27fc4c5bf15762d001a39f0a74f84c89d3681&#34;&gt;paper&lt;/a&gt;)。这使能够快速跳过posting list。&lt;/p&gt;
+&lt;h3 id=&#34;squery&#34;&gt;Squery&lt;/h3&gt;
 &lt;p&gt;使用Squery 以树的形式表示结构化查询。它描述了 Leaf 如何从索引中检索候选者并对其进行轻量级评分。Leaf 理解 Squery 并在索引上执行它。&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/4.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
 &lt;p&gt;上图是 Squery 要求 Leaf 检索纯英文文档并匹配term“cute”和“cat”或“kitten”的示例。如果文档的点击率较高，则得分较高。&lt;/p&gt;
-&lt;h3 id=&#34;满分&#34;&gt;&lt;strong&gt;满分&lt;/strong&gt;&lt;/h3&gt;
+&lt;h3 id=&#34;满分&#34;&gt;满分&lt;/h3&gt;
 &lt;p&gt;不同的应用程序使用不同的算法来计算最终分数。为了使 Manas 具有通用性，引入了前向索引，它是一个二进制 blob，可以是任何东西。实际上，前向索引是一个序列化的 Thrift 对象。Manas 不会解释前向索引，而是将其注入到 DSL 模型中并执行 DSL 模型来计算分数。DSL 是 Pinterest 使用的一种领域特定语言，用于定制从前向索引中提取特征，并选择机器学习模型来根据提取的特征计算分数。不同的应用程序可以创建不同的 DSL 模型并指定应注入哪个前向索引。&lt;/p&gt;
-&lt;h3 id=&#34;ssd&#34;&gt;&lt;strong&gt;SSD&lt;/strong&gt;&lt;/h3&gt;
+&lt;h3 id=&#34;ssd&#34;&gt;SSD&lt;/h3&gt;
 &lt;p&gt;具有相当大的前向索引以支持复杂的评分算法，总索引大小显着增加。为了支持未来更复杂的评分，将向索引添加更多信号。将所有索引加载到内存中是不可扩展的，因此 Manas 仅加载用于候选检索和轻量级评分的倒排索引，并从 SSD 和本地缓存提供正向索引。&lt;/p&gt;
-&lt;h3 id=&#34;索引交换&#34;&gt;&lt;strong&gt;索引交换&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;们定期执行索引管道来构建索引。一旦新索引准备就绪，就会从 AWS 分配新实例来创建集群。将新索引部署到新创建的集群。然后 Blender 会将流量切换到新集群，旧集群将被弃用。&lt;/p&gt;
+&lt;h3 id=&#34;索引交换&#34;&gt;索引交换&lt;/h3&gt;
+&lt;p&gt;定期执行索引管道来构建索引。一旦新索引准备就绪，就会从 AWS 分配新实例来创建集群。将新索引部署到新创建的集群。然后 Blender 会将流量切换到新集群，旧集群将被弃用。&lt;/p&gt;
 &lt;h1 id=&#34;manas-realtime--使更改能够在眨眼间被搜索到&#34;&gt;Manas Realtime — 使更改能够在眨眼间被搜索到&lt;/h1&gt;
 &lt;p&gt;Manas 是 Pinterest 的内部搜索引擎，是一个通用信息检索平台。正如在&lt;a href=&#34;https://medium.com/pinterest-engineering/manas-a-high-performing-customized-search-system-cf189f6ca40f&#34;&gt;上一篇文章&lt;/a&gt;中讨论的那样，Manas 被设计为具有高性能、可用性和可扩展性的搜索框架。如今，Manas 为大多数 Pinterest 产品提供搜索功能，包括广告、搜索、Homefeed、相关 Pin 图、视觉效果和购物。&lt;/p&gt;
 &lt;p&gt;搜索系统的关键指标之一是索引延迟，即更新搜索索引以反映更改所需的时间。随着不断增强系统功能并引入新的用例，即时索引新文档的能力变得更加重要。Manas已经支持增量索引，能够提供数十分钟左右的索引延迟。不幸的是，这无法满足不断增长的广告和关注源的业务需求。决定在 Manas 中构建一个新模块，以进一步将索引延迟减少到几分之一秒。&lt;/p&gt;

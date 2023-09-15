@@ -14,8 +14,8 @@
       
       <guid>https://weedge.github.io/post/oneday/manas-a-high-performing-customized-search-system/</guid>
       <description>&lt;h1 id=&#34;manas高性能定制搜索系统&#34;&gt;Manas：高性能定制搜索系统&lt;/h1&gt;
-&lt;p&gt;Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出&lt;a href=&#34;https://blog.pinterest.com/en/search-and-lens-move-front-and-center&#34;&gt;&amp;ldquo;Search&amp;quot;和&amp;quot;Lens&amp;rdquo;&lt;/a&gt;，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。&lt;/p&gt;
-&lt;p&gt;为了继续扩展搜索，的系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，的搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着的发展和引入新的发现功能，的遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C++ 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。&lt;/p&gt;</description>
+&lt;p&gt;Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出 &lt;a href=&#34;https://blog.pinterest.com/en/search-and-lens-move-front-and-center&#34;&gt;Search 和 Lens&lt;/a&gt;，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。&lt;/p&gt;
+&lt;p&gt;为了继续扩展搜索，系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着业务发展和引入新的发现功能，遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C++ 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。&lt;/p&gt;</description>
     </item>
     
     <item>
