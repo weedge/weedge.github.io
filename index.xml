@@ -345,14 +345,15 @@
 &lt;h3 id=&#34;高效过滤器存储efficient-filter-store&#34;&gt;高效过滤器存储(Efficient Filter Store)&lt;/h3&gt;
 &lt;p&gt;使用倒排索引作为过滤器存储在某些场景下效果很好，但它确实针对传统搜索进行了优化，而不是针对图遍历的过滤进行了优化。可以从头开始设计一个针对基于图的过滤进行优化的过滤器存储，并将其与其他基于图的检索系统（如&lt;a href=&#34;https://medium.com/pinterest-engineering/an-update-on-pixie-pinterests-recommendation-system-6f273f737e1b&#34;&gt;Pixie&lt;/a&gt;)共享。&lt;/p&gt;
 &lt;h3 id=&#34;量化quantization&#34;&gt;量化(Quantization)&lt;/h3&gt;
-&lt;p&gt;极高的过滤率场景可以通过暴力破解来解决，但仍然存在一系列具有非常高的过滤率但使用暴力破解成本高昂的情况。这些情况的瓶颈是大量浪费的距离计算。通过量化可以大大降低这一成本。可以转向不同的算法，例如 PQ IVF，或者通过 HNSW 引入 PQ。&lt;/p&gt;
+&lt;p&gt;极高的过滤率场景可以通过暴力破解来解决，但仍然存在一系列具有非常高的过滤率但使用暴力破解成本高昂的情况。这些情况的瓶颈是大量浪费的距离计算。通过量化可以大大降低这一成本。可以转向不同的算法，例如 PQ IVF，或者HNSW 引入 PQ。&lt;/p&gt;
 &lt;h2 id=&#34;结论&#34;&gt;结论&lt;/h2&gt;
 &lt;p&gt;实现了流式过滤，它抽象了如何执行过滤的实现细节，并减轻了客户端过度获取调整的负担。从系统的角度来看，有一个通用的过滤器解决方案，它足够灵活，可以支持所有的用例，并且可以支持未来的优化，例如预过滤和过滤器存储升级。通过消除不精确的超取调整，已经看到了巨大的成本节省和质量改进，并且了解到了未来优化的许多机会。&lt;/p&gt;
 &lt;p&gt;敬请关注！&lt;/p&gt;
 &lt;hr&gt;
 &lt;p&gt;题外话：&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;没有上下文引发的问题，何来解决方案；只谈结果，拿果子，忽了略上下文case, YY~&lt;/p&gt;
+&lt;p&gt;不能脱离应用场景去理解算法所要解决的实际问题；&lt;/p&gt;
+&lt;p&gt;没有上下文引发的问题，何来解决方案；只谈结果，拿果子，忽略了上下文case, YY~&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;h1 id=&#34;reference&#34;&gt;reference&lt;/h1&gt;
 &lt;ol&gt;
@@ -369,7 +370,7 @@
 &lt;/ol&gt;
 &lt;h2 id=&#34;附相关向量数据库hnsw使用一般都会支持&#34;&gt;附：相关向量数据库HNSW使用(一般都会支持)&lt;/h2&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/vearch/vearch/wiki/Hnsw%E5%AE%9E%E6%97%B6%E7%B4%A2%E5%BC%95%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1&#34;&gt;vearch-Hnsw Real time Index Detailed Design&lt;/a&gt; 国产相对不太活跃，了解下~ 可能是追随开源idea吧&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/vearch/vearch/wiki/Hnsw%E5%AE%9E%E6%97%B6%E7%B4%A2%E5%BC%95%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1&#34;&gt;vearch-Hnsw Real time Index Detailed Design&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://weaviate.io/developers/weaviate/concepts/vector-index&#34;&gt;weaviate-Vector Indexing&lt;/a&gt;。文档不错，知其然知其所以然~
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://weaviate.io/blog/why-is-vector-search-so-fast&#34;&gt;Why is Vector Search so fast?&lt;/a&gt;&lt;/li&gt;
