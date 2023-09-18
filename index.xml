@@ -365,7 +365,8 @@
 &lt;li&gt;&lt;a href=&#34;https://medium.com/pinterest-engineering/manas-hnsw-streaming-filters-351adf9ac1c4&#34;&gt;https://medium.com/pinterest-engineering/manas-hnsw-streaming-filters-351adf9ac1c4&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/rXXm6c8LrTqqP4iWf9mtxA&#34;&gt;为什么微信推荐这么快？&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/1a2bl983bGKM713xI_3v_A&#34;&gt;小红书高时效推荐系统背后的技术升级&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/baidu/puck/blob/main/docs/README.md&#34;&gt;baidu puck&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/1ed9BDZKzjQIgDScyxpbHw&#34;&gt;快手搜索在向量检索方向的探索和实践&lt;/a&gt; &lt;a href=&#34;https://yongyuan.name/blog/vector-ann-search.html&#34;&gt;&lt;strong&gt;向量索引&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/baidu/puck/blob/main/docs/README.md&#34;&gt;baidu-puck&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://blog.research.google/2020/07/announcing-scann-efficient-vector.html&#34;&gt;Announcing ScaNN: Efficient Vector Similarity Search&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.pinecone.io/learn/series/faiss/faiss-tutorial/&#34;&gt;faiss-tutorial&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
