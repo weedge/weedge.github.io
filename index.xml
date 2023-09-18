@@ -367,6 +367,7 @@
 &lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/1a2bl983bGKM713xI_3v_A&#34;&gt;小红书高时效推荐系统背后的技术升级&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/baidu/puck/blob/main/docs/README.md&#34;&gt;baidu puck&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://blog.research.google/2020/07/announcing-scann-efficient-vector.html&#34;&gt;Announcing ScaNN: Efficient Vector Similarity Search&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.pinecone.io/learn/series/faiss/faiss-tutorial/&#34;&gt;faiss-tutorial&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h2 id=&#34;附相关向量数据库hnsw使用一般都会支持&#34;&gt;附：相关向量数据库HNSW使用(一般都会支持)&lt;/h2&gt;
 &lt;ol&gt;
@@ -380,8 +381,10 @@
 &lt;/ol&gt;
 &lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://milvus.io/docs/index.md&#34;&gt;milvus-Vector Index&lt;/a&gt; (In-memory Index 和 DiskANN)  包括新ANN算法支持跟进活跃，比如ScANN ；好的开源生态~&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://qdrant.tech/documentation/concepts/indexing/#vector-index&#34;&gt;qdrant-vector index&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.elastic.co/guide/en/elasticsearch/reference/8.0/knn-search.html&#34;&gt;ES8.0/knn-search&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://redis.io/docs/interact/search-and-query/search/vectors/&#34;&gt;Redis Stack7.2/vss&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.alibabacloud.com/help/zh/tair/developer-reference/vector&#34;&gt;alibabacloud-tair-vector&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>
