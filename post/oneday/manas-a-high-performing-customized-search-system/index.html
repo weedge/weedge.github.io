@@ -34,7 +34,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.88.1" />
+<meta name="generator" content="Hugo 0.91.0" />
 
 
 <link rel="canonical" href="https://weedge.github.io/post/oneday/manas-a-high-performing-customized-search-system/" />
@@ -77,7 +77,7 @@ Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin �
 Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出 Search 和 Lens，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。
 为了继续扩展搜索，系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着业务发展和引入新的发现功能，遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C&#43;&#43; 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。"><meta itemprop="datePublished" content="2023-09-14T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-09-14T10:26:23+08:00" />
-<meta itemprop="wordCount" content="14405">
+<meta itemprop="wordCount" content="14429">
 <meta itemprop="keywords" content="oneday," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：Manas：高性能定制搜索系统"/>
 <meta name="twitter:description" content="章节一 Manas：高性能定制搜索系统
@@ -740,7 +740,7 @@ Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin �
 <h3 id="高效过滤器存储efficient-filter-store">高效过滤器存储(Efficient Filter Store)</h3>
 <p>使用倒排索引作为过滤器存储在某些场景下效果很好，但它确实针对传统搜索进行了优化，而不是针对图遍历的过滤进行了优化。可以从头开始设计一个针对基于图的过滤进行优化的过滤器存储，并将其与其他基于图的检索系统（如<a href="https://medium.com/pinterest-engineering/an-update-on-pixie-pinterests-recommendation-system-6f273f737e1b">Pixie</a>)共享。</p>
 <h3 id="量化quantization">量化(Quantization)</h3>
-<p>极高的过滤率场景可以通过暴力破解来解决，但仍然存在一系列具有非常高的过滤率但使用暴力破解成本高昂的情况。这些情况的瓶颈是大量浪费的距离计算。通过量化可以大大降低这一成本。可以转向不同的算法，例如 PQ IVF，或者HNSW 引入 PQ。</p>
+<p>极高的过滤率场景可以通过暴力破解来解决，但仍然存在一系列具有非常高的过滤率但使用暴力破解成本高昂的情况。这些情况的瓶颈是大量浪费的距离计算。通过量化可以大大降低这一成本。可以转向不同的算法，例如 PQ IVF，或者HNSW 引入 PQ（注：这部分参考faiss，需要提供训练接口）</p>
 <h2 id="结论">结论</h2>
 <p>实现了流式过滤，它抽象了如何执行过滤的实现细节，并减轻了客户端过度获取调整的负担。从系统的角度来看，有一个通用的过滤器解决方案，它足够灵活，可以支持所有的用例，并且可以支持未来的优化，例如预过滤和过滤器存储升级。通过消除不精确的超取调整，已经看到了巨大的成本节省和质量改进，并且了解到了未来优化的许多机会。</p>
 <p>敬请关注！</p>
@@ -760,7 +760,7 @@ Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin �
 <li><a href="https://medium.com/pinterest-engineering/manas-hnsw-streaming-filters-351adf9ac1c4">https://medium.com/pinterest-engineering/manas-hnsw-streaming-filters-351adf9ac1c4</a></li>
 <li><a href="https://mp.weixin.qq.com/s/rXXm6c8LrTqqP4iWf9mtxA">为什么微信推荐这么快？</a></li>
 <li><a href="https://mp.weixin.qq.com/s/1a2bl983bGKM713xI_3v_A">小红书高时效推荐系统背后的技术升级</a></li>
-<li><a href="https://mp.weixin.qq.com/s/1ed9BDZKzjQIgDScyxpbHw">快手搜索在向量检索方向的探索和实践</a> <a href="https://yongyuan.name/blog/vector-ann-search.html"><strong>向量索引</strong></a></li>
+<li><a href="https://mp.weixin.qq.com/s/1ed9BDZKzjQIgDScyxpbHw">快手搜索在向量检索方向的探索和实践</a> <a href="https://yongyuan.name/blog/vector-ann-search.html">向量索引</a></li>
 <li><a href="https://github.com/baidu/puck/blob/main/docs/README.md">baidu-puck</a></li>
 <li><a href="https://blog.research.google/2020/07/announcing-scann-efficient-vector.html">Announcing ScaNN: Efficient Vector Similarity Search</a></li>
 <li><a href="https://www.pinecone.io/learn/series/faiss/faiss-tutorial/">faiss-tutorial</a></li>
@@ -778,7 +778,7 @@ Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin �
 </li>
 <li><a href="https://milvus.io/docs/index.md">milvus-Vector Index</a> (In-memory Index 和 DiskANN)  包括新ANN算法支持跟进活跃，比如ScANN ；好的开源生态~</li>
 <li><a href="https://qdrant.tech/documentation/concepts/indexing/#vector-index">qdrant-vector index</a></li>
-<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/8.0/knn-search.html">ES8.0/knn-search</a></li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/8.0/knn-search.html">ES8.0/knn-search</a> <a href="https://opensearch.org/docs/latest/search-plugins/knn/index/">OpenSearch-plugin-knn</a> <a href="https://github.com/opensearch-project/k-NN">https://github.com/opensearch-project/k-NN</a></li>
 <li><a href="https://redis.io/docs/interact/search-and-query/search/vectors/">Redis Stack7.2/vss</a></li>
 <li><a href="https://www.alibabacloud.com/help/zh/tair/developer-reference/vector">alibabacloud-tair-vector</a></li>
 </ol>
