@@ -6,11 +6,29 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Thu, 14 Sep 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 20 Sep 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>ANN</title>
+      <link>https://weedge.github.io/tags/ann/</link>
+      <pubDate>Wed, 20 Sep 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/ann/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>LSH</title>
+      <link>https://weedge.github.io/tags/lsh/</link>
+      <pubDate>Wed, 20 Sep 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/lsh/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>oneday</title>
       <link>https://weedge.github.io/tags/oneday/</link>
-      <pubDate>Thu, 14 Sep 2023 10:26:23 +0800</pubDate>
+      <pubDate>Wed, 20 Sep 2023 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/oneday/</guid>
       <description></description>
@@ -166,24 +184,6 @@
       <pubDate>Mon, 08 Nov 2021 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/lru/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>工程师</title>
-      <link>https://weedge.github.io/tags/%E5%B7%A5%E7%A8%8B%E5%B8%88/</link>
-      <pubDate>Sat, 02 Oct 2021 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/%E5%B7%A5%E7%A8%8B%E5%B8%88/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>网络编程</title>
-      <link>https://weedge.github.io/tags/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/</link>
-      <pubDate>Thu, 02 Sep 2021 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/</guid>
       <description></description>
     </item>
     

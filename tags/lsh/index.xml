@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>LSH on 时间飘过</title>
+    <link>https://weedge.github.io/tags/lsh/</link>
+    <description>Recent content in LSH on 时间飘过</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Wed, 20 Sep 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/lsh/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>译：FANN：200行Rust实现的向量搜索</title>
+      <link>https://weedge.github.io/post/oneday/vector-search-in-200-lines-of-rust/</link>
+      <pubDate>Wed, 20 Sep 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/oneday/vector-search-in-200-lines-of-rust/</guid>
+      <description>&lt;h1 id=&#34;fann200行rust实现的向量搜索&#34;&gt;FANN：200行Rust实现的向量搜索&lt;/h1&gt;
+&lt;p&gt;由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。&lt;a href=&#34;https://github.com/fennel-ai/fann&#34;&gt;所有代码都可以在此 Github 存储库&lt;/a&gt;中找到。我们这里使用的方法基于流行库Spotify &lt;a href=&#34;https://github.com/spotify/annoy&#34;&gt;annoy&lt;/a&gt;中使用的一系列称为“&lt;a href=&#34;https://en.wikipedia.org/wiki/Locality-sensitive_hashing&#34;&gt;局部敏感散列(Locality-sensitive_hashing)&lt;/a&gt;”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

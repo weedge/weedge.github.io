@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="zh-cn" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>译：FANN：200行Rust实现的向量搜索 - 时间飘过</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="weedge" />
+  <meta name="description" content="FANN：200行Rust实现的向量搜索 由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。所有代码都可以在此 Github 存储库中找到。我们这里使用的方法基于流行库Spotify annoy中使用的一系列称为“局部敏感散列(Locality-sensitive_hashing)”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。
+" />
+
+  <meta name="keywords" content="工作, 技术, 生活" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.91.0" />
+
+
+<link rel="canonical" href="https://weedge.github.io/post/oneday/vector-search-in-200-lines-of-rust/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css" integrity="sha256-&#43;ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
+
+<meta property="og:title" content="译：FANN：200行Rust实现的向量搜索" />
+<meta property="og:description" content="FANN：200行Rust实现的向量搜索
+由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。所有代码都可以在此 Github 存储库中找到。我们这里使用的方法基于流行库Spotify annoy中使用的一系列称为“局部敏感散列(Locality-sensitive_hashing)”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/oneday/vector-search-in-200-lines-of-rust/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-09-20T10:26:23+08:00" />
+<meta property="article:modified_time" content="2023-09-20T10:26:23+08:00" />
+
+<meta itemprop="name" content="译：FANN：200行Rust实现的向量搜索">
+<meta itemprop="description" content="FANN：200行Rust实现的向量搜索
+由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。所有代码都可以在此 Github 存储库中找到。我们这里使用的方法基于流行库Spotify annoy中使用的一系列称为“局部敏感散列(Locality-sensitive_hashing)”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。"><meta itemprop="datePublished" content="2023-09-20T10:26:23+08:00" />
+<meta itemprop="dateModified" content="2023-09-20T10:26:23+08:00" />
+<meta itemprop="wordCount" content="7197">
+<meta itemprop="keywords" content="oneday,ANN,LSH," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="译：FANN：200行Rust实现的向量搜索"/>
+<meta name="twitter:description" content="FANN：200行Rust实现的向量搜索
+由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。所有代码都可以在此 Github 存储库中找到。我们这里使用的方法基于流行库Spotify annoy中使用的一系列称为“局部敏感散列(Locality-sensitive_hashing)”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">时间飘过</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      时间飘过
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">译：FANN：200行Rust实现的向量搜索</h1>
+      
+      <div class="post-meta">
+        <time datetime="2023-09-20" class="post-time">
+          2023-09-20
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#向量简介又名嵌入embedding">向量简介（又名嵌入embedding）</a></li>
+    <li><a href="#如何找到近似最近邻居">如何找到近似最近邻居？</a>
+      <ul>
+        <li><a href="#查询时间">查询时间</a></li>
+      </ul>
+    </li>
+    <li><a href="#为什么fann这么快">为什么FANN这么快？</a></li>
+    <li><a href="#更多现实世界的考虑">更多现实世界的考虑</a></li>
+    <li><a href="#结论">结论</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <h1 id="fann200行rust实现的向量搜索">FANN：200行Rust实现的向量搜索</h1>
+<p>由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。<a href="https://github.com/fennel-ai/fann">所有代码都可以在此 Github 存储库</a>中找到。我们这里使用的方法基于流行库Spotify <a href="https://github.com/spotify/annoy">annoy</a>中使用的一系列称为“<a href="https://en.wikipedia.org/wiki/Locality-sensitive_hashing">局部敏感散列(Locality-sensitive_hashing)</a>”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。</p>
+<h2 id="向量简介又名嵌入embedding">向量简介（又名嵌入embedding）</h2>
+<p>文档、图像、视频等复杂的非结构化数据很难在传统数据库中表示和查询，特别是如果查询意图是查找“相似”项目。那么 Youtube 如何才能选择接下来播放的最佳视频呢？或者Spotify根据您当前的歌曲自定义音乐队列？</p>
+<p>2010 年代初人工智能的进步（从<a href="https://en.wikipedia.org/wiki/Word2vec">Word2Vec</a> 和 <a href="https://en.wikipedia.org/wiki/GloVe">GloVe</a> <a href="https://github.com/stanfordnlp/GloVe">stanfordnlp-GloVe</a> 开始）使我们能够构建这些对象的语义表示，其中它们被表示为笛卡尔空间中的点。假设一个视频映射到点 [0.1, -5.1, 7.55]，另一个视频映射到点 [5.3, -0.1, 2.7]。这些机器学习算法的神奇之处在于，这些表示的选择能够维护语义信息——两个视频越相似，它们的向量之间的距离就越小。</p>
+<p>请注意，这些向量（或更专业地称为嵌入）不必是 3 维的 - 它们可以并且通常位于更高维的空间中（例如 128 维或 750 维）。而且距离也不需要是欧几里德距离 - 其他形式的距离（例如点积）也可以。无论哪种方式，重要的是它们之间的距离与其相似性相对应。</p>
+<p>现在想象一下，我们可以访问所有 Youtube 视频的此类向量。我们如何找到与给定起始视频最相似的视频？简单的。循环遍历所有视频，计算它们之间的距离并选择距离最小的视频 - 也称为查找查询视频的“最近邻居”。这实际上会起作用。不过，正如您所猜测的，线性 O(N) 扫描的成本可能太高。因此，我们需要一种更快的亚线性方法来找到任何查询视频的最近邻居。这通常是不可能的——必须付出一些代价。</p>
+<p>事实证明，在实际情况中，我们不需要找到最近的视频- 找到足够近的视频也可以。这就是近似最近邻搜索算法（也称为向量搜索）的用武之地。目标是亚线性（理想情况下以对数时间）找到空间中任何点的足够近的最近邻。那么如何解决呢？</p>
+<h2 id="如何找到近似最近邻居">如何找到近似最近邻居？</h2>
+<p>所有向量搜索算法背后的基本思想都是相同的——进行一些预处理来识别彼此足够接近的点（有点类似于构建索引）。在查询时，使用这个“索引”来排除大片点。并在不被排除的少量点内进行线性扫描。</p>
+<p>然而，有很多方法可以实现这个简单的想法。存在几种最先进的向量搜索算法，例如<a href="https://github.com/nmslib/hnswlib">HNSW</a>（一种连接邻近顶点并通过固定入口点维护长距离边的分层图，类似skiplist）。目前存在诸如 Facebook 的<a href="https://github.com/facebookresearch/faiss">FAISS</a>之类的开源项目，以及诸如<a href="https://www.pinecone.io/">Pinecone</a>，<a href="https://weaviate.io/">Weaviate</a>，<a href="https://github.com/zilliztech/knowhere">zilliz-Milvus-knowhere</a>等高可用性向量数据库的 PaaS 产品中。</p>
+<p>在这篇文章中，我们将在给定的“N”点上构建一个简化的向量搜索索引，如下所示：</p>
+<ol>
+<li>随机取 2 个任意可用向量 A 和 B。</li>
+<li>计算这两个向量之间的中点，称为 C。</li>
+<li>构建一个穿过 C 并垂直于连接 A 和 B 的线段的超平面（类似于高维中的“线”）。</li>
+<li>将所有向量分类为超平面“上方”或“下方”，将可用向量分为 2 组。</li>
+<li>对于两个组中的每一个：如果组的大小高于可配置参数“最大节点大小”，则在该组上递归调用此过程以构建子树。否则，使用所有向量（或其唯一的 ID）构建单个叶节点</li>
+</ol>
+<p>因此，我们使用这个随机过程来构建一棵树，其中每个内部节点都是超平面定义，左子树是超平面“下方”的所有向量，右子树是超平面“上方”的所有向量。向量集被连续递归地分割，直到叶节点包含不超过“最大节点大小”向量。考虑下图的例子，有五点：</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/vector-search-in-200-lines-of-rust/1.png" alt="img">图 1：用随机超平面分割空间</p>
+<p>我们随机选择向量A1=(4,2)，B1=(5,7)。它们的中点是 (4.5,4.5)，我们通过中点构建一条垂直于线 (A1, B1) 的线。该线是 x + 5y=27（用蓝色绘制），这给了我们一组 2 个向量和一组 4 个向量。假设“最大节点大小”配置为 2。我们不进一步拆分第一组，而是选择后者构建新的（A2，B2）红色超平面等等。对大型数据集进行重复分割会将超空间分割成几个不同的区域，如下所示。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/vector-search-in-200-lines-of-rust/2.png" alt="img">图 2：许多超平面后的分段空间（来自 <a href="https://t.co/K0Xlht8GwQ">https://t.co/K0Xlht8GwQ</a>，作者：<a href="https://twitter.com/bernhardsson"><strong>Erik Bernhardsson</strong></a>)</p>
+<p>这里的每个区域代表一个叶节点，并且这里的直觉是足够接近的点很可能最终出现在同一个叶节点中。因此，给定一个查询点，我们可以在对数时间内遍历树以找到它所属的叶子，并对该叶子中的所有（少量）点运行线性扫描。这显然不是万无一失的——实际上足够近的点完全有可能被超平面分开并最终彼此相距很远。但是这个问题可以通过构建不是一棵而是许多独立的树来解决 - 这样，如果两个点足够接近，它们更有可能位于至少某些树中的同一叶节点中。在查询时，我们遍历所有树以找到相关的叶节点，对所有叶节点的所有候选节点进行并集，</p>
+<p>好吧，理论已经足够了。让我们开始编写一些代码，首先为下面的 Rust 中的 Vector 类型定义一些实用程序，用于点积、平均、散列和平方 L2 距离。感谢 Rust 良好的类型系统，我们传播泛型类型参数 N 来强制索引中的所有向量在编译时具有相同的维度。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="cp">#[derive(Eq, PartialEq, Hash)]</span><span class="w">
+</span><span class="w"></span><span class="k">pub</span><span class="w"> </span><span class="k">struct</span> <span class="nc">HashKey</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="n">N</span>: <span class="kt">usize</span><span class="o">&gt;</span><span class="p">([</span><span class="kt">u32</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="p">]);</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="cp">#[derive(Copy, Clone)]</span><span class="w">
+</span><span class="w"></span><span class="k">pub</span><span class="w"> </span><span class="k">struct</span> <span class="nc">Vector</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="n">N</span>: <span class="kt">usize</span><span class="o">&gt;</span><span class="p">(</span><span class="k">pub</span><span class="w"> </span><span class="p">[</span><span class="kt">f32</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="p">]);</span><span class="w">
+</span><span class="w"></span><span class="k">impl</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="n">N</span>: <span class="kt">usize</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Vector</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">subtract_from</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">vector</span>: <span class="kp">&amp;</span><span class="nc">Vector</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">Vector</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">mapped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="mf">0.</span><span class="n">iter</span><span class="p">().</span><span class="n">zip</span><span class="p">(</span><span class="n">vector</span><span class="p">.</span><span class="mi">0</span><span class="p">).</span><span class="n">map</span><span class="p">(</span><span class="o">|</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="o">|</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">a</span><span class="p">);</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">coords</span>: <span class="p">[</span><span class="kt">f32</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mapped</span><span class="p">.</span><span class="n">collect</span>::<span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">_</span><span class="o">&gt;&gt;</span><span class="p">().</span><span class="n">try_into</span><span class="p">().</span><span class="n">unwrap</span><span class="p">();</span><span class="w">
+</span><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Vector</span><span class="p">(</span><span class="n">coords</span><span class="p">);</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">avg</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">vector</span>: <span class="kp">&amp;</span><span class="nc">Vector</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">Vector</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">mapped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="mf">0.</span><span class="n">iter</span><span class="p">().</span><span class="n">zip</span><span class="p">(</span><span class="n">vector</span><span class="p">.</span><span class="mi">0</span><span class="p">).</span><span class="n">map</span><span class="p">(</span><span class="o">|</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">2.0</span><span class="p">);</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">coords</span>: <span class="p">[</span><span class="kt">f32</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mapped</span><span class="p">.</span><span class="n">collect</span>::<span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">_</span><span class="o">&gt;&gt;</span><span class="p">().</span><span class="n">try_into</span><span class="p">().</span><span class="n">unwrap</span><span class="p">();</span><span class="w">
+</span><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Vector</span><span class="p">(</span><span class="n">coords</span><span class="p">);</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">dot_product</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">vector</span>: <span class="kp">&amp;</span><span class="nc">Vector</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kt">f32</span> <span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">zipped_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="mf">0.</span><span class="n">iter</span><span class="p">().</span><span class="n">zip</span><span class="p">(</span><span class="n">vector</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span><span class="w">
+</span><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">zipped_iter</span><span class="p">.</span><span class="n">map</span><span class="p">(</span><span class="o">|</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="o">|</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">).</span><span class="n">sum</span>::<span class="o">&lt;</span><span class="kt">f32</span><span class="o">&gt;</span><span class="p">();</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">to_hashkey</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">HashKey</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="c1">// f32 in Rust doesn&#39;t implement hash. We use bytes to dedup. While it
+</span><span class="c1"></span><span class="w">        </span><span class="c1">// can&#39;t differentiate ~16M ways NaN is written, it&#39;s safe for us
+</span><span class="c1"></span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">bit_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="mf">0.</span><span class="n">iter</span><span class="p">().</span><span class="n">map</span><span class="p">(</span><span class="o">|</span><span class="n">a</span><span class="o">|</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">to_bits</span><span class="p">());</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">data</span>: <span class="p">[</span><span class="kt">u32</span><span class="p">;</span><span class="w"> </span><span class="n">N</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bit_iter</span><span class="p">.</span><span class="n">collect</span>::<span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">_</span><span class="o">&gt;&gt;</span><span class="p">().</span><span class="n">try_into</span><span class="p">().</span><span class="n">unwrap</span><span class="p">();</span><span class="w">
+</span><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">HashKey</span>::<span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">(</span><span class="n">data</span><span class="p">);</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">sq_euc_dis</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">vector</span>: <span class="kp">&amp;</span><span class="nc">Vector</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kt">f32</span> <span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">zipped_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="mf">0.</span><span class="n">iter</span><span class="p">().</span><span class="n">zip</span><span class="p">(</span><span class="n">vector</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span><span class="w">
+</span><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">zipped_iter</span><span class="p">.</span><span class="n">map</span><span class="p">(</span><span class="o">|</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">b</span><span class="p">).</span><span class="n">powi</span><span class="p">(</span><span class="mi">2</span><span class="p">)).</span><span class="n">sum</span><span class="p">();</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>构建完这些核心实用程序后，我们还可以定义超平面的外观：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="k">struct</span> <span class="nc">HyperPlane</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="n">N</span>: <span class="kt">usize</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">coefficients</span>: <span class="nc">Vector</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">constant</span>: <span class="kt">f32</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">impl</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="n">N</span>: <span class="kt">usize</span><span class="o">&gt;</span><span class="w"> </span><span class="n">HyperPlane</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">point_is_above</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">point</span>: <span class="kp">&amp;</span><span class="nc">Vector</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kt">bool</span> <span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">coefficients</span><span class="p">.</span><span class="n">dot_product</span><span class="p">(</span><span class="n">point</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">constant</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mf">0.0</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>接下来，让我们重点关注生成随机超平面并构建最近邻树森林。我们应该如何表示树中的点？</p>
+<p>我们可以直接将 D 维向量存储在叶节点内。但这会显着增加大 D 的内存碎片（主要性能损失），并且当多棵树引用相同的向量时，还会在森林中创建重复的内存。相反，我们将向量存储在全局连续位置，并在叶节点处保存“usize”大小的索引（在 64 位系统上为 8 字节，而不是 4D，其中 f32 占用 4 字节）。以下是用于表示树的内部节点和叶节点的数据类型。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="k">enum</span> <span class="nc">Node</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="n">N</span>: <span class="kt">usize</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">Inner</span><span class="p">(</span><span class="nb">Box</span><span class="o">&lt;</span><span class="n">InnerNode</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&gt;</span><span class="p">),</span><span class="w">
+</span><span class="w">    </span><span class="n">Leaf</span><span class="p">(</span><span class="nb">Box</span><span class="o">&lt;</span><span class="n">LeafNode</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&gt;</span><span class="p">),</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="k">struct</span> <span class="nc">LeafNode</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="n">N</span>: <span class="kt">usize</span><span class="o">&gt;</span><span class="p">(</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="kt">usize</span><span class="o">&gt;</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="k">struct</span> <span class="nc">InnerNode</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="n">N</span>: <span class="kt">usize</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">hyperplane</span>: <span class="nc">HyperPlane</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">left_node</span>: <span class="nc">Node</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">right_node</span>: <span class="nc">Node</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="k">pub</span><span class="w"> </span><span class="k">struct</span> <span class="nc">ANNIndex</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="n">N</span>: <span class="kt">usize</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">trees</span>: <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">ids</span>: <span class="nb">Vec</span><span class="o">&lt;</span><span class="kt">i32</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">values</span>: <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Vector</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>我们如何真正找到正确的超平面？</p>
+<p>我们对向量 A 和 B 的两个唯一索引进行采样，计算 n = A - B，并找到 A 和 B 的中点 (point_on_plane)。超平面通过系数（向量 n）和常数（n 和 point_on_plane 的点积）结构有效存储为 n(x-x0) = nx - nx0。我们可以在任何向量和 n 之间执行点积，并减去常数以将向量放置在超平面“上方”或“下方”。由于树中的内部节点保存超平面定义，而叶节点保存向量 ID，因此我们可以使用 ADT 对树进行类型检查：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="k">impl</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="n">N</span>: <span class="kt">usize</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ANNIndex</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">fn</span> <span class="nf">build_hyperplane</span><span class="p">(</span><span class="w">
+</span><span class="w">        </span><span class="n">indexes</span>: <span class="kp">&amp;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="kt">usize</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">all_vecs</span>: <span class="kp">&amp;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Vector</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="p">)</span><span class="w"> </span>-&gt; <span class="p">(</span><span class="n">HyperPlane</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="kt">usize</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="kt">usize</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">sample</span>: <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">_</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">indexes</span><span class="w">
+</span><span class="w">            </span><span class="p">.</span><span class="n">choose_multiple</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">rand</span>::<span class="n">thread_rng</span><span class="p">(),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w">
+</span><span class="w">            </span><span class="p">.</span><span class="n">collect</span><span class="p">();</span><span class="w">
+</span><span class="w">        </span><span class="c1">// cartesian eq for hyperplane n * (x - x_0) = 0
+</span><span class="c1"></span><span class="w">        </span><span class="c1">// n (normal vector) is the coefs x_1 to x_n
+</span><span class="c1"></span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">sample</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="o">*</span><span class="n">sample</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">coefficients</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">all_vecs</span><span class="p">[</span><span class="n">a</span><span class="p">].</span><span class="n">subtract_from</span><span class="p">(</span><span class="o">&amp;</span><span class="n">all_vecs</span><span class="p">[</span><span class="n">b</span><span class="p">]);</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">point_on_plane</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">all_vecs</span><span class="p">[</span><span class="n">a</span><span class="p">].</span><span class="n">avg</span><span class="p">(</span><span class="o">&amp;</span><span class="n">all_vecs</span><span class="p">[</span><span class="n">b</span><span class="p">]);</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">constant</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">coefficients</span><span class="p">.</span><span class="n">dot_product</span><span class="p">(</span><span class="o">&amp;</span><span class="n">point_on_plane</span><span class="p">);</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">hyperplane</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">HyperPlane</span>::<span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="n">coefficients</span><span class="p">,</span><span class="w">
+</span><span class="w">            </span><span class="n">constant</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="p">};</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="k">mut</span><span class="w"> </span><span class="n">above</span><span class="p">,</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">below</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="fm">vec!</span><span class="p">[],</span><span class="w"> </span><span class="fm">vec!</span><span class="p">[]);</span><span class="w">
+</span><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="o">&amp;</span><span class="n">id</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">indexes</span><span class="p">.</span><span class="n">iter</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="n">hyperplane</span><span class="p">.</span><span class="n">point_is_above</span><span class="p">(</span><span class="o">&amp;</span><span class="n">all_vecs</span><span class="p">[</span><span class="n">id</span><span class="p">])</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                </span><span class="n">above</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w">
+</span><span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                </span><span class="n">below</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w">
+</span><span class="w">            </span><span class="p">};</span><span class="w">
+</span><span class="w">        </span><span class="p">}</span><span class="w">
+</span><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">hyperplane</span><span class="p">,</span><span class="w"> </span><span class="n">above</span><span class="p">,</span><span class="w"> </span><span class="n">below</span><span class="p">);</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>因此，我们可以定义递归过程来基于索引时间“最大节点大小”构建树：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="k">impl</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="n">N</span>: <span class="kt">usize</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ANNIndex</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">fn</span> <span class="nf">build_a_tree</span><span class="p">(</span><span class="w">
+</span><span class="w">        </span><span class="n">max_size</span>: <span class="kt">i32</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">indexes</span>: <span class="kp">&amp;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="kt">usize</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">all_vecs</span>: <span class="kp">&amp;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Vector</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">Node</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="n">indexes</span><span class="p">.</span><span class="n">len</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="p">(</span><span class="n">max_size</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="kt">usize</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Node</span>::<span class="n">Leaf</span><span class="p">(</span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="n">LeafNode</span>::<span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">(</span><span class="n">indexes</span><span class="p">.</span><span class="n">clone</span><span class="p">())));</span><span class="w">
+</span><span class="w">        </span><span class="p">}</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="n">plane</span><span class="p">,</span><span class="w"> </span><span class="n">above</span><span class="p">,</span><span class="w"> </span><span class="n">below</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">Self</span>::<span class="n">build_hyperplane</span><span class="p">(</span><span class="n">indexes</span><span class="p">,</span><span class="w"> </span><span class="n">all_vecs</span><span class="p">);</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">node_above</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">Self</span>::<span class="n">build_a_tree</span><span class="p">(</span><span class="n">max_size</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">above</span><span class="p">,</span><span class="w"> </span><span class="n">all_vecs</span><span class="p">);</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">node_below</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">Self</span>::<span class="n">build_a_tree</span><span class="p">(</span><span class="n">max_size</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">below</span><span class="p">,</span><span class="w"> </span><span class="n">all_vecs</span><span class="p">);</span><span class="w">
+</span><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Node</span>::<span class="n">Inner</span><span class="p">(</span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="n">InnerNode</span>::<span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="n">hyperplane</span>: <span class="nc">plane</span><span class="p">,</span><span class="w">
+</span><span class="w">            </span><span class="n">left_node</span>: <span class="nc">node_below</span><span class="p">,</span><span class="w">
+</span><span class="w">            </span><span class="n">right_node</span>: <span class="nc">node_above</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="p">}));</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">   
+</span></code></pre></div><p>请注意，在两点之间构建超平面要求这两个点是唯一的 - 即我们必须在索引之前对向量集进行重复数据删除，因为该算法不允许重复。</p>
+<p>因此整个索引（树木的森林）可以这样构建：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="k">impl</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="n">N</span>: <span class="kt">usize</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ANNIndex</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">fn</span> <span class="nf">deduplicate</span><span class="p">(</span><span class="w">
+</span><span class="w">        </span><span class="n">vectors</span>: <span class="kp">&amp;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Vector</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">ids</span>: <span class="kp">&amp;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="kt">i32</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">dedup_vectors</span>: <span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Vector</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">ids_of_dedup_vectors</span>: <span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="kt">i32</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">hashes_seen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">HashSet</span>::<span class="n">new</span><span class="p">();</span><span class="w">
+</span><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span><span class="n">vectors</span><span class="p">.</span><span class="n">len</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="kd">let</span><span class="w"> </span><span class="n">hash_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vectors</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">to_hashkey</span><span class="p">();</span><span class="w">
+</span><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="o">!</span><span class="n">hashes_seen</span><span class="p">.</span><span class="n">contains</span><span class="p">(</span><span class="o">&amp;</span><span class="n">hash_key</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                </span><span class="n">hashes_seen</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">hash_key</span><span class="p">);</span><span class="w">
+</span><span class="w">                </span><span class="n">dedup_vectors</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">vectors</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span><span class="w">
+</span><span class="w">                </span><span class="n">ids_of_dedup_vectors</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span><span class="w">
+</span><span class="w">            </span><span class="p">}</span><span class="w">
+</span><span class="w">        </span><span class="p">}</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">build_index</span><span class="p">(</span><span class="w">
+</span><span class="w">        </span><span class="n">num_trees</span>: <span class="kt">i32</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">max_size</span>: <span class="kt">i32</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">vecs</span>: <span class="kp">&amp;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Vector</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">vec_ids</span>: <span class="kp">&amp;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="kt">i32</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">ANNIndex</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="k">mut</span><span class="w"> </span><span class="n">unique_vecs</span><span class="p">,</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">ids</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="fm">vec!</span><span class="p">[],</span><span class="w"> </span><span class="fm">vec!</span><span class="p">[]);</span><span class="w">
+</span><span class="w">        </span><span class="bp">Self</span>::<span class="n">deduplicate</span><span class="p">(</span><span class="n">vecs</span><span class="p">,</span><span class="w"> </span><span class="n">vec_ids</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">unique_vecs</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">ids</span><span class="p">);</span><span class="w">
+</span><span class="w">        </span><span class="c1">// Trees hold an index into the [unique_vecs] list which is not
+</span><span class="c1"></span><span class="w">        </span><span class="c1">// necessarily its id, if duplicates existed
+</span><span class="c1"></span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">all_indexes</span>: <span class="nb">Vec</span><span class="o">&lt;</span><span class="kt">usize</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="n">unique_vecs</span><span class="p">.</span><span class="n">len</span><span class="p">()).</span><span class="n">collect</span><span class="p">();</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">trees</span>: <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">_</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="n">num_trees</span><span class="p">)</span><span class="w">
+</span><span class="w">            </span><span class="p">.</span><span class="n">map</span><span class="p">(</span><span class="o">|</span><span class="n">_</span><span class="o">|</span><span class="w"> </span><span class="bp">Self</span>::<span class="n">build_a_tree</span><span class="p">(</span><span class="n">max_size</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">all_indexes</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">unique_vecs</span><span class="p">))</span><span class="w">
+</span><span class="w">            </span><span class="p">.</span><span class="n">collect</span><span class="p">();</span><span class="w">
+</span><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">ANNIndex</span>::<span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="n">trees</span><span class="p">,</span><span class="w">
+</span><span class="w">            </span><span class="n">ids</span><span class="p">,</span><span class="w">
+</span><span class="w">            </span><span class="n">values</span>: <span class="nc">unique_vecs</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="p">};</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><h3 id="查询时间">查询时间</h3>
+<p>一旦建立了索引，我们如何使用它来搜索单个树上输入向量的 K 个近似最近邻？在非叶节点，我们存储超平面，因此我们可以从树的根开始并询问：“这个向量是在这个超平面之上还是之下？”。这可以通过 O(D) 和点积来计算。根据响应，我们可以递归搜索左子树或右子树，直到找到叶节点。请记住，叶节点最多存储“最大节点大小”向量，这些向量位于输入向量的近似邻域中（因为它们落在所有超平面下的超空间的同一分区中，见图 1(b)）。如果该叶节点处的向量索引数量超过 K，我们现在可以按与输入向量的 L2 距离对所有这些向量进行排序，并返回最接近的 K！</p>
+<p>假设我们的索引导致平衡树，对于维度 D、向量数量 N 和最大节点大小 M &laquo; N，搜索需要 O(Dlog(N) + DM + Mlog(M)) - 这构成了平均最差情况 log(N)  次比较超平面以查找叶节点（即树的高度）；其中每次比较都会花费 O(D) 点积，计算 O(DM) 中叶节点中所有候选向量的 L2 度量；最后对它们进行排序以返回 O(Mlog(M)) 中的前 K 个。</p>
+<p>但是，如果我们找到的叶节点的向量少于 K 个，会发生什么情况？如果最大节点大小太小或者超平面分割相对不均匀，子树中留下的向量很少，则这是可能的。为了解决这个问题，我们可以在树搜索中添加一些简单的回溯功能。例如，如果返回的候选数不够，我们可以在内部节点进行额外的递归调用来访问另一个分支。它可能是这样的：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="k">impl</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="n">N</span>: <span class="kt">usize</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ANNIndex</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">fn</span> <span class="nf">tree_result</span><span class="p">(</span><span class="w">
+</span><span class="w">        </span><span class="n">query</span>: <span class="nc">Vector</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">n</span>: <span class="kt">i32</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">tree</span>: <span class="kp">&amp;</span><span class="nc">Node</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">candidates</span>: <span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">HashSet</span><span class="o">&lt;</span><span class="kt">usize</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kt">i32</span> <span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="c1">// take everything in node, if still needed, take from alternate subtree
+</span><span class="c1"></span><span class="w">        </span><span class="k">match</span><span class="w"> </span><span class="n">tree</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="n">Node</span>::<span class="n">Leaf</span><span class="p">(</span><span class="n">box_leaf</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                </span><span class="kd">let</span><span class="w"> </span><span class="n">leaf_values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="p">(</span><span class="n">box_leaf</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span><span class="w">
+</span><span class="w">                </span><span class="kd">let</span><span class="w"> </span><span class="n">num_candidates_found</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">min</span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="kt">usize</span><span class="p">,</span><span class="w"> </span><span class="n">leaf_values</span><span class="p">.</span><span class="n">len</span><span class="p">());</span><span class="w">
+</span><span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="mi">0</span><span class="o">..</span><span class="n">num_candidates_found</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                    </span><span class="n">candidates</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">leaf_values</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span><span class="w">
+</span><span class="w">                </span><span class="p">}</span><span class="w">
+</span><span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">num_candidates_found</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="kt">i32</span><span class="p">;</span><span class="w">
+</span><span class="w">            </span><span class="p">}</span><span class="w">
+</span><span class="w">            </span><span class="n">Node</span>::<span class="n">Inner</span><span class="p">(</span><span class="n">inner</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                </span><span class="kd">let</span><span class="w"> </span><span class="n">above</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">inner</span><span class="p">).</span><span class="n">hyperplane</span><span class="p">.</span><span class="n">point_is_above</span><span class="p">(</span><span class="o">&amp;</span><span class="n">query</span><span class="p">);</span><span class="w">
+</span><span class="w">                </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="n">main</span><span class="p">,</span><span class="w"> </span><span class="n">backup</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">match</span><span class="w"> </span><span class="n">above</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                    </span><span class="kc">true</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">(</span><span class="o">&amp;</span><span class="p">(</span><span class="n">inner</span><span class="p">.</span><span class="n">right_node</span><span class="p">),</span><span class="w"> </span><span class="o">&amp;</span><span class="p">(</span><span class="n">inner</span><span class="p">.</span><span class="n">left_node</span><span class="p">)),</span><span class="w">
+</span><span class="w">                    </span><span class="kc">false</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">(</span><span class="o">&amp;</span><span class="p">(</span><span class="n">inner</span><span class="p">.</span><span class="n">left_node</span><span class="p">),</span><span class="w"> </span><span class="o">&amp;</span><span class="p">(</span><span class="n">inner</span><span class="p">.</span><span class="n">right_node</span><span class="p">)),</span><span class="w">
+</span><span class="w">                </span><span class="p">};</span><span class="w">
+</span><span class="w">                </span><span class="k">match</span><span class="w"> </span><span class="bp">Self</span>::<span class="n">tree_result</span><span class="p">(</span><span class="n">query</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">main</span><span class="p">,</span><span class="w"> </span><span class="n">candidates</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                    </span><span class="n">k</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">                        </span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="bp">Self</span>::<span class="n">tree_result</span><span class="p">(</span><span class="n">query</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">backup</span><span class="p">,</span><span class="w"> </span><span class="n">candidates</span><span class="p">)</span><span class="w">
+</span><span class="w">                    </span><span class="p">}</span><span class="w">
+</span><span class="w">                    </span><span class="n">k</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">k</span><span class="p">,</span><span class="w">
+</span><span class="w">                </span><span class="p">}</span><span class="w">
+</span><span class="w">            </span><span class="p">}</span><span class="w">
+</span><span class="w">        </span><span class="p">}</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>请注意，我们可以通过在子树中存储向量总数，以及直接指向每个内部节点的所有叶节点的指针列表来进一步优化递归调用，但为了简单起见，这里不这样做。</p>
+<p>将此搜索扩展到树木森林很简单 - 只需从所有树中独立收集前 K 个候选者，按距离对它们进行排序，然后返回总体前 K 个匹配项。请注意，更多数量的树将具有线性高的内存占用和线性缩放的搜索时间，但可以导致更好的“更接近”的邻居，因为我们跨不同的树收集候选者。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="k">impl</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="n">N</span>: <span class="kt">usize</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ANNIndex</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">search_approximate</span><span class="p">(</span><span class="w">
+</span><span class="w">        </span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">query</span>: <span class="nc">Vector</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">top_k</span>: <span class="kt">i32</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="kt">i32</span><span class="p">,</span><span class="w"> </span><span class="kt">f32</span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">candidates</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">HashSet</span>::<span class="n">new</span><span class="p">();</span><span class="w">
+</span><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="n">tree</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">trees</span><span class="p">.</span><span class="n">iter</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">            </span><span class="bp">Self</span>::<span class="n">tree_result</span><span class="p">(</span><span class="n">query</span><span class="p">,</span><span class="w"> </span><span class="n">top_k</span><span class="p">,</span><span class="w"> </span><span class="n">tree</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">candidates</span><span class="p">);</span><span class="w">
+</span><span class="w">        </span><span class="p">}</span><span class="w">
+</span><span class="w">        </span><span class="n">candidates</span><span class="w">
+</span><span class="w">            </span><span class="p">.</span><span class="n">into_iter</span><span class="p">()</span><span class="w">
+</span><span class="w">            </span><span class="p">.</span><span class="n">map</span><span class="p">(</span><span class="o">|</span><span class="n">idx</span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">idx</span><span class="p">,</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">values</span><span class="p">[</span><span class="n">idx</span><span class="p">].</span><span class="n">sq_euc_dis</span><span class="p">(</span><span class="o">&amp;</span><span class="n">query</span><span class="p">)))</span><span class="w">
+</span><span class="w">            </span><span class="p">.</span><span class="n">sorted_by</span><span class="p">(</span><span class="o">|</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="o">|</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="mf">1.</span><span class="n">partial_cmp</span><span class="p">(</span><span class="o">&amp;</span><span class="n">b</span><span class="p">.</span><span class="mi">1</span><span class="p">).</span><span class="n">unwrap</span><span class="p">())</span><span class="w">
+</span><span class="w">            </span><span class="p">.</span><span class="n">take</span><span class="p">(</span><span class="n">top_k</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="kt">usize</span><span class="p">)</span><span class="w">
+</span><span class="w">            </span><span class="p">.</span><span class="n">map</span><span class="p">(</span><span class="o">|</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span><span class="w"> </span><span class="n">dis</span><span class="p">)</span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">ids</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="w"> </span><span class="n">dis</span><span class="p">))</span><span class="w">
+</span><span class="w">            </span><span class="p">.</span><span class="n">collect</span><span class="p">()</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></div><p>这为我们提供了 200 行 Rust 的简单向量搜索索引！</p>
+<p>为了说明的目的，这个实现相当简单——事实上，它是如此简单，以至于我们怀疑它一定比最先进的算法差得多（尽管在更广泛的方法中是相似的）。让我们做一些基准测试来证实我们的怀疑。</p>
+<p>可以评估算法的延迟和质量。质量通常通过召回率来衡量 - 实际最近邻（从线性扫描获得）的百分比，也是通过近似最近邻搜索获得的。有时，返回的结果在技术上并不在前 K 中，但它们非常接近实际的前 K，因此并不重要 - 为了量化这一点，我们还可以查看邻居的平均欧几里德距离，并将其与暴力平均距离进行比较强制搜索。</p>
+<p>测量延迟很简单 - 我们可以查看执行查询所需的时间（我们通常对索引构建延迟不太感兴趣）。</p>
+<p>所有基准测试结果均在配备 2.3 GHz 四核 Intel Core i5 处理器的单设备 CPU 上运行，使用 999,994 个 Wiki 数据 FastText 嵌入 ( <a href="https://dl.fbaipublicfiles.com/fasttext/vectors-english/wiki-news-300d-1M.vec.zip">https://dl.fbaipublicfiles.com/fasttext/vectors-english/wiki-news -300d-1M.vec.zip</a> ) 300 维。我们将所有查询的“top K”设置为 20。</p>
+<p>作为参考，我们将 FAISS HNSW 索引 (ef_search=16、ef_construction=40、max_node_size=15) 与 Rust 索引的小版本 (num_trees=3、max_node_size=15) 进行比较。我们在 Rust 中实现了详尽的搜索，而 FAISS 库有 HNSW 的 C++ 源代码。原始延迟数低，增强了近似搜索的优势：</p>
+<table>
+<thead>
+<tr>
+<th>算法</th>
+<th>延迟 Latency</th>
+<th>QPS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Exhaustive Search</td>
+<td>675.25ms</td>
+<td>1.48</td>
+</tr>
+<tr>
+<td>FAISS HNSW Index</td>
+<td>355.36μs</td>
+<td>2814.05</td>
+</tr>
+<tr>
+<td>Custom Rust Index</td>
+<td>112.02μs</td>
+<td>8926.98</td>
+</tr>
+</tbody>
+</table>
+<p>两种近似最近邻方法的速度都快了三个数量级，这很好。与 HNSW 相比，我们的 Rust 实现在这个微基准测试中速度快了 3 倍。分析质量时，直观地考虑 prompt “river” 返回的前 10 个最近邻。</p>
+<table>
+<thead>
+<tr>
+<th>Exhaustive Search</th>
+<th></th>
+<th>FAISS HNSW Index</th>
+<th></th>
+<th>Custom Rust Index</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Word</strong></td>
+<td><strong>Euclidean Distance</strong></td>
+<td><strong>Word</strong></td>
+<td><strong>Euclidean Distance</strong></td>
+<td><strong>Word</strong></td>
+<td><strong>Euclidean Distance</strong></td>
+</tr>
+<tr>
+<td>river</td>
+<td>0</td>
+<td>river</td>
+<td>0</td>
+<td>river</td>
+<td>0</td>
+</tr>
+<tr>
+<td>River</td>
+<td>1.39122</td>
+<td>River</td>
+<td>1.39122</td>
+<td>creek</td>
+<td>1.63744</td>
+</tr>
+<tr>
+<td>rivers</td>
+<td>1.47646</td>
+<td>river-</td>
+<td>1.58342</td>
+<td>river.</td>
+<td>1.73224</td>
+</tr>
+<tr>
+<td>river-</td>
+<td>1.58342</td>
+<td>swift-flowing</td>
+<td>1.62413</td>
+<td>lake</td>
+<td>1.75655</td>
+</tr>
+<tr>
+<td>swift-flowing</td>
+<td>1.62413</td>
+<td>flood-swollen</td>
+<td>1.63798</td>
+<td>sea</td>
+<td>1.87368</td>
+</tr>
+<tr>
+<td>creek</td>
+<td>1.63744</td>
+<td>river.The</td>
+<td>1.68156</td>
+<td>up-river</td>
+<td>1.92088</td>
+</tr>
+<tr>
+<td>flood-swollen</td>
+<td>1.63798</td>
+<td>river-bed</td>
+<td>1.68510</td>
+<td>shore</td>
+<td>1.92266</td>
+</tr>
+<tr>
+<td>river.The</td>
+<td>1.68156</td>
+<td>unfordable</td>
+<td>1.69245</td>
+<td>brook</td>
+<td>2.01973</td>
+</tr>
+<tr>
+<td>river-bed</td>
+<td>1.68510</td>
+<td>River-</td>
+<td>1.69512</td>
+<td>hill</td>
+<td>2.03419</td>
+</tr>
+<tr>
+<td>unfordable</td>
+<td>1.69245</td>
+<td>River.The</td>
+<td>1.69539</td>
+<td>pond</td>
+<td>2.04376</td>
+</tr>
+</tbody>
+</table>
+<p>或者，考虑一下prompt  “war”。</p>
+<table>
+<thead>
+<tr>
+<th>Exhaustive Search</th>
+<th></th>
+<th>FAISS HNSW Index</th>
+<th></th>
+<th>Custom Rust Index</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Word</strong></td>
+<td><strong>Euclidean Distance</strong></td>
+<td><strong>Word</strong></td>
+<td><strong>Euclidean Distance</strong></td>
+<td><strong>Word</strong></td>
+<td><strong>Euclidean Distance</strong></td>
+</tr>
+<tr>
+<td>war</td>
+<td>0</td>
+<td>war</td>
+<td>0</td>
+<td>war</td>
+<td>0</td>
+</tr>
+<tr>
+<td>war&ndash;</td>
+<td>1.38416</td>
+<td>war&ndash;</td>
+<td>1.38416</td>
+<td>war&ndash;</td>
+<td>1.38416</td>
+</tr>
+<tr>
+<td>war&ndash;a</td>
+<td>1.44906</td>
+<td>war&ndash;a</td>
+<td>1.44906</td>
+<td>wars</td>
+<td>1.45859</td>
+</tr>
+<tr>
+<td>wars</td>
+<td>1.45859</td>
+<td>wars</td>
+<td>1.45859</td>
+<td>quasi-war</td>
+<td>1.59712</td>
+</tr>
+<tr>
+<td>war&ndash;and</td>
+<td>1.45907</td>
+<td>war&ndash;and</td>
+<td>1.45907</td>
+<td>war-footing</td>
+<td>1.69175</td>
+</tr>
+<tr>
+<td>war.It</td>
+<td>1.46991</td>
+<td>war.It</td>
+<td>1.46991</td>
+<td>check-mate</td>
+<td>1.74982</td>
+</tr>
+<tr>
+<td>war.In</td>
+<td>1.49632</td>
+<td>war.In</td>
+<td>1.49632</td>
+<td>ill-begotten</td>
+<td>1.75498</td>
+</tr>
+<tr>
+<td>unwinable</td>
+<td>1.51296</td>
+<td>unwinable</td>
+<td>1.51296</td>
+<td>subequent</td>
+<td>1.76617</td>
+</tr>
+<tr>
+<td>war.And</td>
+<td>1.51830</td>
+<td>war.And</td>
+<td>1.51830</td>
+<td>humanitary</td>
+<td>1.77464</td>
+</tr>
+<tr>
+<td>hostilities</td>
+<td>1.54783</td>
+<td>Iraw</td>
+<td>1.54906</td>
+<td>execution</td>
+<td>1.77992</td>
+</tr>
+</tbody>
+</table>
+<p>对于整个 999,994 个单词的语料库，我们还可视化了 HNSW 和自定义 Rust 索引下每个单词到其顶部 K=20 个近似邻居的平均欧几里得距离的分布：</p>
+<!-- raw HTML omitted -->
+<p>最先进的 HNSW 指数确实提供了比我们的示例索引相对更近的邻居，平均距离和中位距离分别为 1.31576 和 1.20230（与我们的示例索引的 1.47138 和 1.35620 相比）。在随机的 10,000 大小的语料库子集上，HNSW 对前 K=20 的召回率为 58.2%，而我们的示例索引针对不同的配置（如前所述，树的数量较多）产生了不同的召回率（从 11.465% 到 23.115%）提供更高的召回率）：</p>
+<table>
+<thead>
+<tr>
+<th>num_trees</th>
+<th>max_node_size</th>
+<th>Average runtime</th>
+<th>QPS</th>
+<th>Recall</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3</td>
+<td>5</td>
+<td>129.48μs</td>
+<td>7723</td>
+<td>0.11465</td>
+</tr>
+<tr>
+<td>3</td>
+<td>15</td>
+<td>112.02μs</td>
+<td>8297</td>
+<td>0.11175</td>
+</tr>
+<tr>
+<td>3</td>
+<td>30</td>
+<td>114.48μs</td>
+<td>8735</td>
+<td>0.09265</td>
+</tr>
+<tr>
+<td>9</td>
+<td>5</td>
+<td>16.77ms</td>
+<td>60</td>
+<td>0.22095</td>
+</tr>
+<tr>
+<td>9</td>
+<td>15</td>
+<td>1.54ms</td>
+<td>649</td>
+<td>0.20985</td>
+</tr>
+<tr>
+<td>9</td>
+<td>30</td>
+<td>370.80μs</td>
+<td>2697</td>
+<td>0.16835</td>
+</tr>
+<tr>
+<td>15</td>
+<td>5</td>
+<td>35.45ms</td>
+<td>28</td>
+<td>0.29825</td>
+</tr>
+<tr>
+<td>15</td>
+<td>15</td>
+<td>7.34ms</td>
+<td>136</td>
+<td>0.28520</td>
+</tr>
+<tr>
+<td>15</td>
+<td>30</td>
+<td>2.19ms</td>
+<td>457</td>
+<td>0.23115</td>
+</tr>
+</tbody>
+</table>
+<h2 id="为什么fann这么快">为什么FANN这么快？</h2>
+<p>正如您在上面的数字中看到的，虽然 FANN 算法在质量上无法与最先进的算法竞争，但它至少相当快。为什么会这样？</p>
+<p>老实说，当我们构建这个时，我们得意忘形并开始进行性能优化只是为了好玩。以下是一些最显着的优化：</p>
+<ul>
+<li>将文档重复数据删除卸载到索引冷路径。通过索引而不是浮点数组引用向量可以显着加快搜索速度，因为跨树查找唯一候选者需要散列 8 字节索引（而不是 300 维 f32 数据）。</li>
+<li>在将项目添加到全局候选列表之前，急切地散列并查找唯一向量，并通过递归搜索调用之间的可变引用传递数据，以避免跨堆栈帧和堆栈帧内进行复制。</li>
+<li>将 N 作为通用类型参数传递，这允许将 300 维数据作为 300 长度的 f32 数组（而不是可变长度向量类型）进行类型检查，以提高缓存局部性并减少内存占用（向量具有堆上数据的附加重定向级别）。</li>
+<li>我们还怀疑 Rust 编译器正在对内部操作（例如点积）进行向量化，但我们没有检查。</li>
+</ul>
+<h2 id="更多现实世界的考虑">更多现实世界的考虑</h2>
+<p>此示例跳过了几个对于生产向量搜索至关重要的注意事项：(注：单实例优化 向量矩阵 SIMD + OpenMP； 分布式数据存储扩展 RPC + 分布式一致性协议)</p>
+<ul>
+<li>当搜索涉及多棵树时进行并行化。我们可以并行化，而不是按顺序收集候选者，因为每棵树访问不同的内存 - 每棵树可以在单独的线程上运行，其中候选者通过消息沿着通道连续发送到主进程。线程可以在索引时生成，并通过虚拟搜索（使树的部分位于缓存中）进行预热，以减少搜索开销。搜索将不再随树的数量线性缩放。</li>
+<li>大型树可能不适合 RAM，需要有效的方法从磁盘读取 - 某些子图可能需要位于磁盘上，并且算法旨在允许搜索，同时最大限度地减少文件 I/O。</li>
+<li>更进一步，如果树不适合实例的磁盘，我们需要跨实例分布子树，并且如果数据在本地不可用，则递归搜索调用会触发一些 RPC 请求。</li>
+<li>该树涉及许多内存重定向（基于指针的树不适合 L1 缓存）。平衡树可以用数组很好地编写，但我们的树只能用随机超平面接近平衡——我们可以为树使用新的数据结构吗？</li>
+<li>当新数据被动态索引时（可能需要对大树进行重新分片），上述问题的解决方案也应该适用。如果特定的索引顺序导致树高度不平衡，是否应该重新创建树？</li>
+</ul>
+<h2 id="结论">结论</h2>
+<p>如果你到达这里，恭喜你！您刚刚看到了大约 200 行 Rust 中的简单向量搜索，以及我们对行星规模应用程序的向量搜索的漫谈。我们希望您喜欢阅读本文，并随时访问<a href="https://github.com/fennel-ai/fann">https://github.com/fennel-ai/fann</a>的源代码。(<strong>注</strong>：try add this lib to RedisXANN experiment feature with benchmark)</p>
+<h1 id="reference">reference</h1>
+<ol>
+<li><a href="https://en.wikipedia.org/wiki/Locality-sensitive_hashing">https://en.wikipedia.org/wiki/Locality-sensitive_hashing</a></li>
+<li><a href="https://fennel.ai/blog/vector-search-in-200-lines-of-rust/">https://fennel.ai/blog/vector-search-in-200-lines-of-rust/</a></li>
+<li><a href="https://erikbern.com/2015/09/24/nearest-neighbor-methods-vector-models-part-1">https://erikbern.com/2015/09/24/nearest-neighbor-methods-vector-models-part-1</a></li>
+<li><a href="https://erikbern.com/2015/10/01/nearest-neighbors-and-vector-models-part-2-how-to-search-in-high-dimensional-spaces.html">https://erikbern.com/2015/10/01/nearest-neighbors-and-vector-models-part-2-how-to-search-in-high-dimensional-spaces.html</a></li>
+<li><a href="https://erikbern.com/2016/06/02/approximate-nearest-news">https://erikbern.com/2016/06/02/approximate-nearest-news</a></li>
+</ol>
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2023-09-20
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/oneday/">oneday</a>
+          <a href="https://weedge.github.io/tags/ann/">ANN</a>
+          <a href="https://weedge.github.io/tags/lsh/">LSH</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/oneday/manas-a-high-performing-customized-search-system/">
+            <span class="next-text nav-default">译：Manas：高性能定制搜索系统</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/post/oneday/vector-search-in-200-lines-of-rust/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:weege007@gmail.com" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/weedge" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://weibo.com/weedge" rel="me noopener" class="iconfont"
+      title="weibo"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M385.714286 733.714286q12-19.428571 6.285714-39.428571t-25.714286-28.571429q-19.428571-8-41.714286-0.571429t-34.285714 26.285714q-12.571429 19.428571-7.428571 39.142857t24.571429 28.857143 42.571429 1.428571 35.714286-27.142857zm53.714286-69.142857q4.571429-7.428571 2-15.142857t-10-10.571429q-8-2.857143-16.285714 2.857143t-12.285714 10.571429q-9.714286 17.714286 7.428571 25.714286 8 2.857143 16.571429 2.857143t12.571429-10.571429zm99.428571 61.142857q-25.714286 58.285714-90.285714 85.714286t-128 6.857143q-61.142857-19.428571-84.285714-72.285714t3.714286-107.142857q26.857143-53.142857 86.571429-79.428571t120.285714-10.857143q63.428571 16.571429 90.571429 68.285714t1.428571 108.857143zm178.285714-91.428571q-5.142857-54.857143-50.857143-97.142857t-119.142857-62.285714-156.857143-12q-127.428571 13.142857-211.142857 80.857143t-75.714286 151.142857q5.142857 54.857143 50.857143 97.142857t119.142857 62.285714 156.857143 12q127.428571-13.142857 211.142857-80.857143t75.714286-151.142857zm176 2.285714q0 38.857143-21.142857 79.714286t-62.285714 78.285714-96.285714 67.142857-129.142857 47.428571-154.571429 17.714286-157.142857-19.142857-137.428571-53.142857-98-86.285714-37.142857-114q0-65.714286 39.714286-140t112.857143-147.428571q96.571429-96.571429 195.142857-134.857143t140.857143 4q37.142857 36.571429 11.428571 119.428571-2.285714 8-0.571429 11.428571t5.714286 4 8.285714 2.857143 7.714286-2l3.428571-1.142857q79.428571-33.714286 140.571429-33.714286t87.428571 34.857143q25.714286 36 0 101.714286-1.142857 7.428571-2.571429 11.428571t2.571429 7.142857 6.857143 4.285714 9.714286 3.428571q32.571429 10.285714 58.857143 26.857143t45.714286 46.571429 19.428571 66.571429zm-42.285714-356.571429q24 26.857143 31.142857 62t-3.714286 67.142857q-4.571429 13.142857-16.857143 19.428571t-25.428571 2.285714q-13.142857-4.571429-19.428571-16.857143t-2.285714-25.428571q11.428571-36-13.714286-63.428571t-61.142857-20q-13.714286 2.857143-25.714286-4.571429t-14.285714-21.142857q-2.857143-13.714286 4.571429-25.428571t21.142857-14.571429q34.285714-7.428571 68 3.142857t57.714286 37.428571zm103.428571-93.142857q49.714286 54.857143 64.285714 127.142857t-7.714286 138q-5.142857 15.428571-19.428571 22.857143t-29.714286 2.285714-22.857143-19.428571-2.857143-29.714286q16-46.857143 5.714286-98.285714t-45.714286-90.285714q-35.428571-39.428571-84.571429-54.571429t-98.857143-4.857143q-16 3.428571-29.714286-5.428571t-17.142857-24.857143 5.428571-29.428571 24.857143-16.857143q70.285714-14.857143 139.428571 6.571429t118.857143 76.857143z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://weedge.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2013 -
+    2023
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        weedge
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//weedge.disqus.com/count.js" async></script>
+
+
+
+
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
+
+
+</body>
+</html>

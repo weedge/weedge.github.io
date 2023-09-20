@@ -80,7 +80,7 @@
 
 最近在搞一个kv系统，想接入codis来管理slot，实现数据的迁移，进行scaling水平扩展，从网上找了点资料，然后随笔记录梳理一下，以便相应的代码可以联调接入时优化下~"><meta itemprop="datePublished" content="2023-07-30T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-07-30T10:26:23+08:00" />
-<meta itemprop="wordCount" content="2587">
+<meta itemprop="wordCount" content="2636">
 <meta itemprop="keywords" content="kv," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="kv-codis迁移"/>
 <meta name="twitter:description" content="
@@ -397,7 +397,7 @@
 <p>如果管理迁移slot的kv节点处理命令不是单线程的，比如<a href="https://github.com/dragonflydb/dragonfly">dragonfly</a> 等处理命令是多线程的sharding 内存(多线程IO模型 <a href="https://github.com/romange/helio">helio</a> 支持io_uring)，以及 <a href="https://github.com/weedge/wedis">wedis</a>  处理命令是多协程（一个连接会话对应一个协程，本质调度执行是内核线程, 网络IO模型根据场景使用netpoll可以优化下,以及批量迁移batch put 尽量减少io），则操作只需要优化实现 同步命令 <code>SLOTSMGRTTAGSLOT</code> 和被动触发的 <code>SLOTSMGRTTAGONE</code> 可以满足需求，当然如果想对接异步操作命令也是可以的。</p>
 <p>tips:</p>
 <ol>
-<li>对于slot相关操作如果已插件的方式对接到kv引擎中实现，是比较符合工程实现的，一种是动态链接(c/c++)，通过MODULE LOAD 命令，或者loadmodule 配置项，可以参考<a href="https://github.com/weedge/RedisXSlot">RedisXSlot</a> module，实现异步非阻塞执行  <code>SLOTSMGRTTAGSLOT</code> 和被动触发的 <code>SLOTSMGRTTAGONE</code> 等同步命令; 一种是编译时静态链接(golang 依赖注入，plugin比较鸡肋，golang本身是静态编译)</li>
+<li>对于slot相关操作如果已插件的方式对接到kv引擎中实现，是比较符合工程实现的，一种是动态链接(c/c++)，通过MODULE LOAD 命令，或者loadmodule 配置项，可以参考<a href="https://github.com/weedge/RedisXSlot">RedisXSlot</a> module，实现异步非阻塞执行  <code>SLOTSMGRTTAGSLOT</code> 和被动触发的 <code>SLOTSMGRTTAGONE</code> 等同步命令; 一种是编译时静态链接(plugin比较鸡肋，两种方式：1. golang 依赖注入运行的时候配置区分，2. golang本身是静态编译, 通过go build tag的方式分开编译不同的feature，像rust cargo build with feature crate)</li>
 <li>如果使用redis cluster 是去中心化的scaling 方案，slot的迁移会话管理方式嵌入到node节点中，通过gossip协议进行协同，运维相对简单，但是少了些灵活，当然也可以做一层控制面来管理会话元数据，当集群节点比较多的时候。(这个实现下cluster中的slot相关命令可以在思考记录一些~)</li>
 <li>codis现在没有维护了，但是fork出来进行二次开发，和内部监控系统打通，也可以借鉴下reborndb,但是没有但是了。。。</li>
 </ol>

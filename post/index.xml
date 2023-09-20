@@ -6,7 +6,17 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Thu, 14 Sep 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 20 Sep 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>译：FANN：200行Rust实现的向量搜索</title>
+      <link>https://weedge.github.io/post/oneday/vector-search-in-200-lines-of-rust/</link>
+      <pubDate>Wed, 20 Sep 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/oneday/vector-search-in-200-lines-of-rust/</guid>
+      <description>&lt;h1 id=&#34;fann200行rust实现的向量搜索&#34;&gt;FANN：200行Rust实现的向量搜索&lt;/h1&gt;
+&lt;p&gt;由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。&lt;a href=&#34;https://github.com/fennel-ai/fann&#34;&gt;所有代码都可以在此 Github 存储库&lt;/a&gt;中找到。我们这里使用的方法基于流行库Spotify &lt;a href=&#34;https://github.com/spotify/annoy&#34;&gt;annoy&lt;/a&gt;中使用的一系列称为“&lt;a href=&#34;https://en.wikipedia.org/wiki/Locality-sensitive_hashing&#34;&gt;局部敏感散列(Locality-sensitive_hashing)&lt;/a&gt;”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>译：Manas：高性能定制搜索系统</title>
       <link>https://weedge.github.io/post/oneday/manas-a-high-performing-customized-search-system/</link>
@@ -259,17 +269,6 @@
 &lt;li&gt;离线批处理，分析用户历史数据，进行推荐算法等机器学习算法模型训练使用，数据仓库中根据不同维度对数据过滤聚合，进行上卷下钻分析，比如计算DAU,WAU,MAU，转化率(购买率，注册率)分析等，通常对数据建设投入多的话， 会把用户产生的结构化非结构化的数据都存下，放在一个大的池子里待使用时进行分析，即所谓的数据湖，围湖而建挖掘数据价值；而数仓相对精细化的分析，前置建模建表分析；&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;对此进行方案分析，本文将介绍一种实时离线处理分析用户行为数据方案，即能帮助企业低成本地使用海量数据，又能更快速地响应业务需求，同时借助亚马逊云科技的托管服务，能够快速实施和轻松运维。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>全栈开发</title>
-      <link>https://weedge.github.io/post/shop/</link>
-      <pubDate>Sun, 02 Jan 2022 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/shop/</guid>
-      <description>&lt;h2 id=&#34;介绍&#34;&gt;介绍&lt;/h2&gt;
-&lt;p&gt;以前工作中有过前端的开发经验，使用后端模版Smarty(主要是外部需求，现在新项目中应该很少使用这个了)，前端模版Mustache，页面中使用 js jquery交互逻辑，直接服用一些开源的UI组件Bootstrap，开源的后台UI系统，主要是建设内部后台的时候使用，自动生成CRUD页面；前端的技术栈更新迭代相对后端快些，通过以全栈技术栈为切入点，通过一个简单的系统，学习下最新技术栈工具，主要目的如下：&lt;/p&gt;
-&lt;p&gt;根据需求，实现一个简单功能的购物系统，目的是为了学习ts-&amp;gt;js on node.js全栈开发，了解整体开发构建工具，熟悉下工具开发流程，主要还是了解前端框架工具的使用，以及熟悉通过js运行时环境运行在后端服务上的应用开发工具，以便在后续开发后台系统的时候可以熟练使用这些技术进行开发，这些工具的设计思想可以借鉴到其他后端业务开发语言中。&lt;/p&gt;</description>
     </item>
     
   </channel>
