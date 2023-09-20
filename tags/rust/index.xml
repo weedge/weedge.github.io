@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>LSH on 时间飘过</title>
-    <link>https://weedge.github.io/tags/lsh/</link>
-    <description>Recent content in LSH on 时间飘过</description>
+    <title>rust on 时间飘过</title>
+    <link>https://weedge.github.io/tags/rust/</link>
+    <description>Recent content in rust on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 20 Sep 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/lsh/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 20 Sep 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/rust/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>译：FANN：200行Rust实现的向量搜索</title>
       <link>https://weedge.github.io/post/oneday/vector-search-in-200-lines-of-rust/</link>

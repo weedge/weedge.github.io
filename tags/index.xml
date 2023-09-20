@@ -35,6 +35,15 @@
     </item>
     
     <item>
+      <title>rust</title>
+      <link>https://weedge.github.io/tags/rust/</link>
+      <pubDate>Wed, 20 Sep 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/rust/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>kv</title>
       <link>https://weedge.github.io/tags/kv/</link>
       <pubDate>Sun, 30 Jul 2023 10:26:23 +0800</pubDate>
@@ -175,15 +184,6 @@
       <pubDate>Mon, 08 Nov 2021 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/cache/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>LRU</title>
-      <link>https://weedge.github.io/tags/lru/</link>
-      <pubDate>Mon, 08 Nov 2021 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/lru/</guid>
       <description></description>
     </item>
     

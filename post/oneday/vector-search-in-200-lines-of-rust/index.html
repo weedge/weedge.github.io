@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="FANN：200行Rust实现的向量搜索 由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。所有代码都可以在此 Github 存储库中找到。我们这里使用的方法基于流行库Spotify annoy中使用的一系列称为“局部敏感散列(Locality-sensitive_hashing)”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。
+  <meta name="description" content="由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。所有代码都可以在此 Github 存储库中找到。我们这里使用的方法基于流行库Spotify annoy中使用的一系列称为“局部敏感散列(Locality-sensitive_hashing)”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。
 " />
 
   <meta name="keywords" content="工作, 技术, 生活" />
@@ -63,22 +63,19 @@
 
 
 <meta property="og:title" content="译：FANN：200行Rust实现的向量搜索" />
-<meta property="og:description" content="FANN：200行Rust实现的向量搜索
-由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。所有代码都可以在此 Github 存储库中找到。我们这里使用的方法基于流行库Spotify annoy中使用的一系列称为“局部敏感散列(Locality-sensitive_hashing)”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。" />
+<meta property="og:description" content="由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。所有代码都可以在此 Github 存储库中找到。我们这里使用的方法基于流行库Spotify annoy中使用的一系列称为“局部敏感散列(Locality-sensitive_hashing)”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://weedge.github.io/post/oneday/vector-search-in-200-lines-of-rust/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2023-09-20T10:26:23+08:00" />
 <meta property="article:modified_time" content="2023-09-20T10:26:23+08:00" />
 
 <meta itemprop="name" content="译：FANN：200行Rust实现的向量搜索">
-<meta itemprop="description" content="FANN：200行Rust实现的向量搜索
-由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。所有代码都可以在此 Github 存储库中找到。我们这里使用的方法基于流行库Spotify annoy中使用的一系列称为“局部敏感散列(Locality-sensitive_hashing)”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。"><meta itemprop="datePublished" content="2023-09-20T10:26:23+08:00" />
+<meta itemprop="description" content="由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。所有代码都可以在此 Github 存储库中找到。我们这里使用的方法基于流行库Spotify annoy中使用的一系列称为“局部敏感散列(Locality-sensitive_hashing)”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。"><meta itemprop="datePublished" content="2023-09-20T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-09-20T10:26:23+08:00" />
-<meta itemprop="wordCount" content="7197">
-<meta itemprop="keywords" content="oneday,ANN,LSH," /><meta name="twitter:card" content="summary"/>
+<meta itemprop="wordCount" content="7186">
+<meta itemprop="keywords" content="oneday,ANN,LSH,rust," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：FANN：200行Rust实现的向量搜索"/>
-<meta name="twitter:description" content="FANN：200行Rust实现的向量搜索
-由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。所有代码都可以在此 Github 存储库中找到。我们这里使用的方法基于流行库Spotify annoy中使用的一系列称为“局部敏感散列(Locality-sensitive_hashing)”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。"/>
+<meta name="twitter:description" content="由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。所有代码都可以在此 Github 存储库中找到。我们这里使用的方法基于流行库Spotify annoy中使用的一系列称为“局部敏感散列(Locality-sensitive_hashing)”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -341,8 +338,7 @@
 
     
     <div class="post-content">
-      <h1 id="fann200行rust实现的向量搜索">FANN：200行Rust实现的向量搜索</h1>
-<p>由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。<a href="https://github.com/fennel-ai/fann">所有代码都可以在此 Github 存储库</a>中找到。我们这里使用的方法基于流行库Spotify <a href="https://github.com/spotify/annoy">annoy</a>中使用的一系列称为“<a href="https://en.wikipedia.org/wiki/Locality-sensitive_hashing">局部敏感散列(Locality-sensitive_hashing)</a>”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。</p>
+      <p>由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。<a href="https://github.com/fennel-ai/fann">所有代码都可以在此 Github 存储库</a>中找到。我们这里使用的方法基于流行库Spotify <a href="https://github.com/spotify/annoy">annoy</a>中使用的一系列称为“<a href="https://en.wikipedia.org/wiki/Locality-sensitive_hashing">局部敏感散列(Locality-sensitive_hashing)</a>”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。</p>
 <h2 id="向量简介又名嵌入embedding">向量简介（又名嵌入embedding）</h2>
 <p>文档、图像、视频等复杂的非结构化数据很难在传统数据库中表示和查询，特别是如果查询意图是查找“相似”项目。那么 Youtube 如何才能选择接下来播放的最佳视频呢？或者Spotify根据您当前的歌曲自定义音乐队列？</p>
 <p>2010 年代初人工智能的进步（从<a href="https://en.wikipedia.org/wiki/Word2vec">Word2Vec</a> 和 <a href="https://en.wikipedia.org/wiki/GloVe">GloVe</a> <a href="https://github.com/stanfordnlp/GloVe">stanfordnlp-GloVe</a> 开始）使我们能够构建这些对象的语义表示，其中它们被表示为笛卡尔空间中的点。假设一个视频映射到点 [0.1, -5.1, 7.55]，另一个视频映射到点 [5.3, -0.1, 2.7]。这些机器学习算法的神奇之处在于，这些表示的选择能够维护语义信息——两个视频越相似，它们的向量之间的距离就越小。</p>
@@ -920,6 +916,7 @@
 <li><a href="https://erikbern.com/2015/09/24/nearest-neighbor-methods-vector-models-part-1">https://erikbern.com/2015/09/24/nearest-neighbor-methods-vector-models-part-1</a></li>
 <li><a href="https://erikbern.com/2015/10/01/nearest-neighbors-and-vector-models-part-2-how-to-search-in-high-dimensional-spaces.html">https://erikbern.com/2015/10/01/nearest-neighbors-and-vector-models-part-2-how-to-search-in-high-dimensional-spaces.html</a></li>
 <li><a href="https://erikbern.com/2016/06/02/approximate-nearest-news">https://erikbern.com/2016/06/02/approximate-nearest-news</a></li>
+<li><a href="https://arxiv.org/pdf/2303.16780.pdf">arxiv paper - Thistle: A Vector Database in Rust</a></li>
 </ol>
     </div>
 
@@ -953,6 +950,7 @@
           <a href="https://weedge.github.io/tags/oneday/">oneday</a>
           <a href="https://weedge.github.io/tags/ann/">ANN</a>
           <a href="https://weedge.github.io/tags/lsh/">LSH</a>
+          <a href="https://weedge.github.io/tags/rust/">rust</a>
           
         </div>
 

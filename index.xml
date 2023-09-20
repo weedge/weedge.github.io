@@ -55,8 +55,7 @@
       
       <guid>https://weedge.github.io/post/oneday/vector-search-in-200-lines-of-rust/</guid>
       
-        <description>&lt;h1 id=&#34;fann200行rust实现的向量搜索&#34;&gt;FANN：200行Rust实现的向量搜索&lt;/h1&gt;
-&lt;p&gt;由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。&lt;a href=&#34;https://github.com/fennel-ai/fann&#34;&gt;所有代码都可以在此 Github 存储库&lt;/a&gt;中找到。我们这里使用的方法基于流行库Spotify &lt;a href=&#34;https://github.com/spotify/annoy&#34;&gt;annoy&lt;/a&gt;中使用的一系列称为“&lt;a href=&#34;https://en.wikipedia.org/wiki/Locality-sensitive_hashing&#34;&gt;局部敏感散列(Locality-sensitive_hashing)&lt;/a&gt;”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。&lt;/p&gt;
+        <description>&lt;p&gt;由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。&lt;a href=&#34;https://github.com/fennel-ai/fann&#34;&gt;所有代码都可以在此 Github 存储库&lt;/a&gt;中找到。我们这里使用的方法基于流行库Spotify &lt;a href=&#34;https://github.com/spotify/annoy&#34;&gt;annoy&lt;/a&gt;中使用的一系列称为“&lt;a href=&#34;https://en.wikipedia.org/wiki/Locality-sensitive_hashing&#34;&gt;局部敏感散列(Locality-sensitive_hashing)&lt;/a&gt;”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。&lt;/p&gt;
 &lt;h2 id=&#34;向量简介又名嵌入embedding&#34;&gt;向量简介（又名嵌入embedding）&lt;/h2&gt;
 &lt;p&gt;文档、图像、视频等复杂的非结构化数据很难在传统数据库中表示和查询，特别是如果查询意图是查找“相似”项目。那么 Youtube 如何才能选择接下来播放的最佳视频呢？或者Spotify根据您当前的歌曲自定义音乐队列？&lt;/p&gt;
 &lt;p&gt;2010 年代初人工智能的进步（从&lt;a href=&#34;https://en.wikipedia.org/wiki/Word2vec&#34;&gt;Word2Vec&lt;/a&gt; 和 &lt;a href=&#34;https://en.wikipedia.org/wiki/GloVe&#34;&gt;GloVe&lt;/a&gt; &lt;a href=&#34;https://github.com/stanfordnlp/GloVe&#34;&gt;stanfordnlp-GloVe&lt;/a&gt; 开始）使我们能够构建这些对象的语义表示，其中它们被表示为笛卡尔空间中的点。假设一个视频映射到点 [0.1, -5.1, 7.55]，另一个视频映射到点 [5.3, -0.1, 2.7]。这些机器学习算法的神奇之处在于，这些表示的选择能够维护语义信息——两个视频越相似，它们的向量之间的距离就越小。&lt;/p&gt;
@@ -634,6 +633,7 @@
 &lt;li&gt;&lt;a href=&#34;https://erikbern.com/2015/09/24/nearest-neighbor-methods-vector-models-part-1&#34;&gt;https://erikbern.com/2015/09/24/nearest-neighbor-methods-vector-models-part-1&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://erikbern.com/2015/10/01/nearest-neighbors-and-vector-models-part-2-how-to-search-in-high-dimensional-spaces.html&#34;&gt;https://erikbern.com/2015/10/01/nearest-neighbors-and-vector-models-part-2-how-to-search-in-high-dimensional-spaces.html&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://erikbern.com/2016/06/02/approximate-nearest-news&#34;&gt;https://erikbern.com/2016/06/02/approximate-nearest-news&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/pdf/2303.16780.pdf&#34;&gt;arxiv paper - Thistle: A Vector Database in Rust&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>
