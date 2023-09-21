@@ -528,7 +528,7 @@
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;对于整个 999,994 个单词的语料库，我们还可视化了 HNSW 和自定义 Rust 索引下每个单词到其顶部 K=20 个近似邻居的平均欧几里得距离的分布：&lt;/p&gt;
-&lt;!-- raw HTML omitted --&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/vector-search-in-200-lines-of-rust/3.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
 &lt;p&gt;最先进的 HNSW 指数确实提供了比我们的示例索引相对更近的邻居，平均距离和中位距离分别为 1.31576 和 1.20230（与我们的示例索引的 1.47138 和 1.35620 相比）。在随机的 10,000 大小的语料库子集上，HNSW 对前 K=20 的召回率为 58.2%，而我们的示例索引针对不同的配置（如前所述，树的数量较多）产生了不同的召回率（从 11.465% 到 23.115%）提供更高的召回率）：&lt;/p&gt;
 &lt;table&gt;
 &lt;thead&gt;
