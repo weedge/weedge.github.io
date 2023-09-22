@@ -616,7 +616,7 @@
 &lt;li&gt;我们还怀疑 Rust 编译器正在对内部操作（例如点积）进行向量化，但我们没有检查。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;更多现实世界的考虑&#34;&gt;更多现实世界的考虑&lt;/h2&gt;
-&lt;p&gt;此示例跳过了几个对于生产向量搜索至关重要的注意事项：(注：单实例优化 向量矩阵 SIMD + OpenMP； 分布式数据存储扩展 RPC + 分布式一致性协议)&lt;/p&gt;
+&lt;p&gt;此示例跳过了几个对于生产向量搜索至关重要的注意事项：(&lt;strong&gt;注&lt;/strong&gt;：单实例 cpu指令集优化 向量矩阵如axv2，SIMD + OpenMP； 分布式数据存储扩展 RPC + 分布式一致性协议)&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;当搜索涉及多棵树时进行并行化。我们可以并行化，而不是按顺序收集候选者，因为每棵树访问不同的内存 - 每棵树可以在单独的线程上运行，其中候选者通过消息沿着通道连续发送到主进程。线程可以在索引时生成，并通过虚拟搜索（使树的部分位于缓存中）进行预热，以减少搜索开销。搜索将不再随树的数量线性缩放。&lt;/li&gt;
 &lt;li&gt;大型树可能不适合 RAM，需要有效的方法从磁盘读取 - 某些子图可能需要位于磁盘上，并且算法旨在允许搜索，同时最大限度地减少文件 I/O。&lt;/li&gt;
@@ -625,7 +625,7 @@
 &lt;li&gt;当新数据被动态索引时（可能需要对大树进行重新分片），上述问题的解决方案也应该适用。如果特定的索引顺序导致树高度不平衡，是否应该重新创建树？&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;结论&#34;&gt;结论&lt;/h2&gt;
-&lt;p&gt;如果你到达这里，恭喜你！您刚刚看到了大约 200 行 Rust 中的简单向量搜索，以及我们对行星规模应用程序的向量搜索的漫谈。我们希望您喜欢阅读本文，并随时访问&lt;a href=&#34;https://github.com/fennel-ai/fann&#34;&gt;https://github.com/fennel-ai/fann&lt;/a&gt;的源代码。(&lt;strong&gt;注&lt;/strong&gt;：try add this lib to RedisXANN experiment feature with benchmark)&lt;/p&gt;
+&lt;p&gt;如果你到达这里，恭喜你！您刚刚看到了大约 200 行 Rust 中的简单向量搜索，以及我们对行星规模应用程序的向量搜索的漫谈。我们希望您喜欢阅读本文，并随时访问&lt;a href=&#34;https://github.com/fennel-ai/fann&#34;&gt;https://github.com/fennel-ai/fann&lt;/a&gt;的源代码。(&lt;strong&gt;注&lt;/strong&gt;：实验性质，运行下benchmark.sh 对比faiss hnsw了解下原理, faiss hnsw可以参数调优， LSH 可用于生产环境的库可参考&lt;a href=&#34;https://github.com/FALCONN-LIB/FALCONN&#34;&gt;FALCONN-LIB&lt;/a&gt;实现)&lt;/p&gt;
 &lt;h1 id=&#34;reference&#34;&gt;reference&lt;/h1&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Locality-sensitive_hashing&#34;&gt;https://en.wikipedia.org/wiki/Locality-sensitive_hashing&lt;/a&gt;&lt;/li&gt;
@@ -634,6 +634,7 @@
 &lt;li&gt;&lt;a href=&#34;https://erikbern.com/2015/10/01/nearest-neighbors-and-vector-models-part-2-how-to-search-in-high-dimensional-spaces.html&#34;&gt;https://erikbern.com/2015/10/01/nearest-neighbors-and-vector-models-part-2-how-to-search-in-high-dimensional-spaces.html&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://erikbern.com/2016/06/02/approximate-nearest-news&#34;&gt;https://erikbern.com/2016/06/02/approximate-nearest-news&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/pdf/2303.16780.pdf&#34;&gt;arxiv paper - Thistle: A Vector Database in Rust&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/pdf/2206.01382.pdf&#34;&gt;Falconn++: A Locality-sensitive Filtering Approach for Approximate Nearest Neighbor Search&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>
