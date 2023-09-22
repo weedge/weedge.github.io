@@ -964,6 +964,7 @@
 &lt;li&gt;&lt;a href=&#34;https://github.com/baidu/puck/blob/main/docs/README.md&#34;&gt;baidu-puck&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://blog.research.google/2020/07/announcing-scann-efficient-vector.html&#34;&gt;Announcing ScaNN: Efficient Vector Similarity Search&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.pinecone.io/learn/series/faiss/faiss-tutorial/&#34;&gt;faiss-tutorial&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Vector Search and Databases at Scale&lt;/strong&gt;. Highload++ Conference, Serbia. &lt;a href=&#34;https://highload.rs/2023/abstracts/9770&#34;&gt;Event&lt;/a&gt;. &lt;a href=&#34;https://drive.google.com/file/d/11M51Jw9UdEmzHDTGZmn4n3bxgTcQt3sw/view?usp=sharing&#34;&gt;Slides&lt;/a&gt; &lt;a href=&#34;https://www.youtube.com/watch?v=UMrhB3icP9w&amp;amp;t=65s&#34;&gt;YouTube&lt;/a&gt;.   &lt;a href=&#34;https://ashvardanian.com/talks/&#34;&gt;ash.vardanian&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h2 id=&#34;附相关向量数据库hnsw使用一般都会支持&#34;&gt;附：相关向量数据库HNSW使用(一般都会支持)&lt;/h2&gt;
 &lt;ol&gt;
