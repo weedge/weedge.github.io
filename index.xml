@@ -625,7 +625,7 @@
 &lt;li&gt;当新数据被动态索引时（可能需要对大树进行重新分片），上述问题的解决方案也应该适用。如果特定的索引顺序导致树高度不平衡，是否应该重新创建树？&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;结论&#34;&gt;结论&lt;/h2&gt;
-&lt;p&gt;如果你到达这里，恭喜你！您刚刚看到了大约 200 行 Rust 中的简单向量搜索，以及我们对行星规模应用程序的向量搜索的漫谈。我们希望您喜欢阅读本文，并随时访问&lt;a href=&#34;https://github.com/fennel-ai/fann&#34;&gt;https://github.com/fennel-ai/fann&lt;/a&gt;的源代码。(&lt;strong&gt;注&lt;/strong&gt;：实验性质，运行下benchmark.sh 对比faiss hnsw了解下原理, faiss hnsw可以参数调优， LSH 可用于生产环境的库可参考&lt;a href=&#34;https://github.com/FALCONN-LIB/FALCONN&#34;&gt;FALCONN-LIB&lt;/a&gt;实现)&lt;/p&gt;
+&lt;p&gt;如果你到达这里，恭喜你！您刚刚看到了大约 200 行 Rust 中的简单向量搜索，以及我们对行星规模应用程序的向量搜索的漫谈。我们希望您喜欢阅读本文，并随时访问&lt;a href=&#34;https://github.com/fennel-ai/fann&#34;&gt;https://github.com/fennel-ai/fann&lt;/a&gt;的源代码。(&lt;strong&gt;注&lt;/strong&gt;：实验性质，运行下benchmark.sh 对比faiss hnsw了解下原理, faiss hnsw可以参数调优， LSH 可用于生产环境的库可参考&lt;a href=&#34;https://github.com/FALCONN-LIB/FALCONN&#34;&gt;FALCONN-LIB&lt;/a&gt;实现, 对 K，L,  T 调优，参考&lt;a href=&#34;https://github.com/FALCONN-LIB/FALCONN/wiki/LSH-Primer&#34;&gt;Locality-Sensitive Hashing: a Primer&lt;/a&gt;)&lt;/p&gt;
 &lt;h1 id=&#34;reference&#34;&gt;reference&lt;/h1&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Locality-sensitive_hashing&#34;&gt;https://en.wikipedia.org/wiki/Locality-sensitive_hashing&lt;/a&gt;&lt;/li&gt;
@@ -633,7 +633,9 @@
 &lt;li&gt;&lt;a href=&#34;https://erikbern.com/2015/09/24/nearest-neighbor-methods-vector-models-part-1&#34;&gt;https://erikbern.com/2015/09/24/nearest-neighbor-methods-vector-models-part-1&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://erikbern.com/2015/10/01/nearest-neighbors-and-vector-models-part-2-how-to-search-in-high-dimensional-spaces.html&#34;&gt;https://erikbern.com/2015/10/01/nearest-neighbors-and-vector-models-part-2-how-to-search-in-high-dimensional-spaces.html&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://erikbern.com/2016/06/02/approximate-nearest-news&#34;&gt;https://erikbern.com/2016/06/02/approximate-nearest-news&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.ritchievink.com/blog/2020/04/07/sparse-neural-networks-and-hash-tables-with-locality-sensitive-hashing/&#34;&gt;https://www.ritchievink.com/blog/2020/04/07/sparse-neural-networks-and-hash-tables-with-locality-sensitive-hashing/&lt;/a&gt; &lt;a href=&#34;https://github.com/ritchie46/lsh-rs&#34;&gt;lsh-rs&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/pdf/2303.16780.pdf&#34;&gt;arxiv paper - Thistle: A Vector Database in Rust&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/FALCONN-LIB/FALCONN/wiki/LSH-Primer&#34;&gt;https://github.com/FALCONN-LIB/FALCONN/wiki/LSH-Primer&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/pdf/2206.01382.pdf&#34;&gt;Falconn++: A Locality-sensitive Filtering Approach for Approximate Nearest Neighbor Search&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
@@ -957,6 +959,7 @@
 &lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/rXXm6c8LrTqqP4iWf9mtxA&#34;&gt;为什么微信推荐这么快？&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/1a2bl983bGKM713xI_3v_A&#34;&gt;小红书高时效推荐系统背后的技术升级&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/1ed9BDZKzjQIgDScyxpbHw&#34;&gt;快手搜索在向量检索方向的探索和实践&lt;/a&gt; &lt;a href=&#34;https://yongyuan.name/blog/vector-ann-search.html&#34;&gt;向量索引&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://damo.alibaba.com/events/112?lang=zh&#34;&gt;达摩院自研向量检索引擎 Proxima&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/baidu/puck/blob/main/docs/README.md&#34;&gt;baidu-puck&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://blog.research.google/2020/07/announcing-scann-efficient-vector.html&#34;&gt;Announcing ScaNN: Efficient Vector Similarity Search&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.pinecone.io/learn/series/faiss/faiss-tutorial/&#34;&gt;faiss-tutorial&lt;/a&gt;&lt;/li&gt;

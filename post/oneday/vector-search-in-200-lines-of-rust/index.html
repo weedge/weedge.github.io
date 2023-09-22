@@ -72,7 +72,7 @@
 <meta itemprop="name" content="译：FANN：200行Rust实现的向量搜索">
 <meta itemprop="description" content="由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。所有代码都可以在此 Github 存储库中找到。我们这里使用的方法基于流行库Spotify annoy中使用的一系列称为“局部敏感散列(Locality-sensitive_hashing)”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。"><meta itemprop="datePublished" content="2023-09-20T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-09-20T10:26:23+08:00" />
-<meta itemprop="wordCount" content="7275">
+<meta itemprop="wordCount" content="7310">
 <meta itemprop="keywords" content="oneday,ANN,LSH,rust," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：FANN：200行Rust实现的向量搜索"/>
 <meta name="twitter:description" content="由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。所有代码都可以在此 Github 存储库中找到。我们这里使用的方法基于流行库Spotify annoy中使用的一系列称为“局部敏感散列(Locality-sensitive_hashing)”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。"/>
@@ -908,7 +908,7 @@
 <li>当新数据被动态索引时（可能需要对大树进行重新分片），上述问题的解决方案也应该适用。如果特定的索引顺序导致树高度不平衡，是否应该重新创建树？</li>
 </ul>
 <h2 id="结论">结论</h2>
-<p>如果你到达这里，恭喜你！您刚刚看到了大约 200 行 Rust 中的简单向量搜索，以及我们对行星规模应用程序的向量搜索的漫谈。我们希望您喜欢阅读本文，并随时访问<a href="https://github.com/fennel-ai/fann">https://github.com/fennel-ai/fann</a>的源代码。(<strong>注</strong>：实验性质，运行下benchmark.sh 对比faiss hnsw了解下原理, faiss hnsw可以参数调优， LSH 可用于生产环境的库可参考<a href="https://github.com/FALCONN-LIB/FALCONN">FALCONN-LIB</a>实现)</p>
+<p>如果你到达这里，恭喜你！您刚刚看到了大约 200 行 Rust 中的简单向量搜索，以及我们对行星规模应用程序的向量搜索的漫谈。我们希望您喜欢阅读本文，并随时访问<a href="https://github.com/fennel-ai/fann">https://github.com/fennel-ai/fann</a>的源代码。(<strong>注</strong>：实验性质，运行下benchmark.sh 对比faiss hnsw了解下原理, faiss hnsw可以参数调优， LSH 可用于生产环境的库可参考<a href="https://github.com/FALCONN-LIB/FALCONN">FALCONN-LIB</a>实现, 对 K，L,  T 调优，参考<a href="https://github.com/FALCONN-LIB/FALCONN/wiki/LSH-Primer">Locality-Sensitive Hashing: a Primer</a>)</p>
 <h1 id="reference">reference</h1>
 <ol>
 <li><a href="https://en.wikipedia.org/wiki/Locality-sensitive_hashing">https://en.wikipedia.org/wiki/Locality-sensitive_hashing</a></li>
@@ -916,7 +916,9 @@
 <li><a href="https://erikbern.com/2015/09/24/nearest-neighbor-methods-vector-models-part-1">https://erikbern.com/2015/09/24/nearest-neighbor-methods-vector-models-part-1</a></li>
 <li><a href="https://erikbern.com/2015/10/01/nearest-neighbors-and-vector-models-part-2-how-to-search-in-high-dimensional-spaces.html">https://erikbern.com/2015/10/01/nearest-neighbors-and-vector-models-part-2-how-to-search-in-high-dimensional-spaces.html</a></li>
 <li><a href="https://erikbern.com/2016/06/02/approximate-nearest-news">https://erikbern.com/2016/06/02/approximate-nearest-news</a></li>
+<li><a href="https://www.ritchievink.com/blog/2020/04/07/sparse-neural-networks-and-hash-tables-with-locality-sensitive-hashing/">https://www.ritchievink.com/blog/2020/04/07/sparse-neural-networks-and-hash-tables-with-locality-sensitive-hashing/</a> <a href="https://github.com/ritchie46/lsh-rs">lsh-rs</a></li>
 <li><a href="https://arxiv.org/pdf/2303.16780.pdf">arxiv paper - Thistle: A Vector Database in Rust</a></li>
+<li><a href="https://github.com/FALCONN-LIB/FALCONN/wiki/LSH-Primer">https://github.com/FALCONN-LIB/FALCONN/wiki/LSH-Primer</a></li>
 <li><a href="https://arxiv.org/pdf/2206.01382.pdf">Falconn++: A Locality-sensitive Filtering Approach for Approximate Nearest Neighbor Search</a></li>
 </ol>
     </div>
