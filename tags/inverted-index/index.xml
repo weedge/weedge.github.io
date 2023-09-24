@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>inverted index on 时间飘过</title>
+    <link>https://weedge.github.io/tags/inverted-index/</link>
+    <description>Recent content in inverted index on 时间飘过</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sun, 24 Sep 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/inverted-index/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>译：相似性搜索，第 1 部分：kNN 和倒排文件索引</title>
+      <link>https://weedge.github.io/post/oneday/similarity-search/knn-inverted-file-index/</link>
+      <pubDate>Sun, 24 Sep 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/oneday/similarity-search/knn-inverted-file-index/</guid>
+      <description>&lt;p&gt;&lt;strong&gt;相似性搜索&lt;/strong&gt;(similarity-search)是给定一个查询，目标是在所有数据库文档中找到与其最相似的文档。本章介绍 kNN 的相似性搜索及其使用倒排文件的加速。&lt;/p&gt;
+&lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
+&lt;p&gt;在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。通常，文档或项目以文本或图像的形式表示。然而，机器学习算法不能直接处理原始文本或图像，这就是为什么文档和项目通常被预处理并存储为数字向量的原因。&lt;/p&gt;
+&lt;p&gt;有时向量的每个分量都可以存储语义。在这种情况下，这些表示也称为&lt;strong&gt;嵌入&lt;/strong&gt;。这样的嵌入可以有数百个维度，数量可以达到数百万个！由于数量如此庞大，任何信息检索系统都必须能够快速检测相关文档。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;在机器学习中，向量也称为&lt;strong&gt;对象&lt;/strong&gt;或&lt;strong&gt;点&lt;/strong&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

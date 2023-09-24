@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 20 Sep 2023 10:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 24 Sep 2023 10:26:23 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -45,6 +45,145 @@
 &lt;li&gt;&amp;ldquo;&lt;strong&gt;万物之始，大道至简，衍化至繁&lt;/strong&gt;&amp;rdquo; &amp;ndash; 老子《&lt;a href=&#34;https://baike.baidu.com/item/%E9%81%93%E5%BE%B7%E7%BB%8F/327138&#34;&gt;道德经&lt;/a&gt;》&lt;/li&gt;
 &lt;/ol&gt;
 </description>
+      
+    </item>
+    
+    <item>
+      <title>译：相似性搜索，第 1 部分：kNN 和倒排文件索引</title>
+      <link>https://weedge.github.io/post/oneday/similarity-search/knn-inverted-file-index/</link>
+      <pubDate>Sun, 24 Sep 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/oneday/similarity-search/knn-inverted-file-index/</guid>
+      
+        <description>&lt;p&gt;&lt;strong&gt;相似性搜索&lt;/strong&gt;(similarity-search)是给定一个查询，目标是在所有数据库文档中找到与其最相似的文档。本章介绍 kNN 的相似性搜索及其使用倒排文件的加速。&lt;/p&gt;
+&lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
+&lt;p&gt;在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。通常，文档或项目以文本或图像的形式表示。然而，机器学习算法不能直接处理原始文本或图像，这就是为什么文档和项目通常被预处理并存储为数字向量的原因。&lt;/p&gt;
+&lt;p&gt;有时向量的每个分量都可以存储语义。在这种情况下，这些表示也称为&lt;strong&gt;嵌入&lt;/strong&gt;。这样的嵌入可以有数百个维度，数量可以达到数百万个！由于数量如此庞大，任何信息检索系统都必须能够快速检测相关文档。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;在机器学习中，向量也称为&lt;strong&gt;对象&lt;/strong&gt;或&lt;strong&gt;点&lt;/strong&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;指数&#34;&gt;指数&lt;/h1&gt;
+&lt;p&gt;为了加速搜索性能，在数据集嵌入之上构建了特殊的数据结构。这样的数据结构称为&lt;strong&gt;索引&lt;/strong&gt;。该领域已经进行了大量的研究，并演化出了多种类型的指标。在选择索引来应用特定任务之前，有必要了解它的幕后运作方式，因为每个索引都有不同的目的，并且都有自己的优点和缺点。&lt;/p&gt;
+&lt;p&gt;在本文中，我们将看看最简单的方法:&lt;strong&gt;kNN&lt;/strong&gt;。基于 kNN，我们将切换到&lt;strong&gt;倒排文件&lt;/strong&gt;:一种用于更具可扩展性的搜索的索引，可以将搜索过程加速数倍。&lt;/p&gt;
+&lt;h1 id=&#34;knn&#34;&gt;kNN&lt;/h1&gt;
+&lt;p&gt;&lt;strong&gt;kNN&lt;/strong&gt;是最简单、最朴素的相似性搜索算法。考虑向量数据集和新的查询向量&lt;em&gt;Q&lt;/em&gt;。我们希望找到与&lt;em&gt;Q&lt;/em&gt;最相似的前&lt;em&gt;k 个&lt;/em&gt;数据集向量。首先要考虑的方面是如何测量两个向量之间的相似性（距离）。事实上，有几个相似性指标可以做到这一点。其中一些如下图所示。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/knn-inverted-file-index/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;相似度指标&lt;/em&gt;&lt;/p&gt;
+&lt;h2 id=&#34;训练&#34;&gt;训练&lt;/h2&gt;
+&lt;p&gt;kNN 是机器学习中少数不需要训练阶段的算法之一。选择合适的指标后，我们可以直接进行预测。&lt;/p&gt;
+&lt;h2 id=&#34;推理&#34;&gt;推理&lt;/h2&gt;
+&lt;p&gt;对于一个新对象，该算法会详尽地计算到所有其他对象的距离。之后，它找到距离最小的&lt;em&gt;k&lt;/em&gt;个对象并将它们作为响应返回。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/knn-inverted-file-index/2.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;kNN工作流程&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;显然，通过检查到所有数据集向量的距离，kNN 保证了 100% 准确的结果。然而，这种蛮力方法在时间性能方面非常低效。如果数据集由&lt;em&gt;m&lt;/em&gt;个维度的&lt;em&gt;n&lt;/em&gt;个向量组成，则对于每个&lt;em&gt;n&lt;/em&gt;个向量，需要&lt;em&gt;O(m)&lt;em&gt;时间来计算从查询&lt;/em&gt;Q&lt;/em&gt;到它的距离，这导致总时间复杂度为&lt;em&gt;O(mn)&lt;/em&gt;。正如我们稍后将看到的，存在更有效的方法。&lt;/p&gt;
+&lt;p&gt;而且，原始向量没有压缩机制。想象一个包含数十亿个对象的数据集。将它们全部存储在 RAM 中是不可能的！&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/knn-inverted-file-index/3.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;kNN 性能。具有 100% 的准确度且无需训练阶段，可在向量的推理和无内存压缩期间进行详尽的搜索。注：此类图显示了不同算法的相对比较。根据情况和选择的超参数，性能可能会有所不同。&lt;/p&gt;
+&lt;h2 id=&#34;应用&#34;&gt;应用&lt;/h2&gt;
+&lt;p&gt;kNN 的应用范围有限，仅应在以下场景之一使用：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;数据集大小或嵌入维数相对较小。这方面确保了算法仍然能够快速执行。&lt;/li&gt;
+&lt;li&gt;算法要求的准确度必须是100%。在准确性方面，没有其他最近邻算法可以超越 kNN。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;根据指纹检测人员就是需要 100% 准确度的问题的一个例子。如果此人犯罪并留下了指纹，则仅检索正确的结果至关重要。否则，如果系统不是 100% 可靠，那么另一个人可能会被判有罪，这是一个非常严重的错误。&lt;/p&gt;
+&lt;p&gt;基本上，改进 kNN 的方法主要有两种（我们稍后会讨论）：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;缩小搜索范围。&lt;/li&gt;
+&lt;li&gt;降低向量的维数。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;当使用这两种方法之一时，我们将不会再次执行详尽的搜索。此类算法称为**近似最近邻 (ANN)，**因为它们不能保证 100% 准确的结果。&lt;/p&gt;
+&lt;h1 id=&#34;倒排文件索引&#34;&gt;倒排文件索引&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;“倒排索引&lt;/strong&gt;（也称为&lt;strong&gt;倒排列表&lt;/strong&gt;postings list/file、&lt;strong&gt;倒排文件&lt;/strong&gt;inverted file）是一种数据库索引，存储从内容（例如单词或数字）到其在表、文档或一组数据中的位置的映射”——维基百科&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;执行查询时，会计算查询的哈希函数并从哈希表中获取映射值。这些映射值中的每一个都包含其自己的一组潜在候选值，然后根据条件对其进行全面检查，使其成为查询的最近邻居。通过这样做，缩小了所有数据库向量的搜索范围。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/knn-inverted-file-index/4.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;倒排文件索引工作流程&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;根据哈希函数的计算方式，该索引有不同的实现方式。我们将要看到的实现是使用&lt;strong&gt;Voronoi 图&lt;/strong&gt;（或&lt;strong&gt;Dirichlet tessellation&lt;/strong&gt;）的实现。&lt;/p&gt;
+&lt;h2 id=&#34;训练-1&#34;&gt;训练&lt;/h2&gt;
+&lt;p&gt;该算法的思想是创建每个数据集点所属的几个不相交的区域。每个区域都有自己的质心，指向该区域的中心。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;有时&lt;strong&gt;Voronoi 区域&lt;/strong&gt;被称为&lt;strong&gt;单元&lt;/strong&gt;或&lt;strong&gt;分区&lt;/strong&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/knn-inverted-file-index/5.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Voronoi 图的示例。白点是包含一组候选的各个分区的中心。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Voronoi 图的主要属性是从一个质心到其区域内任意点的距离小于从该点到另一个质心的距离。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;推理-1&#34;&gt;推理&lt;/h2&gt;
+&lt;p&gt;当给定一个新对象时，将计算到所有 Voronoi 分区质心的距离。然后选择距离最小的质心，并将该分区中包含的向量作为候选向量。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/knn-inverted-file-index/6.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;通过给定的查询，我们搜索最近的质心（位于绿色区域）&lt;/p&gt;
+&lt;p&gt;最终，通过计算到候选者的距离并选择其中最接近的前&lt;em&gt;k&lt;/em&gt;个，返回最终答案。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/knn-inverted-file-index/7.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;查找所选区域中的最近邻居&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;正如您所看到的，这种方法比前一种方法快得多，因为我们不必查看所有数据集向量。&lt;/p&gt;
+&lt;h2 id=&#34;边缘问题&#34;&gt;边缘问题&lt;/h2&gt;
+&lt;p&gt;随着搜索速度的提高，倒排文件也有一个缺点：它不能保证找到的对象始终是最近的。&lt;/p&gt;
+&lt;p&gt;在下图中，我们可以看到这样的场景：实际的最近邻居位于红色区域，但我们仅从绿色区域中选择候选者。这种情况称为&lt;strong&gt;边缘问题&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/knn-inverted-file-index/8.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;边缘问题&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;当查询的对象位于与另一个区域的边界附近时，通常会发生这种情况。为了减少这种情况下的错误数量，我们可以扩大搜索范围，并根据与对象最接近的前&lt;em&gt;m个质心选择几个区域来搜索候选区域。&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/knn-inverted-file-index/9.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;搜索多个区域内的最近邻居 (m = 3)&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;探索的区域越多，结果就越准确，计算结果所需的时间也就越多。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;注：这个类似geohash搜索中的边缘问题&lt;/p&gt;
+&lt;h2 id=&#34;应用-1&#34;&gt;应用&lt;/h2&gt;
+&lt;p&gt;尽管存在边缘问题，基于训练的倒排文件在实践中仍显示出不错的结果。当我们想要以稍微降低精度来实现速度数倍增长的情况下，它是完美的选择。&lt;/p&gt;
+&lt;p&gt;用例示例之一是基于内容的推荐系统。想象一下，它根据用户过去看过的其他电影向他推荐一部电影。该数据库包含一百万部电影可供选择。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;通过使用 kNN，系统确实为用户选择了最相关的电影并推荐。然而，执行查询所需的时间非常长。&lt;/li&gt;
+&lt;li&gt;让我们假设通过倒排文件索引，系统推荐第五个最相关的电影，这可能是现实生活中的情况。搜索时间比 kNN 快 20 倍。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;从用户体验来看，很难区分这两个推荐的质量结果：第一个和第五个最相关的结果都是来自一百万个可能的电影的良好推荐。用户可能会对这些建议中的任何一个感到满意。从时间角度来看，倒排文件显然是赢家。这就是为什么在这种情况下最好使用后一种方法。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/knn-inverted-file-index/10.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;倒排文件索引性能。这里我们稍微降低精度以在推理过程中获得更高的速度。&lt;/p&gt;
+&lt;h1 id=&#34;faiss实现&#34;&gt;FAISS实现&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss&#34;&gt;&lt;strong&gt;Faiss&lt;/strong&gt;&lt;/a&gt;（Facebook AI Search Comparison）是一个用 C++ 编写, binding Python使用的faiss库, 提供c api 库方便FFI交互，用于优化相似性搜索。该库提供了不同类型的索引，这些索引是用于有效存储数据和执行查询的数据结构。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;a href=&#34;https://faiss.ai/&#34;&gt;根据Faiss 文档&lt;/a&gt;中的信息，我们将了解索引是如何创建和参数化的。&lt;/p&gt;
+&lt;h2 id=&#34;knn-1&#34;&gt;kNN&lt;/h2&gt;
+&lt;p&gt;实现 kNN 方法的索引在 Faiss 中被称为&lt;strong&gt;扁平索引(flat index)&lt;/strong&gt;，因为它们不压缩任何信息。它们是保证正确搜索结果的唯一索引。实际上Faiss中存在两种类型的扁平索引：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;em&gt;IndexFlatL2&lt;/em&gt;。相似度计算为欧几里得距离。&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;IndexFlatIP&lt;/em&gt;。相似度计算为内积。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这两个索引在其构造函数中都需要一个参数&lt;strong&gt;d&lt;/strong&gt;：数据维度。这些索引没有任何可调参数。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/knn-inverted-file-index/11.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;IndexFlatL2 和 IndexFlatIP 的 Faiss 实现&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;存储向量的单个分量需要 4 个字节。因此，要存储维度为 d 的&lt;strong&gt;单个向量&lt;/strong&gt;，需要&lt;em&gt;4 * d字节。&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/knn-inverted-file-index/12.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;倒排文件索引-1&#34;&gt;倒排文件索引&lt;/h2&gt;
+&lt;p&gt;对于所描述的倒排文件，Faiss 实现了类&lt;em&gt;IndexIVFFlat&lt;/em&gt;。与 kNN 的情况一样，“ &lt;em&gt;Flat&lt;/em&gt; ”一词表示原始向量没有解压缩并且它们被完全存储。&lt;/p&gt;
+&lt;p&gt;要创建此索引，我们首先需要传递一个量化器 - 一个将确定如何存储和比较数据库向量的对象。&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;IndexIVFFlat&lt;/em&gt;有2个重要参数：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;nlist&lt;/strong&gt;：定义在训练期间创建的多个区域（Voronoi 单元）。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;nprobe&lt;/strong&gt;：确定要搜索候选区域的区域数。更改 nprobe 参数不需要重新训练。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/knn-inverted-file-index/13.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;IndexIVFFlat 的 Faiss 实现&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;与前面的情况一样，我们需要&lt;em&gt;4 * d&lt;/em&gt;字节来存储单个向量。但现在我们还必须存储数据集向量所属的 Voronoi 区域的信息。在 Faiss 实现中，此信息每个向量占用 8 个字节(可调整)。因此，存储&lt;strong&gt;单个向量&lt;/strong&gt;所需的内存为：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/knn-inverted-file-index/14.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;h1 id=&#34;结论&#34;&gt;结论&lt;/h1&gt;
+&lt;p&gt;我们已经了解了相似性搜索中的两种基本算法。实际上，朴素 kNN 几乎不应该用于机器学习应用，因为除了特定情况外，它的可扩展性很差。另一方面，倒排文件为加速搜索提供了良好的启发式方法，其质量可以通过调整其超参数来提高。搜索性能仍然可以从不同的角度来提高。在本系列文章的下一部分中，我们将了解一种旨在压缩数据集向量的方法。&lt;/p&gt;
+&lt;h1 id=&#34;reference&#34;&gt;Reference&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Inverted_index&#34;&gt;Inverted Index | Wikipedia&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Voronoi_diagram&#34;&gt;Voronoi diagram | Wikipedia&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://faiss.ai/&#34;&gt;Faiss documentation&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss&#34;&gt;Faiss repository&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss/wiki/Faiss-indexes&#34;&gt;Summary of Faiss indexes&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss/wiki/Guidelines-to-choose-an-index&#34;&gt;Guideline for choosing an index&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.pinecone.io/learn/series/faiss/faiss-tutorial/&#34;&gt;faiss-tutorial&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://aws.amazon.com/cn/what-is/hyperparameter-tuning/&#34;&gt;https://aws.amazon.com/cn/what-is/hyperparameter-tuning/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;注：&lt;em&gt;除非另有说明，所有图片均由原作者提供。&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;原文： &lt;a href=&#34;https://medium.com/towards-data-science/similarity-search-knn-inverted-file-index-7cab80cc0e79&#34;&gt;https://medium.com/towards-data-science/similarity-search-knn-inverted-file-index-7cab80cc0e79&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;附操作笔记&lt;/strong&gt;: &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_tutorial.ipynb&#34;&gt;faiss_tutorial.ipynb&lt;/a&gt; &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_vector_indexes.ipynb&#34;&gt;faiss_vector_indexes.ipynb&lt;/a&gt;&lt;/p&gt;</description>
       
     </item>
     
@@ -963,7 +1102,7 @@
 &lt;li&gt;&lt;a href=&#34;https://damo.alibaba.com/events/112?lang=zh&#34;&gt;达摩院自研向量检索引擎 Proxima&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/baidu/puck/blob/main/docs/README.md&#34;&gt;baidu-puck&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://blog.research.google/2020/07/announcing-scann-efficient-vector.html&#34;&gt;Announcing ScaNN: Efficient Vector Similarity Search&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.pinecone.io/learn/series/faiss/faiss-tutorial/&#34;&gt;faiss-tutorial&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.pinecone.io/learn/series/faiss/&#34;&gt;Faiss: The Missing Manual&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;Vector Search and Databases at Scale&lt;/strong&gt;. Highload++ Conference, Serbia. &lt;a href=&#34;https://highload.rs/2023/abstracts/9770&#34;&gt;Event&lt;/a&gt;. &lt;a href=&#34;https://drive.google.com/file/d/11M51Jw9UdEmzHDTGZmn4n3bxgTcQt3sw/view?usp=sharing&#34;&gt;Slides&lt;/a&gt; &lt;a href=&#34;https://www.youtube.com/watch?v=UMrhB3icP9w&amp;amp;t=65s&#34;&gt;YouTube&lt;/a&gt;.   &lt;a href=&#34;https://ashvardanian.com/talks/&#34;&gt;ash.vardanian&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h2 id=&#34;附相关向量数据库hnsw使用一般都会支持&#34;&gt;附：相关向量数据库HNSW使用(一般都会支持)&lt;/h2&gt;
@@ -4191,97 +4330,6 @@ pxd tryout
 &lt;li&gt;
 &lt;p&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/n4eVf2KZRIp2yKACk88qJA&#34;&gt;https://mp.weixin.qq.com/s/n4eVf2KZRIp2yKACk88qJA&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ol&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>让ML跑起来</title>
-      <link>https://weedge.github.io/post/let-ml-go/</link>
-      <pubDate>Tue, 08 Nov 2022 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/let-ml-go/</guid>
-      
-        <description>&lt;h3 id=&#34;介绍&#34;&gt;介绍&lt;/h3&gt;
-&lt;p&gt;上文提到通过用户的行为数据存放在S3中，这些数据包括结构化和非结构化数据，怎么让这些数据变得有价值呢？一种是人为进行数据挖掘，对相关指标转化率进行评估；还有一种是通过这些数据来训练模型，然后将预测模型用于生产环境中进行A/B测试，选出适合的模型，这个模型需要不断更新迭代，并且自动化半自动化运行起来；&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://docs.aws.amazon.com/zh_cn/sagemaker/latest/dg/images/ml-concepts-10.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;h3 id=&#34;数据准备&#34;&gt;数据准备&lt;/h3&gt;
-&lt;h4 id=&#34;特征工程&#34;&gt;特征工程&lt;/h4&gt;
-&lt;h3 id=&#34;模型训练&#34;&gt;模型训练&lt;/h3&gt;
-&lt;p&gt;相关库：&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://xgboost.ai/&#34;&gt;XGBoost&lt;/a&gt;,  &lt;a href=&#34;https://en.wikipedia.org/wiki/Gradient_boosting&#34;&gt;Gradient Boosting&lt;/a&gt;框架下实现机器学习算法。XGBoost 提供了一种并行树提升（也称为 &lt;a href=&#34;https://developers.google.com/machine-learning/decision-forests/intro-to-gbdt&#34;&gt;GBDT&lt;/a&gt;、GBM），可以快速准确地解决许多数据科学问题。支持在多台机器上进行分布式训练，包括 AWS、GCE、Azure 和 Yarn 集群；可与 Flink、Spark 等云数据流系统集成。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;如果说把机器学习问题分成，常规机器学习（conventional machine learning）和深度学习（deep learning）的话，那么XGBoost就是在常规ML竞赛获奖最多的算法。&lt;a href=&#34;https://github.com/dmlc/xgboost&#34;&gt;XGBoost&lt;/a&gt; 的全称是 Extreme Gradient Boosting，是gradient boosting的一种开源实现。gradient boosting 把若干弱模型通过决策树的方式聚合（ensemble）在一起， 形成一个最终的模型，这个过程是一个持续的、不断迭代优化过程，每次迭代优化的方向通过计算loss function的梯度来实现，然后采取梯度下降的方式不断的降低loss function，从而得到一个最终的模型。&lt;/p&gt;
-&lt;p&gt;XGBoost最常用来解决常规ML中的分类（regression）和回归（classification）问题。回归问题，举例来说：根据一个人的年龄、职业、居住环境等个人信息推算出这个人的收入，这种推理的结果是一个连续的值（收入）的情况就是一个回归问题；分类问题，比如在欺诈检测中，根据有关交易的信息，来判断交易是不是欺诈，这里的判断是或者否就是一个二分类问题。通常这两类问题都是给出一个表格类型数据，表格中的每列数据都是跟推理的目标（属于某个分类或者推理值）有着潜在关系的数据，XGBoost特别擅长处理这类的表格数据（tabular data），并据此作出推断。对于表格数据，无非由行、列来组成，在ML中对于表格数据中的行和列，我们有很多约定俗称的称谓，在各种关于ML的文章中这些称谓会经常出现，为了便于大家理解，在这里对这些叫法做一个梳理：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;行（row），叫做一个观察（observation），或者一个样本（sample）&lt;/li&gt;
-&lt;li&gt;列（column） ，也叫字段（field），属性（attribute），或者特征（feature）&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;&lt;a href=&#34;https://keras.io/zh/&#34;&gt;keras&lt;/a&gt;: 深度学习模型库，高级神经网络,同时支持卷积神经网络和循环神经网络，以及两者的组合。&lt;/p&gt;
-&lt;h3 id=&#34;模型评估&#34;&gt;模型评估&lt;/h3&gt;
-&lt;h3 id=&#34;模型部署&#34;&gt;模型部署&lt;/h3&gt;
-&lt;p&gt;如果使用&lt;a href=&#34;https://www.tensorflow.org/&#34;&gt;TF&lt;/a&gt;(tensorflow)框架, 使用TF &lt;a href=&#34;https://github.com/tensorflow/serving&#34;&gt;serving&lt;/a&gt;来支持加载训练好的模型发布到生产环境，并且可以进行A/B测试；&lt;/p&gt;
-&lt;p&gt;操作demo参考：https://www.tensorflow.org/tfx/tutorials/serving/rest_simple&lt;/p&gt;
-&lt;h3 id=&#34;用于生产环境需要考虑的问题&#34;&gt;用于生产环境需要考虑的问题&lt;/h3&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;训练模型的数据来源，以及采集存放(格式和压缩)；这些数据根据使用场景而定，比如demo中的电商场景，识别物品，需要大量的非结构化图片数据，这些用户上传的原始图片和加工后的图片存放于对象存储中比如S3，OSS，COS；&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;特征数据清洗过滤存放；&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;数据如何快速训练；数据量一般很大，PB级别，单机肯定是加载不了这么多数据训练，即使分割成多个小文件，单机处理需要大量中间结果存放，处理效率非常低；所以模型训练需要考虑集群模式，进行&lt;a href=&#34;https://openmlsys.github.io/chapter_distributed_training/index.html&#34;&gt;分布式训练模型&lt;/a&gt;，需要一个训练平台来支持，充分调度计算资源(CPU,GPU,TPU,FPGA)，并行计算，并且根据数据量进行可伸缩扩展，保证训练中途中断的可用性(failover,checkpoint)；&lt;/p&gt;
-&lt;p&gt;开源框架：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;uber &lt;a href=&#34;https://github.com/horovod/horovod&#34;&gt;https://github.com/horovod/horovod&lt;/a&gt;  &lt;a href=&#34;https://arxiv.org/pdf/1802.05799.pdf&#34;&gt;Horovod: fast and easy distributed deep learning in TensorFlow&lt;/a&gt; 大部分云平台基于horovod做了定制化的改造&lt;/li&gt;
-&lt;li&gt;Bytedance: &lt;a href=&#34;https://github.com/bytedance/byteps&#34;&gt;https://github.com/bytedance/byteps&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;将训练好的模型导出序列化pb格式，存放到文件系统中(&lt;a href=&#34;https://www.tensorflow.org/guide/saved_model#save_and_restore_models&#34;&gt;SavedModel&lt;/a&gt;)；然后TF serving启动服务加载模型，对外以 HTTP &lt;a href=&#34;https://github.com/tensorflow/serving/blob/master/tensorflow_serving/g3doc/api_rest.md&#34;&gt;REST API&lt;/a&gt;或 &lt;a href=&#34;https://github.com/tensorflow/serving/tree/master/tensorflow_serving/apis&#34;&gt;gRPC API&lt;/a&gt;的方式提供模型服务；正式用于线上，需要考虑服务性能问题(高并发场景，延迟和吞吐量，模型&lt;a href=&#34;https://github.com/tensorflow/serving/blob/master/tensorflow_serving/g3doc/saved_model_warmup.md&#34;&gt;预热&lt;/a&gt;(warmup)，&lt;a href=&#34;https://github.com/tensorflow/serving/blob/master/tensorflow_serving/batching/README.md&#34;&gt;批处理&lt;/a&gt;(batching)等&lt;a href=&#34;https://github.com/tensorflow/serving/blob/master/tensorflow_serving/g3doc/performance.md&#34;&gt;性能&lt;/a&gt;优化点)，生产环境模型更新(构建，无损服务切换，流量A/B测试)，容器化部署(&lt;a href=&#34;https://github.com/tensorflow/serving/blob/master/tensorflow_serving/g3doc/serving_kubernetes.md&#34;&gt;serving on K8S&lt;/a&gt;)(扩缩容，流控，容错等高可用设计)，服务监控等工程上的问题；本地demo可参考: &lt;a href=&#34;https://github.com/tensorflow/serving/blob/master/tensorflow_serving/g3doc/serving_basic.md&#34;&gt;Serving a TensorFlow Model&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;监控模型数据，如何对其进行评估；&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;模型迭代更新速度快，需要引入CI/CD pipelines 来自动化支持模型闭环迭代；&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;计算资源机器成本预估；&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h3 id=&#34;开源方案&#34;&gt;开源方案&lt;/h3&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.kubeflow.org/docs/started/introduction/&#34;&gt;Kubeflow&lt;/a&gt; 在 Kubernetes 上部署机器学习 (ML) 工作流变得简单、可移植和可扩展。提供一种直接的方式来将用于 ML 的同类最佳开源系统部署到不同的基础设施；在任何运行 Kubernetes 的地方，都应该能够运行 Kubeflow。&lt;/p&gt;
-&lt;h3 id=&#34;tfx-with-kubeflow-on-gke&#34;&gt;TFX with kubeflow on GKE&lt;/h3&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/tensorflow/tfx&#34;&gt;https://github.com/tensorflow/tfx&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;文档：&lt;a href=&#34;https://www.tensorflow.org/tfx/tutorials&#34;&gt;TFX tutorials&lt;/a&gt;&lt;/p&gt;
-
-&lt;div style=&#34;position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;&#34;&gt;
-  &lt;iframe src=&#34;https://www.youtube.com/embed/17l3VR2MIeg&#34; style=&#34;position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;&#34; allowfullscreen title=&#34;YouTube Video&#34;&gt;&lt;/iframe&gt;
-&lt;/div&gt;
-
-&lt;h3 id=&#34;ml-on--amazon-sagemakerhttpsawsamazoncomsagemaker&#34;&gt;ML on  &lt;a href=&#34;https://aws.amazon.com/sagemaker/&#34;&gt;Amazon SageMaker&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;分布式训练： &lt;a href=&#34;https://aws.amazon.com/cn/sagemaker/distributed-training/&#34;&gt;https://aws.amazon.com/cn/sagemaker/distributed-training/&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;文档：&lt;a href=&#34;https://sagemaker-examples.readthedocs.io/en/latest/index.html&#34;&gt;Amazon SageMaker Example Notebooks&lt;/a&gt;， &lt;a href=&#34;https://sagemaker-workshop.com/&#34;&gt;Amazon SageMaker Workshop&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;SageMaker框架直接集成了多种机器学习框架，一条龙服务，也可以集成Kubeflow方案；机器学习整体生命周期包括训练数据准备，模型训练，模型评估，评估ok之后部署上线提供在线预测推理服务，通过监控搜集数据，重复迭代模型；整体生命周期如图所示：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://s3.cn-north-1.amazonaws.com.cn/awschinablog/use-xgboost-in-amazon-sagemaker-for-commercial-empowerment1.jpg&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;将数据处理准备到模型上线整个过程可以自动化，通过sageMaker平台直接组合成工作流pipeline进行自动化处理，demo请参考：&lt;a href=&#34;https://aws.amazon.com/cn/getting-started/hands-on/machine-learning-tutorial-mlops-automate-ml-workflows/&#34;&gt;自动化机器学习工作流 sagemaker tutorial&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://d1.awsstatic.com/sagemaker-tutorial-5-1-step-3-1-pipeline-diagram.90a11a1a83636b6d56c8ce8d43829571b506ae11.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;Tips: 这里只是整体概括下机器学习工程化的过程；机器学习以及深度学习相关的算法知识待深入边动手边学习；待续～ :)&lt;/p&gt;
-&lt;h3 id=&#34;参考&#34;&gt;参考&lt;/h3&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://developers.google.com/machine-learning&#34;&gt;google-developers-ml&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.tensorflow.org/tfx/&#34;&gt;TFX&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://xgboost.readthedocs.io/en/latest/index.html&#34;&gt;XGBoost文档&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.tensorflow.org/tfx/guide/serving&#34;&gt;TF Serving&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://time.geekbang.org/column/article/303430&#34;&gt;深度学习推荐系统实战&lt;/a&gt; &lt;a href=&#34;https://github.com/wzhe06/SparrowRecSys&#34;&gt;SparrowRecSys&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://zh.d2l.ai/index.html&#34;&gt;动手学深度学习&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.mikulskibartosz.name/how-to-ab-test-tensorflow-models-using-sagemaker-endpoints/&#34;&gt;How to A/B test Tensorflow models using Sagemaker Endpoints&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://aws.amazon.com/cn/blogs/china/use-xgboost-in-amazon-sagemaker-for-commercial-empowerment/&#34;&gt;在 Amazon SageMaker 中使用 XGBoost 来实现商业赋能&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://aws.amazon.com/cn/getting-started/hands-on/machine-learning-tutorial-mlops-automate-ml-workflows/&#34;&gt;自动化机器学习工作流 sagemaker tutorial&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://zhuanlan.zhihu.com/p/79030485&#34;&gt;AllReduce算法的前世今生&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>
