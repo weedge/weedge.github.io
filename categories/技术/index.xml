@@ -6,7 +6,22 @@
     <description>Recent content in 技术 on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 25 Sep 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 25 Sep 2023 11:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>译：相似性搜索，第 3 部分：混合倒排文件索引和乘积量化</title>
+      <link>https://weedge.github.io/post/oneday/similarity-search/3.blending-inverted-file-index-and-product-quantization/</link>
+      <pubDate>Mon, 25 Sep 2023 11:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/oneday/similarity-search/3.blending-inverted-file-index-and-product-quantization/</guid>
+      <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/blending-inverted-file-index-and-product-quantization/0.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
+&lt;p&gt;在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。&lt;/p&gt;
+&lt;p&gt;在本系列的前两部分中，我们讨论了信息检索中的两种基本算法：&lt;strong&gt;倒排文件索引&lt;/strong&gt;和&lt;strong&gt;乘积量化&lt;/strong&gt;。它们都优化了搜索性能，但侧重于不同的方面：第一个加速了搜索速度，而后者将向量压缩为更小的、节省内存的表示形式。&lt;/p&gt;
+&lt;p&gt;由于两种算法侧重于不同的方面，自然出现的问题是是否可以将这两种算法合并为一种新算法&lt;/p&gt;
+&lt;p&gt;在本文中，我们将结合这两种方法的优点来产生快速且内存高效的算法。作为参考，大多数讨论的想法都将基于&lt;a href=&#34;https://inria.hal.science/inria-00514462v2/document&#34;&gt;本文&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;在深入研究细节之前，有必要了解残差向量(residual vectors)是什么，并对它们的有用属性有一个简单的直觉。稍后我们将在设计算法时使用它们。&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>译：相似性搜索，第 2 部分：乘积量化</title>
       <link>https://weedge.github.io/post/oneday/similarity-search/2.product-quantization/</link>
@@ -16,7 +31,7 @@
       <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/product-quantization/0.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
 &lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
 &lt;p&gt;在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。&lt;/p&gt;
-&lt;p&gt;在本系列文章的&lt;a href=&#34;https://weedge.github.io/post/oneday/similarity-search/knn-inverted-file-index/&#34;&gt;第一部分&lt;/a&gt;中，我们研究了用于执行相似性搜索的 kNN 和倒排文件索引结构。正如我们所知，kNN 是最直接的方法，而倒排文件索引则在其之上发挥作用，建议在速度加速和准确性之间进行权衡。然而，这两种方法都不使用数据压缩技术，这可能会导致内存问题，特别是在数据集较大且 RAM 有限的情况下。在本文中，我们将尝试通过研究另一种称为“&lt;strong&gt;乘积量化(Product Quantization)&lt;/strong&gt;”的方法来解决此问题。&lt;/p&gt;</description>
+&lt;p&gt;在本系列文章的&lt;a href=&#34;https://weedge.github.io/post/oneday/similarity-search/1.knn-inverted-file-index/&#34;&gt;第一部分&lt;/a&gt;中，我们研究了用于执行相似性搜索的 kNN 和倒排文件索引结构。正如我们所知，kNN 是最直接的方法，而倒排文件索引则在其之上发挥作用，建议在速度加速和准确性之间进行权衡。然而，这两种方法都不使用数据压缩技术，这可能会导致内存问题，特别是在数据集较大且 RAM 有限的情况下。在本文中，我们将尝试通过研究另一种称为“&lt;strong&gt;乘积量化(Product Quantization)&lt;/strong&gt;”的方法来解决此问题。&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -252,17 +267,6 @@
 &lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
 &lt;p&gt;直播线上互动，已成为当下生活的一部分，特别是受疫情影响，成为互联网的主要流量入口；研究了下各个平台直播间送礼物的功能，发现大同小异，在礼物分组，一些定制化的礼物有区分，整体交互流程大致相同，主要是直播间主播上播，用户通过礼物打赏给主播们(一个直播间可能有多名主播在互动)，礼物是通过虚拟币(**币) 换算，早期互联网用户线上互动礼物，玩家最多的应该是QQ币了，只不过以前的打赏赠送场景是在web2.0刚开始的时候，交互的大多是文字和图片，相关产品场景，虚拟空间(个人空间，博客，种菜等娱乐互动场景)；随着底层网络基建的发展，4G之后出现了大量的视频网站，用户可以录一些视频内容来互动；到后来音视频流媒体的发展，相关的在线直播间开始涌现，用户之间享受一波直播红利带来的互动，当然影响相对于前面的形式更加实时和直接；现在的5G和未来6G，以及物联网都会给直播形式带来新的互动场景,比如：虚拟会场，人机互动；其中早期培养起来的打赏送礼行为功能经常用于有主播的娱乐互动直播中，也是增值盈利的一部分；&lt;/p&gt;
 &lt;p&gt;tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦，电商带货商品，没有主播，节目直播/转播，会议直播，自习室，基本的点赞，计数，聊天基础服务功能；还有些抽奖功能，答题功能(教育类直播居多)，投票，红包这些功能服务可在开播时设置，是否启用；有用户基础的流量平台可能还会以竞价排名的方式推荐一波；这些功能可以作为一个可管理的插件，通过组合的方式应用于直播中，方便管理，后续可以添加新功能满足某类型直播场景。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>让ML跑起来</title>
-      <link>https://weedge.github.io/post/let-ml-go/</link>
-      <pubDate>Tue, 08 Nov 2022 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/let-ml-go/</guid>
-      <description>&lt;h3 id=&#34;介绍&#34;&gt;介绍&lt;/h3&gt;
-&lt;p&gt;上文提到通过用户的行为数据存放在S3中，这些数据包括结构化和非结构化数据，怎么让这些数据变得有价值呢？一种是人为进行数据挖掘，对相关指标转化率进行评估；还有一种是通过这些数据来训练模型，然后将预测模型用于生产环境中进行A/B测试，选出适合的模型，这个模型需要不断更新迭代，并且自动化半自动化运行起来；&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://docs.aws.amazon.com/zh_cn/sagemaker/latest/dg/images/ml-concepts-10.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;</description>
     </item>
     
   </channel>

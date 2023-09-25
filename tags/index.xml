@@ -6,11 +6,20 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 25 Sep 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 25 Sep 2023 11:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>inverted file index</title>
+      <link>https://weedge.github.io/tags/inverted-file-index/</link>
+      <pubDate>Mon, 25 Sep 2023 11:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/inverted-file-index/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>oneday</title>
       <link>https://weedge.github.io/tags/oneday/</link>
-      <pubDate>Mon, 25 Sep 2023 10:26:23 +0800</pubDate>
+      <pubDate>Mon, 25 Sep 2023 11:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/oneday/</guid>
       <description></description>
@@ -19,7 +28,7 @@
     <item>
       <title>product quantization</title>
       <link>https://weedge.github.io/tags/product-quantization/</link>
-      <pubDate>Mon, 25 Sep 2023 10:26:23 +0800</pubDate>
+      <pubDate>Mon, 25 Sep 2023 11:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/product-quantization/</guid>
       <description></description>
@@ -28,7 +37,7 @@
     <item>
       <title>similarity search</title>
       <link>https://weedge.github.io/tags/similarity-search/</link>
-      <pubDate>Mon, 25 Sep 2023 10:26:23 +0800</pubDate>
+      <pubDate>Mon, 25 Sep 2023 11:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/similarity-search/</guid>
       <description></description>
@@ -175,15 +184,6 @@
       <pubDate>Thu, 02 Dec 2021 12:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/pool/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>WAL</title>
-      <link>https://weedge.github.io/tags/wal/</link>
-      <pubDate>Sun, 21 Nov 2021 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/wal/</guid>
       <description></description>
     </item>
     
