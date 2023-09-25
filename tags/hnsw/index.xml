@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>hnsw on 时间飘过</title>
+    <link>https://weedge.github.io/tags/hnsw/</link>
+    <description>Recent content in hnsw on 时间飘过</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Mon, 25 Sep 2023 15:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/hnsw/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>译：相似性搜索，第 4 部分：分层可导航小世界 (HNSW)</title>
+      <link>https://weedge.github.io/post/oneday/similarity-search/4.hierarchical-navigable-small-world-hnsw/</link>
+      <pubDate>Mon, 25 Sep 2023 15:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/oneday/similarity-search/4.hierarchical-navigable-small-world-hnsw/</guid>
+      <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/0.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
+&lt;p&gt;在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://arxiv.org/pdf/1603.09320.pdf&#34;&gt;&lt;strong&gt;分层可导航小世界&lt;/strong&gt;&lt;/a&gt;(HNSW) 是一种用于近似搜索最近邻居的最先进算法。在底层，HNSW 构建了优化的图结构，使其与本系列文章前面部分中讨论的其他方法非常不同。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;HNSW 的主要思想是构建这样一个图，其中任何一对顶点之间的路径都可以通过少量步骤遍历。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;著名的&lt;a href=&#34;https://en.wikipedia.org/wiki/Six_degrees_of_separation&#34;&gt;六次握手规则&lt;/a&gt;的一个著名类比与此方法有关：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;所有人之间的社会关系距离不超过 6 个。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;在继续讨论 HNSW 的内部工作之前，让我们首先讨论跳跃列表和可导航小世界——HNSW 实现中使用的关键数据结构。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

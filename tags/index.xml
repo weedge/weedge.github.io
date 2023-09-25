@@ -6,7 +6,43 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 25 Sep 2023 11:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 25 Sep 2023 15:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>hierarchical navigable small world</title>
+      <link>https://weedge.github.io/tags/hierarchical-navigable-small-world/</link>
+      <pubDate>Mon, 25 Sep 2023 15:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/hierarchical-navigable-small-world/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>hnsw</title>
+      <link>https://weedge.github.io/tags/hnsw/</link>
+      <pubDate>Mon, 25 Sep 2023 15:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/hnsw/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>oneday</title>
+      <link>https://weedge.github.io/tags/oneday/</link>
+      <pubDate>Mon, 25 Sep 2023 15:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/oneday/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>similarity search</title>
+      <link>https://weedge.github.io/tags/similarity-search/</link>
+      <pubDate>Mon, 25 Sep 2023 15:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/similarity-search/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>inverted file index</title>
       <link>https://weedge.github.io/tags/inverted-file-index/</link>
@@ -17,29 +53,11 @@
     </item>
     
     <item>
-      <title>oneday</title>
-      <link>https://weedge.github.io/tags/oneday/</link>
-      <pubDate>Mon, 25 Sep 2023 11:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/oneday/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>product quantization</title>
       <link>https://weedge.github.io/tags/product-quantization/</link>
       <pubDate>Mon, 25 Sep 2023 11:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/product-quantization/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>similarity search</title>
-      <link>https://weedge.github.io/tags/similarity-search/</link>
-      <pubDate>Mon, 25 Sep 2023 11:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/similarity-search/</guid>
       <description></description>
     </item>
     
@@ -166,24 +184,6 @@
       <pubDate>Wed, 02 Nov 2022 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/%E6%96%B9%E6%A1%88/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>CRDT</title>
-      <link>https://weedge.github.io/tags/crdt/</link>
-      <pubDate>Tue, 28 Dec 2021 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/crdt/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>pool</title>
-      <link>https://weedge.github.io/tags/pool/</link>
-      <pubDate>Thu, 02 Dec 2021 12:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/pool/</guid>
       <description></description>
     </item>
     

@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 25 Sep 2023 11:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 25 Sep 2023 15:26:23 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -49,6 +49,175 @@
     </item>
     
     <item>
+      <title>译：相似性搜索，第 4 部分：分层可导航小世界 (HNSW)</title>
+      <link>https://weedge.github.io/post/oneday/similarity-search/4.hierarchical-navigable-small-world-hnsw/</link>
+      <pubDate>Mon, 25 Sep 2023 15:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/oneday/similarity-search/4.hierarchical-navigable-small-world-hnsw/</guid>
+      
+        <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/0.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
+&lt;p&gt;在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://arxiv.org/pdf/1603.09320.pdf&#34;&gt;&lt;strong&gt;分层可导航小世界&lt;/strong&gt;&lt;/a&gt;(HNSW) 是一种用于近似搜索最近邻居的最先进算法。在底层，HNSW 构建了优化的图结构，使其与本系列文章前面部分中讨论的其他方法非常不同。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;HNSW 的主要思想是构建这样一个图，其中任何一对顶点之间的路径都可以通过少量步骤遍历。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;著名的&lt;a href=&#34;https://en.wikipedia.org/wiki/Six_degrees_of_separation&#34;&gt;六次握手规则&lt;/a&gt;的一个著名类比与此方法有关：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;所有人之间的社会关系距离不超过 6 个。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;在继续讨论 HNSW 的内部工作之前，让我们首先讨论跳跃列表和可导航小世界——HNSW 实现中使用的关键数据结构。&lt;/p&gt;
+&lt;h1 id=&#34;跳过列表&#34;&gt;跳过列表&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Skip_list&#34;&gt;跳过列表&lt;/a&gt;是一种概率数据结构，允许在排序列表中插入和搜索元素*O(logn)*一般。跳跃列表由多层链表构成。最底层有原始链表，其中包含所有元素。当移动到更高级别时，跳过的元素数量会增加，从而减少连接数量。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;在跳过列表中查找元素 20&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;某个值的搜索过程从最高级别开始，并将其下一个元素与该值进行比较。如果该值小于或等于该元素，则算法将继续处理下一个元素。否则，搜索过程下降到具有更多连接的较低层并重复相同的过程。最后，算法下降到最低层并找到所需的节点。&lt;/p&gt;
+&lt;p&gt;根据&lt;a href=&#34;https://en.wikipedia.org/wiki/Skip_list&#34;&gt;维基百科&lt;/a&gt;的信息，跳过列表的主要参数&lt;em&gt;p&lt;/em&gt;定义了一个元素出现在多个列表中的概率。如果某个元素出现在&lt;em&gt;第 i层&lt;/em&gt;，那么它出现在第&lt;em&gt;i+1&lt;/em&gt;层的概率等于&lt;em&gt;p&lt;/em&gt;（&lt;em&gt;p&lt;/em&gt;通常设置为 0.5 或 0.25 ）。平均而言，每个元素都以*1 / (1 - p)*列表的形式呈现。&lt;/p&gt;
+&lt;p&gt;我们可以看到，这个过程比链表中普通的线性搜索要快得多。事实上，HNSW 继承了相同的思想，但它使用的不是链表，而是图。&lt;/p&gt;
+&lt;h1 id=&#34;可航行的小世界navigable-small-world&#34;&gt;可航行的小世界(Navigable Small World)&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Small-world_network&#34;&gt;&lt;strong&gt;可导航小世界&lt;/strong&gt;&lt;/a&gt;是一个具有多对数*T = O(logᵏn)*搜索复杂度的图，它使用贪婪路由。**路由(Routing)**是指从低度数顶点开始搜索过程，以高度数顶点结束的过程。由于低度顶点的连接很少，因此该算法可以在它们之间快速移动，以有效地导航到最近邻居可能所在的区域。然后算法逐渐放大并切换到高度顶点，以找到该区域顶点中的最近邻居。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;顶点&lt;em&gt;Vertex&lt;/em&gt;有时也称为&lt;strong&gt;节点Node&lt;/strong&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;搜索&#34;&gt;搜索&lt;/h2&gt;
+&lt;p&gt;首先，通过选择入口点来进行搜索。为了确定算法要移动到的下一个顶点（或多个顶点），它会计算从查询向量到当前顶点的邻居的距离，并移动到最近的顶点。在某些时候，当算法无法找到比当前节点本身更接近查询的邻居节点时，算法会终止搜索过程。该节点作为查询的响应返回。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/2.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;可导航的小世界中的贪婪搜索过程。节点 A 用作入口点。它有两个邻居 B 和 D。节点 D 比 B 更接近查询。因此，我们移动到 D。节点 D 有三个邻居 C、E 和 F。E 是距离查询最近的邻居，因此我们移动到 D。最后，搜索过程将导致节点 L。由于 L 的所有邻居都比 L 本身距离查询更远，因此我们停止算法并返回 L 作为查询的答案&lt;/em&gt;。&lt;/p&gt;
+&lt;p&gt;这种贪婪策略不能保证它会找到精确的最近邻居，因为该方法仅使用当前步骤的本地信息来做出决策。&lt;strong&gt;提前停止Early stopping&lt;/strong&gt;是该算法的问题之一。它尤其发生在搜索过程开始时，当没有比当前节点更好的邻居节点时。在大多数情况下，当起始区域具有太多低度顶点时，可能会发生这种情况。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/3.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;提前停止，当前节点的两个邻居距离查询都较远。因此，算法返回当前节点作为响应，尽管存在距离查询更近的节点&lt;/em&gt;。&lt;/p&gt;
+&lt;p&gt;通过&lt;strong&gt;使用多个入口点&lt;/strong&gt;可以提高搜索准确性。&lt;/p&gt;
+&lt;h2 id=&#34;建造&#34;&gt;建造&lt;/h2&gt;
+&lt;p&gt;NSW 图是通过打乱数据集点并将它们一一插入到当前图中来构建的。当插入一个新节点时，它会通过边链接到距离它最近的&lt;em&gt;M 个顶点。&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/4.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;按 M = 2 顺序插入节点（从左到右）。每次迭代时，都会将一个新顶点添加到图中，并链接到其 M = 2 个最近邻居。蓝线表示与新插入节点的连接边。&lt;/p&gt;
+&lt;p&gt;在大多数情况下，远程边可能会在图构建的开始阶段创建。它们在图形导航中发挥着重要作用。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;在构造开始时插入的元素的最近邻居的链接后来成为网络集线器之间的桥梁，保持整体图的连接性并允许在贪婪路由期间对跳数进行对数缩放。——于。A.马尔科夫，DA Yashunin&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;从上图中的例子我们可以看出一开始添加的远程边&lt;em&gt;AB&lt;/em&gt;的重要性。想象一下，一个查询需要从相对较远的节点&lt;em&gt;A&lt;/em&gt;和 I 遍历一条路径。有了边&lt;em&gt;AB&lt;/em&gt;，可以通过直接从图的一侧导航到另一侧来快速完成此操作。&lt;/p&gt;
+&lt;p&gt;随着图中顶点数量的增加，新连接到新节点的边的长度变小的可能性也随之增加。&lt;/p&gt;
+&lt;h1 id=&#34;hnsw&#34;&gt;HNSW&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&#34;https://arxiv.org/pdf/1603.09320.pdf&#34;&gt;&lt;strong&gt;HNSW&lt;/strong&gt;&lt;/a&gt;基于与skiplist 调表和navigable small world (NSW) 可导航小世界相同的原理。它的结构代表了一个多层图，顶层的连接较少，底层的区域更密集。&lt;/p&gt;
+&lt;h1 id=&#34;搜索search&#34;&gt;搜索(Search)&lt;/h1&gt;
+&lt;p&gt;搜索从最高层开始，每次在各层节点中贪婪地找到局部最近邻时，都会向下一级进行搜索。最终，在最低层找到的最近邻居就是查询的答案。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/5.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;在HNSW中搜索&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;与 NSW 类似，HNSW 的搜索质量可以通过使用多个入口点来提高。不是在每一层上只找到一个最近邻居，而是找到与查询向量最接近的&lt;em&gt;efSearch&lt;/em&gt;（超参数） ，并将这些邻居中的每一个用作下一层的入口点。&lt;/p&gt;
+&lt;h2 id=&#34;复杂度&#34;&gt;复杂度&lt;/h2&gt;
+&lt;p&gt;[原论文中，在任何层上找到最近邻居所需的操作数量都受到一个常数的限制。考虑到图中所有层的数量是对数的，我们得到的总搜索复杂度为&lt;em&gt;O(logn)&lt;/em&gt;。&lt;/p&gt;
+&lt;h1 id=&#34;建造construction&#34;&gt;建造(Construction)&lt;/h1&gt;
+&lt;h2 id=&#34;选择最大层数&#34;&gt;选择最大层数&lt;/h2&gt;
+&lt;p&gt;HNSW中的节点是按顺序一一插入的。每个节点都被随机分配一个整数&lt;em&gt;l&lt;/em&gt;，表示该节点可以出现在图中的最大层。例如，如果&lt;em&gt;l = 1&lt;/em&gt;，则只能在第 0 层和第 1 层上找到该节点。作者为每个节点随机选择&lt;em&gt;l&lt;/em&gt; ，其具有由非零乘数 mL 归一化的&lt;strong&gt;指数衰减概率分布(exponentially decaying probability distribution)&lt;/strong&gt;（&lt;em&gt;mL= 0&lt;/em&gt;导致HNSW 中的单层和未优化的搜索复杂度）。通常，大多数&lt;em&gt;l&lt;/em&gt;值应等于 0，因此大多数节点仅存在于最低级别。&lt;em&gt;mL&lt;/em&gt;的较大值增加节点出现在较高层的概率。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/6.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	每个节点的层数 &lt;em&gt;l&lt;/em&gt; 是按指数衰减概率分布随机选择的。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/7.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;基于归一化因子 mL 的层数分布。水平轴表示均匀(0, 1) 分布的值&lt;/em&gt;。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;为了实现可控层次结构的最佳性能优势，不同层上的邻居之间的重叠（即也属于其他层的元素邻居的百分比）必须很小。— Yu. A. Malkov, D. A. Yashunin。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;减少重叠的方法之一是减少&lt;em&gt;mL&lt;/em&gt;。但重要的是要记住，减少&lt;em&gt;mL&lt;/em&gt;平均也会导致在每层的贪婪搜索期间进行更多的遍历。这就是为什么必须选择一个能够平衡重叠和遍历次数的&lt;em&gt;mL值。&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;该论文的作者建议选择&lt;em&gt;mL&lt;/em&gt;的最佳值，即等于&lt;strong&gt;1 / ln(M)&lt;/strong&gt;。该值对应于跳跃列表的参数&lt;em&gt;p = 1 / M&lt;/em&gt;，即层之间的平均单个元素重叠。&lt;/p&gt;
+&lt;h2 id=&#34;插入insertion&#34;&gt;插入(Insertion)&lt;/h2&gt;
+&lt;p&gt;为节点分配值&lt;em&gt;l&lt;/em&gt;后，其插入有两个阶段：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;该算法从上层开始，贪婪地寻找最近的节点。然后找到的节点将用作下一层的入口点，并且搜索过程将继续。一旦到达第&lt;em&gt;l&lt;/em&gt;层*，*插入就进入第二步。&lt;/li&gt;
+&lt;li&gt;从第&lt;em&gt;l&lt;/em&gt;层开始，算法在当前层插入新节点。然后它的行为与之前步骤 1 中的相同，但不是只查找一个最近邻居，而是贪婪地搜索&lt;em&gt;efConstruction&lt;/em&gt;（超参数）最近邻居。然后从&lt;em&gt;efConstruction&lt;/em&gt;邻居中选择&lt;em&gt;M&lt;/em&gt; 个，并构建从插入节点到它们的边。之后，算法下降到下一层，找到的每个&lt;em&gt;efConstruction&lt;/em&gt;节点都充当入口点。当新节点及其边被插入到最低层 0 后，算法终止。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/8.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;在 HNSW 中插入节点（蓝色）。新节点的最大层被随机选择为 l = 2。因此，该节点将被插入到第 2、1 和 0 层。在这些层的每一层上，该节点将连接到其 M = 2 个最近邻居&lt;/em&gt;。&lt;/p&gt;
+&lt;h2 id=&#34;选择构造参数值choosing-values-for-construction-parameters&#34;&gt;选择构造参数值(Choosing values for construction parameters)&lt;/h2&gt;
+&lt;p&gt;原始论文提供了关于如何选择超参数的一些有用的见解：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;根据模拟，&lt;em&gt;M&lt;/em&gt;的最佳值在 5 到 48 之间。较小的&lt;em&gt;M&lt;/em&gt;值往往更适合较低召回率或低维数据，而较高的 M 值更适合高召回率或高维数据。&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;efConstruction&lt;/em&gt;的值越高，意味着随着探索的候选者越多，搜索就越深入。然而，它需要更多的计算。作者建议选择这样一个&lt;em&gt;efConstruction&lt;/em&gt;值，使训练期间的召回率接近&lt;em&gt;0.95-1&lt;/em&gt;。&lt;/li&gt;
+&lt;li&gt;此外，还有一个重要参数&lt;em&gt;Mₘₐₓ&lt;/em&gt;——一个顶点可以拥有的最大边数。除此之外，还存在相同的参数&lt;em&gt;Mₘₐₓ₀&lt;/em&gt;，但对于最低层Lay 0是单独的。建议为&lt;em&gt;Mₘₐₓ&lt;/em&gt;选择接近&lt;em&gt;2 * M&lt;/em&gt;的值。大于&lt;em&gt;2 * M&lt;/em&gt;的值可能会导致性能下降和内存使用过多。同时，&lt;em&gt;Mₘₐₓ = M&lt;/em&gt;导致在高召回率下表现不佳。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;候选者启发式选择candidate-selection-heuristic&#34;&gt;候选者启发式选择(Candidate selection heuristic)&lt;/h2&gt;
+&lt;p&gt;上面注意到，在节点插入期间，选择&lt;em&gt;efConstruction&lt;/em&gt;候选者中的&lt;em&gt;M&lt;/em&gt;个来为它们构建边。让我们讨论选择这&lt;em&gt;M&lt;/em&gt; 个节点的可能方法。&lt;/p&gt;
+&lt;p&gt;朴素方法采用&lt;em&gt;M&lt;/em&gt;个最接近的候选者。然而，它并不总是最佳选择。下面是一个演示它的例子。&lt;/p&gt;
+&lt;p&gt;想象一个具有下图结构的图表。如您所见，共有三个区域，其中两个区域未相互连接（左侧和顶部）。因此，例如，从&lt;em&gt;A&lt;/em&gt;点到&lt;em&gt;B&lt;/em&gt;点需要穿过另一个区域的很长的路径。以某种方式连接这两个区域以实现更好的导航是合乎逻辑的。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/9.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	&lt;em&gt;节点 X 被插入到图中。目标是将其最佳地连接到其他 M = 2 点&lt;/em&gt;。&lt;/p&gt;
+&lt;p&gt;然后将节点&lt;em&gt;X&lt;/em&gt;插入到图中，并且需要链接到&lt;em&gt;M&lt;/em&gt; &lt;em&gt;= 2 个&lt;/em&gt;其他 顶点。&lt;/p&gt;
+&lt;p&gt;在这种情况下，朴素方法直接采用&lt;em&gt;M = 2 个&lt;/em&gt;最近邻居（&lt;em&gt;B&lt;/em&gt;和&lt;em&gt;C&lt;/em&gt;）并将&lt;em&gt;X&lt;/em&gt;连接到它们。尽管&lt;em&gt;X&lt;/em&gt;与其真正的最近邻居相连，但这并不能解决问题。让我们看看作者发明的启发式方法。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;启发式不仅考虑节点之间的最近距离，还考虑图上不同区域的连通性。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;启发式选择第一个最近邻居（在我们的例子中为&lt;em&gt;B&lt;/em&gt;）并将插入的节点 (&lt;em&gt;X&lt;/em&gt;) 连接到它。然后，该算法按顺序选取另一个最接近的最近邻居 (&lt;em&gt;C&lt;/em&gt;)，并仅当该邻居到新节点 (&lt;em&gt;X&lt;/em&gt;) 的距离小于从该邻居到所有已连接顶点的任何距离时，才为其构建一条边(&lt;em&gt;B&lt;/em&gt;) 到新节点 (&lt;em&gt;X&lt;/em&gt;)。之后，算法继续到下一个最近邻，直到建立&lt;em&gt;M&lt;/em&gt;条边&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;回到示例，启发式过程如下图所示。启发式选择&lt;em&gt;B&lt;/em&gt;作为 X 的最近邻并构建边&lt;em&gt;BX&lt;/em&gt;。然后算法选择&lt;em&gt;C&lt;/em&gt;作为下一个最近的最近邻。然而，这次&lt;em&gt;BC &amp;lt; CX&lt;/em&gt;。这表明将边&lt;em&gt;CX&lt;/em&gt;添加到图中并不是最佳的，因为已经存在边&lt;em&gt;BX&lt;/em&gt;并且节点&lt;em&gt;B&lt;/em&gt;和&lt;em&gt;C&lt;/em&gt;彼此非常接近。对于节点&lt;em&gt;D&lt;/em&gt;和&lt;em&gt;E&lt;/em&gt;进行相同的类比。之后，算法检查节点&lt;em&gt;A&lt;/em&gt;。&lt;em&gt;这次，它满足BA&lt;/em&gt; &lt;em&gt;&amp;gt; AX 的&lt;/em&gt;条件。结果，新边&lt;em&gt;AX&lt;/em&gt;和两个初始区域彼此连接。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/10.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	&lt;em&gt;左边的例子使用了朴素方法。右侧的示例使用启发式选择，这会导致两个初始不相交区域相互连接&lt;/em&gt;。&lt;/p&gt;
+&lt;h2 id=&#34;复杂度-1&#34;&gt;复杂度&lt;/h2&gt;
+&lt;p&gt;与搜索过程相比，插入过程的工作方式非常相似，没有任何可能需要非常数操作的显着差异。因此，插入单个顶点需要&lt;em&gt;O(logn)&lt;em&gt;的时间。为了估计总复杂度，应考虑给定数据集中所有插入节点&lt;/em&gt;n&lt;/em&gt;的数量。最终，HNSW 构建需要*O(n * logn)*时间。&lt;/p&gt;
+&lt;h1 id=&#34;将-hnsw-与其他方法相结合&#34;&gt;将 HNSW 与其他方法相结合&lt;/h1&gt;
+&lt;p&gt;HNSW 可以与其他相似性搜索方法一起使用，以提供更好的性能。最流行的方法之一是将其与倒排文件索引和乘积量化 ( &lt;em&gt;IndexIVFPQ&lt;/em&gt; ) 结合起来，这在本系列文章的其他部分中进行了描述。&lt;/p&gt;
+&lt;p&gt;在此范例中，HNSW 扮演IndexIVFPQ**粗量化器(coarse quantizer)*&lt;em&gt;的角色，这意味着它将负责查找最近的 Voronoi 分区，因此可以缩小搜索范围&lt;/em&gt;。*为此，必须在所有 Voronoi 质心上构建 HNSW 索引。当给出查询时，HNSW 用于查找最近的 Voronoi 质心（而不是像以前那样通过比较到每个质心的距离进行强力搜索）。之后，查询向量在相应的 Voronoi 分区内进行量化，并使用 PQ 码计算距离。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/11.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	&lt;em&gt;通过查找建立在 Voronoi 质心之上的 HNSW 中的最近邻居来选择最近的 Voronoi 质心&lt;/em&gt;。&lt;/p&gt;
+&lt;p&gt;当仅使用倒排文件索引时，最好将 Voronoi 分区的数量设置得不要太大（例如 256 或 1024），因为会执行强力搜索来找到最近的质心。通过选择少量的 Voronoi 分区，每个分区内的候选者数量会变得相对较多。因此，该算法可以快速识别查询的最近质心，并且其大部分运行时间都集中在查找 Voronoi 分区内的最近邻居上。&lt;/p&gt;
+&lt;p&gt;然而，将 HNSW 引入工作流程需要进行调整。考虑仅在少量质心（256 或 1024）上运行 HNSW：HNSW 不会带来任何显著的好处，因为在向量数量较少的情况下，HNSW 在执行时间方面与朴素的暴力搜索相对相同。此外，HNSW 需要更多内存来存储图结构。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;这就是为什么在合并 HNSW 和倒排文件索引时，建议将 Voronoi 质心的数量设置得比平常大得多。通过这样做，每个 Voronoi 分区内的候选者数量变得少得多。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这种范式的转变导致了以下设置：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;HNSW 在对数时间内快速识别最近的 Voronoi 质心。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;之后，在各个 Voronoi 分区内执行穷举搜索。这应该不成问题，因为潜在候选人的数量很少。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;： 这种HNSW+IndexIVFPQ方式是最常用的方式，常结合场景数据结合硬件训练，调优，&lt;a href=&#34;https://github.com/harsha-simhadri/big-ann-benchmarks&#34;&gt;刷榜&lt;/a&gt;。来处理B级别以上的embedding向量数据；需要关注 &lt;strong&gt;recall 召回率&lt;/strong&gt;， &lt;strong&gt;内存使用率&lt;/strong&gt; 和 &lt;strong&gt;搜索速度&lt;/strong&gt;， 根据场景对这三方面进行取舍。&lt;/p&gt;
+&lt;h1 id=&#34;faiss实现&#34;&gt;FAISS实现&lt;/h1&gt;
+&lt;p&gt;根据&lt;a href=&#34;https://faiss.ai/&#34;&gt;Faiss 文档&lt;/a&gt;中的信息，我们将了解如何利用 HNSW 并将其与倒排文件索引和乘积量化合并在一起。&lt;/p&gt;
+&lt;h2 id=&#34;indexhnswflat&#34;&gt;IndexHNSWFlat&lt;/h2&gt;
+&lt;p&gt;FAISS 有一个实现 HNSW 结构的&lt;em&gt;IndexHNSWFlat&lt;/em&gt;类。与往常一样，后缀“ &lt;em&gt;Flat&lt;/em&gt; ”表示数据集向量完全存储在索引中。构造函数接受 2 个参数：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;d&lt;/strong&gt;：数据维度。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;M&lt;/strong&gt;：插入时每个新节点需要添加的边数。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;此外，通过&lt;strong&gt;hnsw&lt;/strong&gt;字段，&lt;em&gt;IndexHNSWFlat&lt;/em&gt;提供了几个有用的属性（可以修改）和方法：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;hnsw.efConstruction&lt;/strong&gt;：构建过程中要探索的最近邻居的数量。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;hnsw.efSearch&lt;/strong&gt;：搜索期间要探索的最近邻居的数量。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;hnsw.max_level&lt;/strong&gt;：返回最大层。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;hnsw.entry_point&lt;/strong&gt;：返回入口点。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;faiss.vector_to_array(index.hnsw.levels)&lt;/strong&gt;：返回每个向量的最大层列表&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;hnsw.set_default_probas(M: int, level_mult: float)&lt;/strong&gt;：允许分别设置&lt;em&gt;M&lt;/em&gt;和&lt;em&gt;mL&lt;/em&gt;值。默认情况下，&lt;em&gt;level_mult&lt;/em&gt;设置为&lt;em&gt;1 / ln(M)&lt;/em&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/12.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;IndexHNSWFlat 的 Faiss 实现&lt;/em&gt; (注：图中的efConstruction 和 efSearch 注释弄反了)&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;IndexHNSWFlat&lt;/em&gt;设置&lt;em&gt;Mₘₐₓ = M&lt;/em&gt;和&lt;em&gt;Mₘₐₓ₀ = 2 * M&lt;/em&gt;&lt;/p&gt;
+&lt;h2 id=&#34;indexhnswflat--indexivfpq&#34;&gt;IndexHNSWFlat + IndexIVFPQ&lt;/h2&gt;
+&lt;p&gt;&lt;em&gt;IndexHNSWFlat&lt;/em&gt;也可以与其他索引组合。其中一个示例是上一部分中描述的*IndexIVFPQ 。*该综合索引的创建分两个步骤进行：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;em&gt;IndexHNSWFlat&lt;/em&gt;被初始化为粗量化器。&lt;/li&gt;
+&lt;li&gt;量化器作为参数传递给&lt;em&gt;IndexIVFPQ&lt;/em&gt;的构造函数。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;训练和添加可以通过使用不同或相同的数据来完成。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/13.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;IndexHNSWFlat + IndexIVFPQ 的 FAISS 实现&lt;/em&gt;&lt;/p&gt;
+&lt;h1 id=&#34;结论&#34;&gt;结论&lt;/h1&gt;
+&lt;p&gt;在本文中，我们研究了一种鲁棒算法，该算法特别适用于大型数据集向量。通过使用多层图表示和候选启发式选择，其搜索速度可以有效扩展，同时保持良好的预测精度。还值得注意的是，HNSW 可以与其他相似性搜索算法结合使用，使其非常灵活。&lt;/p&gt;
+&lt;h1 id=&#34;reference&#34;&gt;Reference&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Six_degrees_of_separation&#34;&gt;Six degrees of separation | Wikipedia&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Skip_list&#34;&gt;Skip List | Wikipedia&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/pdf/1603.09320.pdf&#34;&gt;&lt;strong&gt;Efficient and robust approximate nearest neighbor search using Hierarchical Navigable Small World graphs&lt;/strong&gt;. Yu. A. Malkov, D. A. Yashunin&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://faiss.ai/&#34;&gt;Faiss documentation&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss&#34;&gt;Faiss repository&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss/wiki/Faiss-indexes&#34;&gt;Summary of Faiss indexes&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;原文地址：&lt;a href=&#34;https://towardsdatascience.com/similarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37&#34;&gt;https://towardsdatascience.com/similarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;附操作笔记&lt;/strong&gt;:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_hnsw.ipynb&#34;&gt;faiss_hnsw.ipynb&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_vector_indexes.ipynb&#34;&gt;faiss_vector_indexes.ipynb&lt;/a&gt;&lt;/p&gt;</description>
+      
+    </item>
+    
+    <item>
       <title>译：相似性搜索，第 3 部分：混合倒排文件索引和乘积量化</title>
       <link>https://weedge.github.io/post/oneday/similarity-search/3.blending-inverted-file-index-and-product-quantization/</link>
       <pubDate>Mon, 25 Sep 2023 11:26:23 +0800</pubDate>
@@ -63,7 +232,7 @@
 &lt;p&gt;在本文中，我们将结合这两种方法的优点来产生快速且内存高效的算法。作为参考，大多数讨论的想法都将基于&lt;a href=&#34;https://inria.hal.science/inria-00514462v2/document&#34;&gt;本文&lt;/a&gt;。&lt;/p&gt;
 &lt;p&gt;在深入研究细节之前，有必要了解残差向量(residual vectors)是什么，并对它们的有用属性有一个简单的直觉。稍后我们将在设计算法时使用它们。&lt;/p&gt;
 &lt;h1 id=&#34;残差向量residual-vectors&#34;&gt;残差向量(Residual vectors)&lt;/h1&gt;
-&lt;p&gt;想象一下执行了一个聚类算法并产生了多个聚类。每个簇都有一个质心和与其关联的点。**残差(residual)**是点（向量）与其质心的偏移量。基本上，要找到特定向量的残差，必须从向量的质心中减去该向量。&lt;/p&gt;
+&lt;p&gt;想象一下执行了一个聚类算法并产生了多个聚类。每个簇都有一个质心和与其关联的点。&lt;strong&gt;残差residual&lt;/strong&gt;是点(向量)与其质心的偏移量。基本上，要找到特定向量的残差，必须从向量的质心中减去该向量。&lt;/p&gt;
 &lt;p&gt;如果聚类是通过 k-means 算法构建的，则聚类质心是属于该聚类的所有点的平均值。因此，从任意点找到残差相当于从中减去簇的平均值。通过从属于特定簇的所有点中减去平均值，这些点将以 0 为中心。&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/blending-inverted-file-index-and-product-quantization/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
 &lt;p&gt;​	&lt;em&gt;原始点簇显示在左侧。然后从所有聚类点中减去聚类质心。生成的残差向量显示在右侧。&lt;/em&gt;&lt;/p&gt;
@@ -97,16 +266,16 @@
 &lt;p&gt;实际上，现在每个子空间都包含来自不同 Voronoi 分区的子向量。然后，对于每个子空间，像往常一样执行聚类算法并构建&lt;em&gt;k&lt;/em&gt;个聚类及其质心。&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/blending-inverted-file-index-and-product-quantization/5.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
 &lt;p&gt;​	&lt;em&gt;训练流程&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;*用向量的残差替换向量的重要性是什么？*如果向量不被它们的残差替换，那么每个子空间将包含更多不同的子向量（因为子空间将存储来自不同的非相交 Voronoi 分区的子向量，这些分区在空间中可能彼此相距很远）。现在，来自不同分区的向量（残差）相互重叠。由于现在每个子空间的多样性较少，因此有效表示向量所需的再现值较少。换句话说：&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;用向量的残差替换向量的重要性是什么&lt;/em&gt;？如果向量不被它们的残差替换，那么每个子空间将包含更多不同的子向量（因为子空间将存储来自不同的非相交 Voronoi 分区的子向量，这些分区在空间中可能彼此相距很远）。现在，来自不同分区的向量（残差）相互重叠。由于现在每个子空间的多样性较少，因此有效表示向量所需的再现值较少。换句话说：&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;在与之前使用的相同长度的PQ码的情况下，向量可以更准确地表示，因为它们具有较小的方差。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;h1 id=&#34;推理查询inference&#34;&gt;推理查询(Inference)&lt;/h1&gt;
 &lt;p&gt;对于给定的查询，找到 Voronoi 分区的&lt;em&gt;k&lt;/em&gt;个最近的质心。这些区域内的所有点都被视为候选点。由于原始向量最初被每个 Voronoi 区域中的残差替换，因此还需要计算查询向量的残差。在这种情况下，需要为每个 Voronoi 分区单独计算查询残差（因为每个区域具有不同的质心）。只有所选 Voronoi 分区的残差才会分配给候选者。&lt;/p&gt;
-&lt;p&gt;然后将查询残差分割成子向量。与原始乘积量化算法一样，对于每个子空间，计算包含从子空间质心到查询子向量的距离的距离矩阵*d 。&lt;em&gt;必须记住，每个 Voronoi 分区的查询残差都是不同的。基本上，这意味着需要为每个查询残差单独计算距离矩阵&lt;/em&gt;d 。*这是所需优化的计算成本。&lt;/p&gt;
+&lt;p&gt;然后将查询残差分割成子向量。与原始乘积量化算法一样，对于每个子空间，计算包含从子空间质心到查询子向量的距离的距离矩阵&lt;em&gt;d&lt;/em&gt;。 必须记住，每个 Voronoi 分区的查询残差都是不同的。基本上，这意味着需要为每个查询残差单独计算距离矩阵&lt;em&gt;d&lt;/em&gt;。这是所需优化的计算成本。&lt;/p&gt;
 &lt;p&gt;最后，像之前在乘积量化算法中所做的那样，对部分距离进行求和。&lt;/p&gt;
 &lt;h2 id=&#34;排序结果sorting-results&#34;&gt;排序结果(Sorting results)&lt;/h2&gt;
-&lt;p&gt;计算完所有距离后，需要选择&lt;em&gt;k个最近邻。&lt;em&gt;为了有效地做到这一点，作者建议维护&lt;a href=&#34;https://medium.com/@slavahead/heapify-with-heap-sort-5df23b5764c1&#34;&gt;MaxHeap&lt;/a&gt; (&lt;strong&gt;注&lt;/strong&gt;：容量为k 的大顶堆用于查最小最近的k个值，小顶堆则相反)数据结构。它的容量有限，为&lt;/em&gt;k&lt;/em&gt;，并且在每一步中，它存储&lt;em&gt;k&lt;/em&gt;个当前最小距离。每当计算新距离时，仅当计算值小于 MaxHeap 中的最大值时，才会将其值添加到 MaxHeap 中。计算完所有距离后，查询的答案已存储在 MaxHeap 中。使用 MaxHeap 的优点是其快速构建时间，即&lt;em&gt;O(n)&lt;/em&gt; 。&lt;/p&gt;
+&lt;p&gt;计算完所有距离后，需要选择&lt;em&gt;k&lt;/em&gt;个最近邻。为了有效地做到这一点，作者建议维护&lt;a href=&#34;https://medium.com/@slavahead/heapify-with-heap-sort-5df23b5764c1&#34;&gt;MaxHeap&lt;/a&gt; (&lt;strong&gt;注&lt;/strong&gt;：容量为k 的大顶堆用于查最小最近的k个值，小顶堆则相反)数据结构。它的容量有限，为&lt;em&gt;k&lt;/em&gt;，并且在每一步中，它存储&lt;em&gt;k&lt;/em&gt;个当前最小距离。每当计算新距离时，仅当计算值小于 MaxHeap 中的最大值时，才会将其值添加到 MaxHeap 中。计算完所有距离后，查询的答案已存储在 MaxHeap 中。使用 MaxHeap 的优点是其快速构建时间，即&lt;em&gt;O(n)&lt;/em&gt; 。&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/blending-inverted-file-index-and-product-quantization/6.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
 &lt;p&gt;​	&lt;em&gt;推理查询过程&lt;/em&gt;&lt;/p&gt;
 &lt;h1 id=&#34;性能performance&#34;&gt;性能(Performance)&lt;/h1&gt;
@@ -139,7 +308,9 @@
 &lt;/ul&gt;
 &lt;p&gt;&lt;em&gt;除非另有说明，所有图片均由作者提供&lt;/em&gt;。&lt;/p&gt;
 &lt;p&gt;原文地址：&lt;a href=&#34;https://towardsdatascience.com/similarity-search-blending-inverted-file-index-and-product-quantization-a8e508c765fa&#34;&gt;https://towardsdatascience.com/similarity-search-blending-inverted-file-index-and-product-quantization-a8e508c765fa&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;附操作笔记&lt;/strong&gt;: &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_vector_indexes.ipynb&#34;&gt;faiss_vector_indexes.ipynb&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;&lt;strong&gt;附操作笔记&lt;/strong&gt;:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_vector_indexes.ipynb&#34;&gt;faiss_vector_indexes.ipynb&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_composite-indexes.ipynb&#34;&gt;faiss_composite-indexes.ipynb&lt;/a&gt;&lt;/p&gt;</description>
       
     </item>
     
@@ -3081,110 +3252,6 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;/li&gt;
 &lt;li&gt;&lt;code&gt;break&lt;/code&gt;语句终止的执行最里面的&lt;code&gt;for&lt;/code&gt;, &lt;code&gt;switch&lt;/code&gt;, 或&lt;code&gt;select&lt;/code&gt;语句，使用标签，可以从对应的标签代码块中break。&lt;/li&gt;
 &lt;li&gt;提取函数内部的循环逻辑会导致&lt;code&gt;defer&lt;/code&gt;在每次迭代结束时执行一条语句。&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-      
-    </item>
-    
-    <item>
-      <title>Go tips-笔记: 数据类型 17-29 mistakes</title>
-      <link>https://weedge.github.io/post/notions/go-tips/go-tips-03-data-types/</link>
-      <pubDate>Mon, 13 Feb 2023 20:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/notions/go-tips/go-tips-03-data-types/</guid>
-      
-        <description>&lt;h2 id=&#34;笔记&#34;&gt;笔记&lt;/h2&gt;
-&lt;h3 id=&#34;17与八进制文字混淆&#34;&gt;17.与八进制文字混淆&lt;/h3&gt;
-&lt;p&gt;Go 可以处理二进制、十六进制、虚数和八进制数。八进制数字以 0 开头。但是，为了提高可读性并避免未来代码阅读器可能犯的错误，请使用前缀明确表示八进制数字&lt;code&gt;0o&lt;/code&gt;&lt;/p&gt;
-&lt;h3 id=&#34;18忽略整数溢出&#34;&gt;18.忽略整数溢出&lt;/h3&gt;
-&lt;p&gt;在处理大数字或进行转换成小数字，进行运算时，可能会出现溢出。溢出会产生一些bug, 所以需要再一些可能溢出的场景中增加检测判断是否溢出，溢出则直接panic,或者进行错误返回&lt;/p&gt;
-&lt;h3 id=&#34;19不理解浮点数&#34;&gt;19.不理解浮点数&lt;/h3&gt;
-&lt;p&gt;以&lt;code&gt;float64&lt;/code&gt;类型为例。&lt;code&gt;math.SmallestNonzeroFloat64&lt;/code&gt;（&lt;code&gt;float64&lt;/code&gt;最小值）和&lt;code&gt;math.MaxFloat64&lt;/code&gt;（最大值）之间存在无限多个实数值&lt;code&gt;float64&lt;/code&gt;。但是该&lt;code&gt;float64&lt;/code&gt;类型有有限位数：64。因为不可能将无限值放入有限空间，所以必须使用近似值，因此可能会失去精度。同样的逻辑适用于类型&lt;code&gt;float32&lt;/code&gt;。所以在使用&lt;code&gt;==&lt;/code&gt;运算符比较两个浮点数可能会导致不准确，浮点计算的结果取决于实际的处理器。最多处理器有一个浮点单元 (FPU) 来处理此类计算。不能保证在一台机器上执行的结果在另一台具有不同 FPU 的机器上是相同的。&lt;code&gt;testify&lt;/code&gt;测试( &lt;a href=&#34;https://github.com/stretchr/testify&#34;&gt;https://github.com/stretchr/testify&lt;/a&gt; ) 有一个&lt;code&gt;InDelta&lt;/code&gt;功能断言两个值在彼此给定的误差范围内。&lt;/p&gt;
-&lt;p&gt;Go&lt;code&gt;float32&lt;/code&gt;和&lt;code&gt;float64&lt;/code&gt;是近似值。必须牢记一些规则：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;比较两个浮点数时，检查它们的差异是否在可接受的范围内。&lt;/li&gt;
-&lt;li&gt;执行加法或减法时，将具有相似数量级的运算分组以获得更好的准确性。&lt;/li&gt;
-&lt;li&gt;为了保证准确性，如果一系列运算需要加、减、乘或除，请先执行乘除运算。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;20不了解切片长度和容量&#34;&gt;20.不了解切片长度和容量&lt;/h3&gt;
-&lt;p&gt;平常代码中经常用到是的slice, 和数组不是一个概念，这个是在Go中最容易犯得错误，需要了解slice结构，对于只读操作，可以在slice结构指向的数组进行复用，而无需重新分配空间（注意复用后是否需要回收）；但是在append操作时，需要考虑什么时候扩容，重新分配了数组空间；书中有个错误地方，也是很多文章介绍slice grow时不准确的地方，在1.18版本之后，slicegrow方法有所改进，具体查看 &lt;a href=&#34;https://github.com/golang/go/blob/release-branch.go1.18/src/runtime/slice.go&#34;&gt;https://github.com/golang/go/blob/release-branch.go1.18/src/runtime/slice.go&lt;/a&gt;  growslice函数；&lt;/p&gt;
-&lt;h3 id=&#34;21切片初始化效率低下&#34;&gt;21.切片初始化效率低下&lt;/h3&gt;
-&lt;p&gt;切片在初始化时，尽量分配好容量，如果经常append操作，对于未初始化容量的slice, 在append 进行slicegrow扩容操作时，会分配一个临时的内存空间，导致 GC 需要付出额外的努力来清理所有这些临时分配的内存空间。也尽量初始化slice长度大小，这样直接可以用数组下标进行操作，效率更高，对于性能有要求的场景选择后者；&lt;/p&gt;
-&lt;h3 id=&#34;22对-nil-和空切片感到困惑&#34;&gt;22.对 nil 和空切片感到困惑&lt;/h3&gt;
-&lt;p&gt;比如 这个在开发api返回json数据时经常会遇到，一般情况会返回一个空切片，防止调用端未判断nil而导致panic；具体根据上下文初始化：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;var s []string&lt;/code&gt;如果不确定最终长度并且切片可以为空&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;[]string(nil)&lt;/code&gt;作为创建 nil 和空切片的语法糖&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;make([]string,&lt;/code&gt; &lt;code&gt;length)&lt;/code&gt;如果未来的长度已知&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;23没有正确检查切片是否为空&#34;&gt;23.没有正确检查切片是否为空&lt;/h3&gt;
-&lt;p&gt;不管是空切片还是nil, 通过检查长度len(slice)是最好的选择, 都是0&lt;/p&gt;
-&lt;h3 id=&#34;24没有正确使用切片copy&#34;&gt;24.没有正确使用切片copy&lt;/h3&gt;
-&lt;p&gt;其实就是了解copy函数，复制到目标切片的元素数量为源切片和目标切片长度最小值min(len(dst),len(src))，而且不能混淆参数来，copy(dst,src []Type)，还有一种替换方案：&lt;code&gt;dst := append([]int(nil), src...)&lt;/code&gt;&lt;/p&gt;
-&lt;h3 id=&#34;25使用切片附加的意外副作用&#34;&gt;25.使用切片附加的意外副作用&lt;/h3&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;nx&#34;&gt;s1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[]&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;span class=&#34;nx&#34;&gt;s2&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;s1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
-&lt;span class=&#34;nx&#34;&gt;s3&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;append&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;s2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;// s1=[1 2 10],len(s1)=3,cap(s1)=3
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// s2=[2],len(s2)=1,cap(s2)=2
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// s3=[2 10],len(s3)=2,cap(s3)=2
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里和第20个一样的道理，理解切片的接口，以及什么时候扩容，不扩容时，共享底层数组，打印数据有长度大小决定，如果在容量范围内想要获取溢出的数据，也是可以做到的，需要引入不安全的指针操作，比如想越界获取s2[1]的值，如下 ：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;nx&#34;&gt;bp&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;uintptr&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;unsafe&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Pointer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;s2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
-&lt;span class=&#34;nx&#34;&gt;h&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;uintptr&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;bp&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;],&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;bp&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;bp&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]}&lt;/span&gt;
-&lt;span class=&#34;nx&#34;&gt;ss2&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[]&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int64&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;unsafe&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Pointer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;h&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
-&lt;span class=&#34;nx&#34;&gt;ss2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;100&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;// s1=[1 2 100],len(s1)=3,cap(s1)=3
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// s2=[2],len(s2)=1,cap(s2)=2
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// s3=[2 100],len(s3)=2,cap(s3)=2
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果不想改变s1和s2指向的数组数据，可以进行copy操作，然后在append数据给s3&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;nx&#34;&gt;s1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[]&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;span class=&#34;nx&#34;&gt;s2&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;s1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
-&lt;span class=&#34;nx&#34;&gt;s3&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;make&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;([]&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;nb&#34;&gt;copy&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;s3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;s2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;// s3 := append([]int(nil),s2...)
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;s3&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;append&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;s3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;// s1=[1 2 3],len(s1)=3,cap(s1)=3
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// s2=[2],len(s2)=1,cap(s2)=2
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// s3=[2 10],len(s3)=2,cap(s3)=2
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;em&gt;完整切片表达式&lt;/em&gt;: &lt;code&gt;s[low:high:max]&lt;/code&gt;。max没有赋值默认为原始数据容量大小，如果max值超过原始数据容量则会在运行时panic；生成的切片的容量等于&lt;code&gt;max - low&lt;/code&gt;，长度等于&lt;code&gt;high-low&lt;/code&gt;，数据范围在[low,high) 左闭右开区间进行切片。&lt;/p&gt;
-&lt;p&gt;所以使用切片时，可能会面临导致意想不到的副作用的情况。如果生成的切片的长度小于其容量，&lt;code&gt;append&lt;/code&gt;则可以改变原始切片。如果想限制可能的副作用的范围，可以使用切片copy或完整的切片表达式，这会阻止进行复制。&lt;/p&gt;
-&lt;h3 id=&#34;26切片和内存泄漏-重要&#34;&gt;26.切片和内存泄漏 (重要）&lt;/h3&gt;
-&lt;p&gt;切片中导致内存泄露的原因是，切片一直在复用，未被gc释放，每次重新使用又会重新分配一次内存空间，一直重复分配，导致内存泄露，比如，在网络请求中，消息数据大于32KB，需要对网络的消息协议进行解包之后处理保存数据， 首先从网络中获取消息，然后从消息中获取协议头，通过切片方式复用对应消息，下次从网络请求中获取消息数据，又重新从堆上分配了新的内存空间，以前复用的空间还未释放，最终导致内存泄露；解决这个问题的方案，从消息中获取协议头，只copy协议头部分数据进行处理，处理完，由gc来释放内存空间；&lt;/p&gt;
-&lt;p&gt;根据经验，请记住对大切片或数组进行切片可能会导致潜在的高内存消耗。剩余的空间不会被 GC 回收，尽管只使用了几个元素，但可以保留一个大的后备数组。copy切片是防止这种情况的解决方案。通过runtime.ReadMemStats 函数可以获取运行时内存alloctor的统计信息MemStats,&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;printAlloc&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-	&lt;span class=&#34;kd&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;m&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;runtime&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;MemStats&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;runtime&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;ReadMemStats&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;m&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;fmt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;%d KB\\n&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;m&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Alloc&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1024&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;介绍了两个潜在的内存泄漏问题:&lt;/p&gt;
-&lt;p&gt;第一个是关于对现有切片或数组进行切片以保留容量；如果处理大型切片并将它们重新切片以仅保留一小部分，则大量内存将保持分配状态但未使用。&lt;/p&gt;
-&lt;p&gt;第二个问题是，当对指针或具有指针字段的结构使用切片操作时，需要知道 GC 不会回收这些元素。&lt;/p&gt;
-&lt;p&gt;在这种情况下，两个选项是执行复制或将剩余元素字段显式标记为&lt;code&gt;nil&lt;/code&gt;。&lt;/p&gt;
-&lt;h3 id=&#34;27低效的map初始化&#34;&gt;27.低效的map初始化&lt;/h3&gt;
-&lt;p&gt;在使用slice切片时，如果预先知道要添加到切片中的元素数量，就可以使用给定的大小或容量对其进行初始化。这避免了必须不断重复昂贵的切片增长操作。这个想法与map类似。这样可以尽量减少map的扩容，重新分配新的空间，以及扩容后的rehash平衡所有元素。&lt;/p&gt;
-&lt;h3 id=&#34;28map和内存泄漏&#34;&gt;28.map和内存泄漏&lt;/h3&gt;
-&lt;p&gt;向map中添加&lt;em&gt;n个&lt;/em&gt;元素，然后删除所有元素，意味着在内存中保留相同数量的桶。因为 Go map 的大小只会增加，所以它的内存消耗也会增加。没有自动策略来缩小它。如果这导致高内存消耗，可以尝试不同的方法，例如强制 Go 重新创建map(这种方式不太可取，在复制之后和下一次垃圾回收之前，可能会在短时间内消耗当前内存的两倍) 或 val存放指向数据的指针；&lt;/p&gt;
-&lt;p&gt;tips： 需要了解map的结构，以及map中的key （可比较类型）&lt;/p&gt;
-&lt;h3 id=&#34;29错误地比较值&#34;&gt;29.错误地比较值&lt;/h3&gt;
-&lt;p&gt;具体可比较的类型见官方最新文档： (重要)&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://go.dev/ref/spec#Comparison_operators&#34;&gt;The Go Programming Language Specification - The Go Programming Language&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;考虑到文档中这些行为，如果必须比较两个切片、两个map或两个包含不可比较类型的结构，有哪些选择？如果坚持使用标准库，一个选择是使用运行时反射&lt;code&gt;reflect&lt;/code&gt;包中的&lt;code&gt;reflect.DeepEqual&lt;/code&gt;方法， 但是由性能损失，一般不用于生产环境，主要用于单元测试返回的值是否是预期值，还有类似的三方库用于测试时的期望值比较，比如&lt;code&gt;go-cmp&lt;/code&gt; ( &lt;a href=&#34;https://github.com/google/go-cmp&#34;&gt;https://github.com/google/go-cmp&lt;/a&gt; ) 或&lt;code&gt;testify&lt;/code&gt;( &lt;a href=&#34;https://github.com/stretchr/testify&#34;&gt;https://github.com/stretchr/testify&lt;/a&gt; )；如果性能在运行时至关重要，那么实施自定义方法可能是最佳解决方案；&lt;/p&gt;
-&lt;h2 id=&#34;概括&#34;&gt;概括&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;阅读现有代码时，请记住以 0 开头的整数文字是八进制数。此外，为了提高可读性，通过在八进制整数前加上&lt;code&gt;0o&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;因为整数上溢和下溢在 Go 中是静默处理的，所以可以实现自己的函数来捕获它们。&lt;/li&gt;
-&lt;li&gt;在给定的误差范围内进行浮点比较可以确保代码是可移植的。&lt;/li&gt;
-&lt;li&gt;执行加法或减法时，将具有相似数量级的运算分组以提高准确性。此外，在加减法之前执行乘法和除法。&lt;/li&gt;
-&lt;li&gt;了解切片长度和容量之间的差异应该是 Go 开发人员核心知识的一部分。切片长度是切片中可用元素的数量，而切片容量是后备数组中元素的数量。&lt;/li&gt;
-&lt;li&gt;创建切片时，如果其长度已知，则使用给定的长度或容量对其进行初始化。这减少了分配的数量并提高了性能。map的逻辑相同，需要初始化它们的大小。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;append&lt;/code&gt;如果两个不同的函数使用由同一数组支持的切片，则使用复制或完整切片表达式是一种防止产生冲突的方法。但是，如果想缩小一个大切片，只有切片copy可以防止内存泄漏。&lt;/li&gt;
-&lt;li&gt;要使用内置函数将一个切片复制到另一个切片&lt;code&gt;copy&lt;/code&gt;，请记住复制的元素数对应于两个切片长度之间的最小值。&lt;/li&gt;
-&lt;li&gt;使用指针切片或具有指针字段的结构，可以通过标记&lt;code&gt;nil&lt;/code&gt;为切片操作排除的元素来避免内存泄漏。&lt;/li&gt;
-&lt;li&gt;为了防止常见的混淆，例如在使用&lt;code&gt;encoding/json&lt;/code&gt;or&lt;code&gt;reflect&lt;/code&gt;包时，需要了解 nil 和空切片之间的区别。两者都是零长度、零容量的切片，但只有 nil 切片不需要分配。&lt;/li&gt;
-&lt;li&gt;要检查切片是否不包含任何元素，请检查其长度。无论切片是否为&lt;code&gt;nil&lt;/code&gt;空，此检查都有效。map也是如此。&lt;/li&gt;
-&lt;li&gt;要设计明确的 API，不应该区分 nil 和空切片。&lt;/li&gt;
-&lt;li&gt;map可以在内存中增长，但永远不会缩小。因此，如果它导致一些内存问题，可以尝试不同的选项，例如强制 Go 重新创建map或使用指针。&lt;/li&gt;
-&lt;li&gt;要在 Go 中比较类型，如果两种类型是可比较的，则可以使用&lt;code&gt;==&lt;/code&gt;和&lt;code&gt;!=&lt;/code&gt;运算符：布尔值、数字、string、指针、channel和由可比较类型组成的结构体。否则，可以使用&lt;code&gt;reflect.DeepEqual&lt;/code&gt;反射并为此付出代价，也可以使用自定义实现和库。&lt;/li&gt;
 &lt;/ul&gt;
 </description>
       

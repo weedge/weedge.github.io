@@ -88,7 +88,7 @@
 在本文中，我们将结合这两种方法的优点来产生快速且内存高效的算法。作为参考，大多数讨论的想法都将基于本文。
 在深入研究细节之前，有必要了解残差向量(residual vectors)是什么，并对它们的有用属性有一个简单的直觉。稍后我们将在设计算法时使用它们。"><meta itemprop="datePublished" content="2023-09-25T11:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-09-25T11:26:23+08:00" />
-<meta itemprop="wordCount" content="2804">
+<meta itemprop="wordCount" content="2795">
 <meta itemprop="keywords" content="oneday,similarity search,inverted file index,product quantization," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：相似性搜索，第 3 部分：混合倒排文件索引和乘积量化"/>
 <meta name="twitter:description" content="
@@ -364,7 +364,7 @@
 <p>在本文中，我们将结合这两种方法的优点来产生快速且内存高效的算法。作为参考，大多数讨论的想法都将基于<a href="https://inria.hal.science/inria-00514462v2/document">本文</a>。</p>
 <p>在深入研究细节之前，有必要了解残差向量(residual vectors)是什么，并对它们的有用属性有一个简单的直觉。稍后我们将在设计算法时使用它们。</p>
 <h1 id="残差向量residual-vectors">残差向量(Residual vectors)</h1>
-<p>想象一下执行了一个聚类算法并产生了多个聚类。每个簇都有一个质心和与其关联的点。**残差(residual)**是点（向量）与其质心的偏移量。基本上，要找到特定向量的残差，必须从向量的质心中减去该向量。</p>
+<p>想象一下执行了一个聚类算法并产生了多个聚类。每个簇都有一个质心和与其关联的点。<strong>残差residual</strong>是点(向量)与其质心的偏移量。基本上，要找到特定向量的残差，必须从向量的质心中减去该向量。</p>
 <p>如果聚类是通过 k-means 算法构建的，则聚类质心是属于该聚类的所有点的平均值。因此，从任意点找到残差相当于从中减去簇的平均值。通过从属于特定簇的所有点中减去平均值，这些点将以 0 为中心。</p>
 <p><img src="https://github.com/weedge/mypic/raw/master/oneday/blending-inverted-file-index-and-product-quantization/1.png" alt="img"></p>
 <p>​	<em>原始点簇显示在左侧。然后从所有聚类点中减去聚类质心。生成的残差向量显示在右侧。</em></p>
@@ -398,16 +398,16 @@
 <p>实际上，现在每个子空间都包含来自不同 Voronoi 分区的子向量。然后，对于每个子空间，像往常一样执行聚类算法并构建<em>k</em>个聚类及其质心。</p>
 <p><img src="https://github.com/weedge/mypic/raw/master/oneday/blending-inverted-file-index-and-product-quantization/5.png" alt="img"></p>
 <p>​	<em>训练流程</em></p>
-<p>*用向量的残差替换向量的重要性是什么？*如果向量不被它们的残差替换，那么每个子空间将包含更多不同的子向量（因为子空间将存储来自不同的非相交 Voronoi 分区的子向量，这些分区在空间中可能彼此相距很远）。现在，来自不同分区的向量（残差）相互重叠。由于现在每个子空间的多样性较少，因此有效表示向量所需的再现值较少。换句话说：</p>
+<p><em>用向量的残差替换向量的重要性是什么</em>？如果向量不被它们的残差替换，那么每个子空间将包含更多不同的子向量（因为子空间将存储来自不同的非相交 Voronoi 分区的子向量，这些分区在空间中可能彼此相距很远）。现在，来自不同分区的向量（残差）相互重叠。由于现在每个子空间的多样性较少，因此有效表示向量所需的再现值较少。换句话说：</p>
 <blockquote>
 <p>在与之前使用的相同长度的PQ码的情况下，向量可以更准确地表示，因为它们具有较小的方差。</p>
 </blockquote>
 <h1 id="推理查询inference">推理查询(Inference)</h1>
 <p>对于给定的查询，找到 Voronoi 分区的<em>k</em>个最近的质心。这些区域内的所有点都被视为候选点。由于原始向量最初被每个 Voronoi 区域中的残差替换，因此还需要计算查询向量的残差。在这种情况下，需要为每个 Voronoi 分区单独计算查询残差（因为每个区域具有不同的质心）。只有所选 Voronoi 分区的残差才会分配给候选者。</p>
-<p>然后将查询残差分割成子向量。与原始乘积量化算法一样，对于每个子空间，计算包含从子空间质心到查询子向量的距离的距离矩阵*d 。<em>必须记住，每个 Voronoi 分区的查询残差都是不同的。基本上，这意味着需要为每个查询残差单独计算距离矩阵</em>d 。*这是所需优化的计算成本。</p>
+<p>然后将查询残差分割成子向量。与原始乘积量化算法一样，对于每个子空间，计算包含从子空间质心到查询子向量的距离的距离矩阵<em>d</em>。 必须记住，每个 Voronoi 分区的查询残差都是不同的。基本上，这意味着需要为每个查询残差单独计算距离矩阵<em>d</em>。这是所需优化的计算成本。</p>
 <p>最后，像之前在乘积量化算法中所做的那样，对部分距离进行求和。</p>
 <h2 id="排序结果sorting-results">排序结果(Sorting results)</h2>
-<p>计算完所有距离后，需要选择<em>k个最近邻。<em>为了有效地做到这一点，作者建议维护<a href="https://medium.com/@slavahead/heapify-with-heap-sort-5df23b5764c1">MaxHeap</a> (<strong>注</strong>：容量为k 的大顶堆用于查最小最近的k个值，小顶堆则相反)数据结构。它的容量有限，为</em>k</em>，并且在每一步中，它存储<em>k</em>个当前最小距离。每当计算新距离时，仅当计算值小于 MaxHeap 中的最大值时，才会将其值添加到 MaxHeap 中。计算完所有距离后，查询的答案已存储在 MaxHeap 中。使用 MaxHeap 的优点是其快速构建时间，即<em>O(n)</em> 。</p>
+<p>计算完所有距离后，需要选择<em>k</em>个最近邻。为了有效地做到这一点，作者建议维护<a href="https://medium.com/@slavahead/heapify-with-heap-sort-5df23b5764c1">MaxHeap</a> (<strong>注</strong>：容量为k 的大顶堆用于查最小最近的k个值，小顶堆则相反)数据结构。它的容量有限，为<em>k</em>，并且在每一步中，它存储<em>k</em>个当前最小距离。每当计算新距离时，仅当计算值小于 MaxHeap 中的最大值时，才会将其值添加到 MaxHeap 中。计算完所有距离后，查询的答案已存储在 MaxHeap 中。使用 MaxHeap 的优点是其快速构建时间，即<em>O(n)</em> 。</p>
 <p><img src="https://github.com/weedge/mypic/raw/master/oneday/blending-inverted-file-index-and-product-quantization/6.png" alt="img"></p>
 <p>​	<em>推理查询过程</em></p>
 <h1 id="性能performance">性能(Performance)</h1>
@@ -440,7 +440,9 @@
 </ul>
 <p><em>除非另有说明，所有图片均由作者提供</em>。</p>
 <p>原文地址：<a href="https://towardsdatascience.com/similarity-search-blending-inverted-file-index-and-product-quantization-a8e508c765fa">https://towardsdatascience.com/similarity-search-blending-inverted-file-index-and-product-quantization-a8e508c765fa</a></p>
-<p><strong>附操作笔记</strong>: <a href="https://github.com/weedge/doraemon-nb/blob/main/faiss_vector_indexes.ipynb">faiss_vector_indexes.ipynb</a></p>
+<p><strong>附操作笔记</strong>:</p>
+<p><a href="https://github.com/weedge/doraemon-nb/blob/main/faiss_vector_indexes.ipynb">faiss_vector_indexes.ipynb</a></p>
+<p><a href="https://github.com/weedge/doraemon-nb/blob/main/faiss_composite-indexes.ipynb">faiss_composite-indexes.ipynb</a></p>
     </div>
 
     
@@ -480,6 +482,19 @@
       
       <nav class="post-nav">
         
+          <a class="prev" href="/post/oneday/similarity-search/4.hierarchical-navigable-small-world-hnsw/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">译：相似性搜索，第 4 部分：分层可导航小世界 (HNSW)</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
         
           <a class="next" href="/post/oneday/similarity-search/2.product-quantization/">
             <span class="next-text nav-default">译：相似性搜索，第 2 部分：乘积量化</span>
