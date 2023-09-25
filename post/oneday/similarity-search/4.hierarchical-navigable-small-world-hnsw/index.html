@@ -99,7 +99,7 @@ HNSW 的主要思想是构建这样一个图，其中任何一对顶点之间的
 
 在继续讨论 HNSW 的内部工作之前，让我们首先讨论跳跃列表和可导航小世界——HNSW 实现中使用的关键数据结构。"><meta itemprop="datePublished" content="2023-09-25T15:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-09-25T15:26:23+08:00" />
-<meta itemprop="wordCount" content="5765">
+<meta itemprop="wordCount" content="5802">
 <meta itemprop="keywords" content="oneday,similarity search,hierarchical navigable small world,hnsw," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：相似性搜索，第 4 部分：分层可导航小世界 (HNSW)"/>
 <meta name="twitter:description" content="
@@ -480,10 +480,10 @@ HNSW 的主要思想是构建这样一个图，其中任何一对顶点之间的
 <p><img src="https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/10.png" alt="img"></p>
 <p>​	<em>左边的例子使用了朴素方法。右侧的示例使用启发式选择，这会导致两个初始不相交区域相互连接</em>。</p>
 <h2 id="复杂度-1">复杂度</h2>
-<p>与搜索过程相比，插入过程的工作方式非常相似，没有任何可能需要非常数操作的显着差异。因此，插入单个顶点需要<em>O(logn)<em>的时间。为了估计总复杂度，应考虑给定数据集中所有插入节点</em>n</em>的数量。最终，HNSW 构建需要*O(n * logn)*时间。</p>
+<p>与搜索过程相比，插入过程的工作方式非常相似，没有任何可能需要非常数操作的显着差异。因此，插入单个顶点需要<em>O(logn)<em>的时间。为了估计总复杂度，应考虑给定数据集中所有插入节点</em>n</em>的数量。最终，HNSW 构建需要O(n * logn)时间。</p>
 <h1 id="将-hnsw-与其他方法相结合">将 HNSW 与其他方法相结合</h1>
 <p>HNSW 可以与其他相似性搜索方法一起使用，以提供更好的性能。最流行的方法之一是将其与倒排文件索引和乘积量化 ( <em>IndexIVFPQ</em> ) 结合起来，这在本系列文章的其他部分中进行了描述。</p>
-<p>在此范例中，HNSW 扮演IndexIVFPQ**粗量化器(coarse quantizer)*<em>的角色，这意味着它将负责查找最近的 Voronoi 分区，因此可以缩小搜索范围</em>。*为此，必须在所有 Voronoi 质心上构建 HNSW 索引。当给出查询时，HNSW 用于查找最近的 Voronoi 质心（而不是像以前那样通过比较到每个质心的距离进行强力搜索）。之后，查询向量在相应的 Voronoi 分区内进行量化，并使用 PQ 码计算距离。</p>
+<p>在此范例中，HNSW 扮演IndexIVFPQ 粗量化器(<strong>coarse quantizer</strong>)的角色，这意味着它将负责查找最近的 Voronoi 分区，因此可以缩小搜索范围。为此，必须在所有 Voronoi 质心上构建 HNSW 索引。当给出查询时，HNSW 用于查找最近的 Voronoi 质心（而不是像以前那样通过比较到每个质心的距离进行强力搜索）。之后，查询向量在相应的 Voronoi 分区内进行量化，并使用 PQ 码计算距离。</p>
 <p><img src="https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/11.png" alt="img"></p>
 <p>​	<em>通过查找建立在 Voronoi 质心之上的 HNSW 中的最近邻居来选择最近的 Voronoi 质心</em>。</p>
 <p>当仅使用倒排文件索引时，最好将 Voronoi 分区的数量设置得不要太大（例如 256 或 1024），因为会执行强力搜索来找到最近的质心。通过选择少量的 Voronoi 分区，每个分区内的候选者数量会变得相对较多。因此，该算法可以快速识别查询的最近质心，并且其大部分运行时间都集中在查找 Voronoi 分区内的最近邻居上。</p>
@@ -500,7 +500,7 @@ HNSW 的主要思想是构建这样一个图，其中任何一对顶点之间的
 <p>之后，在各个 Voronoi 分区内执行穷举搜索。这应该不成问题，因为潜在候选人的数量很少。</p>
 </li>
 </ul>
-<p><strong>注</strong>： 这种HNSW+IndexIVFPQ方式是最常用的方式，常结合场景数据结合硬件训练，调优，<a href="https://github.com/harsha-simhadri/big-ann-benchmarks">刷榜</a>。来处理B级别以上的embedding向量数据；需要关注 <strong>recall 召回率</strong>， <strong>内存使用率</strong> 和 <strong>搜索速度</strong>， 根据场景对这三方面进行取舍。</p>
+<p><strong>注</strong>： 这种HNSW+IndexIVFPQ方式是最常用的方式，常结合场景数据结合硬件训练，调优，<a href="https://github.com/harsha-simhadri/big-ann-benchmarks">刷榜</a>。来处理B级别以上的embedding向量数据；需要关注 <strong>recall 召回率</strong>， <strong>内存使用率</strong> 和 <strong>搜索速度</strong>， 根据场景对这三方面进行取舍。（详情见： faiss复合索引 <a href="https://github.com/weedge/doraemon-nb/blob/main/faiss_composite_indexes.ipynb"><strong>faiss_composite_indexes.ipynb</strong></a>）</p>
 <h1 id="faiss实现">FAISS实现</h1>
 <p>根据<a href="https://faiss.ai/">Faiss 文档</a>中的信息，我们将了解如何利用 HNSW 并将其与倒排文件索引和乘积量化合并在一起。</p>
 <h2 id="indexhnswflat">IndexHNSWFlat</h2>
@@ -522,7 +522,7 @@ HNSW 的主要思想是构建这样一个图，其中任何一对顶点之间的
 <p><em>IndexHNSWFlat 的 Faiss 实现</em> (注：图中的efConstruction 和 efSearch 注释弄反了)</p>
 <p><em>IndexHNSWFlat</em>设置<em>Mₘₐₓ = M</em>和<em>Mₘₐₓ₀ = 2 * M</em></p>
 <h2 id="indexhnswflat--indexivfpq">IndexHNSWFlat + IndexIVFPQ</h2>
-<p><em>IndexHNSWFlat</em>也可以与其他索引组合。其中一个示例是上一部分中描述的*IndexIVFPQ 。*该综合索引的创建分两个步骤进行：</p>
+<p><em>IndexHNSWFlat</em>也可以与其他索引组合。其中一个示例是上一部分中描述的<em>IndexIVFPQ</em> 。该综合索引的创建分两个步骤进行：</p>
 <ol>
 <li><em>IndexHNSWFlat</em>被初始化为粗量化器。</li>
 <li>量化器作为参数传递给<em>IndexIVFPQ</em>的构造函数。</li>
@@ -543,8 +543,9 @@ HNSW 的主要思想是构建这样一个图，其中任何一对顶点之间的
 </ul>
 <p>原文地址：<a href="https://towardsdatascience.com/similarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37">https://towardsdatascience.com/similarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37</a></p>
 <p><strong>附操作笔记</strong>:</p>
-<p><a href="https://github.com/weedge/doraemon-nb/blob/main/faiss_hnsw.ipynb">faiss_hnsw.ipynb</a></p>
-<p><a href="https://github.com/weedge/doraemon-nb/blob/main/faiss_vector_indexes.ipynb">faiss_vector_indexes.ipynb</a></p>
+<p><a href="https://github.com/weedge/doraemon-nb/blob/main/faiss_hnsw.ipynb"><strong>faiss_hnsw.ipynb</strong></a></p>
+<p><a href="https://github.com/weedge/doraemon-nb/blob/main/faiss_vector_indexes.ipynb"><strong>faiss_vector_indexes.ipynb</strong></a></p>
+<p><a href="https://github.com/weedge/doraemon-nb/blob/main/faiss_composite_indexes.ipynb"><strong>faiss_composite_indexes.ipynb</strong></a></p>
     </div>
 
     

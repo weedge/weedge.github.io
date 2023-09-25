@@ -149,10 +149,10 @@
 &lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/10.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
 &lt;p&gt;​	&lt;em&gt;左边的例子使用了朴素方法。右侧的示例使用启发式选择，这会导致两个初始不相交区域相互连接&lt;/em&gt;。&lt;/p&gt;
 &lt;h2 id=&#34;复杂度-1&#34;&gt;复杂度&lt;/h2&gt;
-&lt;p&gt;与搜索过程相比，插入过程的工作方式非常相似，没有任何可能需要非常数操作的显着差异。因此，插入单个顶点需要&lt;em&gt;O(logn)&lt;em&gt;的时间。为了估计总复杂度，应考虑给定数据集中所有插入节点&lt;/em&gt;n&lt;/em&gt;的数量。最终，HNSW 构建需要*O(n * logn)*时间。&lt;/p&gt;
+&lt;p&gt;与搜索过程相比，插入过程的工作方式非常相似，没有任何可能需要非常数操作的显着差异。因此，插入单个顶点需要&lt;em&gt;O(logn)&lt;em&gt;的时间。为了估计总复杂度，应考虑给定数据集中所有插入节点&lt;/em&gt;n&lt;/em&gt;的数量。最终，HNSW 构建需要O(n * logn)时间。&lt;/p&gt;
 &lt;h1 id=&#34;将-hnsw-与其他方法相结合&#34;&gt;将 HNSW 与其他方法相结合&lt;/h1&gt;
 &lt;p&gt;HNSW 可以与其他相似性搜索方法一起使用，以提供更好的性能。最流行的方法之一是将其与倒排文件索引和乘积量化 ( &lt;em&gt;IndexIVFPQ&lt;/em&gt; ) 结合起来，这在本系列文章的其他部分中进行了描述。&lt;/p&gt;
-&lt;p&gt;在此范例中，HNSW 扮演IndexIVFPQ**粗量化器(coarse quantizer)*&lt;em&gt;的角色，这意味着它将负责查找最近的 Voronoi 分区，因此可以缩小搜索范围&lt;/em&gt;。*为此，必须在所有 Voronoi 质心上构建 HNSW 索引。当给出查询时，HNSW 用于查找最近的 Voronoi 质心（而不是像以前那样通过比较到每个质心的距离进行强力搜索）。之后，查询向量在相应的 Voronoi 分区内进行量化，并使用 PQ 码计算距离。&lt;/p&gt;
+&lt;p&gt;在此范例中，HNSW 扮演IndexIVFPQ 粗量化器(&lt;strong&gt;coarse quantizer&lt;/strong&gt;)的角色，这意味着它将负责查找最近的 Voronoi 分区，因此可以缩小搜索范围。为此，必须在所有 Voronoi 质心上构建 HNSW 索引。当给出查询时，HNSW 用于查找最近的 Voronoi 质心（而不是像以前那样通过比较到每个质心的距离进行强力搜索）。之后，查询向量在相应的 Voronoi 分区内进行量化，并使用 PQ 码计算距离。&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/11.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
 &lt;p&gt;​	&lt;em&gt;通过查找建立在 Voronoi 质心之上的 HNSW 中的最近邻居来选择最近的 Voronoi 质心&lt;/em&gt;。&lt;/p&gt;
 &lt;p&gt;当仅使用倒排文件索引时，最好将 Voronoi 分区的数量设置得不要太大（例如 256 或 1024），因为会执行强力搜索来找到最近的质心。通过选择少量的 Voronoi 分区，每个分区内的候选者数量会变得相对较多。因此，该算法可以快速识别查询的最近质心，并且其大部分运行时间都集中在查找 Voronoi 分区内的最近邻居上。&lt;/p&gt;
@@ -169,7 +169,7 @@
 &lt;p&gt;之后，在各个 Voronoi 分区内执行穷举搜索。这应该不成问题，因为潜在候选人的数量很少。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;： 这种HNSW+IndexIVFPQ方式是最常用的方式，常结合场景数据结合硬件训练，调优，&lt;a href=&#34;https://github.com/harsha-simhadri/big-ann-benchmarks&#34;&gt;刷榜&lt;/a&gt;。来处理B级别以上的embedding向量数据；需要关注 &lt;strong&gt;recall 召回率&lt;/strong&gt;， &lt;strong&gt;内存使用率&lt;/strong&gt; 和 &lt;strong&gt;搜索速度&lt;/strong&gt;， 根据场景对这三方面进行取舍。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;： 这种HNSW+IndexIVFPQ方式是最常用的方式，常结合场景数据结合硬件训练，调优，&lt;a href=&#34;https://github.com/harsha-simhadri/big-ann-benchmarks&#34;&gt;刷榜&lt;/a&gt;。来处理B级别以上的embedding向量数据；需要关注 &lt;strong&gt;recall 召回率&lt;/strong&gt;， &lt;strong&gt;内存使用率&lt;/strong&gt; 和 &lt;strong&gt;搜索速度&lt;/strong&gt;， 根据场景对这三方面进行取舍。（详情见： faiss复合索引 &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_composite_indexes.ipynb&#34;&gt;&lt;strong&gt;faiss_composite_indexes.ipynb&lt;/strong&gt;&lt;/a&gt;）&lt;/p&gt;
 &lt;h1 id=&#34;faiss实现&#34;&gt;FAISS实现&lt;/h1&gt;
 &lt;p&gt;根据&lt;a href=&#34;https://faiss.ai/&#34;&gt;Faiss 文档&lt;/a&gt;中的信息，我们将了解如何利用 HNSW 并将其与倒排文件索引和乘积量化合并在一起。&lt;/p&gt;
 &lt;h2 id=&#34;indexhnswflat&#34;&gt;IndexHNSWFlat&lt;/h2&gt;
@@ -191,7 +191,7 @@
 &lt;p&gt;&lt;em&gt;IndexHNSWFlat 的 Faiss 实现&lt;/em&gt; (注：图中的efConstruction 和 efSearch 注释弄反了)&lt;/p&gt;
 &lt;p&gt;&lt;em&gt;IndexHNSWFlat&lt;/em&gt;设置&lt;em&gt;Mₘₐₓ = M&lt;/em&gt;和&lt;em&gt;Mₘₐₓ₀ = 2 * M&lt;/em&gt;&lt;/p&gt;
 &lt;h2 id=&#34;indexhnswflat--indexivfpq&#34;&gt;IndexHNSWFlat + IndexIVFPQ&lt;/h2&gt;
-&lt;p&gt;&lt;em&gt;IndexHNSWFlat&lt;/em&gt;也可以与其他索引组合。其中一个示例是上一部分中描述的*IndexIVFPQ 。*该综合索引的创建分两个步骤进行：&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;IndexHNSWFlat&lt;/em&gt;也可以与其他索引组合。其中一个示例是上一部分中描述的&lt;em&gt;IndexIVFPQ&lt;/em&gt; 。该综合索引的创建分两个步骤进行：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;em&gt;IndexHNSWFlat&lt;/em&gt;被初始化为粗量化器。&lt;/li&gt;
 &lt;li&gt;量化器作为参数传递给&lt;em&gt;IndexIVFPQ&lt;/em&gt;的构造函数。&lt;/li&gt;
@@ -212,8 +212,9 @@
 &lt;/ul&gt;
 &lt;p&gt;原文地址：&lt;a href=&#34;https://towardsdatascience.com/similarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37&#34;&gt;https://towardsdatascience.com/similarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;附操作笔记&lt;/strong&gt;:&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_hnsw.ipynb&#34;&gt;faiss_hnsw.ipynb&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_vector_indexes.ipynb&#34;&gt;faiss_vector_indexes.ipynb&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_hnsw.ipynb&#34;&gt;&lt;strong&gt;faiss_hnsw.ipynb&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_vector_indexes.ipynb&#34;&gt;&lt;strong&gt;faiss_vector_indexes.ipynb&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_composite_indexes.ipynb&#34;&gt;&lt;strong&gt;faiss_composite_indexes.ipynb&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;</description>
       
     </item>
     
@@ -309,8 +310,8 @@
 &lt;p&gt;&lt;em&gt;除非另有说明，所有图片均由作者提供&lt;/em&gt;。&lt;/p&gt;
 &lt;p&gt;原文地址：&lt;a href=&#34;https://towardsdatascience.com/similarity-search-blending-inverted-file-index-and-product-quantization-a8e508c765fa&#34;&gt;https://towardsdatascience.com/similarity-search-blending-inverted-file-index-and-product-quantization-a8e508c765fa&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;附操作笔记&lt;/strong&gt;:&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_vector_indexes.ipynb&#34;&gt;faiss_vector_indexes.ipynb&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_composite-indexes.ipynb&#34;&gt;faiss_composite-indexes.ipynb&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_vector_indexes.ipynb&#34;&gt;&lt;strong&gt;faiss_vector_indexes.ipynb&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_composite_indexes.ipynb&#34;&gt;&lt;strong&gt;faiss_composite_indexes.ipynb&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;</description>
       
     </item>
     
@@ -441,7 +442,7 @@
 &lt;li&gt;&lt;a href=&#34;https://www.pinecone.io/learn/series/faiss/product-quantization/&#34;&gt;https://www.pinecone.io/learn/series/faiss/product-quantization/&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;原文地址： &lt;a href=&#34;https://towardsdatascience.com/similarity-search-product-quantization-b2a1a6397701&#34;&gt;https://towardsdatascience.com/similarity-search-product-quantization-b2a1a6397701&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;附操作笔记&lt;/strong&gt;: &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_product_quantization.ipynb&#34;&gt;faiss_product_quantization.ipynb&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;&lt;strong&gt;附操作笔记&lt;/strong&gt;: &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_product_quantization.ipynb&#34;&gt;&lt;strong&gt;faiss_product_quantization.ipynb&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;</description>
       
     </item>
     
@@ -581,7 +582,9 @@
 &lt;/ul&gt;
 &lt;p&gt;注：&lt;em&gt;除非另有说明，所有图片均由原作者提供。&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;原文：https://towardsdatascience.com/similarity-search-knn-inverted-file-index-7cab80cc0e79&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;附操作笔记&lt;/strong&gt;: &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_tutorial.ipynb&#34;&gt;faiss_tutorial.ipynb&lt;/a&gt; &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_vector_indexes.ipynb&#34;&gt;faiss_vector_indexes.ipynb&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;&lt;strong&gt;附操作笔记&lt;/strong&gt;:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_tutorial.ipynb&#34;&gt;&lt;strong&gt;faiss_tutorial.ipynb&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_vector_indexes.ipynb&#34;&gt;&lt;strong&gt;faiss_vector_indexes.ipynb&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;</description>
       
     </item>
     
@@ -1500,7 +1503,7 @@
 &lt;li&gt;&lt;a href=&#34;https://damo.alibaba.com/events/112?lang=zh&#34;&gt;达摩院自研向量检索引擎 Proxima&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/baidu/puck/blob/main/docs/README.md&#34;&gt;baidu-puck&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://blog.research.google/2020/07/announcing-scann-efficient-vector.html&#34;&gt;Announcing ScaNN: Efficient Vector Similarity Search&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.pinecone.io/learn/series/faiss/&#34;&gt;Faiss: The Missing Manual&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.pinecone.io/learn/series/faiss/&#34;&gt;Faiss: The Missing Manual&lt;/a&gt; &lt;a href=&#34;https://www.pinecone.io/learn/&#34;&gt;https://www.pinecone.io/learn/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;Vector Search and Databases at Scale&lt;/strong&gt;. Highload++ Conference, Serbia. &lt;a href=&#34;https://highload.rs/2023/abstracts/9770&#34;&gt;Event&lt;/a&gt;. &lt;a href=&#34;https://drive.google.com/file/d/11M51Jw9UdEmzHDTGZmn4n3bxgTcQt3sw/view?usp=sharing&#34;&gt;Slides&lt;/a&gt; &lt;a href=&#34;https://www.youtube.com/watch?v=UMrhB3icP9w&amp;amp;t=65s&#34;&gt;YouTube&lt;/a&gt;.   &lt;a href=&#34;https://ashvardanian.com/talks/&#34;&gt;ash.vardanian&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h2 id=&#34;附相关向量数据库hnsw使用一般都会支持&#34;&gt;附：相关向量数据库HNSW使用(一般都会支持)&lt;/h2&gt;
