@@ -6,11 +6,11 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 26 Sep 2023 15:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 26 Sep 2023 21:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Locality Sensitive Hashing </title>
       <link>https://weedge.github.io/tags/locality-sensitive-hashing/</link>
-      <pubDate>Tue, 26 Sep 2023 15:26:23 +0800</pubDate>
+      <pubDate>Tue, 26 Sep 2023 21:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/locality-sensitive-hashing/</guid>
       <description></description>
@@ -19,7 +19,7 @@
     <item>
       <title>lsh</title>
       <link>https://weedge.github.io/tags/lsh/</link>
-      <pubDate>Tue, 26 Sep 2023 15:26:23 +0800</pubDate>
+      <pubDate>Tue, 26 Sep 2023 21:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/lsh/</guid>
       <description></description>
@@ -28,16 +28,25 @@
     <item>
       <title>oneday</title>
       <link>https://weedge.github.io/tags/oneday/</link>
-      <pubDate>Tue, 26 Sep 2023 15:26:23 +0800</pubDate>
+      <pubDate>Tue, 26 Sep 2023 21:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/oneday/</guid>
       <description></description>
     </item>
     
     <item>
+      <title>random projections</title>
+      <link>https://weedge.github.io/tags/random-projections/</link>
+      <pubDate>Tue, 26 Sep 2023 21:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/random-projections/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>similarity search</title>
       <link>https://weedge.github.io/tags/similarity-search/</link>
-      <pubDate>Tue, 26 Sep 2023 15:26:23 +0800</pubDate>
+      <pubDate>Tue, 26 Sep 2023 21:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/similarity-search/</guid>
       <description></description>
@@ -175,15 +184,6 @@
       <pubDate>Tue, 08 Nov 2022 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/tf/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>全栈</title>
-      <link>https://weedge.github.io/tags/%E5%85%A8%E6%A0%88/</link>
-      <pubDate>Wed, 02 Nov 2022 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/%E5%85%A8%E6%A0%88/</guid>
       <description></description>
     </item>
     

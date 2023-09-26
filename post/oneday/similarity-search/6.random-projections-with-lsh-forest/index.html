@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title> - 时间飘过</title>
+  <title>译：相似性搜索，第 6 部分：LSH 森林的随机投影 - 时间飘过</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -23,7 +23,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="Reference 除非另有说明，所有图片均由作者提供。 原文地址： https://towardsdatascience.com/similarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47 附操作笔记:" />
+  <meta name="description" content="介绍 在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。
+在上一部分中，我们研究了 LSH 的主要范例，即将输入向量转换为低维hash值，同时保留有关其相似性的信息。为了获取hash值（签名），使用了 minhash 函数。在本文中，我们将随机投影输入数据以获得类似的二进制向量。
+" />
 
   <meta name="keywords" content="工作, 技术, 生活" />
 
@@ -61,20 +63,29 @@
 <link rel="stylesheet" href="/css/copy-to-clipboard.css">
 
 
-<meta property="og:title" content="" />
-<meta property="og:description" content="Reference 除非另有说明，所有图片均由作者提供。 原文地址： https://towardsdatascience.com/similarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47 附操作笔记:" />
+<meta property="og:title" content="译：相似性搜索，第 6 部分：LSH 森林的随机投影" />
+<meta property="og:description" content="
+介绍
+在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。
+在上一部分中，我们研究了 LSH 的主要范例，即将输入向量转换为低维hash值，同时保留有关其相似性的信息。为了获取hash值（签名），使用了 minhash 函数。在本文中，我们将随机投影输入数据以获得类似的二进制向量。" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://weedge.github.io/post/oneday/similarity-search/6.random-projections-with-lsh-forest/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-09-26T21:26:23+08:00" />
+<meta property="article:modified_time" content="2023-09-26T21:26:23+08:00" />
 
-
-
-<meta itemprop="name" content="">
-<meta itemprop="description" content="Reference 除非另有说明，所有图片均由作者提供。 原文地址： https://towardsdatascience.com/similarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47 附操作笔记:">
-
-<meta itemprop="wordCount" content="31">
-<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content=""/>
-<meta name="twitter:description" content="Reference 除非另有说明，所有图片均由作者提供。 原文地址： https://towardsdatascience.com/similarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47 附操作笔记:"/>
+<meta itemprop="name" content="译：相似性搜索，第 6 部分：LSH 森林的随机投影">
+<meta itemprop="description" content="
+介绍
+在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。
+在上一部分中，我们研究了 LSH 的主要范例，即将输入向量转换为低维hash值，同时保留有关其相似性的信息。为了获取hash值（签名），使用了 minhash 函数。在本文中，我们将随机投影输入数据以获得类似的二进制向量。"><meta itemprop="datePublished" content="2023-09-26T21:26:23+08:00" />
+<meta itemprop="dateModified" content="2023-09-26T21:26:23+08:00" />
+<meta itemprop="wordCount" content="4720">
+<meta itemprop="keywords" content="oneday,similarity search,Locality Sensitive Hashing ,lsh,random projections," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="译：相似性搜索，第 6 部分：LSH 森林的随机投影"/>
+<meta name="twitter:description" content="
+介绍
+在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。
+在上一部分中，我们研究了 LSH 的主要范例，即将输入向量转换为低维hash值，同时保留有关其相似性的信息。为了获取hash值（签名），使用了 minhash 函数。在本文中，我们将随机投影输入数据以获得类似的二进制向量。"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -294,13 +305,16 @@
           <article class="post bg-white">
     
     <header class="post-header">
-      <h1 class="post-title"></h1>
+      <h1 class="post-title">译：相似性搜索，第 6 部分：LSH 森林的随机投影</h1>
       
       <div class="post-meta">
-        <time datetime="0001-01-01" class="post-time">
-          0001-01-01
+        <time datetime="2023-09-26" class="post-time">
+          2023-09-26
         </time>
-        
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            
+          </div>
         
 
         
@@ -316,17 +330,179 @@
 <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">文章目录</h2>
   <div class="post-toc-content">
-    <nav id="TableOfContents"></nav>
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#为什么超平面是随机构建的"><strong>为什么超平面是随机构建的？</strong></a></li>
+    <li><a href="#为什么-lsh-随机投影也称为树">为什么 LSH 随机投影也称为“树”？</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#训练training">训练(Training)</a></li>
+    <li><a href="#推理查询inference">推理查询(Inference)</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#可视化visualisation">可视化(Visualisation)</a></li>
+    <li><a href="#例子">例子</a></li>
+  </ul>
+</nav>
   </div>
 </div>
 
     
     <div class="post-content">
-      <h1 id="reference">Reference</h1>
+      <p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/0.png" alt=""></p>
+<h1 id="介绍">介绍</h1>
+<p>在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。</p>
+<p>在<a href="https://medium.com/towards-data-science/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203">上一部分</a>中，我们研究了 LSH 的主要范例，即将<em>输入向量转换为低维hash值，同时保留有关其相似性的信息</em>。为了获取hash值（签名），使用了 minhash 函数。在本文中，我们将随机投影输入数据以获得类似的二进制向量。</p>
+<h1 id="idea">Idea</h1>
+<p>考虑高维空间中的一组点。可以构造一个随机超平面(hyperplane)，充当墙并将每个点分为两个子组之一：正子组positive和负子组negative。正侧的各点被赋予“1”值，负侧的各点被赋予“0”值。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/1.png" alt="img"></p>
+<p>​	<em>3D 空间中分隔两点的超平面示例</em></p>
+<p>如何确定某个向量的超平面的边？通过使用内积！回到线性代数的本质，给定向量与超平面法向量之间的点积的符号决定了该向量位于哪一侧。这样，每个数据集向量都可以分为两侧之一。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/2.png" alt="img"></p>
+<p>​	<em>计算向量与超平面法向量的内积，并与0比较，可以知道向量相对于超平面位于哪一侧</em></p>
+<p>显然，用一个二进制值对每个数据集向量进行编码是不够的。也就是说，应该构造几个随机超平面，因此每个向量都可以根据其与特定超平面的相对位置用许多 0 和 1 值进行编码。如果两个向量具有完全相同的二进制代码，则表明所构造的超平面都无法将它们分成不同的区域。因此，他们在现实中很可能非常接近。</p>
+<p>为了找到给定查询的最近邻居，通过检查其与所有超平面的相对位置以相同的方式用 0 和 1 编码查询就足够了。可以将找到的查询二元向量与为数据集向量获得的所有其他二元向量进行比较。这可以通过使用汉明距离线性完成。</p>
+<blockquote>
+<p><strong>两个向量之间的汉明距离(Hamming distance)</strong> 是它们的值不同的位置的数量。</p>
+</blockquote>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/3.png" alt="img"></p>
+<p>​	<em>计算汉明距离的示例。左边的一对向量彼此更相似，因为它们的汉明距离更小。</em></p>
+<p>与查询的汉明距离最小的二元向量被视为候选向量，然后与初始查询进行充分比较。</p>
+<h2 id="为什么超平面是随机构建的"><strong>为什么超平面是随机构建的？</strong></h2>
+<p>在当前阶段，要求为什么超平面以随机方式构建而不是确定性的，意味着可以自定义规则，定义用于分离数据集点，似乎是合乎逻辑的。这背后有两个主要原因：</p>
+<ul>
+<li>首先，确定性方法无法推广算法并可能导致过度拟合。</li>
+<li>其次，随机性允许对算法的性能做出不依赖于输入数据的概率陈述。对于确定性方法来说，这是行不通的，因为它可能对一个数据表现良好，但对另一数据表现不佳。一个很好的类比是确定性<a href="https://medium.com/@slavahead/quick-sort-explained-and-visualised-866cae28308e">快速排序</a>算法，其平均运行时间为<em>O(n * log n)</em>。然而，它适用于O(n²)最坏情况下排序数组上的时间。如果有人了解算法的工作流程，那么该信息可以通过始终提供最坏情况的数据来明显损害系统的效率。这就是为什么随机快速排序更受欢迎的原因。随机超平面也会发生绝对类似的情况。</li>
+</ul>
+<h2 id="为什么-lsh-随机投影也称为树">为什么 LSH 随机投影也称为“树”？</h2>
+<p>随机投影方法有时称为<strong>LSH 树</strong>。这是因为hash码分配的过程可以用决策树的形式表示，其中每个节点包含向量是否位于当前超平面的负侧或正侧的条件。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/4.png" alt="img"></p>
+<p>​	<em>第一个节点检查向量相对于红色超平面位于哪一侧。第二层的节点检查相同的条件，但相对于绿色超平面。最后，第三级检查蓝色超平面的相对位置。基于这 3 个条件，为向量分配一个 3 位hash值。</em></p>
+<h1 id="超平面森林">超平面森林</h1>
+<p>超平面是随机构造的。这可能会导致如下图所示的数据集点分离不佳的情况。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/5.png" alt="img"></p>
+<p><em>构造 4 个超平面以将数据集点表示为 4 长度的二进制向量。尽管 D 点和 E 点具有相同的hash码，但它们彼此相距相对较远（FP）。相反的情况发生在一对位于不同区域但彼此非常接近的点 E 和 F (FN) 上。考虑到汉明距离，该算法通常预测 D 点比 F 点更接近 E。</em></p>
+<p>从技术上讲，当两个点具有相同的hash码但彼此相距很远时，这并不是什么大问题。在算法的下一步中，这些点将被作为候选点并进行充分比较——这样算法就可以消除 <em>假阳性(false positive)</em> 误报情况。<em>假阴性(false negatives)</em> 漏报情况更加复杂：当两个点具有不同的hash码但实际上彼此接近时。</p>
+<p>为什么不使用与经典机器学习中的决策树相同的方法，将其组合成随机森林来提高整体预测质量？<em>如果一个估计器犯了错误，其他估计器可以产生更好的预测并减轻最终的预测误差</em>。利用这个想法，构建随机超平面的过程可以独立重复。生成的hash值可以聚合为一对向量，其方式与上一章中的 minhash 值类似：</p>
+<blockquote>
+<p><em>如果查询与另一个向量至少有一次相同的hash码，则它们被视为候选者</em>。</p>
+</blockquote>
+<p>使用这种机制可以减少<em>假阴性</em>的数量。</p>
+<h1 id="质量与速度的权衡quality-vs-speed-trade-off">质量与速度的权衡(Quality vs speed trade-off)</h1>
+<p>选择适当数量的超平面在数据集上运行非常重要。选择的超平面越多来划分数据集点，冲突就越少，计算hash码所需的时间就越多，存储它们的内存也就越多。确切地说，如果一个数据集由<em>n 个</em>向量组成，并且我们将其分割为<em>k 个</em>超平面，那么平均每个可能的hash码将被分配给<em>n / 2ᵏ</em>个向量。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/6.png" alt="img"></p>
+<p>​	<em>k = 3 产生 2³ = 8 个桶</em></p>
+<h1 id="复杂complexity">复杂(Complexity)</h1>
+<h2 id="训练training">训练(Training)</h2>
+<p>LSH Forest 训练阶段由两部分组成：</p>
+<ol>
+<li><em>k个超平面的生成</em>。这是一个相对较快的过程，因为<em>d</em>维空间中的单个超平面可以在 <em>O(d)</em> 时间内生成。</li>
+<li><em>为所有数据集向量分配hash码</em>。此步骤可能需要时间，尤其是对于大型数据集。获取单个hash码需要 <em>O(dk)</em> 的时间。如果数据集由 n个向量组成，则总复杂度变为<em>O(ndk)</em>。</li>
+</ol>
+<p>对于森林中的每棵树，上述过程都会重复几次。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/7.png" alt="img"></p>
+<p>​	<em>训练复杂性</em></p>
+<h2 id="推理查询inference">推理查询(Inference)</h2>
+<p>LSH 森林的优点之一是其快速推理查询，包括两个步骤：(k 超平面个数，d 维数，n 数据集向量数)</p>
+<ol>
+<li><em>获取查询的hash码</em>。这相当于计算<em>k</em> 个标量积，结果为 <em>O(dk)</em> 时间。</li>
+<li>通过计算到候选者的精确距离，在同一存储桶（具有相同hash码的向量）中查找距查询最近的邻居。对于O(d) ，距离计算呈线性进行。每个桶平均包含n / 2ᵏ个向量。因此，计算到所有潜在候选者的距离需要O(dn / 2ᵏ)的时间。</li>
+</ol>
+<p>总复杂度为 <em>O(dk + dn / 2ᵏ)</em> 。</p>
+<p>像往常一样，对于森林中的每棵树，上述过程都会重复几次。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/8.png" alt="img"></p>
+<p>​	<em>推理查询复杂度</em></p>
+<p>当超平面<em>k</em>的数量选择为<em>n ~ 2ᵏ</em>（在大多数情况下是可能的）时，总推理复杂度变为 <em>O(ldk)</em>  （ <em>l</em> 是树的数量）。基本上，这意味着 <strong>计算时间不取决于数据集大小！</strong> 这种微妙之处导致了对数百万甚至数十亿向量的相似性搜索的有效可扩展性。</p>
+<h1 id="错误率error-rate">错误率(Error rate)</h1>
+<p>在有关 LSH 的文章的前一部分中，我们讨论了如何根据两个向量的签名相似性来确定两个向量被选为候选向量的概率。在这里，我们将使用几乎相同的逻辑来找到 LSH 森林的公式。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/9.png" alt="img"></p>
+<p>​	<em>令 s 为两个向量在其hash值的相同位置具有相同位的概率（稍后将估计 s）</em></p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/10.png" alt="img"></p>
+<p>​	<em>两个向量的长度为 k 的hash码相等的概率</em></p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/11.png" alt="img"></p>
+<p>​	<em>两个向量的长度为 k 的hash码不同（或至少一位不同）的概率</em></p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/12.png" alt="img"></p>
+<p>​	<em>两个向量的所有 l 个hash码（对于 l 个超平面）都不同的概率</em></p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/13.png" alt="img"></p>
+<p>​	<em>两个向量的 l 个hash码中至少有一个相等的概率，因此向量将成为候选向量</em></p>
+<p>到目前为止，我们几乎已经得到了估计两个向量成为候选向量的概率的公式。剩下的唯一事情就是估计方程中变量<em>s</em>的值。在经典的LSH算法中，<em>s</em>等于两个向量的Jaccard系数或签名相似度。另一方面，为了估计LSH 森林的<em>s</em>，将使用线性代数理论。</p>
+<p>坦率地说，<em>s</em>是两个向量<em>a</em>和<em>b</em>具有相同位的概率。该概率相当于随机超平面将这些向量分离到同一侧的概率。让我们想象一下：</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/14.png" alt="img"></p>
+<p>向量 a 和 b 由蓝色超平面分隔。绿色超平面没有将它们分开。</p>
+<p>从图中可以清楚地看出，只有当向量<em>a</em>和<em>b从向量 a 和 b 之间经过时，超平面才会将它们分成两个不同的边。<em>这种概率</em>q</em>与向量之间的角度成正比，可以轻松计算：</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/15.png" alt="img"></p>
+<p>​	<em>随机超平面分隔两个向量的概率（即它们具有不同的位）</em></p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/16.png" alt="img"></p>
+<p>​	<em>随机超平面不分离两个向量的概率（即，它们具有相同的位）</em></p>
+<p>将这个方程代入之前获得的方程得出最终公式：</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/17.png" alt="img"></p>
+<p>​	<em>基于超平面数 k 和 LSH 树数 l 两个向量具有至少一个对应hash值（即成为候选者）的概率</em></p>
+<h2 id="可视化visualisation">可视化(Visualisation)</h2>
+<p><em>注意</em>：余弦相似度正式定义在范围 [-1, 1] 中。为简单起见，我们将此区间映射到 [0, 1]，其中 0 和 1 分别表示最低和最高可能的相似度。</p>
+<p>利用最后获得的公式，让我们根据不同数量的超平面 <em>k</em> 和树 <em>l</em> 的余弦相似度来可视化两个向量作为候选向量的概率。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/18.png" alt="img"></p>
+<p>​	<em>调整树的数量 l</em></p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/19.png" alt="img"></p>
+<p>​	<em>调整超平面数量k</em></p>
+<p>根据这些图，可以进行一些有用的观察：</p>
+<ul>
+<li>余弦相似度为 1 的一对向量总是成为候选向量。</li>
+<li>余弦相似度为 0 的一对向量永远不会成为候选向量。</li>
+<li>当超平面 <em>k</em> 的数量减少或 LSH 树 <em>l</em> 的数量增加时，两个向量成为候选的概率 <em>P</em> 增加（即更多 <em>假阳性 false positives</em> 误报）。相反的说法是正确的。</li>
+</ul>
+<p>综上所述，LSH是一种非常灵活的算法：可以根据给定的问题调整不同的 <em>k</em> 和 <em>l</em> 值，得到满足问题要求的概率曲线。</p>
+<h2 id="例子">例子</h2>
+<p>让我们看下面的例子。想象一下<em>l = 5</em>棵树， 用<em>k = 10 个</em>超平面构建的树。除此之外，还有两个向量的余弦相似度为0.8。在大多数系统中，这种余弦相似性表明向量确实彼此非常接近。根据前面几节的结果，这个概率只有 2.5%！显然，对于如此高的余弦相似度来说，这是一个非常低的结果。使用<em>l = 5</em>和<em>k = 10</em>这些参数会 导致大量 <em>假阴性 false negatives</em> 漏报！下面的绿线代表这种情况下的概率。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/20.png" alt="img"></p>
+<p>基于两个向量余弦相似度的概率曲线</p>
+<p>这个问题可以通过调整<em>k</em>和<em>l</em>的更好值来将曲线向左移动来解决。</p>
+<p>例如，如果<em>k</em>减小到 3（红线），则余弦相似度 0.8 的相同值将对应于 68% 的概率，这比以前更好。乍一看，红线似乎比绿线更适合，但请务必记住，使用较小的<em>k</em>值（如红线的情况）会导致大量碰撞。这就是为什么有时最好调整第二个参数，即树的数量<em>l</em>。</p>
+<p>与<em>k</em>不同，它通常需要非常多的树 <em>l</em> 才能获得相似的线形状。在图中，蓝线是通过将 <em>l</em> 值从 10 更改为 500 从绿线获得的。蓝线显然比绿线拟合得更好，但仍远非完美：因为余弦之间的斜率很高相似度值为0.6和0.8时，余弦相似度在0.3-0.5附近的概率几乎等于0，这是不利的。文档相似度为 0.3-0.5 的小概率在现实生活中通常应该更高。</p>
+<p>根据最后一个例子，很明显，即使树的数量非常多（需要大量计算），仍然会导致许多<em>漏报</em>！这是随机投影方法的主要缺点：</p>
+<blockquote>
+<p>尽管有可能获得完美的概率曲线，但它要么需要大量计算，要么会导致大量冲突。否则，会导致较高的假阴性漏报率。</p>
+</blockquote>
+<h1 id="faiss实现">FAISS实现</h1>
+<p><a href="https://faiss.ai/">根据Faiss文档</a>中的信息，我们将了解如何构建LSH索引。</p>
+<p><em>随机投影</em>算法在 Faiss 中的IndexLSH类中实现。尽管 Faiss 作者使用了另一种称为“随机旋转”的技术，但它仍然与本文中描述的技术有相似之处。<strong>该类仅实现一个 LSH 树。如果我们想使用 LSH 森林，那么只需创建几个 LSH 树并聚合它们的结果就足够了</strong>。</p>
+<p><em>IndexLSH</em>类的构造函数有两个参数：</p>
+<ul>
+<li><strong>d</strong>：维数</li>
+<li><strong>nbits</strong>：编码单个向量所需的位数（可能的桶数等于<em>2ⁿᵇᶦᵗˢ</em>）</li>
+</ul>
+<blockquote>
+<p>search() 方法返回的距离是到查询向量的汉明距离。</p>
+</blockquote>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/21.png" alt="img"></p>
+<p><em>IndexLSH 的 Faiss 实现</em></p>
+<p>此外，Faiss 允许通过调用*faiss.vector_to_array(index.codes)*方法检查每个数据集向量的编码hash值。</p>
+<p>由于每个数据集向量均由<em>nbits</em>二进制值编码，因此存储单个向量所需的字节数等于：</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/22.png" alt="img"></p>
+<h1 id="johnson-lindenstrauss-lemma">Johnson-Lindenstrauss lemma</h1>
+<p><a href="https://cs.stanford.edu/people/mmahoney/cs369m/Lectures/lecture1.pdf">Johnson-Lindenstrauss lemma</a>是一个与降维相关的引理。虽然可能很难完全理解其原始陈述，但可以用简单的语言表述：</p>
+<blockquote>
+<p>选择随机子集并将原始数据投影到其上可以保留点之间相应的成对距离。</p>
+</blockquote>
+<p>更准确地说，拥有<em>n 个</em>点的数据集，可以在<em>O(logn)<em>维的新空间中表示它们，从而几乎保留点之间的相对距离。如果向量在 LSH 方法中由</em>~logn</em>二进制值编码，则可以应用引理。此外，LSH 完全按照引理要求以随机方式创建超平面。</p>
+<p>Johnson-Lindenstrauss 引理的另一个令人难以置信的事实是，<strong>新数据集的维数不依赖于原始数据集的维数</strong>！实际上，这个引理对于非常小的维度来说效果不佳。</p>
+<h1 id="结论">结论</h1>
+<p>我们已经使用了强大的相似性搜索算法。基于通过随机超平面分离点的简单想法，它通常在大型数据集上表现良好并且可扩展。此外，它具有良好的灵活性，允许选择适当数量的超平面和树。</p>
+<p>Johnson-Lindenstrauss 引理的理论结果强化了随机预测方法的使用。</p>
+<h1 id="reference">Reference</h1>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Random_projection">https://en.wikipedia.org/wiki/Random_projection</a></li>
+<li><a href="http://infolab.stanford.edu/~bawa/Pub/similarity.pdf">LSH Forest: Self-Tuning Indexes for Similarity Search</a></li>
+<li><a href="https://cs.stanford.edu/people/mmahoney/cs369m/Lectures/lecture1.pdf">The Johnson-Lindenstrauss Lemma</a></li>
+<li><a href="https://faiss.ai/">Faiss documentation</a></li>
+<li><a href="https://github.com/facebookresearch/faiss">Faiss repository</a></li>
+<li><a href="https://github.com/facebookresearch/faiss/wiki/Faiss-indexes">Summary of Faiss indexes</a></li>
+</ul>
 <p><em>除非另有说明，所有图片均由作者提供</em>。</p>
 <p>原文地址： <a href="https://towardsdatascience.com/similarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47">https://towardsdatascience.com/similarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47</a></p>
 <p><strong>附操作笔记</strong>:</p>
-
+<p><a href="https://github.com/weedge/doraemon-nb/blob/main/faiss_locality_sensitive_hashing_random_projection.ipynb"><strong>faiss_locality_sensitive_hashing_random_projection.ipynb</strong></a></p>
     </div>
 
     
@@ -339,7 +515,7 @@
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
     <span class="item-content">
-      0001-01-01
+      2023-09-26
       
     </span>
   </p>
@@ -355,27 +531,21 @@
     
 
     <footer class="post-footer">
-      
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/oneday/">oneday</a>
+          <a href="https://weedge.github.io/tags/similarity-search/">similarity search</a>
+          <a href="https://weedge.github.io/tags/locality-sensitive-hashing/">Locality Sensitive Hashing </a>
+          <a href="https://weedge.github.io/tags/lsh/">lsh</a>
+          <a href="https://weedge.github.io/tags/random-projections/">random projections</a>
+          
+        </div>
 
       
       <nav class="post-nav">
         
-          <a class="prev" href="/post/notions/database/storage-io/">
-            
-            <i class="iconfont">
-              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="18" height="18">
-  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
-</svg>
-
-            </i>
-            <span class="prev-text nav-default"></span>
-            <span class="prev-text nav-mobile">上一篇</span>
-          </a>
         
-          <a class="next" href="/post/oneday/similarity-search/7.lsh-compositions/">
-            <span class="next-text nav-default"></span>
+          <a class="next" href="/post/oneday/similarity-search/5.locality-sensitive-hashing/">
+            <span class="next-text nav-default">译：相似性搜索，第 5 部分：局部敏感哈希 (LSH)</span>
             <span class="prev-text nav-mobile">下一篇</span>
             
             <i class="iconfont">

@@ -10,63 +10,77 @@
   
   <url>
     <loc>https://weedge.github.io/categories/</loc>
-    <lastmod>2023-09-26T15:26:23+08:00</lastmod>
+    <lastmod>2023-09-26T21:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://weedge.github.io/tags/locality-sensitive-hashing/</loc>
-    <lastmod>2023-09-26T15:26:23+08:00</lastmod>
+    <lastmod>2023-09-26T21:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://weedge.github.io/tags/lsh/</loc>
-    <lastmod>2023-09-26T15:26:23+08:00</lastmod>
+    <lastmod>2023-09-26T21:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://weedge.github.io/tags/oneday/</loc>
-    <lastmod>2023-09-26T15:26:23+08:00</lastmod>
+    <lastmod>2023-09-26T21:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://weedge.github.io/post/</loc>
-    <lastmod>2023-09-26T15:26:23+08:00</lastmod>
+    <lastmod>2023-09-26T21:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/random-projections/</loc>
+    <lastmod>2023-09-26T21:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://weedge.github.io/tags/similarity-search/</loc>
-    <lastmod>2023-09-26T15:26:23+08:00</lastmod>
+    <lastmod>2023-09-26T21:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://weedge.github.io/tags/</loc>
-    <lastmod>2023-09-26T15:26:23+08:00</lastmod>
+    <lastmod>2023-09-26T21:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/</loc>
-    <lastmod>2023-09-26T15:26:23+08:00</lastmod>
+    <lastmod>2023-09-26T21:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://weedge.github.io/</loc>
-    <lastmod>2023-09-26T15:26:23+08:00</lastmod>
+    <lastmod>2023-09-26T21:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/oneday/similarity-search/6.random-projections-with-lsh-forest/</loc>
+    <lastmod>2023-09-26T21:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -748,12 +762,6 @@
   
   <url>
     <loc>https://weedge.github.io/post/notions/database/storage-io/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/post/oneday/similarity-search/6.random-projections-with-lsh-forest/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
