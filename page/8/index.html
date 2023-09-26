@@ -297,47 +297,12 @@
   <header class="post-header">
     <h1 class="post-title">
       
-      <a class="post-link" href="/post/golang/">golang学习笔记</a>
+      <a class="post-link" href="/post/hello/">像黑客一样写博客</a>
     </h1>
     
     <div class="post-meta">
-      <time datetime="2017-11-01" class="post-time">
-        2017-11-01
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p>刚开始接触golang的时候是在大学时候，当时大概是2010年左右，对这门新语言比较好奇，但是没有深入去了解，只是道听途说这门语言在并发处理上很方便，对于协程这个东西也是第一次听说。自从工作之后，就一直没有接触过这门语言,最近公司想往golang上转，开发新的项目平台，毕竟golang运行效率和开发效率都要比其他语言要简单方便很多(听说c++都快20了)。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/golang/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/use-hugo-blog/">更换博客</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2017-10-12" class="post-time">
-        2017-10-12
+      <time datetime="2013-01-01" class="post-time">
+        2013-01-01
       </time>
       <div class="post-category">
           <a href="https://weedge.github.io/categories/blog/"> blog </a>
@@ -352,13 +317,11 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <p>  博客有段时间一直没有跟新过了，说白了，就是太懒了，或者没有动力去push你去干好这件事情；看着以前的博客，寥寥无几的几篇，质量也不高；早上上班经常看一些公众号文章，有个作者每天坚持写一篇文章，都已经坚持了大半年了，从生活的思考记录，到技术的积累，而且输出的文章质量不错，至少自己读了之后会产生一些共鸣，或者学到一些知识点。</p>
-<blockquote>
-<p>经常听到技术人总结的话：技术是一个积累的过程，从别人那里看到的，和自己去动手实现的是两回事，别人趟过的坑，你再重新踩一次，也许会遇到新的坑，这些踩过之后，把这些知识点和满坑方案记录下来，日积月累，是对以后是有帮助的。</p>
-</blockquote>
+      <h2 id="背景">背景</h2>
+<p>最近一段时间想整个博客，来记录一些事情，感觉记忆力不如从前了，想起以前有位老程序员，身边总是挂一个小挎包，装了一些小便条(todo list)；我想人的精力是有限的，当做完一件事， 过段时间，可能忘了曾今做过的事，说的话；本来想用worldpress，但是貌似需要申请空间，不同以往了，现在都是收费的了，无意间发现了<a href="http://octopress.org/docs/">octopress</a>,这是个好东东啊，轻量级的，不像worldpress臃肿，不需要使用mysql,通过git直接可以部署到github pages上搭建一个副本。也可以部署到<a href="http://www.heroku.com/">heroku</a>；国内好像也有对octopress的部署支持。</p>
     </div>
     <div class="read-more">
-      <a href="/post/use-hugo-blog/" class="read-more-link">阅读全文</a>
+      <a href="/post/hello/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
@@ -369,87 +332,12 @@
   <header class="post-header">
     <h1 class="post-title">
       
-      <a class="post-link" href="/post/geohash/">附近POI: geohash原理</a>
+      <a class="post-link" href="/post/happy-new-year/">happy new year</a>
     </h1>
     
     <div class="post-meta">
-      <time datetime="2015-06-03" class="post-time">
-        2015-06-03
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          <a href="https://weedge.github.io/categories/geo/"> geo </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h3 id="问题">问题</h3>
-<p>  现在吃穿住行的app大都有定位的功能；如何让手机app所在的定位寻找出附近的POI(Point of Interest)呢？至于用户手机是如何获取定位的可以自行Google/Baidu，有时间整理一下。</p>
-<p>地图上定位一个地方，通过经度(longitude)和纬度(latitude)来标记，由WGS84规定(为GPS全球定位系统使用而建立的坐标系统)；比如地球🌍作为一个球体，纬度是指<code>所在位置的纬线到地心的直线</code>和<code>赤道的纬线到地心的直线</code>的夹角，通常北纬为正，南纬为负；经度是指<code>所在位置的经线平面</code>和<code>规定的本初子午线平面</code>的夹角，以东为东经，以西为西经，通常东经为正，西经为负；</p>
-<p>一个地点的经度一般与它于协调世界时之间的时差相应：每天有24小时，而一个圆圈有360度，因此地球每小时自转15度。因此假如一个人的地方时比协调世界UTC(Coordinated Universal Time)时早3小时的话，那么他在东经45度左右，比如北京是在东经116左右，那时区+8作为中国标准时间CST(China Standard Time)</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/geohash/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/gnu-global/">工具盒子-GNU global</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2014-11-15" class="post-time">
-        2014-11-15
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/cheatsheet/"> cheatsheet </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h3 id="gnu-global">gnu global</h3>
-<p>源码标记，浏览源码挺好用的工具,轻量级的，简单易用。 gtags类似ctags,但是效率比ctags高，具体比较查看<a href="https://github.com/OpenGrok/OpenGrok/wiki/Comparison-with-Similar-Tools">这里</a>(OpenGrok使用相对比较复杂)，而且未来支持的语言也比较多。对Linux-2.6.32源码390M的文件进行标签产出289MB的标签文件。</p>
-<p>可以通过源码安装就OK <!-- raw HTML omitted -->wget <a href="http://tamacom.com/global/global-6.3.2.tar.gz;">http://tamacom.com/global/global-6.3.2.tar.gz;</a> tar zxvf global-6.3.2.tar.gz; cd global-6.3.2; ./configure; make &amp;&amp; make install<!-- raw HTML omitted --></p>
-<p>在需要查找的目录下运行<!-- raw HTML omitted -->gtags<!-- raw HTML omitted -->,会生成三个文件： GTAGS&ndash;定义的函数变量； GRTAGS&ndash;引用的函数变量； GPATH&ndash;函数变量所在文件的路径。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/gnu-global/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/taishan/">登泰山</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2014-09-21" class="post-time">
-        2014-09-21
+      <time datetime="2013-01-01" class="post-time">
+        2013-01-01
       </time>
       <div class="post-category">
           <a href="https://weedge.github.io/categories/%E7%94%9F%E6%B4%BB/"> 生活 </a>
@@ -464,21 +352,11 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <h2 id="登泰山看日出">登泰山看日出</h2>
-<p>会当凌绝顶，一览众山小  &ndash; 杜甫《望岳》<br>
-平明登日观，举手开云关  &ndash; 李白《游泰山》</p>
-
-    <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=28748340&auto=1&height=66"></iframe>
-
-
-
-<h3 id="出发">出发</h3>
-<p>登泰山，一次突然做出的决定，木有看攻略，木有做啥子准备，备点衣服和一些吃的就走了。为了赶火车，提前下班打卡就从公司出发啦~（ps:哈哈，恰好周五公司发下午茶，多拿了一盒水果，感谢公司福利，~！~)。在南站与老宋汇合后，在车站吃了点晚餐就走了。<br>
-而且定火车那天木有直达的列车，买了到济南西，然后转泰安的车票。就这么愉快的出发鸟~~~</p>
-<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/taishan/1.jpeg" alt="出发"></p>
+      <p>新年开始了，工作了半年，经历一些，懂得一些，认识一些，对自己的未来总是在不断的寻觅中，却迷茫着~，每次家里人问起是否在这个城市待得习惯，不断的问我是否过得好，总是回复家人过得好，放心好了，出门在外，家人总是希望自己能够过得好，而对家人总是报喜不报忧；新年了，有些变化，给自己一些时间，计划似乎永远赶不上变化，改正自己，尽快恢复过来，加油吧~！</p>
+<p>简单踏实就好，奶奶经常给说的话，一直记着。【step by step, 懂得珍惜】</p>
     </div>
     <div class="read-more">
-      <a href="/post/taishan/" class="read-more-link">阅读全文</a>
+      <a href="/post/happy-new-year/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
@@ -489,17 +367,14 @@
   <header class="post-header">
     <h1 class="post-title">
       
-      <a class="post-link" href="/post/chengdu/">成都行</a>
+      <a class="post-link" href="/post/doraemon/aigc/"></a>
     </h1>
     
     <div class="post-meta">
-      <time datetime="2013-12-10" class="post-time">
-        2013-12-10
+      <time datetime="0001-01-01" class="post-time">
+        0001-01-01
       </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E7%94%9F%E6%B4%BB/"> 生活 </a>
-          
-        </div>
+      
       
       
       
@@ -509,14 +384,134 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=41641784&auto=1&height=66"></iframe>
-
-
-
-<p>由于入职时间的改变，有几天的时间空闲下来了，本来就没有准备的行程，以前没有想过的户外运动，本来是想体验一把的，趁这段时间，和老宋说好过去玩后，当天晚上啥都没有准备，直接就A过去了。这一趟还是挺有意思的，写这篇的时候，此刻正在老宋住的地方，准备着回北京的路上，写完后，收拾心情，准备好好工作。人生也许有很多的第一次，才能使生活变得更加的有意义吧。</p>
+      实践 年前使用过Nolibox的生成图片的接口，使用prompt进行调整； 国外的https://www.midjourney.com/ 直接整合
     </div>
     <div class="read-more">
-      <a href="/post/chengdu/" class="read-more-link">阅读全文</a>
+      <a href="/post/doraemon/aigc/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
+      <a class="post-link" href="/post/doraemon/aws-lambda-openai/"></a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="0001-01-01" class="post-time">
+        0001-01-01
+      </time>
+      
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      使用aws severless lambda 一键搭建 openai 聊天机器人 引言 在玩openai的过程中，openai 最最常用的应该是聊天接口，以此来加深下aws lambda 部署流程，以及如果
+    </div>
+    <div class="read-more">
+      <a href="/post/doraemon/aws-lambda-openai/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
+      <a class="post-link" href="/post/io_uring/async_intro/"></a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="0001-01-01" class="post-time">
+        0001-01-01
+      </time>
+      
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      Linux 下的异步编程 我们生活在一个我们使用的大多数应用程序都在云端的时代。每次用户连接到基于云的应用程序时，通常在某种 Web 框架之上编写的大多数业务逻
+    </div>
+    <div class="read-more">
+      <a href="/post/io_uring/async_intro/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
+      <a class="post-link" href="/post/notions/database/cmu-database-history/"></a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="0001-01-01" class="post-time">
+        0001-01-01
+      </time>
+      
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      
+    </div>
+    <div class="read-more">
+      <a href="/post/notions/database/cmu-database-history/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
+      <a class="post-link" href="/post/notions/database/storage-io/"></a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="0001-01-01" class="post-time">
+        0001-01-01
+      </time>
+      
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      存储io 数据存放在磁盘ssd上, 需要使用操作系统IO调用，在生产环境中，常使用unix系统，对于IO-Bound的应用，抛开线程池，epol
+    </div>
+    <div class="read-more">
+      <a href="/post/notions/database/storage-io/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
@@ -578,14 +573,6 @@
       
       <li  class="active" >
         <a href="/page/8/">8</a>
-      </li>
-      
-      <li >
-        <a href="/page/9/">9</a>
-      </li>
-      
-      <li >
-        <a href="/page/10/">10</a>
       </li>
       
     </ul>

@@ -23,7 +23,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="介绍 在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。
+  <meta name="description" content="了解如何对数据进行哈希处理并通过构造随机超平面来反映其相似性
+介绍 在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。
 在上一部分中，我们研究了 LSH 的主要范例，即将输入向量转换为低维hash值，同时保留有关其相似性的信息。为了获取hash值（签名），使用了 minhash 函数。在本文中，我们将随机投影输入数据以获得类似的二进制向量。
 " />
 
@@ -65,6 +66,7 @@
 
 <meta property="og:title" content="译：相似性搜索，第 6 部分：LSH 森林的随机投影" />
 <meta property="og:description" content="
+了解如何对数据进行哈希处理并通过构造随机超平面来反映其相似性
 介绍
 在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。
 在上一部分中，我们研究了 LSH 的主要范例，即将输入向量转换为低维hash值，同时保留有关其相似性的信息。为了获取hash值（签名），使用了 minhash 函数。在本文中，我们将随机投影输入数据以获得类似的二进制向量。" />
@@ -75,14 +77,16 @@
 
 <meta itemprop="name" content="译：相似性搜索，第 6 部分：LSH 森林的随机投影">
 <meta itemprop="description" content="
+了解如何对数据进行哈希处理并通过构造随机超平面来反映其相似性
 介绍
 在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。
 在上一部分中，我们研究了 LSH 的主要范例，即将输入向量转换为低维hash值，同时保留有关其相似性的信息。为了获取hash值（签名），使用了 minhash 函数。在本文中，我们将随机投影输入数据以获得类似的二进制向量。"><meta itemprop="datePublished" content="2023-09-26T21:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-09-26T21:26:23+08:00" />
-<meta itemprop="wordCount" content="4720">
+<meta itemprop="wordCount" content="4767">
 <meta itemprop="keywords" content="oneday,similarity search,Locality Sensitive Hashing ,lsh,random projections," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：相似性搜索，第 6 部分：LSH 森林的随机投影"/>
 <meta name="twitter:description" content="
+了解如何对数据进行哈希处理并通过构造随机超平面来反映其相似性
 介绍
 在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。
 在上一部分中，我们研究了 LSH 的主要范例，即将输入向量转换为低维hash值，同时保留有关其相似性的信息。为了获取hash值（签名），使用了 minhash 函数。在本文中，我们将随机投影输入数据以获得类似的二进制向量。"/>
@@ -352,6 +356,7 @@
     
     <div class="post-content">
       <p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/0.png" alt=""></p>
+<p><strong>了解如何对数据进行哈希处理并通过构造随机超平面来反映其相似性</strong></p>
 <h1 id="介绍">介绍</h1>
 <p>在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。</p>
 <p>在<a href="https://medium.com/towards-data-science/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203">上一部分</a>中，我们研究了 LSH 的主要范例，即将<em>输入向量转换为低维hash值，同时保留有关其相似性的信息</em>。为了获取hash值（签名），使用了 minhash 函数。在本文中，我们将随机投影输入数据以获得类似的二进制向量。</p>
@@ -370,6 +375,7 @@
 <p><img src="https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/3.png" alt="img"></p>
 <p>​	<em>计算汉明距离的示例。左边的一对向量彼此更相似，因为它们的汉明距离更小。</em></p>
 <p>与查询的汉明距离最小的二元向量被视为候选向量，然后与初始查询进行充分比较。</p>
+<p>(<strong>注</strong>： <a href="https://github.com/weedge/doraemon-nb/blob/main/lsh_hyperplanes.ipynb">lsh_hyperplanes.ipynb</a> 实操笔记)</p>
 <h2 id="为什么超平面是随机构建的"><strong>为什么超平面是随机构建的？</strong></h2>
 <p>在当前阶段，要求为什么超平面以随机方式构建而不是确定性的，意味着可以自定义规则，定义用于分离数据集点，似乎是合乎逻辑的。这背后有两个主要原因：</p>
 <ul>
@@ -502,7 +508,11 @@
 <p><em>除非另有说明，所有图片均由作者提供</em>。</p>
 <p>原文地址： <a href="https://towardsdatascience.com/similarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47">https://towardsdatascience.com/similarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47</a></p>
 <p><strong>附操作笔记</strong>:</p>
-<p><a href="https://github.com/weedge/doraemon-nb/blob/main/faiss_locality_sensitive_hashing_random_projection.ipynb"><strong>faiss_locality_sensitive_hashing_random_projection.ipynb</strong></a></p>
+<p><a href="https://github.com/weedge/doraemon-nb/blob/main/lsh_hyperplanes.ipynb"><strong>lsh_hyperplanes.ipynb</strong></a></p>
+<p><a href="https://github.com/weedge/doraemon-nb/blob/main/lsh_random_projection_simp.ipynb"><strong>lsh_random_projection_simp.ipynb</strong></a></p>
+<p><a href="https://github.com/weedge/doraemon-nb/blob/main/lsh_sparse_implementation.ipynb"><strong>lsh_sparse_implementation.ipynb</strong></a></p>
+<p><a href="https://github.com/weedge/doraemon-nb/blob/main/faiss_lsh_implementation.ipynb"><strong>faiss_lsh_implementation.ipynb</strong></a></p>
+<p><a href="https://github.com/weedge/doraemon-nb/blob/main/faiss_locality_sensitive_hashing_random_projection.ipynb"><strong>faiss_locality_sensitive_hashing_random_projection.ipynb</strong></a> 学习笔记</p>
     </div>
 
     
@@ -543,6 +553,19 @@
       
       <nav class="post-nav">
         
+          <a class="prev" href="/post/oneday/similarity-search/7.lsh-compositions/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">译：相似性搜索，第 7 部分：LSH 组合</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
         
           <a class="next" href="/post/oneday/similarity-search/5.locality-sensitive-hashing/">
             <span class="next-text nav-default">译：相似性搜索，第 5 部分：局部敏感哈希 (LSH)</span>

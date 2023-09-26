@@ -6,7 +6,33 @@
     <description>Recent content in lsh on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 26 Sep 2023 21:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/lsh/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 26 Sep 2023 23:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/lsh/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>译：相似性搜索，第 7 部分：LSH 组合</title>
+      <link>https://weedge.github.io/post/oneday/similarity-search/7.lsh-compositions/</link>
+      <pubDate>Tue, 26 Sep 2023 23:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/oneday/similarity-search/7.lsh-compositions/</guid>
+      <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/lsh-compositions/0.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;深入研究 LSH 函数的组合以保证更可靠的搜索&lt;/strong&gt;&lt;/p&gt;
+&lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
+&lt;p&gt;在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。&lt;/p&gt;
+&lt;p&gt;在本系列文章的最后两部分中，我们深入研究了 LSH —— 一种&lt;em&gt;将输入向量转换为低维散列值，同时保留有关其相似性的信息&lt;/em&gt;的算法。特别是，我们已经研究了两种适用于不同距离度量的算法：&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://weedge.github.io/post/oneday/similarity-search/5.locality-sensitive-hashing/&#34;&gt;相似性搜索，第 5 部分：局部敏感哈希 (LSH)&lt;/a&gt;: 经典的LSH算法构造反映向量&lt;strong&gt;Jaccard系数&lt;/strong&gt;信息的签名。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://weedge.github.io/post/oneday/similarity-search/6.random-projections-with-lsh-forest/&#34;&gt;相似性搜索，第 6 部分：LSH 森林的随机投影&lt;/a&gt;: 随机投影方法构建了保持向量&lt;strong&gt;余弦相似性&lt;/strong&gt;的超平面森林。&lt;/p&gt;
+&lt;p&gt;事实上，LSH 算法也适用于其他距离度量。尽管每种方法都有其独特的部分，但每种方法中都出现了许多共同的概念和公式。为了促进未来新方法的学习过程，我们将更多地关注理论并提供一些经常出现在高级 LSH 文献中的基本定义和定理。在本文结束时，我们将能够通过简单地将基本方案组合为乐高积木来构建更复杂的 LSH 方案。&lt;/p&gt;
+&lt;p&gt;最后我们将了解如何将&lt;strong&gt;欧几里得距离&lt;/strong&gt;纳入 LSH 中。&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;注意&lt;/em&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;作为主要先决条件，您应该已经熟悉本系列文章的第 5 部分和第 6 部分。如果没有，强烈建议先阅读它们。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Cosine_similarity&#34;&gt;余弦距离&lt;/a&gt;定义在 [0, 2] 范围内。为简单起见，我们将其映射到区间 [0, 1]，其中 0 和 1 分别表示最低和最高可能的相似度。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
     <item>
       <title>译：相似性搜索，第 6 部分：LSH 森林的随机投影</title>
       <link>https://weedge.github.io/post/oneday/similarity-search/6.random-projections-with-lsh-forest/</link>
@@ -14,6 +40,7 @@
       
       <guid>https://weedge.github.io/post/oneday/similarity-search/6.random-projections-with-lsh-forest/</guid>
       <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/0.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;了解如何对数据进行哈希处理并通过构造随机超平面来反映其相似性&lt;/strong&gt;&lt;/p&gt;
 &lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
 &lt;p&gt;在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。&lt;/p&gt;
 &lt;p&gt;在&lt;a href=&#34;https://medium.com/towards-data-science/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203&#34;&gt;上一部分&lt;/a&gt;中，我们研究了 LSH 的主要范例，即将&lt;em&gt;输入向量转换为低维hash值，同时保留有关其相似性的信息&lt;/em&gt;。为了获取hash值（签名），使用了 minhash 函数。在本文中，我们将随机投影输入数据以获得类似的二进制向量。&lt;/p&gt;</description>
@@ -26,6 +53,7 @@
       
       <guid>https://weedge.github.io/post/oneday/similarity-search/5.locality-sensitive-hashing/</guid>
       <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/0.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;探索如何将相似性信息合并到哈希函数中&lt;/strong&gt;&lt;/p&gt;
 &lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
 &lt;p&gt;在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。&lt;/p&gt;
 &lt;p&gt;在本系列文章的前几部分中，我们讨论了倒排文件索引、产品量化和 HNSW 以及如何将它们结合使用来提高搜索质量。在本章中，我们将研究一种主要不同的方法，该方法可以保持高搜索速度和质量。&lt;/p&gt;

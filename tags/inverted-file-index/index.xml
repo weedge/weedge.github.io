@@ -14,6 +14,7 @@
       
       <guid>https://weedge.github.io/post/oneday/similarity-search/3.blending-inverted-file-index-and-product-quantization/</guid>
       <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/blending-inverted-file-index-and-product-quantization/0.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;了解如何结合两个基本的相似性搜索索引以发挥两者的优势&lt;/strong&gt;&lt;/p&gt;
 &lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
 &lt;p&gt;在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。&lt;/p&gt;
 &lt;p&gt;在本系列的前两部分中，我们讨论了信息检索中的两种基本算法：&lt;strong&gt;倒排文件索引&lt;/strong&gt;和&lt;strong&gt;乘积量化&lt;/strong&gt;。它们都优化了搜索性能，但侧重于不同的方面：第一个加速了搜索速度，而后者将向量压缩为更小的、节省内存的表示形式。&lt;/p&gt;
