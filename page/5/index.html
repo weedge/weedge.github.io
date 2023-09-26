@@ -297,6 +297,51 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/user-behavior-analytics-solution/">用户行为分析方案设计</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2022-11-02" class="post-time">
+        2022-11-02
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <h2 id="背景">背景</h2>
+<p>用户在手机和pc端使用客户业务产品，比如浏览网页，购买商品，查看文档，观看视频，直播，IOT场景；会产生大量的用户行为数据，主要包括：</p>
+<ol>
+<li>非结构化数据：日志(前端事件埋点日志，服务端处理事件日志)，还有些非结构化的图片，音视频数据等等，主要存放在文件存储系统中；</li>
+<li>结构化和半结构化数据： 用户操作产品写入的结构化数据存放于数据库表中，将文档型半结构化的数据放入文档数据库中；</li>
+</ol>
+<p>需要分析用户的行为数据，进行决策；分为实时流式处理和离线批处理：</p>
+<ol>
+<li>实时流处理，主要用于实时展现客户端看板，后台BI实时分析，实时风控/推荐，异常报警等场景；</li>
+<li>离线批处理，分析用户历史数据，进行推荐算法等机器学习算法模型训练使用，数据仓库中根据不同维度对数据过滤聚合，进行上卷下钻分析，比如计算DAU,WAU,MAU，转化率(购买率，注册率)分析等，通常对数据建设投入多的话， 会把用户产生的结构化非结构化的数据都存下，放在一个大的池子里待使用时进行分析，即所谓的数据湖，围湖而建挖掘数据价值；而数仓相对精细化的分析，前置建模建表分析；</li>
+</ol>
+<p>对此进行方案分析，本文将介绍一种实时离线处理分析用户行为数据方案，即能帮助企业低成本地使用海量数据，又能更快速地响应业务需求，同时借助亚马逊云科技的托管服务，能够快速实施和轻松运维。</p>
+    </div>
+    <div class="read-more">
+      <a href="/post/user-behavior-analytics-solution/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/shop/">全栈开发</a>
     </h1>
     
@@ -471,44 +516,6 @@
     </div>
     <div class="read-more">
       <a href="/post/conf/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/ping/">工具盒子-ping/traceroute</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2021-11-15" class="post-time">
-        2021-11-15
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h2 id="序言">序言</h2>
-<p>在访问网络是否ok, 通常喜欢用ping 命令来访问<code>ping www.baidu.com</code> 看是否出现超时；ping在不同的操作系统平台实现方式差不多，底层都是用ICMP协议，每次发ICMP ECHO_REQUEST packet (IP地址/Host, ttl，icmp_seq序列号，<a href="https://en.wikipedia.org/wiki/Round-trip_delay">RTD/RTT</a>(往返延时)记录 ),  运行结束后统计每个RTT, 最大RTT, 最小RTT, 平均RTT, <a href="https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford">标准偏差</a>RTT, 发送/接受packets总数，丢包率 等数据，ping工具在PING(8)中的定义如下：</p>
-<blockquote>
-<p>The ping utility uses the ICMP protocol&rsquo;s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.  ECHO_REQUEST datagrams  (&ldquo;pings'') have an IP and ICMP header, followed by a &ldquo;struct timeval'' and then an arbitrary number of &ldquo;pad&rdquo; bytes used to fill out the packet.</p>
-</blockquote>
-    </div>
-    <div class="read-more">
-      <a href="/post/ping/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>

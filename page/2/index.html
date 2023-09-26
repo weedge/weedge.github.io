@@ -297,6 +297,42 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/oneday/manas-a-high-performing-customized-search-system/">译：Manas：高性能定制搜索系统</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2023-09-14" class="post-time">
+        2023-09-14
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <h1 id="章节一-manas高性能定制搜索系统">章节一 Manas：高性能定制搜索系统</h1>
+<p>Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出 <a href="https://blog.pinterest.com/en/search-and-lens-move-front-and-center">Search 和 Lens</a>，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。</p>
+<p>为了继续扩展搜索，系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着业务发展和引入新的发现功能，遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C++ 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。</p>
+    </div>
+    <div class="read-more">
+      <a href="/post/oneday/manas-a-high-performing-customized-search-system/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/">译：如何避免事务期间读取不一致</a>
     </h1>
     
@@ -479,52 +515,6 @@
     </div>
     <div class="read-more">
       <a href="/post/notions/go-tips/go-tips-12-optimizations/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/notions/go-tips/go-tips-11-testing/">Go tips-笔记: 测试 82-90 mistakes</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-02-20" class="post-time">
-        2023-02-20
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h2 id="引言">引言</h2>
-<p>测试是项目生命周期的一个重要方面。它提供了无数的好处，例如建立对应用程序的信心、充当代码文档以及使重构更容易。与其他一些语言相比，Go 具有强大的编写测试原语。主要讨论测试过程变得脆弱、效率低下和准确性低的常见错误。这类问题属于工程规范实践，有些case同样适用于其他语言。</p>
-<p>Go 中提供 go test 工具来执行测试，可以查看具体的开发文档： <strong><a href="https://pkg.go.dev/cmd/go#hdr-Testing_flags">https://pkg.go.dev/cmd/go#hdr-Testing_flags</a></strong>  里面介绍了每个模式的具体使用方式，使用好这些测试模式flag，可以更快执行或更好地发现可能错误，进而保证代码质量，工程代码稳定性建设上的重要一环。Go中支持4种测试函数：单测函数，基准压测函数，模糊测试，以及打印输出样例测试。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestXxx</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
-<span class="kd">func</span> <span class="nf">BenchmarkXxx</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
-<span class="kd">func</span> <span class="nf">FuzzXxx</span><span class="p">(</span><span class="nx">f</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">F</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
-<span class="kd">func</span> <span class="nf">ExampleXxx</span><span class="p">()</span> <span class="p">{</span>
-	<span class="nf">Println</span><span class="p">(</span><span class="s">&#34;The output of\\nthis example.&#34;</span><span class="p">)</span>
-	<span class="c1">// Output: The output of
-</span><span class="c1"></span>	<span class="c1">// this example.
-</span><span class="c1"></span><span class="p">}</span>
-</code></pre></div>
-    </div>
-    <div class="read-more">
-      <a href="/post/notions/go-tips/go-tips-11-testing/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>

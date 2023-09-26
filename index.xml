@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 25 Sep 2023 15:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 26 Sep 2023 15:26:23 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -49,6 +49,139 @@
     </item>
     
     <item>
+      <title>译：相似性搜索，第 5 部分：局部敏感哈希 (LSH)</title>
+      <link>https://weedge.github.io/post/oneday/similarity-search/5.locality-sensitive-hashing/</link>
+      <pubDate>Tue, 26 Sep 2023 15:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/oneday/similarity-search/5.locality-sensitive-hashing/</guid>
+      
+        <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/0.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
+&lt;p&gt;在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。&lt;/p&gt;
+&lt;p&gt;在本系列文章的前几部分中，我们讨论了倒排文件索引、产品量化和 HNSW 以及如何将它们结合使用来提高搜索质量。在本章中，我们将研究一种主要不同的方法，该方法可以保持高搜索速度和质量。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;局部敏感哈希&lt;/strong&gt;（LSH）是一组方法，用于通过将数据向量转换为哈希值来缩小搜索范围，同时保留有关其相似性的信息。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;我们将讨论传统方法，该方法包括三个步骤：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Shingling&lt;/strong&gt;：将原始文本编码为向量。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;MinHashing&lt;/strong&gt; ：将向量转换为称为&lt;strong&gt;签名&lt;/strong&gt;的特殊表示，可用于比较它们之间的相似性。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;LSH函数&lt;/strong&gt;：将签名块散列到不同的桶中。如果一对向量的签名至少一次落入同一个桶中，则它们被视为候选向量。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;我们将在整篇文章中逐步深入探讨每个步骤的细节。&lt;/p&gt;
+&lt;h1 id=&#34;shingling&#34;&gt;Shingling&lt;/h1&gt;
+&lt;p&gt;&lt;strong&gt;Shingling&lt;/strong&gt; 是收集给定文本的k元模型的过程。k-gram是一组&lt;em&gt;k&lt;/em&gt;个连续标记(token)。根据上下文，标记(token)可以是单词或符号。shingling 的最终目标是使用收集的&lt;em&gt;k&lt;/em&gt;元模型对每个文档进行编码。我们将为此使用 one-hot 编码。然而，也可以应用其他编码方法。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;为“学习数据科学令人着迷(learning data science is fascinating)”这句话收集长度为 k = 3 的独特碎片(shingles)&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;首先，收集每个文档的唯一&lt;em&gt;k&lt;/em&gt;元组。其次，为了对每个文档进行编码，需要一个词汇表来表示所有文档中一组唯一的&lt;em&gt;k&lt;/em&gt;元组。然后，对于每个文档，创建一个长度等于词汇表大小的零向量。对于文档中出现的每个 k-gram，都会识别其在词汇表中的位置，并在文档向量的相应位置放置“1” 。即使相同的&lt;em&gt;k&lt;/em&gt;元模型在文档中出现多次，也没关系：向量中的值将始终为 1。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/2.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	&lt;em&gt;one-hot编码&lt;/em&gt;&lt;/p&gt;
+&lt;h1 id=&#34;最小散列法minhashing&#34;&gt;最小散列法(MinHashing)&lt;/h1&gt;
+&lt;p&gt;在此阶段，初始文本已被向量化。向量的相似度可以通过&lt;strong&gt;Jaccard系数&lt;/strong&gt;进行比较。请记住，两个集合的Jaccard系数定义为两个集合中公共元素的数量除以所有元素的长度。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/3.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	&lt;em&gt;Jaccard系数定义为两个集合的并集的交集&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;如果采用一对编码向量，则 Jaccard 系数公式中的交集是同时包含 1 的行数（即&lt;em&gt;k&lt;/em&gt; -gram 出现在两个向量中），并集是至少包含一个 1 的行数（&lt;em&gt;k&lt;/em&gt; -gram 至少出现在向量之一中）。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/4.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	&lt;em&gt;两个向量的Jaccard系数&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/5.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	&lt;em&gt;使用上述公式计算两个向量的Jaccard系数的示例&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;目前的问题是编码向量的稀疏性。计算两个 one-hot 编码向量之间的相似度得分将花费大量时间。将它们转换为密集格式将使以后的操作更加高效。最终，目标是设计这样一个函数，将这些向量转换为更小的维度，保留有关它们相似性的信息。构造这样一个函数的方法称为 MinHashing。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;MinHashing&lt;/strong&gt;是一个哈希函数，它对输入向量的分量进行排列，然后返回排列后的向量分量等于 1 的第一个索引。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/6.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	&lt;em&gt;计算给定向量和排列的 minhash 值的示例&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;为了获得由n 个数字组成的向量的密集表示，可以使用n 个minhash 函数来获取形成签名的n个minhash值。&lt;/p&gt;
+&lt;p&gt;乍一听起来可能并不明显，但可以使用几个 minhash 值来近似向量之间的 Jaccard 相似度。事实上，使用的 minhash 值越多，近似值就越准确。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/7.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	&lt;em&gt;签名矩阵的计算以及如何使用它来计算向量之间的相似度。使用 Jaccard 相似度和签名计算的相似度通常应大致相等。&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;这只是一个有用的观察。事实证明，幕后有一个完整的定理。我们来了解一下为什么可以使用签名来计算Jaccard指数。&lt;/p&gt;
+&lt;h2 id=&#34;证明statement-proof&#34;&gt;证明(Statement proof)&lt;/h2&gt;
+&lt;p&gt;让我们假设给定的向量对仅包含类型为&lt;em&gt;01&lt;/em&gt;、&lt;em&gt;10&lt;/em&gt;和&lt;em&gt;11&lt;/em&gt;的行。然后对这些向量进行随机排列。由于所有行中至少存在一个 1，因此在计算两个哈希值时，这两个哈希值计算过程中至少有一个会停在对应哈希值等于 1 的向量的第一行。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/8.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;第二个哈希值等于第一个哈希值的概率是多少？显然，只有当第二个哈希值也等于 1 时才会发生这种情况。这意味着第一行必须是类型&lt;em&gt;11&lt;/em&gt;。由于排列是随机进行的，因此此类事件的概率等于&lt;em&gt;P&lt;/em&gt; &lt;em&gt;=&lt;/em&gt; &lt;em&gt;count(11) / (count(01) + count(10) + count(11) )&lt;/em&gt;。这个表达式与杰卡德指数公式完全相同。所以：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;基于随机行排列的两个二进制向量获得相等哈希值的概率等于 Jaccard 系数&lt;/strong&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;然而，通过证明上面的陈述，我们假设初始向量不包含类型00的行。很明显，类型00的行不会更改 Jaccard 索引的值。同样，获得包含类型00的行的相同哈希值的概率也不会对其产生影响。例如，如果第一个排列行是00，那么 minhash 算法会忽略它并切换到下一行，直到一行中至少存在一个 1。当然，类型 00 的行可能会产生与没有类型 00 的行不同的哈希值，但获得相同哈希值的概率保持不变。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/9.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;我们已经证明了一个重要的说法。但是如何估计获得相同 minhash 值的概率呢？当然，可以生成向量的所有可能排列，然后计算所有最小哈希值以找到所需的概率。出于显而易见的原因，这效率不高，因为大小为&lt;em&gt;n&lt;/em&gt;的向量的可能排列数量等于&lt;em&gt;n!&lt;/em&gt;。不过，可以近似地评估概率：让我们使用许多哈希函数来生成那么多哈希值。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;两个二进制向量的 Jaccard 系数大约等于其签名中对应值的数量。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/10.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;很容易注意到，采用更长的签名会导致计算更准确。&lt;/p&gt;
+&lt;h1 id=&#34;lsh-函数&#34;&gt;LSH 函数&lt;/h1&gt;
+&lt;p&gt;目前，我们可以将原始文本转换为等长度的密集签名，保留有关相似性的信息。然而，在实践中，如此密集的签名通常仍然具有很高的维度，直接比较它们的效率很低。&lt;/p&gt;
+&lt;p&gt;考虑&lt;em&gt;n = 10⁶&lt;/em&gt;文档，其签名长度为 100。假设单个签名需要 4 个字节来存储，那么整个签名将需要 400 个字节。为了存储&lt;em&gt;n = 10⁶&lt;/em&gt;文档，需要 400 MB 的空间，这在现实中是可行的。但是以强力方式比较每个文档将需要大约 5 * 10^1 比较，这太多了，尤其是当&lt;em&gt;n&lt;/em&gt;更大时。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/11.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;为了避免这个问题，可以构建一个哈希表来加速搜索性能，但即使两个签名非常相似并且仅在 1 个位置上不同，它们仍然可能具有不同的哈希值（因为向量余数可能不同）。然而，我们通常希望它们落入同一个桶中。这正是LSH能够发挥作用的地方。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;LSH&lt;/strong&gt;机制构建了一个由多个部分组成的哈希表，如果一对签名至少有一个对应的部分，则将它们放入同一个桶中。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;LSH 采用签名矩阵并将其水平划分为相等的&lt;em&gt;b&lt;/em&gt;部分，称为&lt;strong&gt;band&lt;/strong&gt;，每个部分包含&lt;em&gt;r&lt;/em&gt; &lt;strong&gt;rows&lt;/strong&gt;。不是将整个签名插入单个哈希函数，而是将签名分为&lt;em&gt;b&lt;/em&gt;个部分，并且每个子签名由哈希函数独立处理。因此，每个子签名都会落入不同的桶中。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/12.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;使用 LSH 的示例：长度为 9 的两个签名被分为 b = 3 个带，每个带包含 r = 3 行。每个子向量被散列到 k 个可能的桶之一中。由于第二个带中存在匹配（两个子向量具有相同的哈希值），因此我们将这些签名中的一对视为最近邻居的候选者。&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;如果两个不同签名的相应子向量之间至少存在一次冲突，则这些签名被视为候选。正如我们所看到的，这个条件更加灵活，因为将向量视为候选向量不需要绝对相等。然而，这增加了误报的数量：一对不同的签名可以具有单个对应部分，但总体上完全不同。根据问题的不同，优化参数&lt;em&gt;b&lt;/em&gt;、&lt;em&gt;r&lt;/em&gt;和 k。&lt;/p&gt;
+&lt;h1 id=&#34;错误率error-rate&#34;&gt;错误率(Error rate)&lt;/h1&gt;
+&lt;p&gt;使用 LSH，可以估计具有相似性&lt;em&gt;s&lt;/em&gt;的两个签名将被视为候选的概率，给定多个频带&lt;em&gt;b&lt;/em&gt;和每个频带中的行数&lt;em&gt;r&lt;/em&gt;。让我们分几步找到它的公式。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/13.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	&lt;em&gt;两个签名的随机行相等的概率&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/14.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	&lt;em&gt;具有 r 行的一个随机带相等的概率&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/15.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	&lt;em&gt;具有 r 行的一个随机带不同的概率&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/16.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	&lt;em&gt;表中所有b波段不同的概率&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/17.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	&lt;em&gt;b 个波段中至少有一个相等的概率，因此两个签名是候选者&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;请注意，该公式没有考虑不同子向量意外散列到同一存储桶中时的冲突。因此，签名成为候选人的真实概率可能差别不大。&lt;/p&gt;
+&lt;h2 id=&#34;例子&#34;&gt;例子&lt;/h2&gt;
+&lt;p&gt;为了更好地理解我们刚刚获得的公式，让我们考虑一个简单的例子。考虑两个长度为 35 个符号的签名，它们被平均分为 5 个带，每个带 7 行。下表表示基于 Jaccard 相似度至少有一个相等带的概率：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/18.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	&lt;em&gt;根据两个签名的相似度 s 获得至少一个相应频带的概率 P&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;我们注意到，如果两个相似的签名的 Jaccard 相似度为 80%，那么它们在 93.8% 的情况下具有相应的band（&lt;em&gt;真阳性 true positives TP&lt;/em&gt;）。在其余 6.2% 的场景中，这样的一对签名是&lt;em&gt;漏报的&lt;/em&gt;。&lt;/p&gt;
+&lt;p&gt;现在让我们采取两个不同的签名。例如，它们的相似度只有 20%。因此，在 0.224% 的情况下，它们是&lt;em&gt;假阳性 false positive FP&lt;/em&gt;候选者。在其他 99.776% 的情况下，它们没有类似的band，因此它们是&lt;em&gt;真阴性 true negatives TN&lt;/em&gt;。&lt;/p&gt;
+&lt;h2 id=&#34;可视化visualisation&#34;&gt;可视化(Visualisation)&lt;/h2&gt;
+&lt;p&gt;现在让我们可视化相似性&lt;em&gt;s&lt;/em&gt;和两个签名成为候选者的概率&lt;em&gt;P&lt;/em&gt;之间的联系。通常，签名相似度越高*，*签名成为候选的概率就越高。理想情况下，它看起来像下面这样：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/19.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	&lt;em&gt;理想的场景。仅当一对签名的相似度大于某个阈值 t 时，才将其视为候选签名&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;根据上面获得的概率公式，一条典型的线路如下图所示：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/20.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	&lt;em&gt;一条典型的线，在开始和结束时缓慢增加，并在图中近似概率公式给出的阈值 t 处具有陡峭的斜率&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;可以改变band &lt;em&gt;b&lt;/em&gt;的数量来将图中的线向左或向右移动。增加&lt;em&gt;b&lt;/em&gt;将线向左移动并导致更多&lt;em&gt;FP&lt;/em&gt;，减少 - 将其向右移动并导致更多&lt;em&gt;FN&lt;/em&gt;。根据问题的不同，找到良好的平衡点很重要。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/21.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;band数量较多时，该线向左移动，band数量较少时，则向右移动&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/22.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;向左移动阈值会增加 FP，向右移动会增加 FN&lt;/p&gt;
+&lt;h2 id=&#34;不同数量的band和行的实验&#34;&gt;不同数量的band和行的实验&lt;/h2&gt;
+&lt;p&gt;&lt;em&gt;下面针对b&lt;/em&gt;和&lt;em&gt;r&lt;/em&gt;的不同值构建了几个线图。最好根据特定任务调整这些参数，以成功检索所有相似文档对并忽略具有不同签名的文档。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/23.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	&lt;em&gt;调整频段数量&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/24.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;​	&lt;em&gt;调整行数&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;（注&lt;/strong&gt;：&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/testing_lsh.ipynb&#34;&gt;&lt;strong&gt;testing_lsh.ipynb&lt;/strong&gt;&lt;/a&gt; 实操笔记）&lt;/p&gt;
+&lt;h1 id=&#34;结论&#34;&gt;结论&lt;/h1&gt;
+&lt;p&gt;我们已经完成了 LSH 方法的经典实现。LSH 通过使用较低维的签名表示和快速哈希机制来缩小候选者的搜索范围，从而显着优化搜索速度。同时，这是以搜索准确性为代价的，但在实践中，差异通常是微不足道的。&lt;/p&gt;
+&lt;p&gt;然而，LSH 容易受到高维数据的影响：更多维度需要更长的签名长度和更多的计算才能保持良好的搜索质量。在这种情况下，建议使用其他索引。&lt;/p&gt;
+&lt;p&gt;事实上，LSH 存在不同的实现，但它们都基于相同的范例，即将&lt;em&gt;输入向量转换为哈希值，同时保留有关其相似性的信息&lt;/em&gt;。基本上，其他算法只是定义了获取这些哈希值的其他方式。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;随机投影&lt;/strong&gt;是另一种 LSH 方法，将在下一章中介绍，它在&lt;a href=&#34;https://github.com/facebookresearch/faiss&#34;&gt;Faiss&lt;/a&gt;库中作为 LSH 索引实现，用于相似性搜索。&lt;/p&gt;
+&lt;h1 id=&#34;reference&#34;&gt;Reference&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://cse.iitkgp.ac.in/~animeshm/algoml/lsh.pdf&#34;&gt;Locality Sensitive Hashing | Andrew Wylie | December 2, 2013&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.inf.u-szeged.hu/~berendg/docs/dm/DM_lsh_en_pf.pdf&#34;&gt;Data Mining | Locality Sensitive Hashing | University of Szeged&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss&#34;&gt;Faiss repository&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.pinecone.io/learn/series/faiss/locality-sensitive-hashing/&#34;&gt;https://www.pinecone.io/learn/series/faiss/locality-sensitive-hashing/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;em&gt;除非另有说明，所有图片均由作者提供&lt;/em&gt;。&lt;/p&gt;
+&lt;p&gt;原文地址： &lt;a href=&#34;https://medium.com/towards-data-science/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203&#34;&gt;https://medium.com/towards-data-science/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;附操作笔记&lt;/strong&gt;:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/testing_lsh.ipynb&#34;&gt;&lt;strong&gt;testing_lsh.ipynb&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_lsh.ipynb&#34;&gt;&lt;strong&gt;faiss_lsh.ipynb&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;</description>
+      
+    </item>
+    
+    <item>
       <title>译：相似性搜索，第 4 部分：分层可导航小世界 (HNSW)</title>
       <link>https://weedge.github.io/post/oneday/similarity-search/4.hierarchical-navigable-small-world-hnsw/</link>
       <pubDate>Mon, 25 Sep 2023 15:26:23 +0800</pubDate>
@@ -67,12 +200,12 @@
 &lt;p&gt;所有人之间的社会关系距离不超过 6 个。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;在继续讨论 HNSW 的内部工作之前，让我们首先讨论跳跃列表和可导航小世界——HNSW 实现中使用的关键数据结构。&lt;/p&gt;
-&lt;h1 id=&#34;跳过列表&#34;&gt;跳过列表&lt;/h1&gt;
-&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Skip_list&#34;&gt;跳过列表&lt;/a&gt;是一种概率数据结构，允许在排序列表中插入和搜索元素*O(logn)*一般。跳跃列表由多层链表构成。最底层有原始链表，其中包含所有元素。当移动到更高级别时，跳过的元素数量会增加，从而减少连接数量。&lt;/p&gt;
+&lt;h1 id=&#34;跳跃列表skip-list&#34;&gt;跳跃列表(Skip List)&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Skip_list&#34;&gt;skip list&lt;/a&gt;是一种概率数据结构，允许在排序列表中插入和搜索元素*O(logn)*一般。跳跃列表由多层链表构成。最底层有原始链表，其中包含所有元素。当移动到更高级别时，跳过的元素数量会增加，从而减少连接数量。&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;在跳过列表中查找元素 20&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;在跳跃列表中查找元素 20&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;某个值的搜索过程从最高级别开始，并将其下一个元素与该值进行比较。如果该值小于或等于该元素，则算法将继续处理下一个元素。否则，搜索过程下降到具有更多连接的较低层并重复相同的过程。最后，算法下降到最低层并找到所需的节点。&lt;/p&gt;
-&lt;p&gt;根据&lt;a href=&#34;https://en.wikipedia.org/wiki/Skip_list&#34;&gt;维基百科&lt;/a&gt;的信息，跳过列表的主要参数&lt;em&gt;p&lt;/em&gt;定义了一个元素出现在多个列表中的概率。如果某个元素出现在&lt;em&gt;第 i层&lt;/em&gt;，那么它出现在第&lt;em&gt;i+1&lt;/em&gt;层的概率等于&lt;em&gt;p&lt;/em&gt;（&lt;em&gt;p&lt;/em&gt;通常设置为 0.5 或 0.25 ）。平均而言，每个元素都以*1 / (1 - p)*列表的形式呈现。&lt;/p&gt;
+&lt;p&gt;根据&lt;a href=&#34;https://en.wikipedia.org/wiki/Skip_list&#34;&gt;维基百科&lt;/a&gt;的信息，跳跃列表的主要参数&lt;em&gt;p&lt;/em&gt;定义了一个元素出现在多个列表中的概率。如果某个元素出现在&lt;em&gt;第 i层&lt;/em&gt;，那么它出现在第&lt;em&gt;i+1&lt;/em&gt;层的概率等于&lt;em&gt;p&lt;/em&gt;（&lt;em&gt;p&lt;/em&gt;通常设置为 0.5 或 0.25 ）。平均而言，每个元素都以*1 / (1 - p)*列表的形式呈现。&lt;/p&gt;
 &lt;p&gt;我们可以看到，这个过程比链表中普通的线性搜索要快得多。事实上，HNSW 继承了相同的思想，但它使用的不是链表，而是图。&lt;/p&gt;
 &lt;h1 id=&#34;可航行的小世界navigable-small-world&#34;&gt;可航行的小世界(Navigable Small World)&lt;/h1&gt;
 &lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Small-world_network&#34;&gt;&lt;strong&gt;可导航小世界&lt;/strong&gt;&lt;/a&gt;是一个具有多对数*T = O(logᵏn)*搜索复杂度的图，它使用贪婪路由。**路由(Routing)**是指从低度数顶点开始搜索过程，以高度数顶点结束的过程。由于低度顶点的连接很少，因此该算法可以在它们之间快速移动，以有效地导航到最近邻居可能所在的区域。然后算法逐渐放大并切换到高度顶点，以找到该区域顶点中的最近邻居。&lt;/p&gt;
@@ -105,7 +238,7 @@
 &lt;p&gt;&lt;em&gt;在HNSW中搜索&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;与 NSW 类似，HNSW 的搜索质量可以通过使用多个入口点来提高。不是在每一层上只找到一个最近邻居，而是找到与查询向量最接近的&lt;em&gt;efSearch&lt;/em&gt;（超参数） ，并将这些邻居中的每一个用作下一层的入口点。&lt;/p&gt;
 &lt;h2 id=&#34;复杂度&#34;&gt;复杂度&lt;/h2&gt;
-&lt;p&gt;[原论文中，在任何层上找到最近邻居所需的操作数量都受到一个常数的限制。考虑到图中所有层的数量是对数的，我们得到的总搜索复杂度为&lt;em&gt;O(logn)&lt;/em&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://arxiv.org/pdf/1603.09320.pdf&#34;&gt;原论文&lt;/a&gt;中，在任何层上找到最近邻居所需的操作数量都受到一个常数的限制。考虑到图中所有层的数量是对数的，我们得到的总搜索复杂度为&lt;em&gt;O(logn)&lt;/em&gt;。&lt;/p&gt;
 &lt;h1 id=&#34;建造construction&#34;&gt;建造(Construction)&lt;/h1&gt;
 &lt;h2 id=&#34;选择最大层数&#34;&gt;选择最大层数&lt;/h2&gt;
 &lt;p&gt;HNSW中的节点是按顺序一一插入的。每个节点都被随机分配一个整数&lt;em&gt;l&lt;/em&gt;，表示该节点可以出现在图中的最大层。例如，如果&lt;em&gt;l = 1&lt;/em&gt;，则只能在第 0 层和第 1 层上找到该节点。作者为每个节点随机选择&lt;em&gt;l&lt;/em&gt; ，其具有由非零乘数 mL 归一化的&lt;strong&gt;指数衰减概率分布(exponentially decaying probability distribution)&lt;/strong&gt;（&lt;em&gt;mL= 0&lt;/em&gt;导致HNSW 中的单层和未优化的搜索复杂度）。通常，大多数&lt;em&gt;l&lt;/em&gt;值应等于 0，因此大多数节点仅存在于最低级别。&lt;em&gt;mL&lt;/em&gt;的较大值增加节点出现在较高层的概率。&lt;/p&gt;
@@ -210,6 +343,7 @@
 &lt;li&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss&#34;&gt;Faiss repository&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss/wiki/Faiss-indexes&#34;&gt;Summary of Faiss indexes&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;&lt;em&gt;除非另有说明，所有图片均由作者提供&lt;/em&gt;。&lt;/p&gt;
 &lt;p&gt;原文地址：&lt;a href=&#34;https://towardsdatascience.com/similarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37&#34;&gt;https://towardsdatascience.com/similarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;附操作笔记&lt;/strong&gt;:&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_hnsw.ipynb&#34;&gt;&lt;strong&gt;faiss_hnsw.ipynb&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
@@ -276,7 +410,7 @@
 &lt;p&gt;然后将查询残差分割成子向量。与原始乘积量化算法一样，对于每个子空间，计算包含从子空间质心到查询子向量的距离的距离矩阵&lt;em&gt;d&lt;/em&gt;。 必须记住，每个 Voronoi 分区的查询残差都是不同的。基本上，这意味着需要为每个查询残差单独计算距离矩阵&lt;em&gt;d&lt;/em&gt;。这是所需优化的计算成本。&lt;/p&gt;
 &lt;p&gt;最后，像之前在乘积量化算法中所做的那样，对部分距离进行求和。&lt;/p&gt;
 &lt;h2 id=&#34;排序结果sorting-results&#34;&gt;排序结果(Sorting results)&lt;/h2&gt;
-&lt;p&gt;计算完所有距离后，需要选择&lt;em&gt;k&lt;/em&gt;个最近邻。为了有效地做到这一点，作者建议维护&lt;a href=&#34;https://medium.com/@slavahead/heapify-with-heap-sort-5df23b5764c1&#34;&gt;MaxHeap&lt;/a&gt; (&lt;strong&gt;注&lt;/strong&gt;：容量为k 的大顶堆用于查最小最近的k个值，小顶堆则相反)数据结构。它的容量有限，为&lt;em&gt;k&lt;/em&gt;，并且在每一步中，它存储&lt;em&gt;k&lt;/em&gt;个当前最小距离。每当计算新距离时，仅当计算值小于 MaxHeap 中的最大值时，才会将其值添加到 MaxHeap 中。计算完所有距离后，查询的答案已存储在 MaxHeap 中。使用 MaxHeap 的优点是其快速构建时间，即&lt;em&gt;O(n)&lt;/em&gt; 。&lt;/p&gt;
+&lt;p&gt;计算完所有距离后，需要选择&lt;em&gt;k&lt;/em&gt;个最近邻。为了有效地做到这一点，作者建议维护&lt;a href=&#34;https://medium.com/@slavahead/heapify-with-heap-sort-5df23b5764c1&#34;&gt;MaxHeap&lt;/a&gt; (&lt;strong&gt;注&lt;/strong&gt;：容量为k 的大顶堆用于查最小最近的k个值，小顶堆则相反)数据结构。它的容量有限为&lt;em&gt;k&lt;/em&gt;，并且在每一步中，它存储&lt;em&gt;k&lt;/em&gt;个当前最小距离。每当计算新距离时，仅当计算值小于 MaxHeap 中的最大值时，才会将其值添加到 MaxHeap 中。计算完所有距离后，查询的答案已存储在 MaxHeap 中。使用 MaxHeap 的优点是其快速构建时间为线性时间&lt;strong&gt;O(n)&lt;/strong&gt; 。（&lt;strong&gt;注&lt;/strong&gt;：高度 h=logn；2^h -h -1 = n - logn -1 =&amp;gt; O(n)）&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/blending-inverted-file-index-and-product-quantization/6.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
 &lt;p&gt;​	&lt;em&gt;推理查询过程&lt;/em&gt;&lt;/p&gt;
 &lt;h1 id=&#34;性能performance&#34;&gt;性能(Performance)&lt;/h1&gt;
@@ -3187,76 +3321,6 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;li&gt;记住&lt;code&gt;bytes&lt;/code&gt;包提供与包相同的操作&lt;code&gt;strings&lt;/code&gt;可以帮助避免额外的字节/字符串转换。&lt;/li&gt;
 &lt;li&gt;使用副本而不是子字符串可以防止内存泄漏，因为子字符串操作返回的字符串将由相同的字节数组支持。&lt;/li&gt;
 &lt;/ul&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>Go tips-笔记: 控制语句 30-35 mistakes</title>
-      <link>https://weedge.github.io/post/notions/go-tips/go-tips-04-control-structures/</link>
-      <pubDate>Tue, 14 Feb 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/notions/go-tips/go-tips-04-control-structures/</guid>
-      
-        <description>&lt;h2 id=&#34;笔记&#34;&gt;笔记&lt;/h2&gt;
-&lt;h3 id=&#34;30忽略了元素在-for-range循环中被复制-重要&#34;&gt;30.忽略了元素在 for range循环中被复制 (重要)&lt;/h3&gt;
-&lt;p&gt;需要注意，&lt;code&gt;range&lt;/code&gt;循环中的值元素是一个复制的副本。因此，如果值是需要改变结构，只会更新副本，而不是元素本身，除非修改的值或字段是指针。在经典for循环或者for range循环中，通过索引访问元素来进行修改。&lt;/p&gt;
-&lt;h3 id=&#34;31忽略了参数在for-range循环中的计算方式-重要&#34;&gt;31.忽略了参数在for range循环中的计算方式 (重要)&lt;/h3&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;type&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;slice&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;array&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;unsafe&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Pointer&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;len&lt;/span&gt;   &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;cap&lt;/span&gt;   &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-
-&lt;span class=&#34;nx&#34;&gt;s&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[]&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;range&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;s&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-		&lt;span class=&#34;c1&#34;&gt;// debug check slice array ptr (bp[0]), 
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;		&lt;span class=&#34;c1&#34;&gt;// if append happen slicegrow, array ptr change -&amp;gt; new array
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;		&lt;span class=&#34;nx&#34;&gt;bp&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;uintptr&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;unsafe&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Pointer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;s1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
-		&lt;span class=&#34;nx&#34;&gt;fmt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;0x%x\\n&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;bp&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;])&lt;/span&gt;
-
-    &lt;span class=&#34;nx&#34;&gt;s&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;append&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;s&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;notice&lt;/strong&gt;： 这段代码在原文中分析过程是有误的，但不影响整体结果；range s 之后会发生值拷贝出现copy s, 在append之前，copy s 和 s的array ptr指向同一地址空间；当发生append之后，s 发生来扩容，s的ptr指向了新的地址空间，copy s还是指向原来的地址空间，两者的ptr指向的地址空间已经不同了；&lt;/p&gt;
-&lt;p&gt;对于ch chan 同理 ， range ch 之后会发生值拷贝出现copy ch；对copy ch进行遍历;&lt;/p&gt;
-&lt;p&gt;对应数组arr […]int{1,2,3} 也是同理，range arr 之后会发生值拷贝出现copy arr; 对copy arr进行遍历， 如果想想改变对应arr的值，可以使用下标访问，或者 range &amp;amp;arr 之后 反生copy 数组引用&amp;amp;arr 指向同一地址空间;&lt;/p&gt;
-&lt;h3 id=&#34;32忽略了在for-range中使用指针元素的影响--重要&#34;&gt;32.忽略了在for range中使用指针元素的影响  (重要)&lt;/h3&gt;
-&lt;p&gt;由于 for _, val := range   &amp;amp;val的地址是一个常量，每次迭代指向不同的值，但是地址是同一个，所以在使用&amp;amp;val， 需要特别注意，如果存放&amp;amp;val值，循环迭代完之后，&amp;amp;val指向最后一个元素；如何解决呢， 两个主要的解决方案： 1. 值拷贝，然后赋予地址；2. 直接只用下标对应值的地址；&lt;/p&gt;
-&lt;h3 id=&#34;33在map迭代期间做出错误的假设-重要&#34;&gt;33.在map迭代期间做出错误的假设 (重要)&lt;/h3&gt;
-&lt;p&gt;一种是错误的有序性假设， map是无序的，每次循环是随机获取key，就是说，插入顺序和读取的顺序不一致，每次循环读取的顺序都不同；应该清楚这些map无序行为，这样代码就不会基于错误的假设；&lt;/p&gt;
-&lt;p&gt;那么为什么 Go 有这样一种令人惊讶的方式来遍历map呢？这是语言设计者有意识的选择。他们想添加某种形式的随机性，以确保开发人员在使用map时永远不会依赖任何顺序假设（请参阅http://mng.bz/M2JW）；&lt;/p&gt;
-&lt;p&gt;一种是迭代map时插入k/v，在 Go 中，允许在迭代期间更新map（插入或删除元素）；它不会导致编译错误或运行时错误。但是，在迭代期间在map中添加条目时，应该考虑这种情况，以避免出现不确定的结果。出现的情况：&lt;/p&gt;
-&lt;p&gt;在Go中，&lt;em&gt;如果在迭代过程中创建了map条目，则可以在迭代过程中产生或跳过。对于创建的每个条目以及从一个迭代到下一个迭代，选择可能会有所不同。&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;必须牢记这种行为，以确保代码不会产生不可预测的输出。如果想在迭代map的同时更新map并确保添加的条目不是迭代的一部分，一种解决方案是copy map，迭代map, 在用新的copy map中添加条目；&lt;/p&gt;
-&lt;p&gt;总而言之，当使用map时，不应该依赖以下内容：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;按键排序的数据&lt;/li&gt;
-&lt;li&gt;保留插入顺序&lt;/li&gt;
-&lt;li&gt;确定性迭代顺序&lt;/li&gt;
-&lt;li&gt;在添加元素的同一迭代中生成的元素&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;记住这些行为应该有助于避免基于错误假设的常见错误。&lt;/p&gt;
-&lt;h3 id=&#34;34忽略-break-语句是如何工作的&#34;&gt;34.忽略 break 语句是如何工作的&lt;/h3&gt;
-&lt;p&gt;在Go中， 一个基本规则是&lt;code&gt;break&lt;/code&gt;语句终止的执行最里面的&lt;code&gt;for&lt;/code&gt;, &lt;code&gt;switch&lt;/code&gt;, 或&lt;code&gt;select&lt;/code&gt;语句。&lt;/p&gt;
-&lt;p&gt;如何编写代码来打破循环呢？ 最惯用的方法是使用标签， 从对应的标签代码块中break; 或者对标签块代码封装成函数，直接return;&lt;/p&gt;
-&lt;h3 id=&#34;35在循环中使用-defer&#34;&gt;35.在循环中使用 defer&lt;/h3&gt;
-&lt;p&gt;使用&lt;code&gt;defer&lt;/code&gt;时，必须记住它会在周围函数返回时安排函数调用。因此，&lt;code&gt;defer&lt;/code&gt;在循环内调用将堆叠所有调用：它们不会在每次迭代期间执行，例如，如果循环未终止，这可能会导致内存泄漏。解决这个问题最方便的方法是在每次迭代中引入另一个函数来调用。但是，如果性能至关重要，那么一个缺点就是函数调用增加的开销。如果有这样的情况并且想要防止这种开销，应该在循环之前摆脱&lt;code&gt;defer&lt;/code&gt;并手动处理延迟调用。&lt;/p&gt;
-&lt;h2 id=&#34;概括&#34;&gt;概括&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;循环中的值元素&lt;code&gt;range&lt;/code&gt;是一个副本。因此要改变一个结构，例如，通过其索引或通过经典&lt;code&gt;for&lt;/code&gt;循环访问它（除非修改的元素或字段是指针）。&lt;/li&gt;
-&lt;li&gt;了解传递给运算符的表达式&lt;code&gt;range&lt;/code&gt;在循环开始之前仅计算一次可以帮助避免常见错误，例如通道或切片迭代中的低效赋值。&lt;/li&gt;
-&lt;li&gt;使用局部变量或使用索引访问元素，可以防止在循环内复制指针时出错。&lt;/li&gt;
-&lt;li&gt;为确保在使用map时可预测输出，请记住map数据结构
-&lt;ul&gt;
-&lt;li&gt;不按键排序数据&lt;/li&gt;
-&lt;li&gt;不保留插入顺序&lt;/li&gt;
-&lt;li&gt;没有确定的迭代顺序&lt;/li&gt;
-&lt;li&gt;不保证在迭代期间添加的元素将在本次迭代中生成&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;break&lt;/code&gt;语句终止的执行最里面的&lt;code&gt;for&lt;/code&gt;, &lt;code&gt;switch&lt;/code&gt;, 或&lt;code&gt;select&lt;/code&gt;语句，使用标签，可以从对应的标签代码块中break。&lt;/li&gt;
-&lt;li&gt;提取函数内部的循环逻辑会导致&lt;code&gt;defer&lt;/code&gt;在每次迭代结束时执行一条语句。&lt;/li&gt;
-&lt;/ul&gt;
-</description>
       
     </item>
     

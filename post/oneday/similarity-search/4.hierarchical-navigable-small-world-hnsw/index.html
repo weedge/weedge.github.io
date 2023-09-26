@@ -99,7 +99,7 @@ HNSW 的主要思想是构建这样一个图，其中任何一对顶点之间的
 
 在继续讨论 HNSW 的内部工作之前，让我们首先讨论跳跃列表和可导航小世界——HNSW 实现中使用的关键数据结构。"><meta itemprop="datePublished" content="2023-09-25T15:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-09-25T15:26:23+08:00" />
-<meta itemprop="wordCount" content="5802">
+<meta itemprop="wordCount" content="5826">
 <meta itemprop="keywords" content="oneday,similarity search,hierarchical navigable small world,hnsw," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：相似性搜索，第 4 部分：分层可导航小世界 (HNSW)"/>
 <meta name="twitter:description" content="
@@ -398,12 +398,12 @@ HNSW 的主要思想是构建这样一个图，其中任何一对顶点之间的
 <p>所有人之间的社会关系距离不超过 6 个。</p>
 </blockquote>
 <p>在继续讨论 HNSW 的内部工作之前，让我们首先讨论跳跃列表和可导航小世界——HNSW 实现中使用的关键数据结构。</p>
-<h1 id="跳过列表">跳过列表</h1>
-<p><a href="https://en.wikipedia.org/wiki/Skip_list">跳过列表</a>是一种概率数据结构，允许在排序列表中插入和搜索元素*O(logn)*一般。跳跃列表由多层链表构成。最底层有原始链表，其中包含所有元素。当移动到更高级别时，跳过的元素数量会增加，从而减少连接数量。</p>
+<h1 id="跳跃列表skip-list">跳跃列表(Skip List)</h1>
+<p><a href="https://en.wikipedia.org/wiki/Skip_list">skip list</a>是一种概率数据结构，允许在排序列表中插入和搜索元素*O(logn)*一般。跳跃列表由多层链表构成。最底层有原始链表，其中包含所有元素。当移动到更高级别时，跳过的元素数量会增加，从而减少连接数量。</p>
 <p><img src="https://github.com/weedge/mypic/raw/master/oneday/hierarchical-navigable-small-world-hnsw/1.png" alt="img"></p>
-<p><em>在跳过列表中查找元素 20</em></p>
+<p><em>在跳跃列表中查找元素 20</em></p>
 <p>某个值的搜索过程从最高级别开始，并将其下一个元素与该值进行比较。如果该值小于或等于该元素，则算法将继续处理下一个元素。否则，搜索过程下降到具有更多连接的较低层并重复相同的过程。最后，算法下降到最低层并找到所需的节点。</p>
-<p>根据<a href="https://en.wikipedia.org/wiki/Skip_list">维基百科</a>的信息，跳过列表的主要参数<em>p</em>定义了一个元素出现在多个列表中的概率。如果某个元素出现在<em>第 i层</em>，那么它出现在第<em>i+1</em>层的概率等于<em>p</em>（<em>p</em>通常设置为 0.5 或 0.25 ）。平均而言，每个元素都以*1 / (1 - p)*列表的形式呈现。</p>
+<p>根据<a href="https://en.wikipedia.org/wiki/Skip_list">维基百科</a>的信息，跳跃列表的主要参数<em>p</em>定义了一个元素出现在多个列表中的概率。如果某个元素出现在<em>第 i层</em>，那么它出现在第<em>i+1</em>层的概率等于<em>p</em>（<em>p</em>通常设置为 0.5 或 0.25 ）。平均而言，每个元素都以*1 / (1 - p)*列表的形式呈现。</p>
 <p>我们可以看到，这个过程比链表中普通的线性搜索要快得多。事实上，HNSW 继承了相同的思想，但它使用的不是链表，而是图。</p>
 <h1 id="可航行的小世界navigable-small-world">可航行的小世界(Navigable Small World)</h1>
 <p><a href="https://en.wikipedia.org/wiki/Small-world_network"><strong>可导航小世界</strong></a>是一个具有多对数*T = O(logᵏn)*搜索复杂度的图，它使用贪婪路由。**路由(Routing)**是指从低度数顶点开始搜索过程，以高度数顶点结束的过程。由于低度顶点的连接很少，因此该算法可以在它们之间快速移动，以有效地导航到最近邻居可能所在的区域。然后算法逐渐放大并切换到高度顶点，以找到该区域顶点中的最近邻居。</p>
@@ -436,7 +436,7 @@ HNSW 的主要思想是构建这样一个图，其中任何一对顶点之间的
 <p><em>在HNSW中搜索</em></p>
 <p>与 NSW 类似，HNSW 的搜索质量可以通过使用多个入口点来提高。不是在每一层上只找到一个最近邻居，而是找到与查询向量最接近的<em>efSearch</em>（超参数） ，并将这些邻居中的每一个用作下一层的入口点。</p>
 <h2 id="复杂度">复杂度</h2>
-<p>[原论文中，在任何层上找到最近邻居所需的操作数量都受到一个常数的限制。考虑到图中所有层的数量是对数的，我们得到的总搜索复杂度为<em>O(logn)</em>。</p>
+<p><a href="https://arxiv.org/pdf/1603.09320.pdf">原论文</a>中，在任何层上找到最近邻居所需的操作数量都受到一个常数的限制。考虑到图中所有层的数量是对数的，我们得到的总搜索复杂度为<em>O(logn)</em>。</p>
 <h1 id="建造construction">建造(Construction)</h1>
 <h2 id="选择最大层数">选择最大层数</h2>
 <p>HNSW中的节点是按顺序一一插入的。每个节点都被随机分配一个整数<em>l</em>，表示该节点可以出现在图中的最大层。例如，如果<em>l = 1</em>，则只能在第 0 层和第 1 层上找到该节点。作者为每个节点随机选择<em>l</em> ，其具有由非零乘数 mL 归一化的<strong>指数衰减概率分布(exponentially decaying probability distribution)</strong>（<em>mL= 0</em>导致HNSW 中的单层和未优化的搜索复杂度）。通常，大多数<em>l</em>值应等于 0，因此大多数节点仅存在于最低级别。<em>mL</em>的较大值增加节点出现在较高层的概率。</p>
@@ -541,6 +541,7 @@ HNSW 的主要思想是构建这样一个图，其中任何一对顶点之间的
 <li><a href="https://github.com/facebookresearch/faiss">Faiss repository</a></li>
 <li><a href="https://github.com/facebookresearch/faiss/wiki/Faiss-indexes">Summary of Faiss indexes</a></li>
 </ul>
+<p><em>除非另有说明，所有图片均由作者提供</em>。</p>
 <p>原文地址：<a href="https://towardsdatascience.com/similarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37">https://towardsdatascience.com/similarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37</a></p>
 <p><strong>附操作笔记</strong>:</p>
 <p><a href="https://github.com/weedge/doraemon-nb/blob/main/faiss_hnsw.ipynb"><strong>faiss_hnsw.ipynb</strong></a></p>
@@ -585,6 +586,19 @@ HNSW 的主要思想是构建这样一个图，其中任何一对顶点之间的
       
       <nav class="post-nav">
         
+          <a class="prev" href="/post/oneday/similarity-search/5.locality-sensitive-hashing/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">译：相似性搜索，第 5 部分：局部敏感哈希 (LSH)</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
         
           <a class="next" href="/post/oneday/similarity-search/3.blending-inverted-file-index-and-product-quantization/">
             <span class="next-text nav-default">译：相似性搜索，第 3 部分：混合倒排文件索引和乘积量化</span>
