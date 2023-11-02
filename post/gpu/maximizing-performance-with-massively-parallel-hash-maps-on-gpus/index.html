@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-cn" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>译：利用 GPU 上的大规模并行hashmap最大限度地提高性能 - 时间飘过</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="weedge" />
+  <meta name="description" content="数十年的计算机科学历史一直致力于设计有效存储和检索信息的解决方案。hashmap（或hashtable）是一种流行的信息存储数据结构，因为它们可以保证元素插入和检索的恒定时间。
+然而，尽管hashmap很流行，但很少在 GPU 加速计算的背景下进行讨论。虽然 GPU 以其大量线程和计算能力而闻名，但其极高的内存带宽可以加速许多数据结构（例如hashmap）。
+这篇文章将介绍哈hashmap的基础知识以及它们的内存访问模式如何使其非常适合 GPU 加速。我们将介绍cuCollections，这是一个用于并发数据结构（包括hashmap）的新开源 CUDA C&#43;&#43; 库。
+最后，如果有兴趣在应用程序中使用 GPU 加速的哈希图，我们提供了多列关系连接算法的示例实现case。RAPIDS cuDF 集成了 GPU 哈希图，这有助于为数据科学工作负载实现令人难以置信的加速。要了解更多信息，请参阅GitHub 上的rapidsai/cudf; 以及使用示例case 使用 Dask 和 RAPIDS 加速 TF-IDF 进行自然语言处理。
+还可以将 cuCollections 用于表格数据处理之外的许多用例，例如推荐系统、流压缩、图形算法、基因组学和稀疏线性代数运算。请参阅Pinterest 通过切换推荐系统的 GPU 加速将主页订阅参与度提高 16%了解更多信息。
+" />
+
+  <meta name="keywords" content="工作, 技术, 生活" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.91.0" />
+
+
+<link rel="canonical" href="https://weedge.github.io/post/gpu/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css" integrity="sha256-&#43;ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
+
+<meta property="og:title" content="译：利用 GPU 上的大规模并行hashmap最大限度地提高性能" />
+<meta property="og:description" content="
+数十年的计算机科学历史一直致力于设计有效存储和检索信息的解决方案。hashmap（或hashtable）是一种流行的信息存储数据结构，因为它们可以保证元素插入和检索的恒定时间。
+然而，尽管hashmap很流行，但很少在 GPU 加速计算的背景下进行讨论。虽然 GPU 以其大量线程和计算能力而闻名，但其极高的内存带宽可以加速许多数据结构（例如hashmap）。
+这篇文章将介绍哈hashmap的基础知识以及它们的内存访问模式如何使其非常适合 GPU 加速。我们将介绍cuCollections，这是一个用于并发数据结构（包括hashmap）的新开源 CUDA C&#43;&#43; 库。
+最后，如果有兴趣在应用程序中使用 GPU 加速的哈希图，我们提供了多列关系连接算法的示例实现case。RAPIDS cuDF 集成了 GPU 哈希图，这有助于为数据科学工作负载实现令人难以置信的加速。要了解更多信息，请参阅GitHub 上的rapidsai/cudf; 以及使用示例case 使用 Dask 和 RAPIDS 加速 TF-IDF 进行自然语言处理。
+还可以将 cuCollections 用于表格数据处理之外的许多用例，例如推荐系统、流压缩、图形算法、基因组学和稀疏线性代数运算。请参阅Pinterest 通过切换推荐系统的 GPU 加速将主页订阅参与度提高 16%了解更多信息。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/gpu/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-11-02T10:26:23+08:00" />
+<meta property="article:modified_time" content="2023-11-02T10:26:23+08:00" />
+
+<meta itemprop="name" content="译：利用 GPU 上的大规模并行hashmap最大限度地提高性能">
+<meta itemprop="description" content="
+数十年的计算机科学历史一直致力于设计有效存储和检索信息的解决方案。hashmap（或hashtable）是一种流行的信息存储数据结构，因为它们可以保证元素插入和检索的恒定时间。
+然而，尽管hashmap很流行，但很少在 GPU 加速计算的背景下进行讨论。虽然 GPU 以其大量线程和计算能力而闻名，但其极高的内存带宽可以加速许多数据结构（例如hashmap）。
+这篇文章将介绍哈hashmap的基础知识以及它们的内存访问模式如何使其非常适合 GPU 加速。我们将介绍cuCollections，这是一个用于并发数据结构（包括hashmap）的新开源 CUDA C&#43;&#43; 库。
+最后，如果有兴趣在应用程序中使用 GPU 加速的哈希图，我们提供了多列关系连接算法的示例实现case。RAPIDS cuDF 集成了 GPU 哈希图，这有助于为数据科学工作负载实现令人难以置信的加速。要了解更多信息，请参阅GitHub 上的rapidsai/cudf; 以及使用示例case 使用 Dask 和 RAPIDS 加速 TF-IDF 进行自然语言处理。
+还可以将 cuCollections 用于表格数据处理之外的许多用例，例如推荐系统、流压缩、图形算法、基因组学和稀疏线性代数运算。请参阅Pinterest 通过切换推荐系统的 GPU 加速将主页订阅参与度提高 16%了解更多信息。"><meta itemprop="datePublished" content="2023-11-02T10:26:23+08:00" />
+<meta itemprop="dateModified" content="2023-11-02T10:26:23+08:00" />
+<meta itemprop="wordCount" content="6870">
+<meta itemprop="keywords" content="oneday,gpu,hashmap," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="译：利用 GPU 上的大规模并行hashmap最大限度地提高性能"/>
+<meta name="twitter:description" content="
+数十年的计算机科学历史一直致力于设计有效存储和检索信息的解决方案。hashmap（或hashtable）是一种流行的信息存储数据结构，因为它们可以保证元素插入和检索的恒定时间。
+然而，尽管hashmap很流行，但很少在 GPU 加速计算的背景下进行讨论。虽然 GPU 以其大量线程和计算能力而闻名，但其极高的内存带宽可以加速许多数据结构（例如hashmap）。
+这篇文章将介绍哈hashmap的基础知识以及它们的内存访问模式如何使其非常适合 GPU 加速。我们将介绍cuCollections，这是一个用于并发数据结构（包括hashmap）的新开源 CUDA C&#43;&#43; 库。
+最后，如果有兴趣在应用程序中使用 GPU 加速的哈希图，我们提供了多列关系连接算法的示例实现case。RAPIDS cuDF 集成了 GPU 哈希图，这有助于为数据科学工作负载实现令人难以置信的加速。要了解更多信息，请参阅GitHub 上的rapidsai/cudf; 以及使用示例case 使用 Dask 和 RAPIDS 加速 TF-IDF 进行自然语言处理。
+还可以将 cuCollections 用于表格数据处理之外的许多用例，例如推荐系统、流压缩、图形算法、基因组学和稀疏线性代数运算。请参阅Pinterest 通过切换推荐系统的 GPU 加速将主页订阅参与度提高 16%了解更多信息。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">时间飘过</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      时间飘过
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">译：利用 GPU 上的大规模并行hashmap最大限度地提高性能</h1>
+      
+      <div class="post-meta">
+        <time datetime="2023-11-02" class="post-time">
+          2023-11-02
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#hash-map基础知识">Hash map基础知识</a>
+      <ul>
+        <li><a href="#单值与多值比较">单值与多值比较</a></li>
+        <li><a href="#存储和检索">存储和检索</a></li>
+        <li><a href="#哈希冲突">哈希冲突</a></li>
+        <li><a href="#开放寻址">开放寻址</a></li>
+      </ul>
+    </li>
+    <li><a href="#随机存储器访问">随机存储器访问</a></li>
+    <li><a href="#gpu哈希图实现">GPU哈希图实现</a></li>
+    <li><a href="#cooperative-groups-协作组">Cooperative groups 协作组</a></li>
+    <li><a href="#现有cpu和gpu哈希图比较">现有CPU和GPU哈希图比较</a></li>
+    <li><a href="#多列关系连接multicolumn-relational-join示例">多列关系连接(multicolumn relational join)示例</a></li>
+    <li><a href="#如何在代码中使用-gpu-哈希图">如何在代码中使用 GPU 哈希图</a></li>
+    <li><a href="#reference">Reference</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <p><img src="https://github.com/weedge/mypic/raw/master/oneday//maximizing-performance-with-massively-parallel-hash-maps-on-gpus/1.png" alt="img"></p>
+<p>数十年的计算机科学历史一直致力于设计有效存储和检索信息的解决方案。hashmap（或hashtable）是一种流行的信息存储数据结构，因为它们可以保证元素插入和检索的恒定时间。</p>
+<p>然而，尽管hashmap很流行，但很少在 GPU 加速计算的背景下进行讨论。虽然 GPU 以其大量线程和计算能力而闻名，但其极高的内存带宽可以加速许多数据结构（例如hashmap）。</p>
+<p>这篇文章将介绍哈hashmap的基础知识以及它们的内存访问模式如何使其非常适合 GPU 加速。我们将介绍<a href="https://github.com/NVIDIA/cuCollections">cuCollections</a>，这是一个用于并发数据结构（包括hashmap）的新开源 CUDA C++ 库。</p>
+<p>最后，如果有兴趣在应用程序中使用 GPU 加速的哈希图，我们提供了多列关系连接算法的示例实现case。RAPIDS cuDF 集成了 GPU 哈希图，这有助于为数据科学工作负载实现令人难以置信的加速。要了解更多信息，请参阅GitHub 上的<a href="https://github.com/rapidsai/cudf">rapidsai/cudf</a>; 以及使用示例case <a href="https://medium.com/rapids-ai/accelerating-tf-idf-for-natural-language-processing-with-dask-and-rapids-6f6e416429df">使用 Dask 和 RAPIDS 加速 TF-IDF 进行自然语言处理</a>。</p>
+<p>还可以将 cuCollections 用于表格数据处理之外的许多用例，例如推荐系统、流压缩、图形算法、基因组学和稀疏线性代数运算。请参阅<a href="https://blogs.nvidia.com/blog/2022/08/04/pinterest-gpu-acceleration-recommenders/">Pinterest 通过切换推荐系统的 GPU 加速将主页订阅参与度提高 16%</a>了解更多信息。</p>
+<h2 id="hash-map基础知识">Hash map基础知识</h2>
+<p><a href="https://en.wikipedia.org/wiki/Hash_table">Hashmap</a>是*关联(associative)*容器，这意味着它们存储pair&lt;key,val&gt;对，其中keymap到关联val，从而可以通过查找key来检索val。例如，可以使用hashmap来实现电话簿，方法是使用个人姓名作为key，使用电话号码作为关联值。</p>
+<p>Hashmap与其他关联容器的不同之处在于，插入或检索等操作的平均成本是恒定的。<a href="https://en.cppreference.com/w/cpp/container/map"><code>std::map</code></a>C++ 标准模板库中的map不是hashtable，而是通常以二叉搜索树的形式实现。<a href="https://en.cppreference.com/w/cpp/container/unordered_map"><code>std::unordered_map</code></a>更类似于与此讨论相关的hashtable。就本文而言，hashtable和hashmap之间没有区别。这两个术语将在全文中互换使用。</p>
+<h3 id="单值与多值比较">单值与多值比较</h3>
+<p>讨论哈希表时的一个重要区别是是否允许重复key。单值哈希表或hashmap要求key是唯一的（例如，<code>std::unordered_map</code>），而多值哈希表或哈希多重map允许重复的key（例如，<code>std::unordered_multimap</code>）。</p>
+<p>使用电话簿类比，后者指的是一个人可以拥有多个电话号码的情况。例如，电话簿可能具有(k=Alice, v=408-555-0148)和具有另一个值(k=Alice, v=408-555-3847) 的重复key。</p>
+<h3 id="存储和检索">存储和检索</h3>
+<p>从概念上讲，哈希图由一组桶组成，其中每个桶可以保存一个或多个key值对。为了将新的对插入到map中，对key应用哈希函数以产生哈希值。然后使用该哈希值来选择其中一个存储桶。如果存储桶可用，则该对存储在该存储桶中。</p>
+<p>例如，要插入对*(Alice, 408-555-0148)<em>，可以对keyhash(Alice)=4 进行哈希处理，以获取其哈希值，并选择位置 4 处的存储桶来存储该对。稍后，要检索与Alice关联的值，可以使用相同的哈希函数</em>hash(Alice)*再次选择位置 4 处的存储桶并检索之前存储的值。</p>
+<h3 id="哈希冲突">哈希冲突</h3>
+<p>如果表中的桶的数量等于可能的key的数量，则可以采用散列桶和key之间的一对一关系，其中每个key恰好map到表中的一个桶。</p>
+<p>然而，这在大多数情况下是不切实际的，因为事先不知道潜在密钥的数量，或者为每个密钥保留存储桶所需的存储空间将超出可用内存容量。想象一下，如果的电话簿必须为宇宙中每个可能的名字保留一个条目！</p>
+<p>因此，哈希函数通常不完善，可能会导致哈希冲突，即两个不同的keymap到相同的哈希值（图 1）。好的哈希函数会尽量减少冲突的可能性，但在大多数情况下它们是不可避免的。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday//maximizing-performance-with-massively-parallel-hash-maps-on-gpus/hash-collision-diagram.png" alt="显示存储桶四中的哈希冲突的图表。 灰色插槽表示已被占用的插槽。 "><em>图 1. 两个不同的key（Alice 和 Bob)具有相同的哈希值，导致存储桶 4 处发生哈希冲突</em></p>
+<h3 id="开放寻址">开放寻址</h3>
+<p>在文献中可以找到许多解决哈希冲突的策略，但本文重点介绍一种称为线性探测(<strong>linear probing</strong>)的开放寻址策略。</p>
+<p>开放寻址哈希表使用内存中连续的存储桶数组。使用线性探测，如果在位置 i 遇到已占用的存储桶*，<em>则移动到下一个相邻位置</em>i+1*。如果这个存储桶也被占用，则移动到<em>i+2</em>，依此类推。当到达最后一个桶时，将回到起点。这种探测方案对于每个key都是确定性的（图 2）。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday//maximizing-performance-with-massively-parallel-hash-maps-on-gpus/linear-probing-strategy-diagram.png" alt="该图显示了两个不同key的两个哈希值相同时的线性探测策略"><em>图 2. 开放寻址通过按确定性顺序遍历一系列替代存储桶的探测方案将冲突条目存储在不同位置</em></p>
+<p>这种方法的缓存效率很高，因为它访问内存中的连续位置。如果负载因子（已填充的存储桶与总存储桶的比率）较高，则可能会导致性能下降 ，因为这会导致额外的内存读取。</p>
+<p>从hashmap中检索key Bob 的工作方式相同：从位置hash(Bob)=4开始遵循key的探测序列，直到在位置 6 处找到所需的存储桶。如果在给定key的探测序列中的任何点遇到空存储桶，则知道所查询的key不存在于hashmap中。</p>
+<h2 id="随机存储器访问">随机存储器访问</h2>
+<p>精心设计的散列函数通过最大化散列任意两个key产生不同散列值的可能性来最小化冲突次数。这意味着对于任何给定的两个key，它们对应的存储桶可能位于不同的内存位置。</p>
+<p>因此，大多数哈希表操作的内存访问模式实际上是随机的。要理解哈希表的性能，了解随机内存访问的性能非常重要。</p>
+<p>表 1 将理论峰值带宽与在现代 CPU 和 GPU 上 通过<a href="https://icl.utk.edu/projectsfiles/hpcc/RandomAccess/">GUPS 基准测试</a>测量的随机 64 位读取所实现的带宽进行了比较。</p>
+<table>
+<thead>
+<tr>
+<th>芯片（内存）</th>
+<th>理论峰值带宽（GB/s）</th>
+<th><strong>测量的随机 64 位读取带宽 (GB/s)</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://www.intel.com/content/www/us/en/products/sku/212459/intel-xeon-platinum-8360y-processor-54m-cache-2-40-ghz/specifications.html">英特尔至强铂金 8360Y</a>（DDR4-3200，8 通道）</td>
+<td>204</td>
+<td>15</td>
+</tr>
+<tr>
+<td>NVIDIA A100-80GB-SXM (HBM2e)</td>
+<td>2039</td>
+<td>141</td>
+</tr>
+<tr>
+<td>NVIDIA H100-80GB-SXM (HBM3)</td>
+<td>3352</td>
+<td>256</td>
+</tr>
+</tbody>
+</table>
+<p><em>表 1. 带宽的计算方式为访问大小乘以访问次数除以时间</em></p>
+<p>如果有兴趣在系统上运行 GUPS GPU 基准测试，请参阅<a href="https://github.com/NVIDIA-developer-blog/code-samples/tree/master/posts/gups">NVIDIA 开发人员博客代码示例</a>GitHub 存储库。可以在<a href="https://github.com/ParRes/Kernels">ParRes/Kernels</a> GitHub 存储库中访问 CPU 代码。</p>
+<p>正如所看到的，随机内存访问比理论峰值带宽大约慢 10 倍。这是因为内存子系统针对顺序访问进行了优化。更重要的是，NVIDIA GPU 的随机访问吞吐量比现代 CPU 高出一个数量级。这些结果表明，性能最佳的 CPU 哈希表可能比性能最佳的 GPU 哈希表慢一个数量级。</p>
+<h2 id="gpu哈希图实现">GPU哈希图实现</h2>
+<p>随机内存访问在哈希表实现中是不可避免的，与 CPU 相比，GPU 在随机访问方面表现出色。这是有希望的，因为它暗示 GPU 应该擅长哈希表操作。为了测试这一理论，本节讨论 GPU 哈希表的实现和优化，并将性能与 CPU 实现进行比较。</p>
+<p>我们的目标不是开发标准 C++ 容器直接替代品（例如 <code>std::unordered_map</code>)，而是专注于实现适合 GPU 加速应用程序中出现的大规模并行、高吞吐量问题的哈希表。</p>
+<p>此示例使用以下简化假设：</p>
+<ul>
+<li>表的容量是固定的——不能在初始容量之外添加额外的key值对</li>
+<li>需要将其中一些key values留作哨兵值以表示空桶</li>
+<li>key value类型的大小之和必须小于或等于八个字节</li>
+<li>Key-value对一旦插入就无法删除</li>
+</ul>
+<p>请注意，这些不是基本限制，可以通过 cuCollections 库中提供的更高级的实现来克服。</p>
+<p>首先，示例哈希表使用开放寻址并由存储桶数组组成。每个存储桶可以容纳一个key值对，并使用key/值标记进行初始化以表示它当前为空。对于碰撞解决， 使用线性探测。</p>
+<p>GPU 加速的哈希表需要支持来自多个线程的并发更新，并且有必要采取措施避免数据竞争，例如，如果两个线程尝试在同一位置插入。为了避免昂贵的锁定，示例哈希表使用原子操作，其中使用<code>libcu++</code> 中的 <a href="https://nvidia.github.io/libcudacxx/extended_api/synchronization_primitives/atomic.html"><code>cuda::std::atomic</code></a> 函数将每个存储桶定义为<code>cuda::std::atomic&lt;pair&lt;key, value&gt;&gt;</code>。</p>
+<p>要插入新key，该实现根据哈希值计算第一个存储桶，并执行原子比较和交换操作，期望存储桶中的key等于<code>empty_sentinel</code>。如果是，则槽为空，插入成功。否则，它会前进到下一个桶，直到最终找到一个空桶。</p>
+<p>下面的代码显示了哈希表插入函数的简化版本。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="n">__device__</span> <span class="kt">bool</span> <span class="nf">insert</span><span class="p">(</span><span class="n">Key</span> <span class="n">k</span><span class="p">,</span> <span class="n">Value</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+<span class="c1">// get initial probing position from the hash value of the key
+</span><span class="c1"></span><span class="k">auto</span> <span class="n">i</span> <span class="o">=</span> <span class="n">hash</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">%</span> <span class="n">capacity</span><span class="p">;</span>
+<span class="k">while</span> <span class="p">(</span><span class="nb">true</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// load the content of the bucket at the current probe position
+</span><span class="c1"></span>  <span class="k">auto</span> <span class="p">[</span><span class="n">old_k</span><span class="p">,</span> <span class="n">old_v</span><span class="p">]</span> <span class="o">=</span> <span class="n">buckets</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">load</span><span class="p">(</span><span class="n">memory_order_relaxed</span><span class="p">);</span>
+  <span class="c1">// if the bucket is empty we can attempt to insert the pair
+</span><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">old_k</span> <span class="o">==</span> <span class="n">empty_sentinel</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// try to atomically replace the current content of the bucket with the input pair
+</span><span class="c1"></span>    <span class="kt">bool</span> <span class="n">success</span> <span class="o">=</span> <span class="n">buckets</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">compare_exchange_strong</span><span class="p">(</span>
+                    <span class="p">{</span><span class="n">old_k</span><span class="p">,</span> <span class="n">old_v</span><span class="p">},</span> <span class="p">{</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">},</span> <span class="n">memory_order_relaxed</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">success</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1">// store was successful
+</span><span class="c1"></span>      <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">old_k</span> <span class="o">==</span> <span class="n">k</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// input key is already present in the map
+</span><span class="c1"></span>    <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="c1">// if the bucket was already occupied move to the next (linear) probing position
+</span><span class="c1"></span>  <span class="c1">// using the modulo operator to wrap back around to the beginning if we     
+</span><span class="c1"></span>  <span class="c1">// go beyond the capacity
+</span><span class="c1"></span>  <span class="n">i</span> <span class="o">=</span> <span class="o">++</span><span class="n">i</span> <span class="o">%</span> <span class="n">capacity</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><p>以类似的方式查找hashmap中特定key的关联value。检查key探测序列中的每个位置，直到找到包含所需key的存储桶；或空存储桶表明该key没在hashmap中。</p>
+<p>（<strong>注</strong>：「<a href="https://nosferalatu.com/SimpleGPUHashTable.html">SimpleGPUHashTable</a>」一样的实现，但是cuCollections hashmap 做了进一步的优化，使用Cooperative groups 在负载系数高的情况下，线性探测的优化）</p>
+<h2 id="cooperative-groups-协作组">Cooperative groups 协作组</h2>
+<p>乍一看，为每个输入元素分配一个工作线程似乎是一个合理的比例。但是，请考虑以下事项：</p>
+<ul>
+<li>输入中的相邻key与其在内存中的相关探测位置之间没有关系。这意味着warp中的每个线程都可能访问hashmap的完全不同的区域。在最坏的情况下，每个探测步骤都需要从全局内存中的 32 个不同位置加载每个 warp。（回想一下随机存储器访问。）</li>
+<li>通过线性探测，每个线程可以从其初始探测位置开始访问多个相邻的存储桶。这种本地访问模式允许使用单个合并负载预取多个探测位置，不幸的是，这无法通过单个线程实现。</li>
+</ul>
+<p>我们可以做得更好吗？是的。CUDA<a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#cooperative-groups">协作组</a>模型可以轻松地重新配置工作分配的粒度。每个输入元素不是使用单个 CUDA 线程，而是将元素分配给同一warp内的一组连续线程。</p>
+<p>对于给定的输入key，不是按顺序遍历其关联的探测序列，而是使用单个合并负载来预取多个相邻桶的窗口。然后，该组使用高效的 <code>ballot</code> 和 <code>shuffle</code> 内在函数合作确定窗口内的候选存储桶。</p>
+<p>下图显示了关key Bob 的小组合作探测步骤及其中间步骤。 由四个线程组成的协作组用于将key Bob 插入哈希表中。 从由key的哈希值确定的初始探测索引开始，将桶的合并窗口加载到本地寄存器中，并使用“ballot”内在函数确定候选桶。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday//maximizing-performance-with-massively-parallel-hash-maps-on-gpus/group-cooperative-probing-diagram.png" alt=""><em>图 3. 密钥 Bob 的群体合作探测步骤及其中间步骤</em></p>
+<p>以下代码扩展了之前引入的插入函数，以使用warp中的四个连续线程来协作插入单个key。<code>cg::thread_block_tile&lt;4&gt;</code>代表子warp中的四个线程。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="k">enum</span> <span class="k">class</span> <span class="nc">probing_state</span> <span class="p">{</span> <span class="n">SUCCESS</span><span class="p">,</span> <span class="n">DUPLICATE</span><span class="p">,</span> <span class="n">CONTINUE</span> <span class="p">};</span>
+
+<span class="n">__device__</span> <span class="kt">bool</span> <span class="nf">insert</span><span class="p">(</span><span class="n">cg</span><span class="o">::</span><span class="n">thread_block_tile</span><span class="o">&lt;</span><span class="mi">4</span><span class="o">&gt;</span> <span class="n">group</span><span class="p">,</span> <span class="n">Key</span> <span class="n">k</span><span class="p">,</span> <span class="n">Value</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+<span class="c1">// get initial probing position from the hash value of the key
+</span><span class="c1"></span><span class="k">auto</span> <span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="n">hash</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">+</span> <span class="n">group</span><span class="p">.</span><span class="n">thread_rank</span><span class="p">())</span> <span class="o">%</span> <span class="n">capacity</span><span class="p">;</span>
+<span class="k">auto</span> <span class="n">state</span> <span class="o">=</span> <span class="n">probing_state</span><span class="o">::</span><span class="n">CONTINUE</span><span class="p">;</span>
+<span class="k">while</span> <span class="p">(</span><span class="nb">true</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// load the contents of the bucket at the current probe position of each rank in a coalesced manner
+</span><span class="c1"></span>  <span class="k">auto</span> <span class="p">[</span><span class="n">old_k</span><span class="p">,</span> <span class="n">old_v</span><span class="p">]</span> <span class="o">=</span> <span class="n">buckets</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">load</span><span class="p">(</span><span class="n">memory_order_relaxed</span><span class="p">);</span>
+  <span class="c1">// input key is already present in the map
+</span><span class="c1"></span>  <span class="k">if</span><span class="p">(</span><span class="n">group</span><span class="p">.</span><span class="n">any</span><span class="p">(</span><span class="n">old_k</span> <span class="o">==</span> <span class="n">k</span><span class="p">))</span> <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+  <span class="c1">// each rank checks if its current bucket is empty, i.e., a candidate bucket for insertion
+</span><span class="c1"></span>  <span class="k">auto</span> <span class="k">const</span> <span class="n">empty_mask</span> <span class="o">=</span> <span class="n">group</span><span class="p">.</span><span class="n">ballot</span><span class="p">(</span><span class="n">old_k</span> <span class="o">==</span> <span class="n">empty_sentinel</span><span class="p">);</span>
+  <span class="c1">// it there is an empty buckets in the group&#39;s current probing window
+</span><span class="c1"></span>  <span class="k">if</span><span class="p">(</span><span class="n">empty_mask</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// elect a candidate rank (here: thread with lowest rank in mask)
+</span><span class="c1"></span>    <span class="k">auto</span> <span class="k">const</span> <span class="n">candidate</span> <span class="o">=</span> <span class="n">__ffs</span><span class="p">(</span><span class="n">empty_mask</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">group</span><span class="p">.</span><span class="n">thread_rank</span><span class="p">()</span> <span class="o">==</span> <span class="n">candidate</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1">// attempt atomically swapping the input pair into the bucket
+</span><span class="c1"></span>      <span class="kt">bool</span> <span class="k">const</span> <span class="n">success</span> <span class="o">=</span> <span class="n">buckets</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">compare_exchange_strong</span><span class="p">(</span>
+                      <span class="p">{</span><span class="n">old_k</span><span class="p">,</span> <span class="n">old_v</span><span class="p">},</span> <span class="p">{</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">},</span> <span class="n">memory_order_relaxed</span><span class="p">);</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">success</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// insertion went successful
+</span><span class="c1"></span>        <span class="n">state</span> <span class="o">=</span> <span class="n">probing_state</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">old_k</span> <span class="o">==</span> <span class="n">k</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// else, re-check if a duplicate key has been inserted at the current probing position
+</span><span class="c1"></span>        <span class="n">state</span> <span class="o">=</span> <span class="n">probing_state</span><span class="o">::</span><span class="n">DUPLICATE</span><span class="p">;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="c1">// broadcast the insertion result from the candidate rank to all other ranks
+</span><span class="c1"></span>    <span class="k">auto</span> <span class="k">const</span> <span class="n">candidate_state</span> <span class="o">=</span> <span class="n">group</span><span class="p">.</span><span class="n">shfl</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">candidate</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">candidate_state</span> <span class="o">==</span> <span class="n">probing_state</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">)</span> <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">candidate_state</span> <span class="o">==</span> <span class="n">probing_state</span><span class="o">::</span><span class="n">DUPLICATE</span><span class="p">)</span> <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="c1">// else, move to the next (linear) probing window
+</span><span class="c1"></span>    <span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">group</span><span class="p">.</span><span class="n">size</span><span class="p">())</span> <span class="o">%</span> <span class="n">capacity</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><p>前面的哈希表插入函数的代码示例是 cuCollections 实际实现的简化版本<code>cuco::static_map</code>。</p>
+<p>图 4 显示了在<a href="https://www.nvidia.com/en-us/data-center/a100/">NVIDIA A100 80 GB</a> GPU上测量的非合作和合作探测方法的性能，未具体化不同组大小和表占用率。</p>
+<p>下图为不同协作组大小的探测吞吐量，以及不同哈希表负载因子下的最大可实现吞吐量（GUPS 结果）。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday//maximizing-performance-with-massively-parallel-hash-maps-on-gpus/cooperative-probing-throughput-graph.png" alt=""><em>图 4. 对于协作探测，吞吐量以 GB/s 为单位（越高越好)。红色虚线显示峰值 GUPS 结果，它提供了该系统上可以实现的吞吐量的上限。</em></p>
+<p>如果负载系数较低，则非合作（非 CG）表现出接近最佳性能。然而，如果负载因子增加，由于冲突次数增加和探测序列更长，吞吐量会急剧下降。这是有问题的，因为较高的表加载因子对应于更好的内存利用率。</p>
+<p>协作探测可提高此类高负载系数场景的性能。当组大小为 4 时，当负载系数较高时，与非合作方法相比，可以观察到插入吞吐量高出 13%，查找吞吐量高出 40%。</p>
+<p>长探测序列也会出现在具有高密钥重数的多值场景中，因为相同的密钥会遍历相同的桶序列。合作探测也有助于加快这些场景的速度。</p>
+<p>有关组协作哈希表探测的更多信息，请参阅<a href="https://www.nvidia.com/en-us/on-demand/session/gtcsiliconvalley2018-s8237/">多 GPU 节点上的并行哈希</a>和<a href="https://www.nvidia.com/en-us/on-demand/session/gtcspring21-e31204/">WarpCore：GPU 上快速哈希表的库</a>。</p>
+<h2 id="现有cpu和gpu哈希图比较">现有CPU和GPU哈希图比较</h2>
+<p>多年来已经提出了各种 C++ hashmap实现。其中最受欢迎的是<code>libstdc++/libc++ std::unordered</code>_map 和<a href="https://abseil.io/">Abseil</a> <code>absl::flat_hash_map</code>。这些是顺序实现，从多个线程使用它们需要额外的同步。</p>
+<p><a href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/onetbb.html"><strong>TBB</strong></a> <code>tbb::concurrent_hash_map</code> 和 <a href="https://github.com/facebook/folly"><strong>Folly</strong></a> <code>folly::AtomicHashMap</code>是在CPU中并发多线程场景下，常使用的hashmap库。GPU 上可用的少数实现之一来自<a href="https://kokkos.github.io/">Kokkos </a><code>kokkos::UnorderedMap</code>库。</p>
+<p>将上面提供的hashmap实现的性能与 cuCollection <code>cuco::static_map</code>进行比较。基准设置如下。</p>
+<p>首先，将 2^27 (1 GB) 个唯一的 4 字节key/4 字节值对插入到每个map中，然后查询同一组key以检索其关联值。每次运行的目标hashtable负载率为 50%。性能以内存吞吐量（GB/秒；越高越好）来衡量。</p>
+<p>结果如图 5 所示。<code>cuco::static_map</code>在单个 NVIDIA H100-80GB-SXM 上实现了 87.5 GB/s 的插入吞吐量和 134.6 GB/s 的查找吞吐量，这意味着比最快的 CPU 单线程和多线程实现，有数量级的提升。此外，在本次测试中，cuCollections 的性能优于其他 GPU 实现，<code>kokkos::UnorderedMap</code>插入性能分别高出 3.8 倍，查找性能分别高出 2.6 倍。</p>
+<p>请注意，在此基准测试设置中，每个操作的 I/O 向量驻留在 CPU 端实现的 CPU 内存中，以及 GPU 端实现的 GPU 内存中。如果 GPU 哈希图的数据向量需要驻留在 CPU 内存中，则需要首先将输入数据移至 GPU，然后将结果移回 CPU 内存。</p>
+<p>这可以通过显式（异步批量）复制或使用 CUDA<a href="https://developer.nvidia.com/blog/maximizing-unified-memory-performance-cuda/">统一内存</a>概念的自动页面迁移来实现。结果表明，我们实现的吞吐量始终远高于 PCIe Gen4 的实际可用带宽，甚至高于 H100 上的 PCIe Gen5。这意味着这种方法能够使 CPU 和 GPU 之间的链路完全饱和。</p>
+<p>换句话说，cuCollections 能够以系统 PCIe 带宽的速度构建和查询哈希表，即使数据不在 GPU 内存中也是如此。此外，得益于 CPU 和 GPU 之间的快速 NVLink-C2C 互连，<a href="https://developer.nvidia.com/blog/nvidia-grace-hopper-superchip-architecture-in-depth/">NVIDIA Grace Hopper Superchip</a>可以提供额外的加速，从而释放哈希表的全部吞吐量。相比之下，与 PCIe 相比，CPU hashmap的吞吐量通常要低得多。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday//maximizing-performance-with-massively-parallel-hash-maps-on-gpus/insert-find-throughput-graph.png" alt="显示批量插入和批量查找操作的各种hashmap实现的吞吐量的条形图。"><em>图 5. 流行的 CPU 和 GPU 哈希图实现的性能比较</em></p>
+<h2 id="多列关系连接multicolumn-relational-join示例">多列关系连接(multicolumn relational join)示例</h2>
+<p>本节提供一个真实示例，说明如何使用 GPU 哈希表来实现复杂算法。</p>
+<p><a href="https://github.com/rapidsai/cudf">cuDF</a>是一个用于数据分析的 GPU 加速库。它提供了数据操作的原语，例如加载、连接和聚合。通过利用 cuCollections 哈希表，它使用哈希联接算法来执行联接操作。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday//maximizing-performance-with-massively-parallel-hash-maps-on-gpus/inner-join-implementation-RAPIDS-cuDF.png" alt="该图显示了三个表，说明了 cuDF 连接实现如何用于内部连接。  "><em>图 6. RAPIDS cuDF 中内部联接实现的构建和探测阶段</em></p>
+<p>图 6 显示了 cuDF 连接实现如何用于内部连接。cuDF 提供内置哈希函数，将任意类型的行哈希为哈希值。不同的行可以具有相同的哈希值，因此需要进行行相等检查来确定两行是否真正相同。</p>
+<p>左侧的表用于填充 一个<a href="https://github.com/NVIDIA/cuCollections/blob/dev/include/cuco/static_multimap.cuh"><code>cuco::static_multimap</code></a>其中key是行的哈希值，有效负载是关联的行索引。第24行插入到第47个桶，第25行插入到第48个桶。在探测阶段，右表第200行的哈希值为47，与桶的哈希值相同（或相同的key） 47 来自哈希表。</p>
+<p>为了最终确定两行是否相等，需要右表中 {André-Marie, Ampère} 的行索引 200 和左表中 {Alessandro, Volta} 的行索引 24 ，传递给行相等函数<em>row_equal(200, 24)</em>。</p>
+<p>最后，这两行不相同，因此左侧表的第 24 行不匹配。最终，左表的第 25 行与右表的第 200 行匹配，因为哈希值相同，并且行相等性检查 ( row_equal <em>(200, 25)</em> ) 也通过了。</p>
+<p>考虑到大小、选择性等方面的许多选项，对连接操作进行基准测试是一个复杂的主题。有关更多详细信息，请参阅<a href="https://www.nvidia.com/en-us/on-demand/session/gtcsiliconvalley2018-s8289/">如何充分利用 GPU 加速数据库运算符</a>和<a href="https://www.nvidia.com/en-us/on-demand/session/gtcsiliconvalley2019-s9557/">有效、可扩展的多 GPU 连接</a>。</p>
+<p>（<strong>注</strong>： 类似的场景很多，比如判断两个特征向量是否相似，合并两个特征向量等等，可以引入GPU hashmap对应实现库来加速，一般是模型训练算力加速；在web业务服务场景下，很少使用，主要是cpu服务场景已经满足，没必要进一步优化，而且gpu计算服务成本高）</p>
+<h2 id="如何在代码中使用-gpu-哈希图">如何在代码中使用 GPU 哈希图</h2>
+<p>GPU 非常适合hashmap等并发数据结构。这一切都始于高带宽内存架构，对于许多小型随机读取和原子更新来说，高带宽内存架构比 CPU 快一个数量级(order-of-magnitude)。这直接转化为 GPU 上高效的哈希表插入和探测性能。</p>
+<p>本文介绍了设计大规模并行hashmap时的一些重要注意事项：</p>
+<p>1）具有开放寻址的哈希桶的平坦内存布局，以解决冲突；</p>
+<p>2）线程在相邻哈希桶上进行协作以进行插入和探测，以提高高负载因子场景中的性能。</p>
+<p>可以在 GitHub 上找到快速灵活的hashmap实现，作为<a href="https://github.com/NVIDIA/cuCollections#data-structures">cuCollections</a>库的一部分。</p>
+<p>如果高性能数据存储和检索对的应用程序很重要，那么 GPU 加速的哈希表可以成为的首选数据结构。尝试一下<a href="https://github.com/NVIDIA/cuCollections">cuCollections</a>库，亲自体验 GPU 的强大功能。</p>
+<p>(<strong>注</strong>：还有另外一个库<a href="https://github.com/stotko/stdgpu">stdgpu</a>，提供在GPU场景下 类似c++ STL相关容器操作，相对接口比较全面；两者代码结构都是标准规范的c++工程开发结构，都有example,test,benchmark，使用起来非常友好~。<a href="https://github.com/NVIDIA">NVIDIA</a>官方库 <a href="https://github.com/NVIDIA/cuCollections">cuCollections </a>比较新，如果感兴趣可以贡献一波)</p>
+<h2 id="reference">Reference</h2>
+<ol>
+<li><a href="https://developer.nvidia.com/blog/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/">https://developer.nvidia.com/blog/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/</a></li>
+<li><a href="https://developer.nvidia.com/blog/maximizing-unified-memory-performance-cuda/">https://developer.nvidia.com/blog/maximizing-unified-memory-performance-cuda/</a></li>
+<li><a href="https://blogs.nvidia.com/blog/2022/08/04/pinterest-gpu-acceleration-recommenders/">https://blogs.nvidia.com/blog/2022/08/04/pinterest-gpu-acceleration-recommenders/</a></li>
+<li><a href="https://www.nvidia.com/en-us/on-demand/session/gtcsiliconvalley2018-s8289/">https://www.nvidia.com/en-us/on-demand/session/gtcsiliconvalley2018-s8289/</a></li>
+<li><a href="https://www.nvidia.com/en-us/on-demand/session/gtcsiliconvalley2019-s9557/">https://www.nvidia.com/en-us/on-demand/session/gtcsiliconvalley2019-s9557/</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Hash_table">https://en.wikipedia.org/wiki/Hash_table</a></li>
+<li><a href="https://web.stanford.edu/class/ee380/Abstracts/070221_LockFreeHash.pdf">https://web.stanford.edu/class/ee380/Abstracts/070221_LockFreeHash.pdf</a></li>
+<li><a href="https://oneapi-src.github.io/oneTBB/main/tbb_userguide/concurrent_hash_map.html">https://oneapi-src.github.io/oneTBB/main/tbb_userguide/concurrent_hash_map.html</a></li>
+<li><a href="https://github.com/facebook/folly/blob/main/folly/concurrency/ConcurrentHashMap.h">https://github.com/facebook/folly/blob/main/folly/concurrency/ConcurrentHashMap.h</a></li>
+<li><a href="https://stotko.github.io/stdgpu/doxygen/classstdgpu_1_1unordered__map.html">https://stotko.github.io/stdgpu/doxygen/classstdgpu_1_1unordered__map.html</a></li>
+</ol>
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2023-11-02
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/oneday/">oneday</a>
+          <a href="https://weedge.github.io/tags/gpu/">gpu</a>
+          <a href="https://weedge.github.io/tags/hashmap/">hashmap</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/oneday/similarity-search/7.lsh-compositions/">
+            <span class="next-text nav-default">译：相似性搜索，第 7 部分：LSH 组合</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/post/gpu/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:weege007@gmail.com" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/weedge" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://weibo.com/weedge" rel="me noopener" class="iconfont"
+      title="weibo"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M385.714286 733.714286q12-19.428571 6.285714-39.428571t-25.714286-28.571429q-19.428571-8-41.714286-0.571429t-34.285714 26.285714q-12.571429 19.428571-7.428571 39.142857t24.571429 28.857143 42.571429 1.428571 35.714286-27.142857zm53.714286-69.142857q4.571429-7.428571 2-15.142857t-10-10.571429q-8-2.857143-16.285714 2.857143t-12.285714 10.571429q-9.714286 17.714286 7.428571 25.714286 8 2.857143 16.571429 2.857143t12.571429-10.571429zm99.428571 61.142857q-25.714286 58.285714-90.285714 85.714286t-128 6.857143q-61.142857-19.428571-84.285714-72.285714t3.714286-107.142857q26.857143-53.142857 86.571429-79.428571t120.285714-10.857143q63.428571 16.571429 90.571429 68.285714t1.428571 108.857143zm178.285714-91.428571q-5.142857-54.857143-50.857143-97.142857t-119.142857-62.285714-156.857143-12q-127.428571 13.142857-211.142857 80.857143t-75.714286 151.142857q5.142857 54.857143 50.857143 97.142857t119.142857 62.285714 156.857143 12q127.428571-13.142857 211.142857-80.857143t75.714286-151.142857zm176 2.285714q0 38.857143-21.142857 79.714286t-62.285714 78.285714-96.285714 67.142857-129.142857 47.428571-154.571429 17.714286-157.142857-19.142857-137.428571-53.142857-98-86.285714-37.142857-114q0-65.714286 39.714286-140t112.857143-147.428571q96.571429-96.571429 195.142857-134.857143t140.857143 4q37.142857 36.571429 11.428571 119.428571-2.285714 8-0.571429 11.428571t5.714286 4 8.285714 2.857143 7.714286-2l3.428571-1.142857q79.428571-33.714286 140.571429-33.714286t87.428571 34.857143q25.714286 36 0 101.714286-1.142857 7.428571-2.571429 11.428571t2.571429 7.142857 6.857143 4.285714 9.714286 3.428571q32.571429 10.285714 58.857143 26.857143t45.714286 46.571429 19.428571 66.571429zm-42.285714-356.571429q24 26.857143 31.142857 62t-3.714286 67.142857q-4.571429 13.142857-16.857143 19.428571t-25.428571 2.285714q-13.142857-4.571429-19.428571-16.857143t-2.285714-25.428571q11.428571-36-13.714286-63.428571t-61.142857-20q-13.714286 2.857143-25.714286-4.571429t-14.285714-21.142857q-2.857143-13.714286 4.571429-25.428571t21.142857-14.571429q34.285714-7.428571 68 3.142857t57.714286 37.428571zm103.428571-93.142857q49.714286 54.857143 64.285714 127.142857t-7.714286 138q-5.142857 15.428571-19.428571 22.857143t-29.714286 2.285714-22.857143-19.428571-2.857143-29.714286q16-46.857143 5.714286-98.285714t-45.714286-90.285714q-35.428571-39.428571-84.571429-54.571429t-98.857143-4.857143q-16 3.428571-29.714286-5.428571t-17.142857-24.857143 5.428571-29.428571 24.857143-16.857143q70.285714-14.857143 139.428571 6.571429t118.857143 76.857143z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://weedge.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2013 -
+    2023
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        weedge
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//weedge.disqus.com/count.js" async></script>
+
+
+
+
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
+
+
+</body>
+</html>

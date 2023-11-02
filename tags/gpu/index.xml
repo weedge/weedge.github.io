@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>gpu on 时间飘过</title>
+    <link>https://weedge.github.io/tags/gpu/</link>
+    <description>Recent content in gpu on 时间飘过</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Thu, 02 Nov 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/gpu/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>译：利用 GPU 上的大规模并行hashmap最大限度地提高性能</title>
+      <link>https://weedge.github.io/post/gpu/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/</link>
+      <pubDate>Thu, 02 Nov 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/gpu/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/</guid>
+      <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday//maximizing-performance-with-massively-parallel-hash-maps-on-gpus/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;数十年的计算机科学历史一直致力于设计有效存储和检索信息的解决方案。hashmap（或hashtable）是一种流行的信息存储数据结构，因为它们可以保证元素插入和检索的恒定时间。&lt;/p&gt;
+&lt;p&gt;然而，尽管hashmap很流行，但很少在 GPU 加速计算的背景下进行讨论。虽然 GPU 以其大量线程和计算能力而闻名，但其极高的内存带宽可以加速许多数据结构（例如hashmap）。&lt;/p&gt;
+&lt;p&gt;这篇文章将介绍哈hashmap的基础知识以及它们的内存访问模式如何使其非常适合 GPU 加速。我们将介绍&lt;a href=&#34;https://github.com/NVIDIA/cuCollections&#34;&gt;cuCollections&lt;/a&gt;，这是一个用于并发数据结构（包括hashmap）的新开源 CUDA C++ 库。&lt;/p&gt;
+&lt;p&gt;最后，如果有兴趣在应用程序中使用 GPU 加速的哈希图，我们提供了多列关系连接算法的示例实现case。RAPIDS cuDF 集成了 GPU 哈希图，这有助于为数据科学工作负载实现令人难以置信的加速。要了解更多信息，请参阅GitHub 上的&lt;a href=&#34;https://github.com/rapidsai/cudf&#34;&gt;rapidsai/cudf&lt;/a&gt;; 以及使用示例case &lt;a href=&#34;https://medium.com/rapids-ai/accelerating-tf-idf-for-natural-language-processing-with-dask-and-rapids-6f6e416429df&#34;&gt;使用 Dask 和 RAPIDS 加速 TF-IDF 进行自然语言处理&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;还可以将 cuCollections 用于表格数据处理之外的许多用例，例如推荐系统、流压缩、图形算法、基因组学和稀疏线性代数运算。请参阅&lt;a href=&#34;https://blogs.nvidia.com/blog/2022/08/04/pinterest-gpu-acceleration-recommenders/&#34;&gt;Pinterest 通过切换推荐系统的 GPU 加速将主页订阅参与度提高 16%&lt;/a&gt;了解更多信息。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

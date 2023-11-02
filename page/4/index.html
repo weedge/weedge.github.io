@@ -297,6 +297,59 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/notions/go-tips/go-tips-05-strings/">Go tips-笔记: string 36-41 mistakes</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2023-02-14" class="post-time">
+        2023-02-14
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <h2 id="笔记">笔记</h2>
+<p>在 Go 中，string是一种不可变的数据结构，包含以下内容：</p>
+<ul>
+<li>指向不可变字节序列的指针，指向一个byte类型的数组</li>
+<li>此序列中的总字节数</li>
+</ul>
+<p>string在Go中的内部结构是<code>reflect.StringHeader</code>位于<code>reflect/value.go</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// StringHeader is the runtime representation of a string.
+</span><span class="c1">// It cannot be used safely or portably and its representation may
+</span><span class="c1">// change in a later release.
+</span><span class="c1">// Moreover, the Data field is not sufficient to guarantee the data
+</span><span class="c1">// it references will not be garbage collected, so programs must keep
+</span><span class="c1">// a separate, correctly typed pointer to the underlying data.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">StringHeader</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">Data</span> <span class="kt">uintptr</span>
+	<span class="nx">Len</span>  <span class="kt">int</span>
+<span class="p">}</span>
+<span class="c1">//uintptr  an unsigned integer large enough to store the uninterpreted bits of a pointer value
+</span></code></pre></div>
+    </div>
+    <div class="read-more">
+      <a href="/post/notions/go-tips/go-tips-05-strings/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/notions/go-tips/go-tips-04-control-structures/">Go tips-笔记: 控制语句 30-35 mistakes</a>
     </h1>
     
@@ -522,42 +575,6 @@
 </article>
 
   
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/shop/">全栈开发</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2022-01-02" class="post-time">
-        2022-01-02
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h2 id="介绍">介绍</h2>
-<p>以前工作中有过前端的开发经验，使用后端模版Smarty(主要是外部需求，现在新项目中应该很少使用这个了)，前端模版Mustache，页面中使用 js jquery交互逻辑，直接服用一些开源的UI组件Bootstrap，开源的后台UI系统，主要是建设内部后台的时候使用，自动生成CRUD页面；前端的技术栈更新迭代相对后端快些，通过以全栈技术栈为切入点，通过一个简单的系统，学习下最新技术栈工具，主要目的如下：</p>
-<p>根据需求，实现一个简单功能的购物系统，目的是为了学习ts-&gt;js on node.js全栈开发，了解整体开发构建工具，熟悉下工具开发流程，主要还是了解前端框架工具的使用，以及熟悉通过js运行时环境运行在后端服务上的应用开发工具，以便在后续开发后台系统的时候可以熟练使用这些技术进行开发，这些工具的设计思想可以借鉴到其他后端业务开发语言中。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/shop/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
 </section>
 
 
@@ -613,6 +630,10 @@
       
       <li >
         <a href="/page/8/">8</a>
+      </li>
+      
+      <li >
+        <a href="/page/9/">9</a>
       </li>
       
     </ul>

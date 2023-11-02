@@ -6,7 +6,34 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 26 Sep 2023 23:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 02 Nov 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>gpu</title>
+      <link>https://weedge.github.io/tags/gpu/</link>
+      <pubDate>Thu, 02 Nov 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/gpu/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>hashmap</title>
+      <link>https://weedge.github.io/tags/hashmap/</link>
+      <pubDate>Thu, 02 Nov 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/hashmap/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>oneday</title>
+      <link>https://weedge.github.io/tags/oneday/</link>
+      <pubDate>Thu, 02 Nov 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/oneday/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>compositions</title>
       <link>https://weedge.github.io/tags/compositions/</link>
@@ -31,15 +58,6 @@
       <pubDate>Tue, 26 Sep 2023 23:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/lsh/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>oneday</title>
-      <link>https://weedge.github.io/tags/oneday/</link>
-      <pubDate>Tue, 26 Sep 2023 23:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/oneday/</guid>
       <description></description>
     </item>
     
@@ -166,24 +184,6 @@
       <pubDate>Mon, 21 Nov 2022 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/%E7%9B%B4%E6%92%AD/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>aws</title>
-      <link>https://weedge.github.io/tags/aws/</link>
-      <pubDate>Tue, 08 Nov 2022 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/aws/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>ML</title>
-      <link>https://weedge.github.io/tags/ml/</link>
-      <pubDate>Tue, 08 Nov 2022 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/ml/</guid>
       <description></description>
     </item>
     
