@@ -143,13 +143,29 @@
 &lt;p&gt;除了最先进的 ANN 算法，RAFT 还包含了如矩阵和向量运算、迭代求解器和聚类算法等其他 GPU 加速构建块。在本系列的第二篇文章中，我们深入探讨了每种 GPU 加速索引方法，并简要解释了算法的工作原理，以及总结重要的微调参数。有关详细信息，请参阅 &lt;a href=&#34;https://developer.nvidia.cn/zh-cn/blog/accelerating-vector-search-fine-tuning-gpu-index-algorithms/&#34;&gt;加速向量搜索：微调 GPU 索引算法&lt;/a&gt;。&lt;/p&gt;
 &lt;h2 id=&#34;reference&#34;&gt;Reference&lt;/h2&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://developer.nvidia.com/blog/accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/&#34;&gt;https://developer.nvidia.com/blog/accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/rapidsai/raft#what-is-raft&#34;&gt;https://github.com/rapidsai/raft#what-is-raft&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/RedisAI/VectorSimilarity/pull/413&#34;&gt;https://github.com/RedisAI/VectorSimilarity/pull/413&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/milvus-io/knowhere/pull/712&#34;&gt;https://github.com/milvus-io/knowhere/pull/712&lt;/a&gt;  ， &lt;a href=&#34;https://github.com/milvus-io/knowhere/pull/953&#34;&gt;https://github.com/milvus-io/knowhere/pull/953&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/zilliztech/knowhere/pull/10&#34;&gt;https://github.com/zilliztech/knowhere/pull/10&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss/pull/2521&#34;&gt;https://github.com/facebookresearch/faiss/pull/2521&lt;/a&gt; ，https://github.com/facebookresearch/faiss/pull/2707&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss/pull/3044&#34;&gt;https://github.com/facebookresearch/faiss/pull/3044&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://developer.nvidia.com/blog/accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/&#34;&gt;https://developer.nvidia.com/blog/accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/rapidsai/raft#what-is-raft&#34;&gt;https://github.com/rapidsai/raft#what-is-raft&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/RedisAI/VectorSimilarity/pull/413&#34;&gt;https://github.com/RedisAI/VectorSimilarity/pull/413&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/milvus-io/knowhere/pull/712&#34;&gt;https://github.com/milvus-io/knowhere/pull/712&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/milvus-io/knowhere/pull/953&#34;&gt;https://github.com/milvus-io/knowhere/pull/953&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/zilliztech/knowhere/pull/10&#34;&gt;https://github.com/zilliztech/knowhere/pull/10&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss/pull/2521&#34;&gt;https://github.com/facebookresearch/faiss/pull/2521&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss/pull/2707&#34;&gt;https://github.com/facebookresearch/faiss/pull/2707&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss/pull/3044&#34;&gt;https://github.com/facebookresearch/faiss/pull/3044&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>
