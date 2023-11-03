@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 03 Nov 2023 10:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Fri, 03 Nov 2023 15:00:23 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -49,20 +49,329 @@
     </item>
     
     <item>
+      <title>译：加速向量搜索：RAPIDS RAFT IVF-Flat 近似算法</title>
+      <link>https://weedge.github.io/post/gpu/3.accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/</link>
+      <pubDate>Fri, 03 Nov 2023 15:00:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/gpu/3.accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/</guid>
+      
+        <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;执行详尽的精确 k 最近邻 (kNN) 搜索，也称为&lt;em&gt;暴力搜索(brute-force search)&lt;/em&gt;，成本高昂，并且它不能很好地扩展到更大的数据集。在向量搜索期间，暴力搜索需要计算每个查询向量和数据库向量之间的距离。对于常用的欧几里德和余弦距离，计算任务等同于大型矩阵乘法。&lt;/p&gt;
+&lt;p&gt;虽然 GPU 在执行矩阵乘法方面效率很高，但随着数据量的增加，计算成本变得令人望而却步。然而，许多应用程序不需要精确的结果，而是可以为了更快的搜索而牺牲一些准确性。当不需要精确的结果时，近似最近邻 (ANN) 方法通常可以减少搜索期间必须执行的距离计算的数量。&lt;/p&gt;
+&lt;p&gt;本文主要介绍了 IVF-Flat，这是 NVIDIA &lt;a href=&#34;https://developer.nvidia.cn/zh-cn/blog/reusable-computational-patterns-for-machine-learning-and-data-analytics-with-rapids-raft/&#34;&gt;RAPIDS RAFT&lt;/a&gt; 中的一种方法。IVF-Flat 方法使用原始（即Flat）向量的倒排索引 (IVF)。此算法提供了简单的调整手段，以减少整体搜索空间并在准确性和速度之间进行权衡。&lt;/p&gt;
+&lt;p&gt;为了帮助了解如何使用 IVF-Flat，我们讨论了该算法的工作原理，并演示了&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/pylibraft_api/neighbors/#ivf-flat&#34;&gt;Python&lt;/a&gt;和&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_flat/&#34;&gt;C++ APIs&lt;/a&gt;我们介绍了索引构建的设置参数，并提供了如何配置 GPU 加速的 IVF-Flat搜索的技巧。这些步骤也可以在示例中遵循&lt;a href=&#34;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/notebooks/ivf_flat_example.ipynb&#34;&gt;Python notebook&lt;/a&gt;和&lt;a href=&#34;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/cpp/template/src/ivf_flat_example.cu&#34;&gt;C++ project&lt;/a&gt;.最后，我们演示了 GPU 加速的向量搜索比 CPU 搜索快一个数量级。&lt;/p&gt;
+&lt;h2 id=&#34;ivf-flat-算法&#34;&gt;IVF-Flat 算法&lt;/h2&gt;
+&lt;p&gt;IVF 方法通过将数据集向量分组为簇(cluster)并将搜索限制在每个查询的一些最近簇来加速向量搜索(图 1)。&lt;/p&gt;
+&lt;p&gt;在 IVF-Flat 算法中，只搜索几个簇(而不是整个数据集)是实际的近似值。使用此近似值，可能会错过分配给未搜索的簇的一些近邻，但它极大地缩短了搜索时间。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/2.png&#34; alt=&#34;Two diagrams show a) dataset points grouped into clusters and b) a subset of the clusters highlighted.&#34;&gt;&lt;em&gt;图 1.分为簇的数据集(左)，且搜索仅限于查询附近的簇(右)&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;在搜索数据集之前，必须构建索引，这是一种存储高效搜索所需信息的结构。对于 IVF-Flat，索引存储簇的描述：其中心坐标和属于簇的向量列表。此列表是倒排列表，也称为倒排文件，这就是 IVF 的首字母缩写词。&lt;/p&gt;
+&lt;p&gt;在讨论倒排文件后，我们将在以下部分演示如何构建索引并解释如何执行搜索。&lt;/p&gt;
+&lt;h3 id=&#34;ivf-含义&#34;&gt;IVF 含义&lt;/h3&gt;
+&lt;p&gt;为完整起见，以下是一些历史语境。倒排&lt;em&gt;文件&lt;/em&gt;(或倒排索引)来自信息检索字段。&lt;/p&gt;
+&lt;p&gt;以几个简单的文本文档为例。如果要搜索包含给定单词的文档，&lt;a href=&#34;https://en.wikipedia.org/wiki/Search_engine_indexing#The_forward_index&#34;&gt; forward index&lt;/a&gt;会存储每个文档的单词列表。必须明确阅读每个文档才能找到相关的文档。&lt;/p&gt;
+&lt;p&gt;相比之下，&lt;a href=&#34;https://en.wikipedia.org/wiki/Inverted_index&#34;&gt;倒排索引&lt;/a&gt;包含了可以搜索的所有单词的字典，并且对于每个单词，都有一个该单词所在的文档索引列表。这就是所谓的倒排列表（倒排文件），可以将搜索限制在选定的列表中。&lt;/p&gt;
+&lt;p&gt;如今，文本数据通常表示为向量嵌入(embedding)。IVF-Flat 方法定义了簇中心，这些中心类似于前面示例中的词典。对于每个簇中心，都有属于该簇的向量索引列表，并且搜索速度加快，因为只需检查选定的簇。&lt;/p&gt;
+&lt;h2 id=&#34;索引构建&#34;&gt;索引构建&lt;/h2&gt;
+&lt;p&gt;索引构建主要是对数据集进行聚类运算。ivf_flat可以使用以下代码示例在 Python 中创建索引：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;pylibraft.neighbors&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;
+ 
+&lt;span class=&#34;n&#34;&gt;build_params&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;IndexParams&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;n_lists&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1024&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;metric&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;sqeuclidean&amp;#34;&lt;/span&gt;
+    &lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+ 
+&lt;span class=&#34;n&#34;&gt;index&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;build&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;build_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在 C++中，有以下语法：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c++&#34; data-lang=&#34;c++&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;raft/neighbors/ivf_flat.cuh&amp;gt; &lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;using&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;namespace&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;neighbors&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;device_resources&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+ 
+&lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;index_params&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;index_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;index_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;n_lists&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1024&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;index_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;metric&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;distance&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;DistanceType&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;L2Expanded&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+ 
+&lt;span class=&#34;k&#34;&gt;auto&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;index&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;build&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;index_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;make_const_mdspan&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;view&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()));&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;创建索引的最重要超参数是n_lists其中会指明要使用的簇数量。还可以指定距离计算指标。&lt;/p&gt;
+&lt;h2 id=&#34;搜索&#34;&gt;搜索&lt;/h2&gt;
+&lt;p&gt;构建索引后，搜索很简单。在 Python 中，以下调用返回两个数组：相邻数组的索引及其与查询向量的距离：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;n&#34;&gt;distances&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;indices&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;search&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SearchParams&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;n_probes&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;50&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;index&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;queries&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;k&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;C++中的等效调用需要预先分配输出数组：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c++&#34; data-lang=&#34;c++&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;topk&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;span class=&#34;k&#34;&gt;auto&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;neighbors&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;make_device_matrix&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int64_t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int64_t&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;n_queries&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;topk&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;span class=&#34;k&#34;&gt;auto&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;distances&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;make_device_matrix&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;float&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int64_t&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;n_queries&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;topk&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+ 
+&lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;search_params&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;search_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;search_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;n_probes&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;50&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+ 
+&lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;search&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+                &lt;span class=&#34;n&#34;&gt;search_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+                &lt;span class=&#34;n&#34;&gt;index&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+                &lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;make_const_mdspan&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;queries&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;view&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()),&lt;/span&gt;
+                &lt;span class=&#34;n&#34;&gt;neighbors&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;view&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(),&lt;/span&gt;
+                &lt;span class=&#34;n&#34;&gt;distances&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;view&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;());&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在这里，可以搜索k=10每个查询的近邻。参数 n_probes 会告知每个查询要搜索(或探测)的簇数量，并确定搜索的准确性。&lt;/p&gt;
+&lt;p&gt;仅通过测试 n_probes 对于每个查询的簇，可以省略分配给簇的一些近邻，簇的中心距离查询点更远。搜索质量通常以*召回率，*这是实际最近 k 近邻在所有返回近邻中的百分比。&lt;/p&gt;
+&lt;p&gt;在内部，搜索分两个步骤执行(图 2)：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;粗略搜索选择 n_probes 每个查询的附近簇。&lt;/li&gt;
+&lt;li&gt;精细搜索将查询向量与选定簇中的所有数据集向量进行比较。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/3.png&#34; alt=&#34;Diagram of clusters represented by their centers with the clusters highlighted that are closest to the queries. Selected clusters shown with the individual points within these clusters.&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;图 2.两步搜索：通过比较查询与簇中心来选择附近的簇(左)，并比较选定簇中的所有向量与相应的查询(右)&lt;/em&gt;&lt;/p&gt;
+&lt;h3 id=&#34;粗略搜索&#34;&gt;粗略搜索&lt;/h3&gt;
+&lt;p&gt;粗略搜索使用簇中心和查询向量之间的精确 kNN 搜索完成。选择最近的簇中心，&lt;code&gt;n_probes&lt;/code&gt; 个簇粗略搜索相对便宜，因为簇数量远小于数据集大小(例如，1 亿个向量的簇数量为 1 万个)。&lt;/p&gt;
+&lt;h3 id=&#34;精细搜索&#34;&gt;精细搜索&lt;/h3&gt;
+&lt;p&gt;对于 IVF-Flat，精细搜索也是精确搜索。但每个查询都有自己的一组要搜索(要探测)的簇，并且计算查询向量与被探测簇中所有向量之间的距离。&lt;/p&gt;
+&lt;p&gt;对于小批量，在查询点周围搜索的区域不会重叠。因此，问题结构变为批量矩阵向量乘法 (GEMV) 运算。此运算受内存带宽限制，GPU 显存的大带宽大大加速了此步骤。&lt;/p&gt;
+&lt;p&gt;选中每个探测簇的 top-k 近邻，结果是&lt;code&gt;n_probes * k&lt;/code&gt; 个近邻候选。&lt;/p&gt;
+&lt;h2 id=&#34;调整索引构建参数&#34;&gt;调整索引构建参数&lt;/h2&gt;
+&lt;p&gt;在前面的部分中，概述了索引构建和搜索。下面详细介绍了如何设置索引构建的参数。&lt;/p&gt;
+&lt;p&gt;索引构建包含两个阶段：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;训练或计算簇（构建）&lt;/strong&gt;：平衡的分层 k-means 算法会对训练数据进行聚类。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;将数据集向量添加到索引(扩展)&lt;/strong&gt;：将数据集向量分配给其簇，并将其添加到相应簇的向量列表中。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;簇数量&#34;&gt;簇数量&lt;/h3&gt;
+&lt;p&gt;参数 &lt;code&gt;n_list&lt;/code&gt; 对训练和搜索期间的整体性能有着深远的影响：它定义了索引数据所划分的簇数量。设置n_lists=sqrt (n_samples)是一个很好的起点(&lt;code&gt;n_samples&lt;/code&gt;是数据集中的向量数)。&lt;/p&gt;
+&lt;p&gt;为确保高效利用 GPU 资源，簇的平均大小(即&lt;code&gt;n_samples/n_lists&lt;/code&gt;)应在至少 1K 个向量的范围内，以保持单个流多处理器 (SM) 的繁忙状态。&lt;/p&gt;
+&lt;h3 id=&#34;使用自动数据子采样构建索引&#34;&gt;使用自动数据子采样构建索引&lt;/h3&gt;
+&lt;p&gt;K-means 聚类是计算密集型的。为加速索引构建，对数据集进行子采样。使用参数&lt;code&gt;kmeans_trainset_fraction=0.1&lt;/code&gt;这意味着将十分之一的数据集用于训练簇中心。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;n&#34;&gt;build_params&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;IndexParams&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;n_lists&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1024&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;metric&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;sqeuclidean&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;kmeans_trainset_fraction&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mf&#34;&gt;0.1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;kmeans_n_iters&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;20&lt;/span&gt;
+    &lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在训练期间，参数 kmeans_n_iters 将直接传递给 k-means 算法。将其设置为适用于大多数数据集的合理默认值 20.但是，此参数只是聚类算法的建议。在幕后，它通常在“平衡”阶段执行更多迭代，以确保簇具有相似的大小。&lt;/p&gt;
+&lt;h3 id=&#34;使用用于聚类的特定训练数据构建索引&#34;&gt;使用用于聚类的特定训练数据构建索引&lt;/h3&gt;
+&lt;p&gt;在前面的示例中，只需调用ivf_flat.build执行聚类并将整个数据集添加到索引中。或者，可以调用ivf_flat.build无需将向量添加到索引中即可训练向量(通过设置add_data_on_build=False).这允许精确控制用于训练索引的向量。随后，ivf_flat.extend可用于向索引中添加向量。&lt;/p&gt;
+&lt;p&gt;如下 Python 代码示例所示：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;n&#34;&gt;n_train&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;10000&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;train_set&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;cp&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;random&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;choice&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;shape&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;],&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;n_train&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;replace&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;False&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),:]&lt;/span&gt;
+ 
+&lt;span class=&#34;n&#34;&gt;build_params&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;IndexParams&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;n_lists&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1024&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;metric&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;sqeuclidean&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;kmeans_trainset_fraction&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;kmeans_n_iters&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;20&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;add_data_on_build&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;False&lt;/span&gt;
+    &lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+ 
+&lt;span class=&#34;n&#34;&gt;index&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;build&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;build_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;train_set&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;extend&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;index&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;cp&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;arange&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;shape&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;],&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;dtype&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;cp&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;int64&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;数据集向量只需调用ivf_flat.extend。在内部，如果需要减少内存消耗，则对数据进行批量处理。相应的 C++代码如下所示：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c++&#34; data-lang=&#34;c++&#34;&gt;&lt;span class=&#34;n&#34;&gt;index_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;add_data_on_build&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;false&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;span class=&#34;c1&#34;&gt;// Sub sample the dataset to create trainset.
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// ...
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// Run k-means clustering using the training set
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;auto&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;index&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;build&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;index_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;make_const_mdspan&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;trainset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;view&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()));&lt;/span&gt;
+ 
+&lt;span class=&#34;c1&#34;&gt;// Fill the index with the dataset vectors
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;index&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;extend&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;make_const_mdspan&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;view&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()),&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;std&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;optional&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;device_vector_view&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;const&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int64_t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int64_t&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&amp;gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(),&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;index&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;向索引中添加新向量&#34;&gt;向索引中添加新向量&lt;/h3&gt;
+&lt;p&gt;可以通过调用ivf_flat.extend.默认情况下，增加向量列表的成本将通过在增加列表大小时分配额外空间来抵消。C++API 用户可以通过设置以下参数来更改此行为：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c++&#34; data-lang=&#34;c++&#34;&gt;&lt;span class=&#34;n&#34;&gt;index_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;conservative_memory_allocation&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;true&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果聚类数量较大且预计不会经常添加向量，则此操作会非常有用。&lt;/p&gt;
+&lt;p&gt;默认情况下，当向数据集添加向量时，簇中心不会发生变化。adaptive_centers，如果希望簇中心随新数据移动，则可以在索引构建期间启用标志。&lt;/p&gt;
+&lt;h2 id=&#34;调整搜索参数&#34;&gt;调整搜索参数&lt;/h2&gt;
+&lt;p&gt;以下是设置搜索参数的方法：高效使用 GPU 资源并增加 n_probes。&lt;/p&gt;
+&lt;h3 id=&#34;gpu-资源&#34;&gt;GPU 资源&lt;/h3&gt;
+&lt;p&gt;在搜索过程中，需要创建内部工作空间内存。建议使用&lt;strong&gt;池化分配器来减少内存分配&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;构建 RAFT资源对象非常耗时。资源对象应该复用， 通过资源handle传递给搜索函数 。在 Python 中，可以通过以下方式配置设备资源和内存池：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;pylibraft.common&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;DeviceResources&lt;/span&gt;
+&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;rmm&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;mr&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rmm&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;mr&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PoolMemoryResource&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+     &lt;span class=&#34;n&#34;&gt;rmm&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;mr&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;CudaMemoryResource&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(),&lt;/span&gt;
+     &lt;span class=&#34;n&#34;&gt;initial_pool_size&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;**&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;30&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;rmm&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;mr&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;set_current_device_resource&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;mr&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+ 
+&lt;span class=&#34;n&#34;&gt;handle&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;DeviceResources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+ 
+&lt;span class=&#34;n&#34;&gt;search_params&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SearchParams&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;n_probes&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;50&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;distances&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;indices&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;search&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;search_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;index&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;queries&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;k&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;handle&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;handle&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;handle&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;sync&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;C++API 的用户必须始终传递显式 device_resources handle，并且应在单独调用之间重复使用此handle进行搜索。可以通过以下方式设置池分配器：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c++&#34; data-lang=&#34;c++&#34;&gt;&lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;device_resources&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;resource&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;set_workspace_to_pool_resource&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1024&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1024&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1024ull&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;search&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;...);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;C++ 用户可以为临时工作空间数组指定一个单独的分配器，这在前面的示例中已经使用过。全局分配器（用于创建输入/输出数组）可以使用 &lt;a href=&#34;https://docs.rapids.ai/api/rmm/stable/api/#rmm.mr.set_current_device_resource&#34;&gt;rmm::mr::set_current_device_resource&lt;/a&gt;。&lt;/p&gt;
+&lt;h3 id=&#34;探针数量&#34;&gt;探针数量&lt;/h3&gt;
+&lt;p&gt;比率&lt;code&gt;n_probes/n_lists&lt;/code&gt;表明数据集的哪一部分与每个查询进行比较。距离计算的数量减少到&lt;code&gt;n_probes/n_clusters&lt;/code&gt;暴力搜索计算量的一小部分。搜索质量以及计算时间会随着&lt;code&gt;n_probes&lt;/code&gt; 的增加而增加，正确的值取决于数据集。&lt;/p&gt;
+&lt;p&gt;在图 3 和图 4 中，可以分别观察吞吐量（每秒查询次数）和搜索精度（召回率）如何取决于探测器数量。这里，从&lt;a href=&#34;https://research.yandex.com/blog/benchmarks-for-billion-scale-similarity-search#14h2&#34;&gt;DEEP1B 数据集&lt;/a&gt;搜索 100M 个向量，并使用 H100 GPU 进行搜索。&lt;/p&gt;
+&lt;p&gt;吞吐量与探针的数量成反比。数据集被分为 10 万个簇；每个查询仅搜索 100 个最接近的簇可实现 96% 的召回率，而搜索 1000 个簇（数据集的 1%）可实现 99.8% 的准确率。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/4.png&#34; alt=&#34;The throughput graph follows 1/x trend.&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;图 3.搜索吞吐量(每秒查询次数)作为n_probes搜索参数&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/5.png&#34; alt=&#34;Search accuracy graph shows that recall improves quickly as you increase n_probes from 20 to 200 and flattens out above that (region with 99% recall).&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;图 4.精度(召回)作为n_probes搜索参数&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;通常会将这些图形组合到单个 QPS 与召回图中(图 5)。当想要紧凑地权衡准确性和搜索吞吐量时，这很有用。在比较不同的 ANN 方法时，这也很有用。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://developer-blogs.nvidia.com/wp-content/uploads/2023/09/combined-qps-recall.png&#34;&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/6.png&#34; alt=&#34;Graph shows that the QPS drops when you require high recall.&#34;&gt;&lt;/a&gt;&lt;em&gt;图 5.组合 QPS 召回图&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;如果 &lt;code&gt;n_lists=n_probes&lt;/code&gt; 这就像精确(暴力)搜索：将所有数据集向量与所有查询向量进行比较。在这种情况下，预计召回率等于 1 (除了小的舍入误差)。&lt;/p&gt;
+&lt;p&gt;当 &lt;code&gt;n_probes&lt;/code&gt; 接近 &lt;code&gt;n_lists&lt;/code&gt; 时，IVF-Flat 由于算法所做的额外工作(粗略加精细搜索)，速度比暴力慢。在实践中，搜索大约 0.1-1%的列表足以处理许多数据集。但这取决于输入的聚类效果。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://bib.dbvis.de/uploadedFiles/155.pdf&#34;&gt;On the Surprising Behavior of Distance Metrics in High Dimensional Space&lt;/a&gt;论文中提到，如果数据集没有结构（例如，统一随机数），聚类会变得困难。在这种情况下，IVF 方法的效果不佳。&lt;/p&gt;
+&lt;p&gt;（注：IVF-Flat算法依赖输入的数据集，以及聚类效果）&lt;/p&gt;
+&lt;h2 id=&#34;性能&#34;&gt;性能&lt;/h2&gt;
+&lt;p&gt;RAFT 库可快速实施 IVF-Flat 算法。索引 1 亿个向量可在一分钟内完成(图 6)。这比使用 CPU 快 14 倍。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/7.png&#34; alt=&#34;Bar chart showing high index building time on the CPU and significantly faster times with GPU implementations.&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;图 6.不同数据集和簇大小的索引构建时间&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;我们在 NVIDIA H100 SXM GPU (使用 RAFT 23.10 进行 GPU 测试)和 Intel Xeon Platinum 8480CL CPU 上执行了&lt;a href=&#34;https://github.com/facebookresearch/faiss&#34;&gt;FAISS&lt;/a&gt; 1.7.4 的测量。&lt;/p&gt;
+&lt;p&gt;实现这种加速有两个主要因素：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;GPU 的高计算吞吐量&lt;/strong&gt;：RAFT 利用 &lt;a href=&#34;https://blog.paperspace.com/understanding-tensor-cores/&#34;&gt;Tensor Core&lt;/a&gt; 在索引构建期间加速 k-means 聚类。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;改进的算法&lt;/strong&gt;：RAFT 使用平衡的分层 k-means 聚类，即使数据集的向量数量达到数亿，也能高效地进行聚类。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;还可以观察到，构建索引的时间随向量数量线性增加，随聚类数量线性增加。&lt;/p&gt;
+&lt;p&gt;GPU 的高内存吞吐量有助于搜索索引。RAFT 的 IVF-Flat 索引使用优化的内存布局。向量交错以进行向量化内存访问，以确保在遍历每个探测簇中的数据集向量时实现高带宽利用率。&lt;/p&gt;
+&lt;p&gt;精细搜索过程中的另一个重要步骤是过滤掉前 k 个候选项。最新top-k算法on GPU论文 &lt;a href=&#34;https://sc23.supercomputing.org/presentation/?id=pap294&amp;amp;sess=sess156&#34;&gt;&lt;strong&gt;Parallel Top-K Algorithms on GPU: A Comprehensive Study and New Methods&lt;/strong&gt;&lt;/a&gt;。将优化的 block-select-k 内核融合到距离计算内核中。如图 7 所示，与 CPU 实现的性能相比，这可以将 RAFT IVF-Flat 的速度提高 20 倍以上（回顾值=0.95）。&lt;/p&gt;
+&lt;p&gt;（&lt;strong&gt;注&lt;/strong&gt;：top-k 这篇论文期待一下；和&lt;a href=&#34;https://github.com/weedge/learn/blob/main/gpu/Efficient%20Top-K%20Query%20Processing%20on%20Massively%20Parallel%20Hardware.pdf&#34;&gt;Efficient Top-K Query Processing on Massively Parallel Hardware&lt;/a&gt; 对比学习下~）&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/8.png&#34; alt=&#34;Graph compares IVF-Flat search throughput on the GPU and on the CPU.&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;图 7.不同召回率(准确性)的搜索吞吐量&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;在此基准测试中，我们使用了 FAISS IVF-Flat 的 CPU 实现。FAISS 还提供了此算法的 GPU 实现。如果使用 FAISS，则只需对代码进行细微更改即可从 GPU 加速中受益。与 Meta 合作，将 RAFT 的性能改进引入 FAISS，因此很快也可以通过 FAISS 使用 RAFT。&lt;/p&gt;
+&lt;p&gt;（&lt;strong&gt;注&lt;/strong&gt;： 相关PR见Reference,  IVF-Flat 已集成）&lt;/p&gt;
+&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
+&lt;p&gt;在大型数据库中执行向量搜索时，务必要注意精确搜索的高昂成本，因为这会导致不适合在线服务的低延迟。&lt;/p&gt;
+&lt;p&gt;RAPIDS RAFT 库提供了高效的算法，通过将搜索集中到数据集中最相关的部分，以提高向量搜索的延迟和吞吐量。本文讨论了 RAFT IVF-Flat 算法的工作原理，以及如何设置索引构建和搜索的参数。最后，提供基准测试，以强调 GPU 在 IVF – Flat 搜索中的卓越性能。可以使用&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/raft_ann_benchmarks/&#34;&gt;基准测试工具&lt;/a&gt;。&lt;/p&gt;
+&lt;h2 id=&#34;reference&#34;&gt;Reference&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://developer.nvidia.com/blog/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/&#34;&gt;https://developer.nvidia.com/blog/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/notebooks/ivf_flat_example.ipynb&#34;&gt;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/notebooks/ivf_flat_example.ipynb&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/cpp/template/src/ivf_flat_example.cu&#34;&gt;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/cpp/template/src/ivf_flat_example.cu&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://bib.dbvis.de/uploadedFiles/155.pdf&#34;&gt;On the Surprising Behavior of Distance Metrics in High Dimensional Space&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.kdnuggets.com/2018/05/wtf-tensor.html&#34;&gt;https://www.kdnuggets.com/2018/05/wtf-tensor.html&lt;/a&gt; ， &lt;a href=&#34;https://en.wikipedia.org/wiki/Tensor&#34;&gt;https://en.wikipedia.org/wiki/Tensor&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://blog.paperspace.com/understanding-tensor-cores/&#34;&gt;https://blog.paperspace.com/understanding-tensor-cores/&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss/pull/2521&#34;&gt;https://github.com/facebookresearch/faiss/pull/2521&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss/pull/2707&#34;&gt;https://github.com/facebookresearch/faiss/pull/2707&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss/pull/3044&#34;&gt;https://github.com/facebookresearch/faiss/pull/3044&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;</description>
+      
+    </item>
+    
+    <item>
+      <title>译：加速向量搜索：微调 GPU 索引算法</title>
+      <link>https://weedge.github.io/post/gpu/2.accelerating-vector-search-fine-tuning-gpu-index-algorithms/</link>
+      <pubDate>Fri, 03 Nov 2023 14:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/gpu/2.accelerating-vector-search-fine-tuning-gpu-index-algorithms/</guid>
+      
+        <description>&lt;p&gt;这个 &lt;a href=&#34;https://developer.nvidia.cn/zh-cn/blog/accelerating-vector-search-using-gpu-accelerated-indexes-with-rapids-raft/&#34;&gt;系列的第一篇文章&lt;/a&gt; 介绍了向量搜索索引，解释了它们在实现广泛的重要应用中所起的作用，并使用了 &lt;a href=&#34;https://github.com/rapidsai/raft&#34;&gt;RAFT&lt;/a&gt; 库。&lt;/p&gt;
+&lt;p&gt;在这篇文章中，我们深入探讨第 1 部分中提到的每种 GPU 加速索引方法，并简要解释了算法的工作原理，以及总结重要的微调参数。&lt;/p&gt;
+&lt;p&gt;然后，我们通过一个简单的端到端示例，用预训练的大型语言模型演示 RAFT 在问答问题上的 Python API，并在涉及同时传递给搜索算法的不同查询向量数量的几个不同场景下，将 RAFT 的算法与 HNSW 的性能进行比较。&lt;/p&gt;
+&lt;p&gt;内容如下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;可与 GPU 一起使用的向量搜索索引算法概述&lt;/li&gt;
+&lt;li&gt;一个端到端的例子演示了使用 Python 在 GPU 上运行向量搜索是多么容易&lt;/li&gt;
+&lt;li&gt;GPU 上的向量搜索与 CPU 上当前最先进的 HNSW 方法的性能比较&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;向量搜索索引&#34;&gt;向量搜索索引&lt;/h2&gt;
+&lt;p&gt;使用向量搜索时，向量通常会转换为索引格式，该格式针对快速查找进行了优化。选择正确的索引算法很重要，因为它会影响索引构建和搜索时间。此外，每种不同的索引类型都有自己的一组参数，用于微调行为、权衡索引构建时间、存储成本、搜索质量和搜索速度。&lt;/p&gt;
+&lt;p&gt;当正确的索引算法与正确的参数设置配对时， GPU 上的向量搜索为各种召回率提供了更快的构建和搜索时间。&lt;/p&gt;
+&lt;h3 id=&#34;ivf-flat&#34;&gt;IVF-Flat&lt;/h3&gt;
+&lt;p&gt;由于它是最简单的索引类型，我们建议您从 &lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/pylibraft_api/neighbors/#ivf-flat&#34;&gt;IVF-Flat 算法&lt;/a&gt; 开始。在该算法中，一组训练向量首先被分割成一些聚类，然后被存储在由它们最近的聚类中心组织的 GPU 内存中。索引构建步骤比本文中介绍的其他算法更快，即使在大量簇的情况下也是如此。&lt;/p&gt;
+&lt;p&gt;为了搜索 IVF-Flat 索引，选择与每个查询向量最近的聚类，并根据这些最接近的聚类中的每个来计算 k 个最近邻居（k-NN）。因为 IVF-Flat 以原始形式存储向量，意味着没有压缩，它的优势是计算它搜索的每个簇内的精确距离。正如我们稍后在本文中所描述的，当搜索相同数量的最接近聚类时，这提供了一个优势，通常比 IVF-PQ 具有更高的召回率。当 GPU 内存可以容纳全量索引时，IVF-Flat 索引是一个很好的选择。&lt;/p&gt;
+&lt;p&gt;RAFT 的 IVF-Flat 索引包含几个参数，有助于权衡查询性能和准确性：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;训练索引时，n_lists参数确定用于对训练数据集进行分区的簇的数量。&lt;/li&gt;
+&lt;li&gt;搜索参数n_probes确定要搜索的最近聚类的数量，以计算一组查询点的最近邻居。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;一般来说，较少的探针数量会以召回为代价，导致搜索速度更快。当探测器的数量设置为列表的数量时，会计算出确切的结果。但是，在这种情况下，&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_brute_force/&#34;&gt;RAFT 的暴力搜索&lt;/a&gt;表现更佳。&lt;/p&gt;
+&lt;h3 id=&#34;ivf-pq&#34;&gt;IVF-PQ&lt;/h3&gt;
+&lt;p&gt;当数据集变得太大而无法放在 GPU 上时，您可以通过使用 &lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/pylibraft_api/neighbors/#ivf-pq&#34;&gt;IVF-PQ 索引类型&lt;/a&gt; 来解决。与 IVF Flat 一样，IVF-PQ 将点划分为多个簇（也由 n_lists 参数指定）并搜索最近的聚类以计算最近的邻居（也由 n_probes 参数指定），但它使用一种称为 &lt;a href=&#34;https://mccormickml.com/2017/10/13/product-quantizer-tutorial-part-1/&#34;&gt;product quantization&lt;/a&gt; 的方法。&lt;/p&gt;
+&lt;p&gt;压缩索引最终允许在 GPU 上存储更多的向量。压缩量可以通过调整参数来控制，我们稍后将对此进行描述，但更高级别的压缩可以以调用为代价提供更快的查找时间。IVF-PQ 是目前 RAFT 最具内存效率的向量索引。&lt;/p&gt;
+&lt;p&gt;RAFT 的 IVF-PQ 提供了两个控制内存使用的参数：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;pq_dim 设置压缩向量的目标维度。&lt;/li&gt;
+&lt;li&gt;pq_bits 设置压缩后每个向量元素的位数。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;建议将前者设置为 32 的倍数，而后者限制在 4-8 位范围内。默认情况下，RAFT 根据 来选择最小化量化损失的维度值&lt;code&gt;pq_bits&lt;/code&gt;，但可以调整该值以降低每个向量的内存占用量。&lt;/p&gt;
+&lt;p&gt;当使用大量压缩时，&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/pylibraft_api/neighbors/#candidate-refinement&#34;&gt;refinement step&lt;/a&gt; 可以通过在 IVF-PQ 索引中查询比所需数量更多的邻居，并计算对结果邻居的精确搜索，以将集合减少到最终期望的数量来执行。细化步骤需要主机内存上的原始未压缩数据集。&lt;/p&gt;
+&lt;p&gt;想要获取更多关于构建 IVF-PQ 索引的信息，以及深入的细节和建议，请参阅在 GitHub 存储库上的 &lt;a href=&#34;https://github.com/rapidsai/raft/blob/branch-23.08/notebooks/tutorial_ivf_pq.ipynb&#34;&gt;RAFT IVF-PQ 完整指南&lt;/a&gt; 笔记本 。&lt;/p&gt;
+&lt;h3 id=&#34;cagra&#34;&gt;CAGRA&lt;/h3&gt;
+&lt;p&gt;&lt;a href=&#34;https://docs.rapids.ai/api/raft/nightly/pylibraft_api/neighbors/#cagra&#34;&gt;CAGRA&lt;/a&gt; 是 RAFT 最新的、最先进的 ANN索引。这是一种高性能的、 GPU 加速的、基于图的方法，专门针对小批量情况进行了优化，其中每次查找只包含一个或几个查询向量。与其他流行的基于图的方法一样，如分层可导航小世界图（HNSW）和 SONG，优化的 k-NN 图是在索引训练时构建的，具有各种qualities，可以在合理的召回水平上产生有效的搜索。&lt;/p&gt;
+&lt;p&gt;CAGRA 通过首先从图中随机选择候选顶点，然后扩展或遍历这些顶点来计算到其子顶点的距离，并在搜索过程中存储最近的邻居来执行搜索（图 1）。每次遍历一组顶点时，它都会执行一次迭代。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-fine-tuning-gpu-index-algorithms/1.png&#34; alt=&#34;Diagram shows how CAGRA can map subgraphs to separate thread blocks, enabling parallelism even for a single query.&#34;&gt;&lt;em&gt;图 1. 使用多个线程块的 CAGRA&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;在图 1 中，CAGRA 使用多个线程块并行访问更多的图节点。这最大限度地提高了单查询搜索的 GPU 利用率。&lt;/p&gt;
+&lt;p&gt;因为 CAGRA 像前面描述的算法一样返回近似的最近邻居，所以它还提供了一些参数来控制召回和速度。&lt;/p&gt;
+&lt;p&gt;可以调整以权衡搜索速度的主要参数是&lt;code&gt;itopk_size&lt;/code&gt;，指定内部排序列表的大小，该列表存储可以在下一次迭代中探索的节点。&lt;code&gt;itopk_size&lt;/code&gt;的较高值在内存中保留更大的搜索上下文，这会以花费更多时间维护队列为代价来提高召回率。&lt;/p&gt;
+&lt;p&gt;参数&lt;code&gt;search_width&lt;/code&gt;定义在每次搜索迭代中为展开其子顶点而遍历的最近父顶点的数目。&lt;/p&gt;
+&lt;p&gt;另一个有用的参数是 执行的迭代次数。默认情况下，该设置是自动选择的，但可以将其更改为更高或更低的值，以换取更快的搜索。&lt;/p&gt;
+&lt;p&gt;CAGRA 的优化图是固定的度(fixed-degree)，使用参数&lt;code&gt;graph_degree&lt;/code&gt;进行调整。通过在搜索图时保持计算次数的一致性来更好地利用 GPU 资源。它通过计算实际的 k-NN 来构建初始 k-NN 图，例如通过使用前面解释的 IVF-PQ 来计算训练数据集中所有点的最近邻居。&lt;/p&gt;
+&lt;p&gt;k-NN 可以使用参数&lt;code&gt;intermediate_graph_degree&lt;/code&gt;，来权衡最终可搜索的 CAGRA 图的质量。&lt;/p&gt;
+&lt;p&gt;可以使用更大的&lt;code&gt;intermediate_graph_degree&lt;/code&gt;，这意味着最终优化的图更有可能找到产生高召回率的最近邻居。RAFT 提供了几个有用的参数来调整 CAGRA 算法。想了解更多详细信息，请参阅&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_cagra/&#34;&gt;CAGRA API 文档&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;同样，这个参数可以用来控制搜索对整个空间的覆盖程度，但这也是以必须进行更多搜索才能找到最近的邻居为代价的，这降低了搜索性能。&lt;/p&gt;
+&lt;h2 id=&#34;pylibraft-入门&#34;&gt;pylibraft 入门&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://docs.rapids.ai/api/raft/nightly/pylibraft_api&#34;&gt;Pylibraft&lt;/a&gt; 是 RAFT 的轻量级 Python 库，使您能够使用 RAFT 的 ANN 算法在 Python 中进行向量搜索。Pylibraft 可以接受任何支持 &lt;strong&gt;CUDA_array_interface&lt;/strong&gt; 的库，例如 &lt;a href=&#34;https://pytorch.org/&#34;&gt;Torch&lt;/a&gt; 或 &lt;a href=&#34;https://cupy.dev/&#34;&gt;CuPy&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;以下示例简要演示了如何使用 Pylibraft 构建和查询 RAFT CAGRA 索引。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;pylibraft.neighbors&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;cagra&lt;/span&gt;
+&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;cupy&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;as&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;cp&lt;/span&gt;
+ 
+&lt;span class=&#34;c1&#34;&gt;# On small batch sizes, using &amp;#34;multi_cta&amp;#34; algorithm is efficient&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;index_params&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;cagra&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;IndexParams&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;graph_degree&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;32&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;search_params&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;cagra&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SearchParams&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;algo&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;multi_cta&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+ 
+&lt;span class=&#34;n&#34;&gt;corpus_embeddings&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;cp&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;random&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;random&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;((&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1500&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;96&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;dtype&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;cp&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;float32&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;query_embeddings&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;cp&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;random&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;random&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;((&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;96&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;dtype&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;cp&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;float32&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+ 
+&lt;span class=&#34;n&#34;&gt;cagra_index&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;cagra&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;build&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;index_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;corpus_embeddings&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;c1&#34;&gt;# Find the 10 closest vectors&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;hits&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;cagra&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;search&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;search_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;cagra_index&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;query_embeddings&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;k&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;随着 LLM 的出现，语义搜索已经成为展示使用 RAFT 的向量相似性搜索的完美方式。在以下示例中，&lt;a href=&#34;https://huggingface.co/docs/transformers/model_doc/distilbert&#34;&gt;DistilBERT&lt;/a&gt; transformer 模型与三个神经网络指标中的每一个指标相结合，用于解决一个简单的问题检索问题。简单英语维基百科数据集用于回答用户的搜索查询。&lt;/p&gt;
+&lt;p&gt;语言模型首先将训练语句转换为插入 RAFT ANN 索引的向量嵌入。推理是通过对查询进行编码并使用我们训练的 ANN 索引来找到与编码的查询向量相似的向量来完成的。返回给用户的答案是简单维基百科中最近的文章，你可以使用相似性搜索中最接近的向量来获取它。&lt;/p&gt;
+&lt;p&gt;可以使用 pylibraft 和本笔记本开始 RAFT 的问题检索任务：&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://gist.github.com/lowener/08eef6aca69cae5c2151224c801521b0&#34;&gt;https://gist.github.com/lowener/08eef6aca69cae5c2151224c801521b0&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;基准&#34;&gt;基准&lt;/h2&gt;
+&lt;p&gt;使用 GPU 作为向量搜索应用程序的硬件加速器可以提高性能，这在大型数据集上表现得尤为明显。可以通过参考 &lt;a href=&#34;https://docs.rapids.ai/api/raft/nightly/raft_ann_benchmarks/&#34;&gt;RAFT 的端到端基准测试文档&lt;/a&gt;来完全复制这个基准。我们的基准测试假设数据已经可以用于计算，这意味着数据传输没有被考虑在内，尽管由于最近 NVIDIA 硬件的高传输速度（超过 25 GB/s），这应该不会造成显著的差异。&lt;/p&gt;
+&lt;p&gt;使用在 H100 GPU 上的 &lt;a href=&#34;http://big-ann-benchmarks.com/neurips21.html&#34;&gt;DEEP-100M&lt;/a&gt; 数据集，以将 RAFT 索引与运行在 Intel Xeon Platinum 8480CL CPU 上的 HNSW 进行比较。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-fine-tuning-gpu-index-algorithms/2.png&#34; alt=&#34;Bar chart compares the throughput of HNSW, the state-of-the-art on CPU, against RAFT’s ANN algorithms for a single query at a time at various levels of recall.&#34;&gt;&lt;em&gt;图 2:比较不同召回率和吞吐量的 ANN 算法，批次为 1&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;图 2 比较了单个查询在不同召回率和吞吐量下的 ANN 算法。在高召回率下，RAFT 的方法显示出比其他替代库更高的吞吐量。&lt;/p&gt;
+&lt;p&gt;我们一次对单个向量的查询进行性能比较，称为&lt;em&gt;在线搜索&lt;/em&gt;。它是向量搜索的主要用例之一。与使用 CPU 或 GPU 的其他库相比，基于 RAFT 的索引提供了更高的吞吐量（以每秒查询量（QPS）衡量）。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-fine-tuning-gpu-index-algorithms/3.png&#34; alt=&#34;Bar chart compares throughput for HNSW, the state-of-the-art on CPU, against RAFT’s ANN algorithms for a query of 10 vectors at a time.&#34;&gt;&lt;em&gt;图 3。比较不同召回率和吞吐量的ANN算法，批次为 10&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;图 3 比较了不同召回和吞吐量级别的 ANN 算法与 10 个查询的批量大小。RAFT 的方法在所有实验中都表现出比 HNSW 更高的吞吐量。&lt;/p&gt;
+&lt;p&gt;将 GPU 用于向量搜索应用程序的好处在更大的批量中最为普遍。 CPU 和 GPU 之间的性能差距很大，可以很容易地扩大规模。图 3 显示，对于批量大小为 10 的情况，当比较每秒的查询数时，只有基于 RAFT 的索引是最优的。对于 10k 的批量大小（图 4），CAGRA 迄今为止优于所有其他索引。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-fine-tuning-gpu-index-algorithms/4.png&#34; alt=&#34;Bar chart compares throughput for HNSW, the state-of-the-art on CPU, against RAFT’s ANN algorithms for a query of 10k vectors at a time.&#34;&gt;&lt;em&gt;图 4。比较不同召回率和吞吐量的ANN算法，批次10k&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;图 4 将不同召回和吞吐量级别的 ANN 算法与批量大小为 10K 的查询进行了比较。RAFT 的方法在所有实验中都表现出比 HNSW 更高的吞吐量。&lt;/p&gt;
+&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
+&lt;p&gt;每种不同的向量搜索索引类型都有优缺点，最终取决于场景需求。这篇文章概述了其中的一些优点和缺点，简要解释了每种不同算法的工作原理，以及一些最重要的参数，这些参数可以用来权衡存储成本、构建时间、搜索质量和搜索性能。在所有情况下， GPU 都可以提高索引构建和搜索性能。&lt;/p&gt;
+&lt;p&gt;（&lt;strong&gt;注&lt;/strong&gt;：使用GPU的成本更高，需要衡量；如果可以满足当前召回率和吞吐性能场景，第一选择是成本低的 CPU下的HNSW索引，并且可以通过SIMD进行调优；而在一些对性能、延迟有着极高要求的场景，只通过 CPU 索引来支撑的难度越来越高，而 GPU 有着非常强大的并行处理能力，CPU+GPU可以作为构建索引时的第二选择。）&lt;/p&gt;
+&lt;h2 id=&#34;reference&#34;&gt;Reference&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://developer.nvidia.com/blog/accelerating-vector-search-fine-tuning-gpu-index-algorithms/&#34;&gt;https://developer.nvidia.com/blog/accelerating-vector-search-fine-tuning-gpu-index-algorithms/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://mccormickml.com/2017/10/13/product-quantizer-tutorial-part-1/&#34;&gt;https://mccormickml.com/2017/10/13/product-quantizer-tutorial-part-1/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/rapidsai/raft/blob/branch-23.08/notebooks/tutorial_ivf_pq.ipynb&#34;&gt;https://github.com/rapidsai/raft/blob/branch-23.08/notebooks/tutorial_ivf_pq.ipynb&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://docs.rapids.ai/api/raft/nightly/raft_ann_benchmarks/&#34;&gt;https://docs.rapids.ai/api/raft/nightly/raft_ann_benchmarks/&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;</description>
+      
+    </item>
+    
+    <item>
       <title>译：加速向量搜索：利用 GPU 索引的 RAPIDS RAFT</title>
       <link>https://weedge.github.io/post/gpu/1.accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/</link>
       <pubDate>Fri, 03 Nov 2023 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/post/gpu/1.accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/</guid>
       
-        <description>&lt;p&gt;目的何在：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;学习RAPIDS RAFT中的三种不同算法：&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_flat/&#34;&gt;IVF-Flat&lt;/a&gt;，&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_pq/&#34;&gt;IVF-PQ&lt;/a&gt;，&lt;a href=&#34;https://docs.rapids.ai/api/raft/nightly/cpp_api/neighbors_cagra/&#34;&gt;CAGRA&lt;/a&gt;, 并且调用RAPIDS RAFT 向量搜索库的相关接口工程实践下；&lt;/li&gt;
-&lt;li&gt;学习借鉴RAPIDS RAFT 库在 Milvus、Redis 和 FAISS 中的集成；&lt;/li&gt;
-&lt;li&gt;将开源改吧改吧，结合业务场景，某种商业目的变成闭源，然后美其名曰自研，岂不“妙哉”;)&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;好，开始吧~&lt;/p&gt;
-&lt;p&gt;在 2023 年的人工智能领域，向量搜索成为最热门的话题之一，因为它在&lt;a href=&#34;https://www.nvidia.cn/glossary/data-science/large-language-models/&#34;&gt;大语言模型&lt;/a&gt;（LLM）和&lt;a href=&#34;https://www.nvidia.cn/glossary/data-science/generative-ai/&#34;&gt;生成式人工智能&lt;/a&gt;中发挥了重要作用。语义向量搜索实现了一系列重要任务，如检测欺诈交易、向用户推荐产品、使用上下文信息增强全文搜索以及查找潜在安全风险的参与者。&lt;/p&gt;
+        <description>&lt;p&gt;在 2023 年的人工智能领域，向量搜索成为最热门的话题之一，因为它在&lt;a href=&#34;https://www.nvidia.cn/glossary/data-science/large-language-models/&#34;&gt;大语言模型&lt;/a&gt;（LLM）和&lt;a href=&#34;https://www.nvidia.cn/glossary/data-science/generative-ai/&#34;&gt;生成式人工智能&lt;/a&gt;中发挥了重要作用。语义向量搜索实现了一系列重要任务，如检测欺诈交易、向用户推荐产品、使用上下文信息增强全文搜索以及查找潜在安全风险的参与者。&lt;/p&gt;
 &lt;p&gt;数据量持续飙升，传统的逐一比较的方法在计算上变得不可行。向量搜索方法使用近似查找，这种查找更具可扩展性，可以更有效地处理大量数据。正如我们在这篇文章中所展示的，在 GPU 上加速向量搜索不仅提供了更快的搜索时间，而且索引构建时间也可以更快。&lt;/p&gt;
 &lt;p&gt;本文内容如下：&lt;/p&gt;
 &lt;ul&gt;
@@ -72,12 +381,12 @@
 &lt;/ul&gt;
 &lt;p&gt;本系列的第二篇文章深入探讨了每一个 GPU 加速指数，并简要解释了算法的工作原理以及微调其行为的重要参数摘要。想要了解更多信息，请访问 &lt;a href=&#34;https://developer.nvidia.cn/zh-cn/blog/accelerating-vector-search-fine-tuning-gpu-index-algorithms/&#34;&gt;加速向量搜索：微调 GPU 索引算法&lt;/a&gt;。&lt;/p&gt;
 &lt;h2 id=&#34;什么是向量搜索&#34;&gt;什么是向量搜索？&lt;/h2&gt;
-&lt;p&gt;&lt;img src=&#34;https://developer.nvidia.cn/zh-cn/blog/wp-content/uploads/2023/08/vector-search-list.png&#34; alt=&#34;Diagram shows a list of vectors that may have been encoded from sources like images, documents, or videos and a query vector for which you would like to find the closest vectors from the list.&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/1.png&#34; alt=&#34;Diagram shows a list of vectors that may have been encoded from sources like images, documents, or videos and a query vector for which you would like to find the closest vectors from the list.&#34;&gt;&lt;/p&gt;
 &lt;p&gt;&lt;em&gt;图 1。向量搜索过程&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;图 1 显示了向量搜索需要创建一个向量索引，并执行查找以在索引中找到一些最接近查询向量的向量。向量可以小到激光雷达点云中的三维点，也可以是文本文档、图像或视频中的较大嵌入向量。&lt;/p&gt;
 &lt;p&gt;向量搜索是查询数据库以查找最相似向量的过程。这种相似性搜索是在可以表示任何类型对象的数字向量上进行的（图 2）。这些向量通常是从多媒体（如图像、视频和文本片段）或整个文档中创建的嵌入向量，这些文档经过深度学习模型将其语义特征编码为向量形式。&lt;/p&gt;
 &lt;p&gt;嵌入向量通常具有比原始文档更小的对象（维度更低）的优势，同时保持尽可能多的源信息。因此，两个相似的文档通常具有相似的嵌入向量。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://developer.nvidia.cn/zh-cn/blog/wp-content/uploads/2023/09/rapids-blog-images-vector-search-c.jpg&#34; alt=&#34;Image of a 3D point cloud such as one created from LIDAR.&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/2.jpg&#34; alt=&#34;Image of a 3D point cloud such as one created from LIDAR.&#34;&gt;&lt;/p&gt;
 &lt;p&gt;&lt;em&gt;图 2:向量表示更高维度的数据点&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;图 2 中的点是 3D 的，但它们可能是 500 维甚至更高。&lt;/p&gt;
 &lt;p&gt;这使得比较对象更容易，因为嵌入向量更小，并且保留了大部分信息。当两个文档共享相似的特征时，它们的嵌入向量通常在空间上接近或相似。&lt;/p&gt;
@@ -100,18 +409,17 @@
 &lt;p&gt;选择要使用的向量数据库取决于工作流的要求。&lt;/p&gt;
 &lt;p&gt;检索增强语言模型允许通过使用已由 LLM 编码为向量并存储在向量数据库中的附加上下文来增强搜索，从而为特定产品、服务或其他领域特定用例定制预训练的模型。&lt;/p&gt;
 &lt;p&gt;更具体地说，搜索被编码为向量形式，并且在向量数据库中找到相似的向量以增强搜索。然后将向量与 LLM 一起使用，以形成适当的响应。检索增强 LLM 是生成人工智能的一种形式，它们彻底改变了聊天机器人和语义文本搜索行业。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://developer.nvidia.cn/zh-cn/blog/wp-content/uploads/2023/09/text-retrieval-application-workflow-CORRECTED.png&#34; alt=&#34;Workflow diagram shows how vector search is often combined with LLMs to perform semantic search. &#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/3.png&#34; alt=&#34;Workflow diagram shows how vector search is often combined with LLMs to perform semantic search. &#34;&gt;&lt;/p&gt;
 &lt;p&gt;&lt;em&gt;图 3。使用 RAPIDS RAFT 进行向量搜索的文本检索应用程序的示例工作流程&lt;/em&gt;&lt;/p&gt;
 &lt;h3 id=&#34;向量相似性搜索的其他应用&#34;&gt;向量相似性搜索的其他应用&lt;/h3&gt;
 &lt;p&gt;除了用于生成人工智能的检索增强 LLM 之外，嵌入向量已经存在了一段时间，并在现实世界中发现了许多有用的应用：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;**推荐系统：**根据用户的兴趣或互动行为，提供个性化建议。&lt;/li&gt;
-&lt;li&gt;**财务：**欺诈检测模型将用户交易向量化，从而可以确定这些交易是否与典型的欺诈活动相似。&lt;/li&gt;
-&lt;li&gt;**网络安全：**使用嵌入向量对不良行为者和异常活动的行为进行建模和搜索。&lt;/li&gt;
-&lt;li&gt;**基因组学：**在基因组学分析中，我们可以发现相似的基因和细胞结构，如单细胞 RNA 分析。&lt;/li&gt;
-&lt;li&gt;**化学：**对化学结构的分子描述符或指纹进行建模，以便比较它们或在数据库中找到类似的结构。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;推荐系统&lt;/strong&gt;：根据用户的兴趣或互动行为，提供个性化建议。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;财务&lt;/strong&gt;：欺诈检测模型将用户交易向量化，从而可以确定这些交易是否与典型的欺诈活动相似。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;网络安全&lt;/strong&gt;：使用嵌入向量对不良行为者和异常活动的行为进行建模和搜索。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;基因组学&lt;/strong&gt;：在基因组学分析中，我们可以发现相似的基因和细胞结构，如单细胞 RNA 分析。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;化学&lt;/strong&gt;：对化学结构的分子描述符或指纹进行建模，以便比较它们或在数据库中找到类似的结构。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;我们总是有兴趣了解您的用例，所以如果您已经使用向量搜索，或者想讨论它如何对您的应用程序有益，请不要犹豫，留下评论。&lt;/p&gt;
 &lt;h2 id=&#34;rapids-raft-向量搜索库&#34;&gt;RAPIDS RAFT 向量搜索库&lt;/h2&gt;
 &lt;p&gt;RAFT 是一个可组合构建块库，用于加速 GPU 上的机器学习算法，例如最近邻居和向量搜索中使用的算法。ANN 算法是构成向量搜索库的核心构建块之一。最重要的是，这些算法可以极大地受益于 GPU 加速。&lt;/p&gt;
 &lt;p&gt;有关 RAFT 的核心 API 及其包含的各种加速构建块的更多信息，请参阅&lt;a href=&#34;https://developer.nvidia.cn/zh-cn/blog/reusable-computational-patterns-for-machine-learning-and-data-analytics-with-rapids-raft/&#34;&gt;RAPIDS RAFT 中的机器学习和数据分析的可复用计算模式&lt;/a&gt;。&lt;/p&gt;
@@ -130,17 +438,24 @@
 &lt;p&gt;GPU 擅长一次处理大量数据。当一次计算数千或数万个点的最近邻居时，刚才提到的所有算法都可以优于 CPU 上的相应算法。&lt;/p&gt;
 &lt;p&gt;然而，CAGRA 是专门为在线搜索而设计的，这意味着即使一次只查询几个数据点的最近邻居，它的性能也优于 CPU 。&lt;/p&gt;
 &lt;p&gt;图 4 和图 5 显示了我们通过在 100M 向量上构建索引并一次只查询 10 个向量来执行的基准测试。在图 4 中，CAGRA 在原始搜索性能方面优于 HNSW，HNSW 是 CPU 上最受欢迎的向量搜索索引之一，即使是 10 个向量的极小批量。然而，这种速度是以内存为代价的。在图 5 中，可以看到 CAGRA 的GPU内存占用比其他近邻方法略高。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://developer.nvidia.cn/zh-cn/blog/wp-content/uploads/2023/09/vector-search-throughput-deep100m-b.png&#34; alt=&#34;Bar chart compares throughput performance (queries per second) for RAFT’s GPU algorithms against HNSW on the CPU.&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/4.png&#34; alt=&#34;Bar chart compares throughput performance (queries per second) for RAFT’s GPU algorithms against HNSW on the CPU.&#34;&gt;&lt;/p&gt;
 &lt;p&gt;&lt;em&gt;图 4。DEEP-100M 数据集上 95%召回率的向量搜索吞吐量，批量大小为 10&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;在图 5 中，IVF-PQ 的主机内存用于可选的细化步骤。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://developer.nvidia.cn/zh-cn/blog/wp-content/uploads/2023/08/gpu-memory-usage.png&#34; alt=&#34;Bar chart compares memory usage for RAFT’s GPU algorithms against HNSW on the CPU.&#34;&gt;&lt;em&gt;图 5。 GPU 内存使用情况&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/5.png&#34; alt=&#34;Bar chart compares memory usage for RAFT’s GPU algorithms against HNSW on the CPU.&#34;&gt;&lt;em&gt;图 5。 GPU 内存使用情况&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;图 6 显示了索引构建时间的比较，并表明索引通常可以在 GPU 上更快地构建。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://developer.nvidia.cn/zh-cn/blog/wp-content/uploads/2023/09/index-build-time-b.png&#34; alt=&#34;Bar chart compares index build time for RAFT’s GPU algorithms against HNSW on the CPU.&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/6.png&#34; alt=&#34;Bar chart compares index build time for RAFT’s GPU algorithms against HNSW on the CPU.&#34;&gt;&lt;/p&gt;
 &lt;p&gt;&lt;em&gt;图 6。召回率为 95%时表现最好的索引的构建时间&lt;/em&gt;&lt;/p&gt;
 &lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
 &lt;p&gt;从特征库到生成人工智能，向量相似性搜索可以应用于每个行业。 GPU 上的向量搜索以较低的延迟执行，并为在线和批量处理的每一级调用实现更高的吞吐量。&lt;/p&gt;
-&lt;p&gt;RAFT 是一组可组合的构建块，可用于加速任何数据源中的向量搜索。它为 Python 和 C++预先构建了 API。Milvus、Redis 和 FAISS 的 RAFT 集成正在进行中。（注：相关PR见reference连接）&lt;/p&gt;
+&lt;p&gt;RAFT 是一组可组合的构建块，可用于加速任何数据源中的向量搜索。它为 Python 和 C++预先构建了 API。Milvus、Redis 和 FAISS 的 RAFT 集成正在进行中。&lt;/p&gt;
+&lt;p&gt;（&lt;strong&gt;注&lt;/strong&gt;：相关PR见reference连接）&lt;/p&gt;
 &lt;p&gt;除了最先进的 ANN 算法，RAFT 还包含了如矩阵和向量运算、迭代求解器和聚类算法等其他 GPU 加速构建块。在本系列的第二篇文章中，我们深入探讨了每种 GPU 加速索引方法，并简要解释了算法的工作原理，以及总结重要的微调参数。有关详细信息，请参阅 &lt;a href=&#34;https://developer.nvidia.cn/zh-cn/blog/accelerating-vector-search-fine-tuning-gpu-index-algorithms/&#34;&gt;加速向量搜索：微调 GPU 索引算法&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;目的&lt;/strong&gt;：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;了解RAPIDS RAFT中的三种不同算法：&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_flat/&#34;&gt;IVF-Flat&lt;/a&gt;，&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_pq/&#34;&gt;IVF-PQ&lt;/a&gt;，&lt;a href=&#34;https://docs.rapids.ai/api/raft/nightly/cpp_api/neighbors_cagra/&#34;&gt;CAGRA&lt;/a&gt;, 并且调用RAPIDS RAFT 向量搜索库的相关接口工程实践下；&lt;/li&gt;
+&lt;li&gt;借鉴RAPIDS RAFT 库在 Milvus、Redis 和 FAISS 中的集成；&lt;/li&gt;
+&lt;li&gt;将开源改吧改吧，结合业务场景，某种商业目的变成闭源，然后美其名曰自研，岂不“妙哉”;)&lt;/li&gt;
+&lt;/ol&gt;
 &lt;h2 id=&#34;reference&#34;&gt;Reference&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;
@@ -177,7 +492,7 @@
       
       <guid>https://weedge.github.io/post/gpu/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/</guid>
       
-        <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday//maximizing-performance-with-massively-parallel-hash-maps-on-gpus/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+        <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
 &lt;p&gt;数十年的计算机科学历史一直致力于设计有效存储和检索信息的解决方案。hashmap（或hashtable）是一种流行的信息存储数据结构，因为它们可以保证元素插入和检索的恒定时间。&lt;/p&gt;
 &lt;p&gt;然而，尽管hashmap很流行，但很少在 GPU 加速计算的背景下进行讨论。虽然 GPU 以其大量线程和计算能力而闻名，但其极高的内存带宽可以加速许多数据结构（例如hashmap）。&lt;/p&gt;
 &lt;p&gt;这篇文章将介绍哈hashmap的基础知识以及它们的内存访问模式如何使其非常适合 GPU 加速。我们将介绍&lt;a href=&#34;https://github.com/NVIDIA/cuCollections&#34;&gt;cuCollections&lt;/a&gt;，这是一个用于并发数据结构（包括hashmap）的新开源 CUDA C++ 库。&lt;/p&gt;
@@ -3354,376 +3669,6 @@ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverpkg&lt;span class=&#34
 &lt;li&gt;将单元测试放在不同的包中，以强制编写专注于暴露行为而非内部的测试。&lt;/li&gt;
 &lt;li&gt;使用&lt;code&gt;testing.T&lt;/code&gt;变量而不是经典变量来处理错误&lt;code&gt;if err != nil&lt;/code&gt;使代码更短且更易于阅读。&lt;/li&gt;
 &lt;li&gt;可以使用设置安装和拆卸功能来配置复杂的环境，例如在集成测试的情况下。&lt;/li&gt;
-&lt;/ul&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>Go tips-笔记: 标准库 75-81 mistakes</title>
-      <link>https://weedge.github.io/post/notions/go-tips/go-tips-10-standard-lib/</link>
-      <pubDate>Sun, 19 Feb 2023 14:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/notions/go-tips/go-tips-10-standard-lib/</guid>
-      
-        <description>&lt;h2 id=&#34;引言&#34;&gt;引言&lt;/h2&gt;
-&lt;p&gt;从程序中产生的错误中大多是使用姿势的不对，以及没有仔细阅读标准库相关包的开发文档，未查看源码导致，但是没有实践过这些问题，即使熟读文档和源码也可能避免不了。笔记中会以书中的mistake为切入点，结合源码升入分析其背后产生的原因，以及提出解决方案来避免。&lt;/p&gt;
-&lt;h2 id=&#34;笔记&#34;&gt;笔记&lt;/h2&gt;
-&lt;h3 id=&#34;75提供错误的持续时间&#34;&gt;75.提供错误的持续时间&lt;/h3&gt;
-&lt;p&gt;记住使用&lt;code&gt;time.Duration&lt;/code&gt;API 和提供&lt;code&gt;int64&lt;/code&gt;一个时间单位, 默认最小时间单位是微妙&lt;/p&gt;
-&lt;h3 id=&#34;76timeafter-和内存泄漏-重要&#34;&gt;76.time.After 和内存泄漏 （重要）&lt;/h3&gt;
-&lt;p&gt;常见问题之一，将time.After函数进行循环调用，导致内存泄露。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-		&lt;span class=&#34;k&#34;&gt;select&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-		&lt;span class=&#34;k&#34;&gt;case&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;event&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;ch&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
-			&lt;span class=&#34;nf&#34;&gt;handle&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;event&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-		&lt;span class=&#34;k&#34;&gt;case&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;time&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;After&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;time&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Hour&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
-			&lt;span class=&#34;nx&#34;&gt;log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Println&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;warning: no messages received&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-		&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;通过time.After源码可以看出，每次会通过time.NewTimer新建一个timer, 但是time.After返回的是一个C ← chan Time 只读channel，不能释放掉每次新建的timer, 可以使用Stop，如果一直循环使用，Go 1.15 中，每次调用使用大约 200 字节的内存，如果设置的时间间隔小，比如每小时500w条，则在一小时消耗1G左右的内存空间。&lt;/p&gt;
-&lt;p&gt;那如果直接使用time.NewTimer来处理，需要处理好Stop和Reset的情况：&lt;/p&gt;
-&lt;p&gt;一种方式是直接每次循环中NewTimer, 然后使用Stop方法从最小堆timer数组中删除底层的运行时timer(如果timer 没有expire 到期 以及有复用timer reuse active timer)，这样可以防止内存泄露，但是这些timer结构对象需要GC来标记扫描释放，带来了额外的GC压力以及最小堆timer管理压力；这里需要注意Stop方法的使用，按照 &lt;a href=&#34;https://golang.org/pkg/time/#Timer.Stop&#34;&gt;Timer.Stop 文档&lt;/a&gt; 的使用说明，每次调用 Stop 后需要判断返回值，如果返回 false（表示 Stop 失败，Timer 已经在 Stop 前到期）则需要排掉（drain）一次 channel 中的Time数据(C 是长度为1的缓冲channel)：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;!&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Stop&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-	&lt;span class=&#34;o&#34;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;C&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;但是如果之前程序已经从 channel 中接收过事件，那么上述 &lt;code&gt;&amp;lt;-t.C&lt;/code&gt; 就会发生阻塞。可能的解决办法是借助 select 进行 &lt;strong&gt;非阻塞&lt;/strong&gt; 排放（draining）：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;!&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Stop&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-	&lt;span class=&#34;k&#34;&gt;select&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-	&lt;span class=&#34;k&#34;&gt;case&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;C&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// try to drain the channel
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;	&lt;span class=&#34;k&#34;&gt;default&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
-	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;但是因为 channel 的发送和接收发生在不同的 goroutine，所以 &lt;a href=&#34;https://github.com/golang/go/issues/14383&#34;&gt;存在竞争条件&lt;/a&gt;（race condition），最终可能导致 channel 中的事件未被排掉。因为sendTimer 和 操作Stop函数是在两个goroutine中执行，当timer刚好到期，已从最小堆中删除，操作Stop函数返回false,  在执行 ←t.C 接受操作和 sendTime 发送操作 分别在两个goroutine中执行相互之间执行是无序的，可能会发生先从t.C接受数据，没有，由于是非阻塞继续执行，这个时候sendTime发送一条Time数据到C中，后面执行Reset虽然重置一个Timer, 但是在select + case ←timer.C时，C中有数据选中直接执行了，和通过Reset重置的一个Timer间隔时间执行的预期期望不同，这样存在race condition，但是这种情况出现机率比较低，可参考 &lt;a href=&#34;https://github.com/golang/go/issues/11513#issuecomment-157062583&#34;&gt;Russ Cox 的回复&lt;/a&gt; ，目前 Timer 可能合理的使用方式是：程序需要维护一个状态变量(在同一个goroutine中)，用于记录它是否已经从 channel 中接收过事件，进而作为 Stop 中 draining 操作的判断依据。可以订阅&lt;a href=&#34;https://groups.google.com/g/golang-dev/c/c9UUfASVPoU&#34;&gt;golang-dev&lt;/a&gt;组查看相关进展。&lt;/p&gt;
-&lt;p&gt;另外一种方式是把 NewTimer 放在循环外，在for循环中通过Reset函数来复用原有Timer结构，按照 &lt;a href=&#34;https://golang.org/pkg/time/#Timer.Reset&#34;&gt;Timer.Reset 文档&lt;/a&gt; 的使用说明，要正确地 Reset Timer，首先需要正确地 Stop Timer；因此 Reset 的问题跟 Stop 基本相同。&lt;/p&gt;
-&lt;p&gt;tips： 具体详情见源码客观分析：&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/time/sleep.go&#34;&gt;go1.20/src/time/sleep.go&lt;/a&gt; (time标准中提供使用的Timer)&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/runtime/time.go&#34;&gt;go1.20/src/runtime/time.go&lt;/a&gt; (运行时的timer)&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/runtime/runtime2.go&#34;&gt;go1.20/src/runtime/runtime2.go&lt;/a&gt; , &lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/runtime/proc.go&#34;&gt;go1.20/src/runtime/proc.go&lt;/a&gt;(p结构上最小四叉堆 timer数组, 以及运行时相关timer的调度；调用流程：findRunnable/stealWork → checkTimers → runtimer → runOneTimer → f (sendTime or goFunc) , lock free的方式调用f, CAS原子操作timer的状态)&lt;/p&gt;
-&lt;p&gt;每次新生成Timer的时候，会往p上的最小堆上添加timer(O(logN))，将等待可读事件放入netpoll异步事件中监听，netpoll是在程序启动时初始化绑定一个单独的M进行事件轮训；Go1.14之前使用timerproc函数会调用一些系统调用来来让 goroutine 进入睡眠状态并唤醒 goroutine，系统调用意味着它为此生成OS线程，如果创建timer比较多，那就会发生比较多的系统调用，大大降低性能；之后改成异步事件轮训机制netpoll的方式多路复用，只需要一个OS线程来监听事件即可；系统调用因系统平台而异，通过runtime.nanotime1函数进行了封装；&lt;/p&gt;
-&lt;p&gt;如果时间到了，将最小堆顶timer删除(O(logN))，通过netpoll 异步事件机制 将 可执行的G调度到runnext中，然后绑定M运行f；&lt;/p&gt;
-&lt;h3 id=&#34;77常见的-json-处理错误-重要&#34;&gt;77.常见的 JSON 处理错误 (重要)&lt;/h3&gt;
-&lt;h4 id=&#34;case1-类型嵌入导致的意外行为&#34;&gt;case1 类型嵌入导致的意外行为&lt;/h4&gt;
-&lt;p&gt;需要了解json.Marshal 方法，在对结构类型对象进行Marshal操作时，如果实现了json.Marshaler接口方法MarshalJSON， 则会调用对应MarshalJSON方法进行encode操作，可以看具体源码： &lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/runtime/proc.go&#34;&gt;go1.20/src/encoding/json/encode.go&lt;/a&gt; （调用流程：Marshal→ marshal → reflectValue → valueEncoder → typeEncoder → newTypeEncoder → marshalerEncoder → MarshalJSON)  ; 所以在json.Marshal操作的时候需要注意结构体的嵌入成员是否实现了json.Marshaler接口方法MarshalJSON， 比如： time.Time 实现了MarshalJSON这个方法； 如果不想直接使用组合嵌入成员的方法，则将其定义为对应类型成员，或者实现MarshalJSON方法覆盖嵌入成员的实现；&lt;/p&gt;
-&lt;p&gt;tips: 对结构类型对象进行UnMarshal操作也是同样情况。&lt;/p&gt;
-&lt;h4 id=&#34;case2-json-和单调时钟&#34;&gt;case2 JSON 和单调时钟&lt;/h4&gt;
-&lt;p&gt;对包含一个time.Time类型的结构encode或decode，有时会遇到意想不到的比较错误。&lt;/p&gt;
-&lt;p&gt;首先需要弄清楚操作系统处理两种不同的时钟类型：wall clock(挂钟)和 monotonic clock(单调时钟)。挂钟用于确定一天中的当前时间。此时钟可能会有所变化。例如，如果时钟使用同步网络时间协议 (NTP)，它可以及时向后或向前跳转。不应该使用挂钟测量持续时间，因为可能会遇到奇怪的行为，例如负持续时间(润秒重置的情况)。这就是操作系统提供第二种时钟类型的原因：单调时钟。单调时钟保证时间总是向前移动并且不受时间跳跃的影响。它可能会受到频率调整的影响（例如，如果服务器检测到本地石英钟的移动速度与 NTP 服务器不同），但不会受到时间跳跃的影响。&lt;/p&gt;
-&lt;p&gt;以前Go Time包的相关时间读取函数实现仅读取系统挂钟，从不读取单调时钟，从而在时钟重置时导致测量不正确。比如 一个 Go 程序在闰秒期间测量负的经过时间导致&lt;a href=&#34;https://blog.cloudflare.com/how-and-why-the-leap-second-affected-cloudflare-dns/&#34;&gt;CloudFlare 最近的 DNS 中断&lt;/a&gt;. 维基百科&lt;a href=&#34;https://en.wikipedia.org/wiki/Leap_second#Examples_of_problems_associated_with_the_leap_second&#34;&gt;与闰秒相关的问题示例列表&lt;/a&gt;现在包括 CloudFlare 的中断，并将 Go 的时间 API 列为根本原因。除了闰秒问题之外，Go 还扩展到非生产环境中的系统，这些环境中的时钟可能不太好调节，因此时钟重置更频繁。Go 必须优雅地处理时钟重置。Go语言作者Russ Cox提出了提案设计**&lt;a href=&#34;https://github.com/golang/proposal/blob/master/design/12914-monotonic.md&#34;&gt;Proposal: Monotonic Elapsed Time Measurements in Go&lt;/a&gt;**  (golang的开发规范和提案设计文档值得借鉴学习的，背景原因，验证评估影响面，尽量向前兼容，提案通过，再安排开发计划)； 将monotonic clock 单调时钟引入time.Time结构体中，具体CR: &lt;a href=&#34;https://go-review.googlesource.com/c/go/+/36255&#34;&gt;https://go-review.googlesource.com/c/go/+/36255&lt;/a&gt; ， HN也有对应讨论： &lt;a href=&#34;https://news.ycombinator.com/item?id=13566110&#34;&gt;https://news.ycombinator.com/item?id=13566110&lt;/a&gt; ;&lt;/p&gt;
-&lt;p&gt;tips： 测量持续时间，使用单调时钟；仅对&lt;strong&gt;本地持续时间测量&lt;/strong&gt;有效；两个不同服务器的单调时钟根据定义是不同步的。因此，基于这些时钟测量分布式执行将不准确；这就涉及到分布式时钟同步的问题了。&lt;/p&gt;
-&lt;p&gt;ok了解了背景，回归正题，比如对一个结构体有time.Time类型成员，time.Time可能同时包含一个挂钟和一个单调时间，使用time.Now方法返回的时间就包括挂钟读数和单调时钟读数，具体见time包开发文档：https://pkg.go.dev/time#section-documentation; 以及查看源码客观分析：&lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/time/time.go&#34;&gt;go1.20/src/time/time.go&lt;/a&gt; （Now→time.now→runtime.now in assembly → 如果可以使用vdso 调用 runtime·vdsoClockgettimeSym 减少系统调用提升性能，否则执行系统调用SYSCALL SYS_clock_gettime(228) 指令，见：&lt;strong&gt;&lt;a href=&#34;https://github.com/torvalds/linux/blob/master/arch/x86/entry/syscalls/syscall_64.tbl&#34;&gt;linux系统调用指令集&lt;/a&gt;&lt;/strong&gt;）。time.Now返回的Duration值打印如下：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;mi&#34;&gt;2023&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mo&#34;&gt;02&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;19&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;15&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;37&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;mf&#34;&gt;08.218505&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;0800&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;CST&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;m&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;mf&#34;&gt;0.000118444&lt;/span&gt;
-&lt;span class=&#34;o&#34;&gt;------------------------------------&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;--------------&lt;/span&gt;
-             &lt;span class=&#34;nx&#34;&gt;Wall&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;time&lt;/span&gt;               &lt;span class=&#34;nx&#34;&gt;Monotonic&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;time&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在执行json.UnMarshal 解码包涵time.Time类型公开成员结构体进行格式化解析时， 也会调用time.Time的UnMarshalJSON函数，最终会调用Time.stripMono, 去掉Monotonic time；导致前后结构体对象不一致，一个从time.Now中返回有Monotonic time，解析后的没有；通过Time.Truncate方法，去掉Monotonic time，可以解决；需要注意带有time.Time的结构体在encode/decode时，前后对象会不一致的情况；&lt;/p&gt;
-&lt;h4 id=&#34;case3-any-map&#34;&gt;case3 any map&lt;/h4&gt;
-&lt;p&gt;any是空接口interface{}的别名，在对map[string]any类型对象进行 json.UnMarshal时，json字符串中的整数类型会解析成默认的float64类型，这样可能会导致数据判断时出现问题，对类型转换做出错误的假设可能会导致 goroutine panic。&lt;/p&gt;
-&lt;h3 id=&#34;78常见的-sql-错误&#34;&gt;78.常见的 SQL 错误&lt;/h3&gt;
-&lt;p&gt;该&lt;code&gt;database/sql&lt;/code&gt;包提供SQL（或类似 SQL）数据库的标准通用接口；依赖具体数据操作，由三方来实现；接口与实现分离的很好例子；&lt;/p&gt;
-&lt;p&gt;tips：在设计通用中台和平台项目中的模块时，经常需要将抽象与实现分离，驱动化设计，方便具体领域场景的定制化开发。&lt;/p&gt;
-&lt;p&gt;具体查看开发文档：https://pkg.go.dev/database/sql；在使用这个包时看到一些模式或错误也很常见；深入研究五个常见错误case。&lt;/p&gt;
-&lt;h4 id=&#34;case1-忘记-sqlopen-不一定建立到数据库的连接-工程规范&#34;&gt;case1 忘记 sql.Open 不一定建立到数据库的连接 (工程规范)&lt;/h4&gt;
-&lt;p&gt;Open 可能只是验证其参数而不创建与数据库的连接。要验证数据源名称是否有效，请调用 Ping。在使用的时候，和数据库进行交互的时候才建立连接。比如go-redis &lt;a href=&#34;https://github.com/redis/go-redis/issues/2085&#34;&gt;issues-2085&lt;/a&gt; , 这个issue是因为使用go-redis v8 版本 通过ping请求访问 7.0 redis redis-cluster， v8版本还不支持新的协议返回的数据导致，需要升级使用go-redis v9版本来支持，所以使用ping功能即可以测试生成有效连接，而且可以验证客户端和服务端协议的一致性。&lt;/p&gt;
-&lt;h4 id=&#34;case2-忘记使用连接池-工程规范&#34;&gt;case2 忘记使用连接池 (工程规范)&lt;/h4&gt;
-&lt;p&gt;应为数据库是底层存储数据资源，如果不限制使用有限的底层数据库连接资源，会增加底层数据库服务的负载；需要设置连接池，进行连接复用，以及结合数据库服务能力限制设置最大连接数，具体参数：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;SetMaxOpenConns&lt;/code&gt;最大限度打开的数据库连接数（默认值&lt;code&gt;unlimited&lt;/code&gt;）；设置&lt;code&gt;SetMaxOpenConns&lt;/code&gt;对于生产级应用程序很重要。因为默认值是无限的，应该设置它以确保它适合底层数据库可以处理的内容。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;SetMaxIdleConns&lt;/code&gt;最大限度空闲连接数（默认值&lt;code&gt;2&lt;/code&gt;）；如果应用程序生成大量并发请求，则应增加&lt;code&gt;SetMaxIdleConns&lt;/code&gt;(default: )的值。&lt;code&gt;2&lt;/code&gt;否则，应用程序可能会经历频繁的重新连接。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;SetConnMaxIdleTime&lt;/code&gt;最大限度连接关闭前可以空闲的时间量（默认值&lt;code&gt;unlimited&lt;/code&gt;）；如果应用程序可能面临大量请求，那么设置就很重要。当应用程序返回到更和平的状态时，希望确保创建的连接最终被释放。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;SetConnMaxLifetime&lt;/code&gt;最大限度连接在关闭之前可以保持打开状态的时间（默认值&lt;code&gt;unlimited&lt;/code&gt;）；如果连接到负载平衡的数据库服务器，设置会很有帮助。在这种情况下，要确保应用程序永远不会使用连接太久。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;如果应用程序面临不同的用例，可以使用多个连接池。这些值需要根据不同环境进行配置，对这些值进行可配置化管理，或者放在配置中心。&lt;/p&gt;
-&lt;h4 id=&#34;case3-不使用prepare语句-工程规范&#34;&gt;case3 不使用Prepare语句 (工程规范)&lt;/h4&gt;
-&lt;p&gt;生产环境中，应该使用Prepare对sql 进行预处理，以防sql 注入，并且重复的sql语句不需要重新解析处理。&lt;/p&gt;
-&lt;h4 id=&#34;case4-错误处理空值---工程规范&#34;&gt;case4 错误处理空值   (工程规范)&lt;/h4&gt;
-&lt;p&gt;在设计数据库表时，如果允许字段为NULL的话；查询这个字段scan row时，需要考虑NULL的情况，如果直接使用类型，则会报错； 解决方法，使用指针类型，以及sql包中封装的类型sql.NullXXX&lt;/p&gt;
-&lt;p&gt;比指针类型更清楚地表达了意图。&lt;/p&gt;
-&lt;h4 id=&#34;case5-不处理行迭代错误--工程规范&#34;&gt;case5 不处理行迭代错误  (工程规范)&lt;/h4&gt;
-&lt;p&gt;这是要牢记的最佳实践：因为&lt;code&gt;rows.Next&lt;/code&gt;可以在遍历所有行或准备下一行时发生错误时停止，所以应该在迭代后使用&lt;code&gt;rows.Err&lt;/code&gt;进行检查。&lt;/p&gt;
-&lt;h3 id=&#34;79不关闭临时资源&#34;&gt;79.不关闭临时资源&lt;/h3&gt;
-&lt;p&gt;开发者经常在代码中的某个点关闭申请的临时资源，以避免磁盘或内存，连接等资源泄漏。结构通常实现&lt;code&gt;io.Closer&lt;/code&gt;接口表示必须关闭临时资源。列举3个不关闭临时资源的case:&lt;/p&gt;
-&lt;h4 id=&#34;case1-http-response-body-重要&#34;&gt;case1 HTTP Response body （重要）&lt;/h4&gt;
-&lt;p&gt;如果使用Go语言编写HTTP协议相关的代码，经常会遇到的问题，忘记关闭返回的http.Response.Body,  导致资源泄露，其实开发文档中已经给出了说明 &lt;a href=&#34;https://pkg.go.dev/net/http#Response.Body&#34;&gt;https://pkg.go.dev/net/http#Response.Body&lt;/a&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;nx&#34;&gt;The&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Client&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;and&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Transport&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;guarantee&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;that&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Body&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;is&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;always&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;non&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;nil&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;even&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;on&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;responses&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;without&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;a&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;body&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;or&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;responses&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;with&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;a&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;zero&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;length&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;body&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;  &lt;span class=&#34;nx&#34;&gt;It&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;is&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;the&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;caller&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;s&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;responsibility&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;to&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;close&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Body&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;  &lt;span class=&#34;nx&#34;&gt;The&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;default&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;HTTP&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;client&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;s&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Transport&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;may&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;not&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;reuse&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;HTTP&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;mf&#34;&gt;1.&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;x&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;#34;keep-alive&amp;#34;&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;TCP&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;connections&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;the&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Body&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;is&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;not&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;read&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;to&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;completion&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;and&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;closed&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;http客户端和传输保证Body总是非空的，即使响应没有Body或者响应的Body长度为零。关闭Body是调用者的责任。如果&lt;strong&gt;Body没有读到完成并且关闭，缺省HTTP客户端的传输(DefaultTransport 默认打开了Keep-Alive)不能复用HTTP/1.x &amp;ldquo;keep-alive&amp;quot;tcp 连接&lt;/strong&gt;。并且查看源码分析：&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/net/http/client.go&#34;&gt;go1.20/src/net/http/client.go&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/net/http/transport.go&#34;&gt;go1.20/src/net/http/transport.go&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/net/http/transfer.go&#34;&gt;go1.20/src/net/http/transfer.go&lt;/a&gt; (body Read from bufio Read)&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/bufio/bufio.go&#34;&gt;go1.20/src/bufio/bufio.go&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;调用流程：初始化Client, 调用 Client.Do/do (Get/Post/Head方法NewRequest之后都会调用Do方法）→ Client.send → send →  Transport.RoundTrip 接口方法 →  Transport.roundTrip&lt;/p&gt;
-&lt;p&gt;→ Transport.getConn → Transport.queueForDial -》 go Transport.dialConnFor → go persistConn.readLoop （将连接响应数据写入transferReader Body中, 发送responseAndError给roundTrip） 和  go persistConn.writeLoop  (往连接中写请求数据,将writeErr结果分别发送一份到writeErrCh中，由readLoop接收处理，发送一份给roundTrip处理)&lt;/p&gt;
-&lt;p&gt;→ persistConn.roundTrip (发送persistConn.requestAndChan 到 reqch中,用于readLoop接收；发送writeRequest到writech中，由writeLoop 接收；从writeErrCh 处理write错误；从responseAndError chan中处理read错误)&lt;/p&gt;
-&lt;p&gt;整体过程是一个建立长连接(KeepAlive开启), 并在长连接中通过读写管道和错误结果管道来协同处理，管道是可缓冲的，长度是1个buffer，刚好用于存放一个数据，发送和接收等待管道中的数据进行处理。&lt;/p&gt;
-&lt;p&gt;在KeepAlive开启的情况下，长连接如果不关闭Response.Body，并且不读取Body中的数据，不会复用原有长连接，通过上面分析，会导致协程泄露；如下代码：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;i&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;i&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;i&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;++&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-		&lt;span class=&#34;nx&#34;&gt;fmt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Println&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;go nums&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;runtime&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;NumGoroutine&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;())&lt;/span&gt;
-		&lt;span class=&#34;nx&#34;&gt;resp&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;_&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Get&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;&amp;lt;http://www.baidu.com&amp;gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-		&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;resp&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;!=&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;nil&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;resp&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Body&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;!=&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;nil&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-			&lt;span class=&#34;c1&#34;&gt;//_, _ = ioutil.ReadAll(resp.Body)
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;			&lt;span class=&#34;c1&#34;&gt;//_ = resp.Body.Close()
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;		&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;fmt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Println&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;go nums&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;runtime&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;NumGoroutine&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;())&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果复用的话，这里请求是串行处理，会复用同一个连接，所以只会有3个协程在工作；如果不能复用连接的话,每处理一个请求会新开连接，导致协程泄露。Client不初始化，Transport默认是开启keep-alive；&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// DefaultTransport is the default implementation of Transport and is
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// used by DefaultClient. It establishes network connections as needed
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// and caches them for reuse by subsequent calls. It uses HTTP proxies
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// as directed by the $HTTP_PROXY and $NO_PROXY (or $http_proxy and
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// $no_proxy) environment variables.
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;DefaultTransport&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;RoundTripper&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Transport&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;Proxy&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;ProxyFromEnvironment&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;DialContext&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;defaultTransportDialContext&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;net&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Dialer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-		&lt;span class=&#34;nx&#34;&gt;Timeout&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;   &lt;span class=&#34;mi&#34;&gt;30&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;time&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Second&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-		&lt;span class=&#34;nx&#34;&gt;KeepAlive&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;30&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;time&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Second&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-	&lt;span class=&#34;p&#34;&gt;}),&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;ForceAttemptHTTP2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;     &lt;span class=&#34;kc&#34;&gt;true&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;MaxIdleConns&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;          &lt;span class=&#34;mi&#34;&gt;100&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;IdleConnTimeout&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;       &lt;span class=&#34;mi&#34;&gt;90&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;time&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Second&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;TLSHandshakeTimeout&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;   &lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;time&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Second&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;ExpectContinueTimeout&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;time&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Second&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;生产环境中，使用tcp连接资源都是需要根据调用 资源服务放的系统负载吞吐能力来配置的。也是需要配置化。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;如果在没有读取的情况下也没有关闭Body，会发生协程泄露，同时tcp连接也不会复用,本质上是连接资源未释放至连接池中，存在连接泄露。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;还需要记住的重要事情是，如开发文档net/http中提到的，当关闭 Response Body时，是否复用连接，这取决于是否从中读取完body中的值：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;如果在没有读取的情况下关闭Body，虽然不会发生协程泄露，但是默认的 HTTP 传输可能会关闭连接。&lt;/li&gt;
-&lt;li&gt;如果在读取后关闭Body，默认的 HTTP 传输不会关闭连接；因此，它可以重复使用。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;所以不管如何，最好的方式是都应该关闭Response Body,  尽管Body没有数据，或者已经读取完了，都应该关闭。&lt;/p&gt;
-&lt;p&gt;tips: 是否连接复用的判定，可以通过tcpdump 或者 wireshark 来抓包，通过是否使用同一个连接四元组来确定是否复用了同一连接。可以使用类似如下命令：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;tcpdump -i utun2 -tnn dst host www.baidu.com //per host pool
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;case2-sqlrows&#34;&gt;case2 sql.Rows&lt;/h4&gt;
-&lt;p&gt;&lt;code&gt;sql.Rows&lt;/code&gt;是用作 SQL 查询结果的结构。因为这个结构实现了&lt;code&gt;io.Closer&lt;/code&gt;，所以它必须被关闭。忘记关闭行意味着连接泄漏，这会阻止数据库连接被放回连接池。&lt;/p&gt;
-&lt;h4 id=&#34;case3-osfile&#34;&gt;case3 os.File&lt;/h4&gt;
-&lt;p&gt;如果最终没有关闭一个&lt;code&gt;os.File&lt;/code&gt;，它本身不会导致泄漏：文件将在&lt;code&gt;os.File&lt;/code&gt;垃圾收集时自动关闭。但是，最好&lt;code&gt;Close&lt;/code&gt;显式调用，因为不知道下一次 GC 何时会被触发（除非手动运行它）。&lt;/p&gt;
-&lt;p&gt;总结本节，已经看到关闭临时资源从而避免泄漏的重要性。临时资源必须在正确的时间和特定情况下关闭。事先并不总是清楚什么必须关闭。只能通过仔细阅读 API 文档和/或通过经验来获取这些信息。但是应该记住，如果一个结构实现了&lt;code&gt;io.Closer&lt;/code&gt;接口，最终必须调用&lt;code&gt;Close&lt;/code&gt;方法。最后但并非最不重要的一点是，了解如果闭包失败该怎么办非常重要：是否足以记录一条消息，或者是否也应该传播它？适当的操作取决于具体错误err是否需要处理。&lt;/p&gt;
-&lt;h3 id=&#34;80在回复-http-请求后忘记返回语句-凑数&#34;&gt;80.在回复 HTTP 请求后忘记返回语句 （凑数）&lt;/h3&gt;
-&lt;p&gt;如果有适当的覆盖率，这样的问题可以而且应该在测试期间被发现。这个属于err≠nil, 需要check遇到错误不为nil，是否直接return返回。这总低级错误，可以交给测试用例来覆盖到。&lt;/p&gt;
-&lt;h3 id=&#34;81使用默认的-http-客户端和服务器-工程规范&#34;&gt;81.使用默认的 HTTP 客户端和服务器 (工程规范)&lt;/h3&gt;
-&lt;p&gt;在讨论http包的时候提到, 如果不初始化http.Client，Client结构中的RoundTripper会默认使用DefaultTransport, 而DefaultTransport 只能用于开发测试时使用；对于生产环境， 需要更具依赖的资源服务进行配置，保证其配置过大的连接数而超出资源服务的负载能力，以及在网络不稳定情况下，连接超时，读写超时的设定，以便是否重试，这样不会一直hang住连接不释放，并发场景下，会导致服务负载增加， 连接过多导致服务拒绝。所以对于网络tcp请求，都需要根据具体的生产情况进行合理配置，而且是可配置化， 或者引入配置中心动态下发配置。对于服务端的tcp连接配置也是如此，也需要配置读写超时时间，进行可配置化管理。&lt;/p&gt;
-&lt;h2 id=&#34;概括&#34;&gt;概括&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;对接受&lt;code&gt;time.Duration&lt;/code&gt;. 即使允许传递整数，也要尽量使用时间 API 来防止任何可能的混淆。&lt;/li&gt;
-&lt;li&gt;避免调用&lt;code&gt;time.After&lt;/code&gt;重复函数（例如循环或 HTTP 处理程序）可以避免峰值内存消耗。由创建的资源&lt;code&gt;time.After&lt;/code&gt;只有在定时器到期时才会被释放。&lt;/li&gt;
-&lt;li&gt;在 Go 结构中使用嵌入式字段时要小心。这样做可能会导致偷偷摸摸的错误，例如&lt;code&gt;time.Time&lt;/code&gt;实现&lt;code&gt;json .Marshaler&lt;/code&gt;接口的嵌入式字段，从而覆盖默认的封送处理行为。&lt;/li&gt;
-&lt;li&gt;比较两个&lt;code&gt;time.Time&lt;/code&gt;结构时，回想一下它&lt;code&gt;time.Time&lt;/code&gt;同时包含一个挂钟和一个单调时钟，并且使用运算符的比较&lt;code&gt;==&lt;/code&gt;是在两个时钟上完成的。&lt;/li&gt;
-&lt;li&gt;为避免在解组 JSON 数据时提供地图时出现错误假设，请记住&lt;code&gt;float64&lt;/code&gt;默认情况下会将数字转换为。&lt;/li&gt;
-&lt;li&gt;如果需要测试配置并确保数据库可访问，请调用&lt;code&gt;Ping&lt;/code&gt;or方法。&lt;code&gt;PingContext&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;配置生产级应用程序的数据库连接参数。&lt;/li&gt;
-&lt;li&gt;使用 SQL 预处理语句可以使查询更高效、更安全。&lt;/li&gt;
-&lt;li&gt;使用指针或类型处理表中可为空的列&lt;code&gt;sql.NullXXX&lt;/code&gt;。&lt;/li&gt;
-&lt;li&gt;调用行后迭代&lt;code&gt;Err&lt;/code&gt;的方法&lt;code&gt;sql.Rows&lt;/code&gt;以确保您在准备下一行时没有遗漏任何错误。&lt;/li&gt;
-&lt;li&gt;最终关闭所有实现的结构&lt;code&gt;io.Closer&lt;/code&gt;以避免可能的泄漏。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;return&lt;/code&gt;为避免 HTTP 处理程序实现中的意外行为，如果您希望处理程序在 之后停止，请确保您没有错过该语句&lt;code&gt;http.Error&lt;/code&gt;。&lt;/li&gt;
-&lt;li&gt;对于生产级应用程序，不要使用默认的 HTTP 客户端和服务器实现。这些实现缺少在生产中应该强制执行的超时和行为。&lt;/li&gt;
-&lt;/ul&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>Go tips-笔记: 并发实践 61-74 mistakes</title>
-      <link>https://weedge.github.io/post/notions/go-tips/go-tips-09-concurrency-practice/</link>
-      <pubDate>Sat, 18 Feb 2023 14:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/notions/go-tips/go-tips-09-concurrency-practice/</guid>
-      
-        <description>&lt;h2 id=&#34;引言&#34;&gt;引言&lt;/h2&gt;
-&lt;p&gt;这里主要介绍并发实践中遇到的问题，这些问题在golang开源项目中也经常会出现，如果编写并发也会一直伴随在开发当中出现，也有工程实践相关的论文进行统计归纳总结(PS: 用这种方式发个论文还是比较轻松的~)：&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://songlh.github.io/paper/go-study.pdf&#34;&gt;Understanding Real-World Concurrency Bugs in Go&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;tips: 作者对golang和rust都有研究，结合相关的代码都可以一起学习下, 语言方面的小细节&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://arxiv.org/pdf/2204.00764.pdf&#34;&gt;&lt;strong&gt;A Study of Real-World Data Races in Golang&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Go 官方提供race工具来检查并发场景下的数据竞争问题： &lt;a href=&#34;https://go.dev/doc/articles/race_detector&#34;&gt;https://go.dev/doc/articles/race_detector&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/google/sanitizers/wiki/ThreadSanitizerGoManual&#34;&gt;https://github.com/google/sanitizers/wiki/ThreadSanitizerGoManual&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;注：Go要使用-race，需启用CGO，依赖sanitizers；一般用于开发测试进行检测&lt;/p&gt;
-&lt;p&gt;如果想更加深入的了解并发并行，可以一起学习这本书： &lt;a href=&#34;https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/perfbook/perfbook.html&#34;&gt;&lt;strong&gt;Is Parallel Programming Hard, And, If So, What Can You Do About It?&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;笔记&#34;&gt;笔记&lt;/h2&gt;
-&lt;h3 id=&#34;61传播不适当的context&#34;&gt;61.传播不适当的context&lt;/h3&gt;
-&lt;p&gt;传播context应该谨慎进行。比如文中中通过一个基于与 http.Request关联的context处理异步操作的示例来说明这一点。因为一旦服务接口返回响应，这次请求会话的context就会被cancel，使用 http.Request关联的context的异步操作也可能会意外停止(请求已经结束，但是异步操作还没有执行完)。遇到这种情况，可以为特殊情况创建实现context.Context接口的自定义context结构，这个结构将原来的ctx context.Context作为成员wrap一层，实现主要的传递功能Value方法, 这样在服务的请求回话结束之后，异步操作可以继续执行完成。&lt;/p&gt;
-&lt;p&gt;tips：生产环境下，请求接口下的异步操作，必须避免因goroutine协程处理hang住，导致泄露，一般引入执行超时机制。&lt;/p&gt;
-&lt;h3 id=&#34;62在不知道何时停止的情况下启动-goroutine-重要&#34;&gt;62.在不知道何时停止的情况下启动 goroutine (重要)&lt;/h3&gt;
-&lt;p&gt;Goroutines 启动起来既简单又便宜——如此简单和便宜，以至于不考虑停止一个新的 goroutine，这可能会导致泄漏。不知道何时停止 goroutine 是一个设计问题，也是 Go 中常见的并发错误。了解原因以及如何预防它。&lt;/p&gt;
-&lt;p&gt;首先，量化一下 goroutine 泄漏的含义。在内存方面，一个 goroutine 以 2 KB 的最小堆栈大小开始，它可以根据需要增长和收缩（最大堆栈大小在 64 位上为 1 GB，在 32 位上为 250 MB）。在内存方面，goroutine 还可以保存分配给堆的变量引用。同时，goroutine 可以保存 HTTP 或数据库连接、打开的文件和网络套接字等资源，这些资源最终应该正常关闭。如果一个 goroutine 被泄露，那么这些资源也会被泄露。&lt;/p&gt;
-&lt;p&gt;goroutine 是一种资源，就像任何其他资源一样，最终必须关闭以释放内存或其他资源(通常通过cancel 信号量，ctx.Done方式让这些goroutine任务退出释放资源)。在不知道何时停止的情况下启动 goroutine 是一个设计问题。每当一个 goroutine 启动时，应该对它何时停止有一个明确的计划。如果一个 goroutine 创建资源并且它的生命周期与应用程序的生命周期绑定，那么在退出应用程序之前，等待这个 goroutine 完成可能更安全。这样可以确保资源可以被释放。&lt;/p&gt;
-&lt;h3 id=&#34;63不注意-goroutines-和循环变量-重要&#34;&gt;63.不注意 goroutines 和循环变量 (重要)&lt;/h3&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;_&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;i&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;range&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;s&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;      
-    &lt;span class=&#34;k&#34;&gt;go&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-        &lt;span class=&#34;nx&#34;&gt;fmt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;i&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-    &lt;span class=&#34;p&#34;&gt;}()&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这个是Go新手经常会遇到问题，也是老生常谈的问题了，如果希望每个闭包都访问goroutine创建时的值，有什么解决方案？有两种方法: 每次迭代中，创建一个局部新变量i，并将i复制给新i；另外一种方法是不再依赖闭包，而是使用实际函数进行传参值拷贝，本质上一样。&lt;/p&gt;
-&lt;h3 id=&#34;64使用-select-和-channels-期待确定性行为-重要&#34;&gt;64.使用 select 和 channels 期待确定性行为 （重要）&lt;/h3&gt;
-&lt;p&gt;这里主要了解select语义的工作原理，可以从官方文档中进行了解：https://go.dev/ref/spec#Select_statements&lt;/p&gt;
-&lt;p&gt;如果一个或多个通信可以继续进行，则通过统一的伪随机选择一个可以继续进行的通信。否则，如果存在默认情况，则选择该情况。如果没有默认情况，则“select”语句将阻塞，直到至少有一个通信可以继续进行。&lt;/p&gt;
-&lt;p&gt;tips: 当使用无缓冲channel时，写入不想阻塞，使用select + case 写chan + default的方式来处理时非常好的办法，可以避免死锁的情况，比如 &lt;code&gt;fatal error: all goroutines are asleep - deadlock!&lt;/code&gt;这个错误经常会遇到，这个是全部在执行的goroutine都进入了等待状态，Go 语言死锁检测会发现当前的 Goroutine 已经不可能被唤醒，就会直接报错退出；常见于 一组协程处理数据其中一个协程进入一直等待状态，调用sync.WaitGroup Wait方法(底层通过信号量值机制semacquire1)等待协程执行完成，这样出现相互等待，导致deadlock。&lt;/p&gt;
-&lt;h3 id=&#34;65不使用通知channel&#34;&gt;65.不使用通知channel&lt;/h3&gt;
-&lt;p&gt;无数据channel应该用 &lt;code&gt;chan struct{}&lt;/code&gt; 作为通知channel， struct{}{}不占内存空间。&lt;/p&gt;
-&lt;h3 id=&#34;66不使用nil--channel&#34;&gt;66.不使用nil  channel&lt;/h3&gt;
-&lt;p&gt;接受或发送到 nil 通道是一种阻塞行为，而且这种行为并非无用。正如文中合并两个通道的示例中看到的那样，即使close 通道， 接受方还是可以读取数据，通过返回的第二个参数判断是否关闭，关闭了将通道设置为nil，这样利用select不会选择阻塞的nil通道，可以使用 nil 通道来实现一个优雅的状态机，所以 nil 通道在某些情况下很有用，并且在处理并发代码时应该成为 Go 开发人员工具集的一部分。&lt;/p&gt;
-&lt;h3 id=&#34;67对channel大小感到困惑&#34;&gt;67.对channel大小感到困惑&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;无缓冲通道支持同步。可以保证两个 goroutine 将处于已知状态：一个接收消息，另一个发送消息。&lt;/li&gt;
-&lt;li&gt;缓冲通道不提供任何强同步。实际上，生产者 goroutine 可以发送一条消息，然后在通道未满时继续执行。唯一的保证是 goroutine 在消息发送之前不会收到消息。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;必须牢记这一基本区别。两种通道类型都支持通信，但只有一种提供同步。如果需要同步，必须使用无缓冲通道，无缓冲通道也可能更容易推理；缓冲通道可能导致模糊的死锁，这在无缓冲通道中会立即显现出来。在通知channel的情况下，通知是通过关闭channel ( &lt;code&gt;close(ch)&lt;/code&gt;) 处理的，使用缓冲通道不会带来任何好处，close channel后，还可以继续从channel中读取数据。&lt;/p&gt;
-&lt;p&gt;使用缓冲通道的情况：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;在使用类似工作池的模式下，创建的goroutine轮训从共享通道获取数据执行；可以将缓冲通道大小与创建的 goroutines 数量联系起来。&lt;/li&gt;
-&lt;li&gt;当使用通道来解决速率限制问题时。如果需要通过限制请求数量来强制资源利用，应该根据限制设置缓冲通道大小。例如，errorgroup 中的 sem chan struct{}(token) 就是用来设置最大执行的goroutine数目。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;决定一个准确缓冲通道大小不是一个容易的问题。首先，它是 CPU 和内存之间的平衡。值越小，可以面对的 CPU 争用越多；但是这个值越大，需要分配的内存就越多；需要基于场景下，基准压测来衡量。&lt;/p&gt;
-&lt;h3 id=&#34;68忘记字符串格式化可能产生的副作用&#34;&gt;68.忘记字符串格式化可能产生的副作用&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;数据竞争(data race), 文中举了一个etcd 例子中 一个goroutine通过&lt;code&gt;fmt.Sprintf(&amp;quot;%v&amp;quot;, ctx)&lt;/code&gt; 格式化成key, 对key进行watch操作， 通过ctx中的String方法读取ctx中的元数据进行格式化；另一个goroutine 通过context.WithValue 写入，这样产生了data race。修复 ( &lt;a href=&#34;https://github.com/etcd-io/etcd/pull/7816&#34;&gt;https://github.com/etcd-io/etcd/pull/7816&lt;/a&gt; ) pr中, 直接实现wrap一层自定义ctx，不依赖通过context.WithValue写入改变值的ctx；&lt;/li&gt;
-&lt;li&gt;死锁(deadlock)，如果一个结构体的格式化String函数中使用了互斥锁，则对结构体对象格式化时，要考虑对应互斥锁的范围，如果上锁范围包括了格式化代码，则会重复上锁，导致相互等待，进而出现deadlock；&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;69使用append操作产生数据竞争-重要&#34;&gt;69.使用append操作产生数据竞争 (重要)&lt;/h3&gt;
-&lt;p&gt;发生数据竞争(data race)的情况是多个并发goroutines至少有一个写操作发生在一个共享空间中；对于slice切片结构，append在扩容的时候是否重新分配了内存空间，如果发生扩容则在在切片副本上使用，而不是原始切片，这样就不会发生数据竞争；更合理情况是直接在goroutine中进行copy一份切片副本进行append操作。&lt;/p&gt;
-&lt;p&gt;多个goroutines 并发访问 slice和map时，发生数据竞争的情况：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;使用至少一个更新值的 goroutine 访问同一个切片索引是一种数据竞争；goroutines 访问相同的内存位置。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;无论操作如何访问不同的切片索引都不是数据竞争；不同的索引意味着不同的内存位置。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;使用至少一个goroutine更新访问同一个map（不管它是相同的还是不同的key）是一种数据竞争。为什么这与切片数据结构不同？map底层结构是个桶数组，每个桶都是一个指向键值对数组的指针；哈希算法用于确定桶的数组索引。因为该算法在map初始化期间包含一些随机性，所以一次执行可能导致相同的数组索引(相同bucket)，而另一次执行可能不会。竞争检测器通过发出警告来处理这种情况，而不管实际的数据竞争是否发生。&lt;/p&gt;
-&lt;p&gt;tips: 与slice不同，go在map实现中内置了对并发读写的检测，即便不加入-race，一旦发现存在数据竞争(至少有一个写操作)直接fatal error。&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;70对slice和map使用mutex不准确-重要&#34;&gt;70.对slice和map使用mutex不准确 （重要）&lt;/h3&gt;
-&lt;p&gt;在数据既可变又共享的并发上下文中工作时，通常使用mutex对操作数据的临界区域进行同步互斥访问；&lt;/p&gt;
-&lt;p&gt;具体map的内部结构在https://github.com/golang/go/blob/go1.20/src/runtime/map.go hmap查看源码(通过测试用例代码了解)；map是一个&lt;code&gt;runtime.hmap&lt;/code&gt;主要包含元数据（counter,flags,B等）以及2个指向数据桶(bucket)的指针的结构。所以对与map变量之间赋值操作&lt;code&gt;mp:=m&lt;/code&gt;不复制底层实际数据(buckets)。这个和slice切片的原理是一样，只不过需要注意append扩容情况，而map扩容的是底层buckets数据。&lt;/p&gt;
-&lt;p&gt;了解了slice和map的结构，对于mutex保护操作共享的slice或者map的临界区间很有帮助，对于map遍历操作进行互斥访问，如果遍历处理的时间长，考虑到性能问题，可以深拷贝一份出来进行耗时的计算操作；&lt;/p&gt;
-&lt;p&gt;在考虑使用mutex对slice或map进行互斥访问时，需要考虑好互斥的临界区域。&lt;/p&gt;
-&lt;h3 id=&#34;71滥用-syncwaitgroup--重要&#34;&gt;71.滥用 sync.WaitGroup  （重要）&lt;/h3&gt;
-&lt;p&gt;sync.WaitGroup是Go并发程序常用的用于等待一组goroutine退出的机制。通过Add和Done方法实现内部计数的调整。而Wait方法用于等待，直到内部计数器为0才会返回。文中提到的例子是比较经典的坑，在论文&lt;a href=&#34;https://arxiv.org/pdf/2204.00764.pdf&#34;&gt;&lt;strong&gt;A Study of Real-World Data Races in Golang&lt;/strong&gt;&lt;/a&gt;中也有提到&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;nx&#34;&gt;wg&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;sync&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;WaitGroup&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{}&lt;/span&gt;
-	&lt;span class=&#34;kd&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;v&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;uint64&lt;/span&gt;
-
-	&lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;i&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;i&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;i&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;++&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-		&lt;span class=&#34;k&#34;&gt;go&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-			&lt;span class=&#34;nx&#34;&gt;wg&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Add&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-			&lt;span class=&#34;nx&#34;&gt;atomic&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;AddUint64&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;v&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-			&lt;span class=&#34;nx&#34;&gt;wg&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Done&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
-		&lt;span class=&#34;p&#34;&gt;}()&lt;/span&gt;
-	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-
-	&lt;span class=&#34;nx&#34;&gt;wg&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Wait&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;fmt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Println&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;v&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在&lt;code&gt;sync.WaitGroup&lt;/code&gt;结构中拥有一个默认初始化为 0的计数器。可以使用&lt;code&gt;Add(int)&lt;/code&gt;方法递增此计数器，使用&lt;code&gt;Done()&lt;/code&gt;或使用Add负值来递减此计数器。如果想要等到计数器为0，则使用&lt;code&gt;Wait()&lt;/code&gt;阻塞等待并释放goroutine资源，这部分内容在 &lt;a href=&#34;https://weedge.github.io/post/notions/go-tips/go-tips-09-concurrency-practice/#64%E4%BD%BF%E7%94%A8-select-%E5%92%8C-channels-%E6%9C%9F%E5%BE%85%E7%A1%AE%E5%AE%9A%E6%80%A7%E8%A1%8C%E4%B8%BA-%E9%87%8D%E8%A6%81&#34;&gt;#64&lt;/a&gt; tips中也有提到，具体见源码客观分析：https://github.com/golang/go/blob/go1.20/src/sync/waitgroup.go (结合测试用例看疗效更好)&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/runtime/sema.go&#34;&gt;https://github.com/golang/go/blob/go1.20/src/runtime/sema.go&lt;/a&gt; (Semaphore实现，&lt;a href=&#34;https://swtch.com/semaphore.pdf&#34;&gt;类似Linux的futex机制&lt;/a&gt;)&lt;/p&gt;
-&lt;p&gt;了解了WaitGroup,  不难理解例子中的代码问题，将wg.Add(1)放在了goroutine执行的函数中，而没有像正确方法那样，将Add(1)放在goroutine创建启动之前，这样会导致对WaitGroup内部计数器形成了数据竞争，很可能因goroutine调度问题，Add(1)还未来的及调用，从而导致Wait提前返回，这组goroutine中还有在执行中的。&lt;/p&gt;
-&lt;p&gt;在 论文&lt;a href=&#34;https://arxiv.org/pdf/2204.00764.pdf&#34;&gt;A Study of Real-World Data Races in Golang&lt;/a&gt; 中 还提到一个问题，就是goroutine中有多个defer 操作，defer Done 操作首先执行了，导致其他defer操作可能还未执行，Wait就已经返回了，导致后面依赖defer操作中的结果,进行判断处理的逻辑会出错。&lt;/p&gt;
-&lt;p&gt;tips: 上一节tips中有提到cpu有使用&lt;em&gt;内存屏障(memory barrier)&lt;/em&gt;（也称为&lt;em&gt;内存栅栏(memory fence)&lt;/em&gt;）来确保顺序。Go 为实现内存屏障定义了语言层面的内存模型规范，这里在使用的&lt;code&gt;sync.WaitGroup&lt;/code&gt;，&lt;code&gt;wg.Add&lt;/code&gt; 和 &lt;code&gt;wg.Wait&lt;/code&gt;之间存在 happens-before 关系。&lt;/p&gt;
-&lt;p&gt;这个是Go开发人员常见错误。使用&lt;code&gt;sync.WaitGroup&lt;/code&gt;，&lt;code&gt;Add&lt;/code&gt;操作必须在父 goroutine 中启动 goroutine 之前完成，而&lt;code&gt;Done&lt;/code&gt;操作必须在 goroutine 内完成。&lt;/p&gt;
-&lt;h3 id=&#34;72忘记-synccond&#34;&gt;72.忘记 sync.Cond&lt;/h3&gt;
-&lt;p&gt;在同步原语&lt;code&gt;sync&lt;/code&gt;包中，&lt;code&gt;sync.Cond&lt;/code&gt;可能是最少使用和理解的。但是，它提供了无法通过channel实现的功能。实现类似pub/sub 的多通道广播机制，可以认为pub/sub机制是包括了单通道广播的，sync.Cond的内部实现，其结构中L Locker 用来互斥访问条件逻辑，如果条件不成立，则检测是否copy，copy则直接panic, 否则添加到通知列表中，进行等待；如果条件成立，则执行对应逻辑。唤醒方式分为两种：Signal() 唤醒等待队中的一个goroutine来执行判断； Broadcast 唤醒等待队列中的全部goroutine来执行对应判断逻辑；具体见源码客观分析：https://github.com/golang/go/blob/go1.20/src/sync/cond.go (结合测试用例看疗效更好)&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/golang/go/blob/go1.20/src/runtime/sema.go&#34;&gt;https://github.com/golang/go/blob/go1.20/src/runtime/sema.go&lt;/a&gt; (Semaphore实现，&lt;a href=&#34;https://swtch.com/semaphore.pdf&#34;&gt;类似Linux的futex机制&lt;/a&gt;)&lt;/p&gt;
-&lt;p&gt;对于Signal()方式，和使用 channel chan struct{} 非阻塞发送消息一样&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;nx&#34;&gt;ch&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;make&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;chan&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{})&lt;/span&gt;
-&lt;span class=&#34;k&#34;&gt;select&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-&lt;span class=&#34;k&#34;&gt;case&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;ch&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{}{}:&lt;/span&gt;
-&lt;span class=&#34;k&#34;&gt;default&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;73不使用errorgroup&#34;&gt;73.不使用errorgroup&lt;/h3&gt;
-&lt;p&gt;errorgroup这个包是google对go的一个扩展包：&lt;a href=&#34;https://pkg.go.dev/golang.org/x/sync/errgroup&#34;&gt;golang.org/x/sync/errgroup&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;tips: &lt;code&gt;golang.org/x&lt;/code&gt;是一个提供标准库扩展的库。为sync包扩展了一个包：errgroup&lt;/p&gt;
-&lt;p&gt;实现逻辑简单，主要是错误处理，如果其中有一个goroutine执行错误，则只记录第一次goroutine执行的错误，通过context告知了cancel状态，这个需要通过select+ctx.Done() 感知到；并且通知对应使用Wait()等待全部goroutine执行完成，并且返回记录的错误； 后面加入sem chan struct{}(token)，用来限制最大执行goroutine数，通过SetLimit来设置，并且提供了TryGo 非阻塞执行。&lt;/p&gt;
-&lt;p&gt;如果想加入goroutine的执行超时时间，也是可以做到，只需在使用errgroup前，使用cancelCtx就行，如下代码：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestErrGroupWithTimeout&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;ctx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;cancel&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;context&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;WithTimeout&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;context&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;TODO&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(),&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;5&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;time&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Second&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-	&lt;span class=&#34;k&#34;&gt;defer&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;cancel&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;group&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;ctx&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;errgroup&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;WithContext&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;ctx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-	&lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;i&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;i&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;i&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;++&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-		&lt;span class=&#34;nx&#34;&gt;index&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;i&lt;/span&gt;
-		&lt;span class=&#34;nx&#34;&gt;group&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Go&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;error&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-			&lt;span class=&#34;k&#34;&gt;select&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-			&lt;span class=&#34;k&#34;&gt;case&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;time&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;After&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;time&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Duration&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;index&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;time&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Second&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
-				&lt;span class=&#34;nx&#34;&gt;fmt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;finished:%d\\n&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;index&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-				&lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;nil&lt;/span&gt;
-			&lt;span class=&#34;k&#34;&gt;case&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;ctx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Done&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;():&lt;/span&gt;
-				&lt;span class=&#34;nx&#34;&gt;fmt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;canceled:%d\\n&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;index&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-				&lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;ctx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Err&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
-			&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-		&lt;span class=&#34;p&#34;&gt;})&lt;/span&gt;
-	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-	&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;err&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;group&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Wait&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;err&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;!=&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;nil&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-		&lt;span class=&#34;nx&#34;&gt;fmt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Println&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;err&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;当然如果想获取goroutine执行的全部错误则需要额外的错误数组来支持，Go中的函数返回错误必须为nil。&lt;/p&gt;
-&lt;h3 id=&#34;74复制同步类型-重要&#34;&gt;74.复制同步类型 （重要）&lt;/h3&gt;
-&lt;p&gt;sync包提供基本同步原语，例如 mutex, rwmutex, condition variable，waitgroup，pool，map等。对于所有这些结构体，有一个硬性规则要遵循：它们永远不应该被复制。以下是一个常见的错误：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;type&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Counter&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;mu&lt;/span&gt;       &lt;span class=&#34;nx&#34;&gt;sync&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Mutex&lt;/span&gt;
-	&lt;span class=&#34;c1&#34;&gt;// mu      *sync.Mutex
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;	&lt;span class=&#34;nx&#34;&gt;counters&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;map&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;string&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-
-&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;NewCounter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Counter&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-	&lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Counter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;counters&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;map&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;string&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{}}&lt;/span&gt;
-	&lt;span class=&#34;c1&#34;&gt;// return Counter{counters: map[string]int{}, mu: &amp;amp;sync.Mutex{}}
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-
-&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;c&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Counter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;Increment1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;name&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;string&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;c&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;mu&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Lock&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
-	&lt;span class=&#34;k&#34;&gt;defer&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;c&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;mu&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Unlock&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;c&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;counters&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;++&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;c&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Counter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;Increment2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;name&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;string&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-	&lt;span class=&#34;c1&#34;&gt;// Same code
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;main&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-	&lt;span class=&#34;nx&#34;&gt;counter&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;NewCounter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
-
-	&lt;span class=&#34;k&#34;&gt;go&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-		&lt;span class=&#34;nx&#34;&gt;counter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Increment1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;foo&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-	&lt;span class=&#34;p&#34;&gt;}()&lt;/span&gt;
-	&lt;span class=&#34;k&#34;&gt;go&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-		&lt;span class=&#34;nx&#34;&gt;counter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Increment1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;bar&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-	&lt;span class=&#34;p&#34;&gt;}()&lt;/span&gt;
-
-	&lt;span class=&#34;nx&#34;&gt;time&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Sleep&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;time&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Millisecond&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;结构体接受者采用值传递，如果两个协程同时使用counter, 会复制一份结构，也会复制互斥锁，导致上锁失败，并发场景运行时出现data race,  data race可以 -race 进行检测；&lt;/p&gt;
-&lt;p&gt;通过linter类型工具检查，比如静态编译检查vet，可以直接检查出来进行提示，&lt;code&gt;passes lock by value&lt;/code&gt; or &lt;code&gt;assignment copies lock value to&lt;/code&gt; ；一般IDE开发工具安装了静态检查工具就可以检查出来提示(如果不扫描里面的noCopy成员，则扫不出来错误进行提示)，最好的办法直接使用 go vet 在CI阶段检查，进而保证代码质量；&lt;/p&gt;
-&lt;p&gt;这个noCopy的检测是怎么做到的呢？只要是实现了Locker 接口的Lock()和Unlock()方法的结构体，或者结构体成员实现了Locker接口，则可以通过go vet功能，来检查代码中该对象是否有被copy；比如自定义的结构体包涵值传递成员noCopy，noCopy结构体实现了Locker接口，则通过go vet检查是否copy&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// noCopy may be added to structs which must not be copied
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// after the first use.
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;//
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// See **&amp;lt;https://golang.org/issues/8005#issuecomment-190753527**&amp;gt;
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// for details.
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;//
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// Note that it must not be embedded, due to the Lock and Unlock methods.
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;type&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;noCopy&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{}&lt;/span&gt;
-
-&lt;span class=&#34;c1&#34;&gt;// Lock is a no-op used by -copylocks checker from `go vet`.
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;noCopy&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;Lock&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;   &lt;span class=&#34;p&#34;&gt;{}&lt;/span&gt;
-&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;noCopy&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;Unlock&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{}&lt;/span&gt;
-&lt;span class=&#34;kd&#34;&gt;type&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;MyStruct&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-   &lt;span class=&#34;nx&#34;&gt;noValCopy&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;noCopy&lt;/span&gt;
-   &lt;span class=&#34;c1&#34;&gt;// Copy *noCopy
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;每当多个 goroutine 访问一个同步共享元素，必须确保它们都依赖于同一个实例。此规则适用于定义的所有同步类型。可以使用指针解决这个问题，结构传递者对象是指针，或者结构成员中的同步共享元素是指针类型。本质上是值传递和指针传递的问题。&lt;/p&gt;
-&lt;h2 id=&#34;概括&#34;&gt;概括&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;了解context何时可以取消在传播它时需要注意，避免取消导致未执行完：例如，HTTP 处理程序在发送响应后取消context。&lt;/li&gt;
-&lt;li&gt;避免泄漏意味着要注意，无论何时启动 goroutine，都应该有一个最终停止它的计划。&lt;/li&gt;
-&lt;li&gt;为了避免 goroutines 和循环变量的错误，创建局部变量或调用函数而不是闭包。&lt;/li&gt;
-&lt;li&gt;如果多个选项是可能的，那么理解&lt;code&gt;select&lt;/code&gt;多通道随机选择案例可以防止做出可能导致微妙的并发错误。&lt;/li&gt;
-&lt;li&gt;使用&lt;code&gt;chan struct{}&lt;/code&gt;类型发送通知。&lt;/li&gt;
-&lt;li&gt;使用 nil channel应该成为并发工具集的一部分，从select语句中移除操作channel 的 case。&lt;/li&gt;
-&lt;li&gt;考虑到问题，仔细决定要使用的正确channel类型。只有无缓冲通道才能提供强大的同步保证。&lt;/li&gt;
-&lt;li&gt;应该有充分的理由为缓冲通道指定通道大小。&lt;/li&gt;
-&lt;li&gt;意识到字符串格式可能会导致调用现有函数意味着要注意可能的死锁和其他数据竞争。&lt;/li&gt;
-&lt;li&gt;并发 append并不总是没有数据竞争；因此，不应在共享切片上同时使用它。&lt;/li&gt;
-&lt;li&gt;了解slice和map结构体，具体底层数据结构；对防止常见的数据竞争处理有所帮助。&lt;/li&gt;
-&lt;li&gt;要准确使用&lt;code&gt;sync.WaitGroup&lt;/code&gt;，&lt;code&gt;Add&lt;/code&gt;在启动 goroutine 之前调用该方法。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;sync.Cond&lt;/code&gt;可以使用 广播方式向多个 goroutines 发送重复的通知(唤醒)，也可以单播方式想一个goroutine发送通知(唤醒)。&lt;/li&gt;
-&lt;li&gt;可以同步一组 goroutines 并使用&lt;code&gt;errgroup&lt;/code&gt;包处理错误和context。&lt;/li&gt;
-&lt;li&gt;同步原语类型或者自定类型结构不应copy。&lt;/li&gt;
 &lt;/ul&gt;</description>
       
     </item>

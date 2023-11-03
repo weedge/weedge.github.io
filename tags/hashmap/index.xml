@@ -13,7 +13,7 @@
       <pubDate>Thu, 02 Nov 2023 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/post/gpu/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/</guid>
-      <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday//maximizing-performance-with-massively-parallel-hash-maps-on-gpus/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+      <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
 &lt;p&gt;数十年的计算机科学历史一直致力于设计有效存储和检索信息的解决方案。hashmap（或hashtable）是一种流行的信息存储数据结构，因为它们可以保证元素插入和检索的恒定时间。&lt;/p&gt;
 &lt;p&gt;然而，尽管hashmap很流行，但很少在 GPU 加速计算的背景下进行讨论。虽然 GPU 以其大量线程和计算能力而闻名，但其极高的内存带宽可以加速许多数据结构（例如hashmap）。&lt;/p&gt;
 &lt;p&gt;这篇文章将介绍哈hashmap的基础知识以及它们的内存访问模式如何使其非常适合 GPU 加速。我们将介绍&lt;a href=&#34;https://github.com/NVIDIA/cuCollections&#34;&gt;cuCollections&lt;/a&gt;，这是一个用于并发数据结构（包括hashmap）的新开源 CUDA C++ 库。&lt;/p&gt;

@@ -23,9 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="目的何在：
- 学习RAPIDS RAFT中的三种不同算法：IVF-Flat，IVF-PQ，CAGRA, 并且调用RAPIDS RAFT 向量搜索库的相关接口工程实践下； 学习借鉴RAPIDS RAFT 库在 Milvus、Redis 和 FAISS 中的集成； 将开源改吧改吧，结合业务场景，某种商业目的变成闭源，然后美其名曰自研，岂不“妙哉”;)  好，开始吧~
-在 2023 年的人工智能领域，向量搜索成为最热门的话题之一，因为它在大语言模型（LLM）和生成式人工智能中发挥了重要作用。语义向量搜索实现了一系列重要任务，如检测欺诈交易、向用户推荐产品、使用上下文信息增强全文搜索以及查找潜在安全风险的参与者。
+  <meta name="description" content="在 2023 年的人工智能领域，向量搜索成为最热门的话题之一，因为它在大语言模型（LLM）和生成式人工智能中发挥了重要作用。语义向量搜索实现了一系列重要任务，如检测欺诈交易、向用户推荐产品、使用上下文信息增强全文搜索以及查找潜在安全风险的参与者。
 数据量持续飙升，传统的逐一比较的方法在计算上变得不可行。向量搜索方法使用近似查找，这种查找更具可扩展性，可以更有效地处理大量数据。正如我们在这篇文章中所展示的，在 GPU 上加速向量搜索不仅提供了更快的搜索时间，而且索引构建时间也可以更快。
 本文内容如下：
  向量搜索简介及流行应用综述 在 GPU 上加速向量搜索的 RAFT 库综述 GPU 加速向量搜索索引与 CPU 上最新技术的性能比较  本系列的第二篇文章深入探讨了每一个 GPU 加速指数，并简要解释了算法的工作原理以及微调其行为的重要参数摘要。想要了解更多信息，请访问 加速向量搜索：微调 GPU 索引算法。
@@ -68,14 +66,7 @@
 
 
 <meta property="og:title" content="译：加速向量搜索：利用 GPU 索引的 RAPIDS RAFT" />
-<meta property="og:description" content="目的何在：
-
-学习RAPIDS RAFT中的三种不同算法：IVF-Flat，IVF-PQ，CAGRA, 并且调用RAPIDS RAFT 向量搜索库的相关接口工程实践下；
-学习借鉴RAPIDS RAFT 库在 Milvus、Redis 和 FAISS 中的集成；
-将开源改吧改吧，结合业务场景，某种商业目的变成闭源，然后美其名曰自研，岂不“妙哉”;)
-
-好，开始吧~
-在 2023 年的人工智能领域，向量搜索成为最热门的话题之一，因为它在大语言模型（LLM）和生成式人工智能中发挥了重要作用。语义向量搜索实现了一系列重要任务，如检测欺诈交易、向用户推荐产品、使用上下文信息增强全文搜索以及查找潜在安全风险的参与者。
+<meta property="og:description" content="在 2023 年的人工智能领域，向量搜索成为最热门的话题之一，因为它在大语言模型（LLM）和生成式人工智能中发挥了重要作用。语义向量搜索实现了一系列重要任务，如检测欺诈交易、向用户推荐产品、使用上下文信息增强全文搜索以及查找潜在安全风险的参与者。
 数据量持续飙升，传统的逐一比较的方法在计算上变得不可行。向量搜索方法使用近似查找，这种查找更具可扩展性，可以更有效地处理大量数据。正如我们在这篇文章中所展示的，在 GPU 上加速向量搜索不仅提供了更快的搜索时间，而且索引构建时间也可以更快。
 本文内容如下：
 
@@ -90,14 +81,7 @@ GPU 加速向量搜索索引与 CPU 上最新技术的性能比较
 <meta property="article:modified_time" content="2023-11-03T10:26:23+08:00" />
 
 <meta itemprop="name" content="译：加速向量搜索：利用 GPU 索引的 RAPIDS RAFT">
-<meta itemprop="description" content="目的何在：
-
-学习RAPIDS RAFT中的三种不同算法：IVF-Flat，IVF-PQ，CAGRA, 并且调用RAPIDS RAFT 向量搜索库的相关接口工程实践下；
-学习借鉴RAPIDS RAFT 库在 Milvus、Redis 和 FAISS 中的集成；
-将开源改吧改吧，结合业务场景，某种商业目的变成闭源，然后美其名曰自研，岂不“妙哉”;)
-
-好，开始吧~
-在 2023 年的人工智能领域，向量搜索成为最热门的话题之一，因为它在大语言模型（LLM）和生成式人工智能中发挥了重要作用。语义向量搜索实现了一系列重要任务，如检测欺诈交易、向用户推荐产品、使用上下文信息增强全文搜索以及查找潜在安全风险的参与者。
+<meta itemprop="description" content="在 2023 年的人工智能领域，向量搜索成为最热门的话题之一，因为它在大语言模型（LLM）和生成式人工智能中发挥了重要作用。语义向量搜索实现了一系列重要任务，如检测欺诈交易、向用户推荐产品、使用上下文信息增强全文搜索以及查找潜在安全风险的参与者。
 数据量持续飙升，传统的逐一比较的方法在计算上变得不可行。向量搜索方法使用近似查找，这种查找更具可扩展性，可以更有效地处理大量数据。正如我们在这篇文章中所展示的，在 GPU 上加速向量搜索不仅提供了更快的搜索时间，而且索引构建时间也可以更快。
 本文内容如下：
 
@@ -107,17 +91,10 @@ GPU 加速向量搜索索引与 CPU 上最新技术的性能比较
 
 本系列的第二篇文章深入探讨了每一个 GPU 加速指数，并简要解释了算法的工作原理以及微调其行为的重要参数摘要。想要了解更多信息，请访问 加速向量搜索：微调 GPU 索引算法。"><meta itemprop="datePublished" content="2023-11-03T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-11-03T10:26:23+08:00" />
-<meta itemprop="wordCount" content="3478">
+<meta itemprop="wordCount" content="3391">
 <meta itemprop="keywords" content="oneday,gpu,ann,similarity search,RAPIDS RAFT," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：加速向量搜索：利用 GPU 索引的 RAPIDS RAFT"/>
-<meta name="twitter:description" content="目的何在：
-
-学习RAPIDS RAFT中的三种不同算法：IVF-Flat，IVF-PQ，CAGRA, 并且调用RAPIDS RAFT 向量搜索库的相关接口工程实践下；
-学习借鉴RAPIDS RAFT 库在 Milvus、Redis 和 FAISS 中的集成；
-将开源改吧改吧，结合业务场景，某种商业目的变成闭源，然后美其名曰自研，岂不“妙哉”;)
-
-好，开始吧~
-在 2023 年的人工智能领域，向量搜索成为最热门的话题之一，因为它在大语言模型（LLM）和生成式人工智能中发挥了重要作用。语义向量搜索实现了一系列重要任务，如检测欺诈交易、向用户推荐产品、使用上下文信息增强全文搜索以及查找潜在安全风险的参与者。
+<meta name="twitter:description" content="在 2023 年的人工智能领域，向量搜索成为最热门的话题之一，因为它在大语言模型（LLM）和生成式人工智能中发挥了重要作用。语义向量搜索实现了一系列重要任务，如检测欺诈交易、向用户推荐产品、使用上下文信息增强全文搜索以及查找潜在安全风险的参与者。
 数据量持续飙升，传统的逐一比较的方法在计算上变得不可行。向量搜索方法使用近似查找，这种查找更具可扩展性，可以更有效地处理大量数据。正如我们在这篇文章中所展示的，在 GPU 上加速向量搜索不仅提供了更快的搜索时间，而且索引构建时间也可以更快。
 本文内容如下：
 
@@ -398,14 +375,7 @@ GPU 加速向量搜索索引与 CPU 上最新技术的性能比较
 
     
     <div class="post-content">
-      <p>目的何在：</p>
-<ol>
-<li>学习RAPIDS RAFT中的三种不同算法：<a href="https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_flat/">IVF-Flat</a>，<a href="https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_pq/">IVF-PQ</a>，<a href="https://docs.rapids.ai/api/raft/nightly/cpp_api/neighbors_cagra/">CAGRA</a>, 并且调用RAPIDS RAFT 向量搜索库的相关接口工程实践下；</li>
-<li>学习借鉴RAPIDS RAFT 库在 Milvus、Redis 和 FAISS 中的集成；</li>
-<li>将开源改吧改吧，结合业务场景，某种商业目的变成闭源，然后美其名曰自研，岂不“妙哉”;)</li>
-</ol>
-<p>好，开始吧~</p>
-<p>在 2023 年的人工智能领域，向量搜索成为最热门的话题之一，因为它在<a href="https://www.nvidia.cn/glossary/data-science/large-language-models/">大语言模型</a>（LLM）和<a href="https://www.nvidia.cn/glossary/data-science/generative-ai/">生成式人工智能</a>中发挥了重要作用。语义向量搜索实现了一系列重要任务，如检测欺诈交易、向用户推荐产品、使用上下文信息增强全文搜索以及查找潜在安全风险的参与者。</p>
+      <p>在 2023 年的人工智能领域，向量搜索成为最热门的话题之一，因为它在<a href="https://www.nvidia.cn/glossary/data-science/large-language-models/">大语言模型</a>（LLM）和<a href="https://www.nvidia.cn/glossary/data-science/generative-ai/">生成式人工智能</a>中发挥了重要作用。语义向量搜索实现了一系列重要任务，如检测欺诈交易、向用户推荐产品、使用上下文信息增强全文搜索以及查找潜在安全风险的参与者。</p>
 <p>数据量持续飙升，传统的逐一比较的方法在计算上变得不可行。向量搜索方法使用近似查找，这种查找更具可扩展性，可以更有效地处理大量数据。正如我们在这篇文章中所展示的，在 GPU 上加速向量搜索不仅提供了更快的搜索时间，而且索引构建时间也可以更快。</p>
 <p>本文内容如下：</p>
 <ul>
@@ -415,12 +385,12 @@ GPU 加速向量搜索索引与 CPU 上最新技术的性能比较
 </ul>
 <p>本系列的第二篇文章深入探讨了每一个 GPU 加速指数，并简要解释了算法的工作原理以及微调其行为的重要参数摘要。想要了解更多信息，请访问 <a href="https://developer.nvidia.cn/zh-cn/blog/accelerating-vector-search-fine-tuning-gpu-index-algorithms/">加速向量搜索：微调 GPU 索引算法</a>。</p>
 <h2 id="什么是向量搜索">什么是向量搜索？</h2>
-<p><img src="https://developer.nvidia.cn/zh-cn/blog/wp-content/uploads/2023/08/vector-search-list.png" alt="Diagram shows a list of vectors that may have been encoded from sources like images, documents, or videos and a query vector for which you would like to find the closest vectors from the list."></p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/1.png" alt="Diagram shows a list of vectors that may have been encoded from sources like images, documents, or videos and a query vector for which you would like to find the closest vectors from the list."></p>
 <p><em>图 1。向量搜索过程</em></p>
 <p>图 1 显示了向量搜索需要创建一个向量索引，并执行查找以在索引中找到一些最接近查询向量的向量。向量可以小到激光雷达点云中的三维点，也可以是文本文档、图像或视频中的较大嵌入向量。</p>
 <p>向量搜索是查询数据库以查找最相似向量的过程。这种相似性搜索是在可以表示任何类型对象的数字向量上进行的（图 2）。这些向量通常是从多媒体（如图像、视频和文本片段）或整个文档中创建的嵌入向量，这些文档经过深度学习模型将其语义特征编码为向量形式。</p>
 <p>嵌入向量通常具有比原始文档更小的对象（维度更低）的优势，同时保持尽可能多的源信息。因此，两个相似的文档通常具有相似的嵌入向量。</p>
-<p><img src="https://developer.nvidia.cn/zh-cn/blog/wp-content/uploads/2023/09/rapids-blog-images-vector-search-c.jpg" alt="Image of a 3D point cloud such as one created from LIDAR."></p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/2.jpg" alt="Image of a 3D point cloud such as one created from LIDAR."></p>
 <p><em>图 2:向量表示更高维度的数据点</em></p>
 <p>图 2 中的点是 3D 的，但它们可能是 500 维甚至更高。</p>
 <p>这使得比较对象更容易，因为嵌入向量更小，并且保留了大部分信息。当两个文档共享相似的特征时，它们的嵌入向量通常在空间上接近或相似。</p>
@@ -443,18 +413,17 @@ GPU 加速向量搜索索引与 CPU 上最新技术的性能比较
 <p>选择要使用的向量数据库取决于工作流的要求。</p>
 <p>检索增强语言模型允许通过使用已由 LLM 编码为向量并存储在向量数据库中的附加上下文来增强搜索，从而为特定产品、服务或其他领域特定用例定制预训练的模型。</p>
 <p>更具体地说，搜索被编码为向量形式，并且在向量数据库中找到相似的向量以增强搜索。然后将向量与 LLM 一起使用，以形成适当的响应。检索增强 LLM 是生成人工智能的一种形式，它们彻底改变了聊天机器人和语义文本搜索行业。</p>
-<p><img src="https://developer.nvidia.cn/zh-cn/blog/wp-content/uploads/2023/09/text-retrieval-application-workflow-CORRECTED.png" alt="Workflow diagram shows how vector search is often combined with LLMs to perform semantic search. "></p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/3.png" alt="Workflow diagram shows how vector search is often combined with LLMs to perform semantic search. "></p>
 <p><em>图 3。使用 RAPIDS RAFT 进行向量搜索的文本检索应用程序的示例工作流程</em></p>
 <h3 id="向量相似性搜索的其他应用">向量相似性搜索的其他应用</h3>
 <p>除了用于生成人工智能的检索增强 LLM 之外，嵌入向量已经存在了一段时间，并在现实世界中发现了许多有用的应用：</p>
 <ul>
-<li>**推荐系统：**根据用户的兴趣或互动行为，提供个性化建议。</li>
-<li>**财务：**欺诈检测模型将用户交易向量化，从而可以确定这些交易是否与典型的欺诈活动相似。</li>
-<li>**网络安全：**使用嵌入向量对不良行为者和异常活动的行为进行建模和搜索。</li>
-<li>**基因组学：**在基因组学分析中，我们可以发现相似的基因和细胞结构，如单细胞 RNA 分析。</li>
-<li>**化学：**对化学结构的分子描述符或指纹进行建模，以便比较它们或在数据库中找到类似的结构。</li>
+<li><strong>推荐系统</strong>：根据用户的兴趣或互动行为，提供个性化建议。</li>
+<li><strong>财务</strong>：欺诈检测模型将用户交易向量化，从而可以确定这些交易是否与典型的欺诈活动相似。</li>
+<li><strong>网络安全</strong>：使用嵌入向量对不良行为者和异常活动的行为进行建模和搜索。</li>
+<li><strong>基因组学</strong>：在基因组学分析中，我们可以发现相似的基因和细胞结构，如单细胞 RNA 分析。</li>
+<li><strong>化学</strong>：对化学结构的分子描述符或指纹进行建模，以便比较它们或在数据库中找到类似的结构。</li>
 </ul>
-<p>我们总是有兴趣了解您的用例，所以如果您已经使用向量搜索，或者想讨论它如何对您的应用程序有益，请不要犹豫，留下评论。</p>
 <h2 id="rapids-raft-向量搜索库">RAPIDS RAFT 向量搜索库</h2>
 <p>RAFT 是一个可组合构建块库，用于加速 GPU 上的机器学习算法，例如最近邻居和向量搜索中使用的算法。ANN 算法是构成向量搜索库的核心构建块之一。最重要的是，这些算法可以极大地受益于 GPU 加速。</p>
 <p>有关 RAFT 的核心 API 及其包含的各种加速构建块的更多信息，请参阅<a href="https://developer.nvidia.cn/zh-cn/blog/reusable-computational-patterns-for-machine-learning-and-data-analytics-with-rapids-raft/">RAPIDS RAFT 中的机器学习和数据分析的可复用计算模式</a>。</p>
@@ -473,17 +442,24 @@ GPU 加速向量搜索索引与 CPU 上最新技术的性能比较
 <p>GPU 擅长一次处理大量数据。当一次计算数千或数万个点的最近邻居时，刚才提到的所有算法都可以优于 CPU 上的相应算法。</p>
 <p>然而，CAGRA 是专门为在线搜索而设计的，这意味着即使一次只查询几个数据点的最近邻居，它的性能也优于 CPU 。</p>
 <p>图 4 和图 5 显示了我们通过在 100M 向量上构建索引并一次只查询 10 个向量来执行的基准测试。在图 4 中，CAGRA 在原始搜索性能方面优于 HNSW，HNSW 是 CPU 上最受欢迎的向量搜索索引之一，即使是 10 个向量的极小批量。然而，这种速度是以内存为代价的。在图 5 中，可以看到 CAGRA 的GPU内存占用比其他近邻方法略高。</p>
-<p><img src="https://developer.nvidia.cn/zh-cn/blog/wp-content/uploads/2023/09/vector-search-throughput-deep100m-b.png" alt="Bar chart compares throughput performance (queries per second) for RAFT’s GPU algorithms against HNSW on the CPU."></p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/4.png" alt="Bar chart compares throughput performance (queries per second) for RAFT’s GPU algorithms against HNSW on the CPU."></p>
 <p><em>图 4。DEEP-100M 数据集上 95%召回率的向量搜索吞吐量，批量大小为 10</em></p>
 <p>在图 5 中，IVF-PQ 的主机内存用于可选的细化步骤。</p>
-<p><img src="https://developer.nvidia.cn/zh-cn/blog/wp-content/uploads/2023/08/gpu-memory-usage.png" alt="Bar chart compares memory usage for RAFT’s GPU algorithms against HNSW on the CPU."><em>图 5。 GPU 内存使用情况</em></p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/5.png" alt="Bar chart compares memory usage for RAFT’s GPU algorithms against HNSW on the CPU."><em>图 5。 GPU 内存使用情况</em></p>
 <p>图 6 显示了索引构建时间的比较，并表明索引通常可以在 GPU 上更快地构建。</p>
-<p><img src="https://developer.nvidia.cn/zh-cn/blog/wp-content/uploads/2023/09/index-build-time-b.png" alt="Bar chart compares index build time for RAFT’s GPU algorithms against HNSW on the CPU."></p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/6.png" alt="Bar chart compares index build time for RAFT’s GPU algorithms against HNSW on the CPU."></p>
 <p><em>图 6。召回率为 95%时表现最好的索引的构建时间</em></p>
 <h2 id="总结">总结</h2>
 <p>从特征库到生成人工智能，向量相似性搜索可以应用于每个行业。 GPU 上的向量搜索以较低的延迟执行，并为在线和批量处理的每一级调用实现更高的吞吐量。</p>
-<p>RAFT 是一组可组合的构建块，可用于加速任何数据源中的向量搜索。它为 Python 和 C++预先构建了 API。Milvus、Redis 和 FAISS 的 RAFT 集成正在进行中。（注：相关PR见reference连接）</p>
+<p>RAFT 是一组可组合的构建块，可用于加速任何数据源中的向量搜索。它为 Python 和 C++预先构建了 API。Milvus、Redis 和 FAISS 的 RAFT 集成正在进行中。</p>
+<p>（<strong>注</strong>：相关PR见reference连接）</p>
 <p>除了最先进的 ANN 算法，RAFT 还包含了如矩阵和向量运算、迭代求解器和聚类算法等其他 GPU 加速构建块。在本系列的第二篇文章中，我们深入探讨了每种 GPU 加速索引方法，并简要解释了算法的工作原理，以及总结重要的微调参数。有关详细信息，请参阅 <a href="https://developer.nvidia.cn/zh-cn/blog/accelerating-vector-search-fine-tuning-gpu-index-algorithms/">加速向量搜索：微调 GPU 索引算法</a>。</p>
+<p><strong>目的</strong>：</p>
+<ol>
+<li>了解RAPIDS RAFT中的三种不同算法：<a href="https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_flat/">IVF-Flat</a>，<a href="https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_pq/">IVF-PQ</a>，<a href="https://docs.rapids.ai/api/raft/nightly/cpp_api/neighbors_cagra/">CAGRA</a>, 并且调用RAPIDS RAFT 向量搜索库的相关接口工程实践下；</li>
+<li>借鉴RAPIDS RAFT 库在 Milvus、Redis 和 FAISS 中的集成；</li>
+<li>将开源改吧改吧，结合业务场景，某种商业目的变成闭源，然后美其名曰自研，岂不“妙哉”;)</li>
+</ol>
 <h2 id="reference">Reference</h2>
 <ol>
 <li>
@@ -550,6 +526,19 @@ GPU 加速向量搜索索引与 CPU 上最新技术的性能比较
       
       <nav class="post-nav">
         
+          <a class="prev" href="/post/gpu/2.accelerating-vector-search-fine-tuning-gpu-index-algorithms/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">译：加速向量搜索：微调 GPU 索引算法</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
         
           <a class="next" href="/post/gpu/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/">
             <span class="next-text nav-default">译：利用 GPU 上的大规模并行hashmap最大限度地提高性能</span>

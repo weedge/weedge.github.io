@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="zh-cn" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>译：加速向量搜索：RAPIDS RAFT IVF-Flat 近似算法 - 时间飘过</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="weedge" />
+  <meta name="description" content="执行详尽的精确 k 最近邻 (kNN) 搜索，也称为暴力搜索(brute-force search)，成本高昂，并且它不能很好地扩展到更大的数据集。在向量搜索期间，暴力搜索需要计算每个查询向量和数据库向量之间的距离。对于常用的欧几里德和余弦距离，计算任务等同于大型矩阵乘法。
+虽然 GPU 在执行矩阵乘法方面效率很高，但随着数据量的增加，计算成本变得令人望而却步。然而，许多应用程序不需要精确的结果，而是可以为了更快的搜索而牺牲一些准确性。当不需要精确的结果时，近似最近邻 (ANN) 方法通常可以减少搜索期间必须执行的距离计算的数量。
+本文主要介绍了 IVF-Flat，这是 NVIDIA RAPIDS RAFT 中的一种方法。IVF-Flat 方法使用原始（即Flat）向量的倒排索引 (IVF)。此算法提供了简单的调整手段，以减少整体搜索空间并在准确性和速度之间进行权衡。
+为了帮助了解如何使用 IVF-Flat，我们讨论了该算法的工作原理，并演示了Python和C&#43;&#43; APIs我们介绍了索引构建的设置参数，并提供了如何配置 GPU 加速的 IVF-Flat搜索的技巧。这些步骤也可以在示例中遵循Python notebook和C&#43;&#43; project.最后，我们演示了 GPU 加速的向量搜索比 CPU 搜索快一个数量级。
+" />
+
+  <meta name="keywords" content="工作, 技术, 生活" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.91.0" />
+
+
+<link rel="canonical" href="https://weedge.github.io/post/gpu/3.accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css" integrity="sha256-&#43;ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
+
+<meta property="og:title" content="译：加速向量搜索：RAPIDS RAFT IVF-Flat 近似算法" />
+<meta property="og:description" content="
+执行详尽的精确 k 最近邻 (kNN) 搜索，也称为暴力搜索(brute-force search)，成本高昂，并且它不能很好地扩展到更大的数据集。在向量搜索期间，暴力搜索需要计算每个查询向量和数据库向量之间的距离。对于常用的欧几里德和余弦距离，计算任务等同于大型矩阵乘法。
+虽然 GPU 在执行矩阵乘法方面效率很高，但随着数据量的增加，计算成本变得令人望而却步。然而，许多应用程序不需要精确的结果，而是可以为了更快的搜索而牺牲一些准确性。当不需要精确的结果时，近似最近邻 (ANN) 方法通常可以减少搜索期间必须执行的距离计算的数量。
+本文主要介绍了 IVF-Flat，这是 NVIDIA RAPIDS RAFT 中的一种方法。IVF-Flat 方法使用原始（即Flat）向量的倒排索引 (IVF)。此算法提供了简单的调整手段，以减少整体搜索空间并在准确性和速度之间进行权衡。
+为了帮助了解如何使用 IVF-Flat，我们讨论了该算法的工作原理，并演示了Python和C&#43;&#43; APIs我们介绍了索引构建的设置参数，并提供了如何配置 GPU 加速的 IVF-Flat搜索的技巧。这些步骤也可以在示例中遵循Python notebook和C&#43;&#43; project.最后，我们演示了 GPU 加速的向量搜索比 CPU 搜索快一个数量级。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/gpu/3.accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-11-03T15:00:23+08:00" />
+<meta property="article:modified_time" content="2023-11-03T15:00:23+08:00" />
+
+<meta itemprop="name" content="译：加速向量搜索：RAPIDS RAFT IVF-Flat 近似算法">
+<meta itemprop="description" content="
+执行详尽的精确 k 最近邻 (kNN) 搜索，也称为暴力搜索(brute-force search)，成本高昂，并且它不能很好地扩展到更大的数据集。在向量搜索期间，暴力搜索需要计算每个查询向量和数据库向量之间的距离。对于常用的欧几里德和余弦距离，计算任务等同于大型矩阵乘法。
+虽然 GPU 在执行矩阵乘法方面效率很高，但随着数据量的增加，计算成本变得令人望而却步。然而，许多应用程序不需要精确的结果，而是可以为了更快的搜索而牺牲一些准确性。当不需要精确的结果时，近似最近邻 (ANN) 方法通常可以减少搜索期间必须执行的距离计算的数量。
+本文主要介绍了 IVF-Flat，这是 NVIDIA RAPIDS RAFT 中的一种方法。IVF-Flat 方法使用原始（即Flat）向量的倒排索引 (IVF)。此算法提供了简单的调整手段，以减少整体搜索空间并在准确性和速度之间进行权衡。
+为了帮助了解如何使用 IVF-Flat，我们讨论了该算法的工作原理，并演示了Python和C&#43;&#43; APIs我们介绍了索引构建的设置参数，并提供了如何配置 GPU 加速的 IVF-Flat搜索的技巧。这些步骤也可以在示例中遵循Python notebook和C&#43;&#43; project.最后，我们演示了 GPU 加速的向量搜索比 CPU 搜索快一个数量级。"><meta itemprop="datePublished" content="2023-11-03T15:00:23+08:00" />
+<meta itemprop="dateModified" content="2023-11-03T15:00:23+08:00" />
+<meta itemprop="wordCount" content="4620">
+<meta itemprop="keywords" content="oneday,gpu,ann,similarity search,RAPIDS RAFT," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="译：加速向量搜索：RAPIDS RAFT IVF-Flat 近似算法"/>
+<meta name="twitter:description" content="
+执行详尽的精确 k 最近邻 (kNN) 搜索，也称为暴力搜索(brute-force search)，成本高昂，并且它不能很好地扩展到更大的数据集。在向量搜索期间，暴力搜索需要计算每个查询向量和数据库向量之间的距离。对于常用的欧几里德和余弦距离，计算任务等同于大型矩阵乘法。
+虽然 GPU 在执行矩阵乘法方面效率很高，但随着数据量的增加，计算成本变得令人望而却步。然而，许多应用程序不需要精确的结果，而是可以为了更快的搜索而牺牲一些准确性。当不需要精确的结果时，近似最近邻 (ANN) 方法通常可以减少搜索期间必须执行的距离计算的数量。
+本文主要介绍了 IVF-Flat，这是 NVIDIA RAPIDS RAFT 中的一种方法。IVF-Flat 方法使用原始（即Flat）向量的倒排索引 (IVF)。此算法提供了简单的调整手段，以减少整体搜索空间并在准确性和速度之间进行权衡。
+为了帮助了解如何使用 IVF-Flat，我们讨论了该算法的工作原理，并演示了Python和C&#43;&#43; APIs我们介绍了索引构建的设置参数，并提供了如何配置 GPU 加速的 IVF-Flat搜索的技巧。这些步骤也可以在示例中遵循Python notebook和C&#43;&#43; project.最后，我们演示了 GPU 加速的向量搜索比 CPU 搜索快一个数量级。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">时间飘过</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      时间飘过
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">译：加速向量搜索：RAPIDS RAFT IVF-Flat 近似算法</h1>
+      
+      <div class="post-meta">
+        <time datetime="2023-11-03" class="post-time">
+          2023-11-03
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#ivf-flat-算法">IVF-Flat 算法</a>
+      <ul>
+        <li><a href="#ivf-含义">IVF 含义</a></li>
+      </ul>
+    </li>
+    <li><a href="#索引构建">索引构建</a></li>
+    <li><a href="#搜索">搜索</a>
+      <ul>
+        <li><a href="#粗略搜索">粗略搜索</a></li>
+        <li><a href="#精细搜索">精细搜索</a></li>
+      </ul>
+    </li>
+    <li><a href="#调整索引构建参数">调整索引构建参数</a>
+      <ul>
+        <li><a href="#簇数量">簇数量</a></li>
+        <li><a href="#使用自动数据子采样构建索引">使用自动数据子采样构建索引</a></li>
+        <li><a href="#使用用于聚类的特定训练数据构建索引">使用用于聚类的特定训练数据构建索引</a></li>
+        <li><a href="#向索引中添加新向量">向索引中添加新向量</a></li>
+      </ul>
+    </li>
+    <li><a href="#调整搜索参数">调整搜索参数</a>
+      <ul>
+        <li><a href="#gpu-资源">GPU 资源</a></li>
+        <li><a href="#探针数量">探针数量</a></li>
+      </ul>
+    </li>
+    <li><a href="#性能">性能</a></li>
+    <li><a href="#总结">总结</a></li>
+    <li><a href="#reference">Reference</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <p><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/1.png" alt="img"></p>
+<p>执行详尽的精确 k 最近邻 (kNN) 搜索，也称为<em>暴力搜索(brute-force search)</em>，成本高昂，并且它不能很好地扩展到更大的数据集。在向量搜索期间，暴力搜索需要计算每个查询向量和数据库向量之间的距离。对于常用的欧几里德和余弦距离，计算任务等同于大型矩阵乘法。</p>
+<p>虽然 GPU 在执行矩阵乘法方面效率很高，但随着数据量的增加，计算成本变得令人望而却步。然而，许多应用程序不需要精确的结果，而是可以为了更快的搜索而牺牲一些准确性。当不需要精确的结果时，近似最近邻 (ANN) 方法通常可以减少搜索期间必须执行的距离计算的数量。</p>
+<p>本文主要介绍了 IVF-Flat，这是 NVIDIA <a href="https://developer.nvidia.cn/zh-cn/blog/reusable-computational-patterns-for-machine-learning-and-data-analytics-with-rapids-raft/">RAPIDS RAFT</a> 中的一种方法。IVF-Flat 方法使用原始（即Flat）向量的倒排索引 (IVF)。此算法提供了简单的调整手段，以减少整体搜索空间并在准确性和速度之间进行权衡。</p>
+<p>为了帮助了解如何使用 IVF-Flat，我们讨论了该算法的工作原理，并演示了<a href="https://docs.rapids.ai/api/raft/stable/pylibraft_api/neighbors/#ivf-flat">Python</a>和<a href="https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_flat/">C++ APIs</a>我们介绍了索引构建的设置参数，并提供了如何配置 GPU 加速的 IVF-Flat搜索的技巧。这些步骤也可以在示例中遵循<a href="https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/notebooks/ivf_flat_example.ipynb">Python notebook</a>和<a href="https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/cpp/template/src/ivf_flat_example.cu">C++ project</a>.最后，我们演示了 GPU 加速的向量搜索比 CPU 搜索快一个数量级。</p>
+<h2 id="ivf-flat-算法">IVF-Flat 算法</h2>
+<p>IVF 方法通过将数据集向量分组为簇(cluster)并将搜索限制在每个查询的一些最近簇来加速向量搜索(图 1)。</p>
+<p>在 IVF-Flat 算法中，只搜索几个簇(而不是整个数据集)是实际的近似值。使用此近似值，可能会错过分配给未搜索的簇的一些近邻，但它极大地缩短了搜索时间。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/2.png" alt="Two diagrams show a) dataset points grouped into clusters and b) a subset of the clusters highlighted."><em>图 1.分为簇的数据集(左)，且搜索仅限于查询附近的簇(右)</em></p>
+<p>在搜索数据集之前，必须构建索引，这是一种存储高效搜索所需信息的结构。对于 IVF-Flat，索引存储簇的描述：其中心坐标和属于簇的向量列表。此列表是倒排列表，也称为倒排文件，这就是 IVF 的首字母缩写词。</p>
+<p>在讨论倒排文件后，我们将在以下部分演示如何构建索引并解释如何执行搜索。</p>
+<h3 id="ivf-含义">IVF 含义</h3>
+<p>为完整起见，以下是一些历史语境。倒排<em>文件</em>(或倒排索引)来自信息检索字段。</p>
+<p>以几个简单的文本文档为例。如果要搜索包含给定单词的文档，<a href="https://en.wikipedia.org/wiki/Search_engine_indexing#The_forward_index"> forward index</a>会存储每个文档的单词列表。必须明确阅读每个文档才能找到相关的文档。</p>
+<p>相比之下，<a href="https://en.wikipedia.org/wiki/Inverted_index">倒排索引</a>包含了可以搜索的所有单词的字典，并且对于每个单词，都有一个该单词所在的文档索引列表。这就是所谓的倒排列表（倒排文件），可以将搜索限制在选定的列表中。</p>
+<p>如今，文本数据通常表示为向量嵌入(embedding)。IVF-Flat 方法定义了簇中心，这些中心类似于前面示例中的词典。对于每个簇中心，都有属于该簇的向量索引列表，并且搜索速度加快，因为只需检查选定的簇。</p>
+<h2 id="索引构建">索引构建</h2>
+<p>索引构建主要是对数据集进行聚类运算。ivf_flat可以使用以下代码示例在 Python 中创建索引：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">pylibraft.neighbors</span> <span class="kn">import</span> <span class="n">ivf_flat</span>
+ 
+<span class="n">build_params</span> <span class="o">=</span> <span class="n">ivf_flat</span><span class="o">.</span><span class="n">IndexParams</span><span class="p">(</span>
+        <span class="n">n_lists</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+        <span class="n">metric</span><span class="o">=</span><span class="s2">&#34;sqeuclidean&#34;</span>
+    <span class="p">)</span>
+ 
+<span class="n">index</span> <span class="o">=</span> <span class="n">ivf_flat</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">build_params</span><span class="p">,</span> <span class="n">dataset</span><span class="p">)</span>
+</code></pre></div><p>在 C++中，有以下语法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;raft/neighbors/ivf_flat.cuh&gt; </span><span class="cp">
+</span><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">raft</span><span class="o">::</span><span class="n">neighbors</span><span class="p">;</span>
+<span class="n">raft</span><span class="o">::</span><span class="n">device_resources</span> <span class="n">dev_resources</span><span class="p">;</span>
+ 
+<span class="n">ivf_flat</span><span class="o">::</span><span class="n">index_params</span> <span class="n">index_params</span><span class="p">;</span>
+<span class="n">index_params</span><span class="p">.</span><span class="n">n_lists</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">;</span>
+<span class="n">index_params</span><span class="p">.</span><span class="n">metric</span> <span class="o">=</span> <span class="n">raft</span><span class="o">::</span><span class="n">distance</span><span class="o">::</span><span class="n">DistanceType</span><span class="o">::</span><span class="n">L2Expanded</span><span class="p">;</span>
+ 
+<span class="k">auto</span> <span class="n">index</span> <span class="o">=</span> <span class="n">ivf_flat</span><span class="o">::</span><span class="n">build</span><span class="p">(</span><span class="n">dev_resources</span><span class="p">,</span> <span class="n">index_params</span><span class="p">,</span>
+<span class="n">raft</span><span class="o">::</span><span class="n">make_const_mdspan</span><span class="p">(</span><span class="n">dataset</span><span class="p">.</span><span class="n">view</span><span class="p">()));</span>
+</code></pre></div><p>创建索引的最重要超参数是n_lists其中会指明要使用的簇数量。还可以指定距离计算指标。</p>
+<h2 id="搜索">搜索</h2>
+<p>构建索引后，搜索很简单。在 Python 中，以下调用返回两个数组：相邻数组的索引及其与查询向量的距离：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">distances</span><span class="p">,</span> <span class="n">indices</span> <span class="o">=</span> <span class="n">ivf_flat</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">ivf_flat</span><span class="o">.</span><span class="n">SearchParams</span><span class="p">(</span><span class="n">n_probes</span><span class="o">=</span><span class="mi">50</span><span class="p">),</span> <span class="n">index</span><span class="p">,</span> <span class="n">queries</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</code></pre></div><p>C++中的等效调用需要预先分配输出数组：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="kt">int</span> <span class="n">topk</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+<span class="k">auto</span> <span class="n">neighbors</span> <span class="o">=</span> <span class="n">raft</span><span class="o">::</span><span class="n">make_device_matrix</span><span class="o">&lt;</span><span class="kt">int64_t</span><span class="p">,</span> <span class="kt">int64_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">dev_resources</span><span class="p">,</span> <span class="n">n_queries</span><span class="p">,</span> <span class="n">topk</span><span class="p">);</span>
+<span class="k">auto</span> <span class="n">distances</span> <span class="o">=</span> <span class="n">raft</span><span class="o">::</span><span class="n">make_device_matrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">,</span> <span class="kt">int64_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">dev_resources</span><span class="p">,</span> <span class="n">n_queries</span><span class="p">,</span> <span class="n">topk</span><span class="p">);</span>
+ 
+<span class="n">ivf_flat</span><span class="o">::</span><span class="n">search_params</span> <span class="n">search_params</span><span class="p">;</span>
+<span class="n">search_params</span><span class="p">.</span><span class="n">n_probes</span> <span class="o">=</span> <span class="mi">50</span><span class="p">;</span>
+ 
+<span class="n">ivf_flat</span><span class="o">::</span><span class="n">search</span><span class="p">(</span><span class="n">dev_resources</span><span class="p">,</span>
+                <span class="n">search_params</span><span class="p">,</span>
+                <span class="n">index</span><span class="p">,</span>
+                <span class="n">raft</span><span class="o">::</span><span class="n">make_const_mdspan</span><span class="p">(</span><span class="n">queries</span><span class="p">.</span><span class="n">view</span><span class="p">()),</span>
+                <span class="n">neighbors</span><span class="p">.</span><span class="n">view</span><span class="p">(),</span>
+                <span class="n">distances</span><span class="p">.</span><span class="n">view</span><span class="p">());</span>
+</code></pre></div><p>在这里，可以搜索k=10每个查询的近邻。参数 n_probes 会告知每个查询要搜索(或探测)的簇数量，并确定搜索的准确性。</p>
+<p>仅通过测试 n_probes 对于每个查询的簇，可以省略分配给簇的一些近邻，簇的中心距离查询点更远。搜索质量通常以*召回率，*这是实际最近 k 近邻在所有返回近邻中的百分比。</p>
+<p>在内部，搜索分两个步骤执行(图 2)：</p>
+<ol>
+<li>粗略搜索选择 n_probes 每个查询的附近簇。</li>
+<li>精细搜索将查询向量与选定簇中的所有数据集向量进行比较。</li>
+</ol>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/3.png" alt="Diagram of clusters represented by their centers with the clusters highlighted that are closest to the queries. Selected clusters shown with the individual points within these clusters."></p>
+<p><em>图 2.两步搜索：通过比较查询与簇中心来选择附近的簇(左)，并比较选定簇中的所有向量与相应的查询(右)</em></p>
+<h3 id="粗略搜索">粗略搜索</h3>
+<p>粗略搜索使用簇中心和查询向量之间的精确 kNN 搜索完成。选择最近的簇中心，<code>n_probes</code> 个簇粗略搜索相对便宜，因为簇数量远小于数据集大小(例如，1 亿个向量的簇数量为 1 万个)。</p>
+<h3 id="精细搜索">精细搜索</h3>
+<p>对于 IVF-Flat，精细搜索也是精确搜索。但每个查询都有自己的一组要搜索(要探测)的簇，并且计算查询向量与被探测簇中所有向量之间的距离。</p>
+<p>对于小批量，在查询点周围搜索的区域不会重叠。因此，问题结构变为批量矩阵向量乘法 (GEMV) 运算。此运算受内存带宽限制，GPU 显存的大带宽大大加速了此步骤。</p>
+<p>选中每个探测簇的 top-k 近邻，结果是<code>n_probes * k</code> 个近邻候选。</p>
+<h2 id="调整索引构建参数">调整索引构建参数</h2>
+<p>在前面的部分中，概述了索引构建和搜索。下面详细介绍了如何设置索引构建的参数。</p>
+<p>索引构建包含两个阶段：</p>
+<ul>
+<li><strong>训练或计算簇（构建）</strong>：平衡的分层 k-means 算法会对训练数据进行聚类。</li>
+<li><strong>将数据集向量添加到索引(扩展)</strong>：将数据集向量分配给其簇，并将其添加到相应簇的向量列表中。</li>
+</ul>
+<h3 id="簇数量">簇数量</h3>
+<p>参数 <code>n_list</code> 对训练和搜索期间的整体性能有着深远的影响：它定义了索引数据所划分的簇数量。设置n_lists=sqrt (n_samples)是一个很好的起点(<code>n_samples</code>是数据集中的向量数)。</p>
+<p>为确保高效利用 GPU 资源，簇的平均大小(即<code>n_samples/n_lists</code>)应在至少 1K 个向量的范围内，以保持单个流多处理器 (SM) 的繁忙状态。</p>
+<h3 id="使用自动数据子采样构建索引">使用自动数据子采样构建索引</h3>
+<p>K-means 聚类是计算密集型的。为加速索引构建，对数据集进行子采样。使用参数<code>kmeans_trainset_fraction=0.1</code>这意味着将十分之一的数据集用于训练簇中心。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">build_params</span> <span class="o">=</span> <span class="n">ivf_flat</span><span class="o">.</span><span class="n">IndexParams</span><span class="p">(</span>
+        <span class="n">n_lists</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+        <span class="n">metric</span><span class="o">=</span><span class="s2">&#34;sqeuclidean&#34;</span><span class="p">,</span>
+        <span class="n">kmeans_trainset_fraction</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">kmeans_n_iters</span><span class="o">=</span><span class="mi">20</span>
+    <span class="p">)</span>
+</code></pre></div><p>在训练期间，参数 kmeans_n_iters 将直接传递给 k-means 算法。将其设置为适用于大多数数据集的合理默认值 20.但是，此参数只是聚类算法的建议。在幕后，它通常在“平衡”阶段执行更多迭代，以确保簇具有相似的大小。</p>
+<h3 id="使用用于聚类的特定训练数据构建索引">使用用于聚类的特定训练数据构建索引</h3>
+<p>在前面的示例中，只需调用ivf_flat.build执行聚类并将整个数据集添加到索引中。或者，可以调用ivf_flat.build无需将向量添加到索引中即可训练向量(通过设置add_data_on_build=False).这允许精确控制用于训练索引的向量。随后，ivf_flat.extend可用于向索引中添加向量。</p>
+<p>如下 Python 代码示例所示：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">n_train</span> <span class="o">=</span> <span class="mi">10000</span>
+<span class="n">train_set</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="n">cp</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">n_train</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">),:]</span>
+ 
+<span class="n">build_params</span> <span class="o">=</span> <span class="n">ivf_flat</span><span class="o">.</span><span class="n">IndexParams</span><span class="p">(</span>
+        <span class="n">n_lists</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+        <span class="n">metric</span><span class="o">=</span><span class="s2">&#34;sqeuclidean&#34;</span><span class="p">,</span>
+        <span class="n">kmeans_trainset_fraction</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">kmeans_n_iters</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+        <span class="n">add_data_on_build</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+ 
+<span class="n">index</span> <span class="o">=</span> <span class="n">ivf_flat</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">build_params</span><span class="p">,</span> <span class="n">train_set</span><span class="p">)</span>
+<span class="n">ivf_flat</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cp</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span>
+</code></pre></div><p>数据集向量只需调用ivf_flat.extend。在内部，如果需要减少内存消耗，则对数据进行批量处理。相应的 C++代码如下所示：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="n">index_params</span><span class="p">.</span><span class="n">add_data_on_build</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+<span class="c1">// Sub sample the dataset to create trainset.
+</span><span class="c1">// ...
+</span><span class="c1">// Run k-means clustering using the training set
+</span><span class="c1"></span><span class="k">auto</span> <span class="n">index</span> <span class="o">=</span> <span class="n">ivf_flat</span><span class="o">::</span><span class="n">build</span><span class="p">(</span><span class="n">dev_resources</span><span class="p">,</span> <span class="n">index_params</span><span class="p">,</span>
+    <span class="n">raft</span><span class="o">::</span><span class="n">make_const_mdspan</span><span class="p">(</span><span class="n">trainset</span><span class="p">.</span><span class="n">view</span><span class="p">()));</span>
+ 
+<span class="c1">// Fill the index with the dataset vectors
+</span><span class="c1"></span><span class="n">index</span> <span class="o">=</span> <span class="n">ivf_flat</span><span class="o">::</span><span class="n">extend</span><span class="p">(</span><span class="n">dev_resources</span><span class="p">,</span>
+    <span class="n">raft</span><span class="o">::</span><span class="n">make_const_mdspan</span><span class="p">(</span><span class="n">dataset</span><span class="p">.</span><span class="n">view</span><span class="p">()),</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="n">raft</span><span class="o">::</span><span class="n">device_vector_view</span><span class="o">&lt;</span><span class="k">const</span> <span class="kt">int64_t</span><span class="p">,</span> <span class="kt">int64_t</span><span class="o">&gt;&gt;</span><span class="p">(),</span>
+    <span class="n">index</span><span class="p">);</span>
+</code></pre></div><h3 id="向索引中添加新向量">向索引中添加新向量</h3>
+<p>可以通过调用ivf_flat.extend.默认情况下，增加向量列表的成本将通过在增加列表大小时分配额外空间来抵消。C++API 用户可以通过设置以下参数来更改此行为：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="n">index_params</span><span class="p">.</span><span class="n">conservative_memory_allocation</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</code></pre></div><p>如果聚类数量较大且预计不会经常添加向量，则此操作会非常有用。</p>
+<p>默认情况下，当向数据集添加向量时，簇中心不会发生变化。adaptive_centers，如果希望簇中心随新数据移动，则可以在索引构建期间启用标志。</p>
+<h2 id="调整搜索参数">调整搜索参数</h2>
+<p>以下是设置搜索参数的方法：高效使用 GPU 资源并增加 n_probes。</p>
+<h3 id="gpu-资源">GPU 资源</h3>
+<p>在搜索过程中，需要创建内部工作空间内存。建议使用<strong>池化分配器来减少内存分配</strong>。</p>
+<p>构建 RAFT资源对象非常耗时。资源对象应该复用， 通过资源handle传递给搜索函数 。在 Python 中，可以通过以下方式配置设备资源和内存池：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">pylibraft.common</span> <span class="kn">import</span> <span class="n">DeviceResources</span>
+<span class="kn">import</span> <span class="nn">rmm</span>
+<span class="n">mr</span> <span class="o">=</span> <span class="n">rmm</span><span class="o">.</span><span class="n">mr</span><span class="o">.</span><span class="n">PoolMemoryResource</span><span class="p">(</span>
+     <span class="n">rmm</span><span class="o">.</span><span class="n">mr</span><span class="o">.</span><span class="n">CudaMemoryResource</span><span class="p">(),</span>
+     <span class="n">initial_pool_size</span><span class="o">=</span><span class="mi">2</span><span class="o">**</span><span class="mi">30</span>
+<span class="p">)</span>
+<span class="n">rmm</span><span class="o">.</span><span class="n">mr</span><span class="o">.</span><span class="n">set_current_device_resource</span><span class="p">(</span><span class="n">mr</span><span class="p">)</span>
+ 
+<span class="n">handle</span> <span class="o">=</span> <span class="n">DeviceResources</span><span class="p">()</span>
+ 
+<span class="n">search_params</span> <span class="o">=</span> <span class="n">ivf_flat</span><span class="o">.</span><span class="n">SearchParams</span><span class="p">(</span><span class="n">n_probes</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">distances</span><span class="p">,</span> <span class="n">indices</span> <span class="o">=</span> <span class="n">ivf_flat</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">search_params</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">queries</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">handle</span><span class="o">=</span><span class="n">handle</span><span class="p">)</span>
+<span class="n">handle</span><span class="o">.</span><span class="n">sync</span><span class="p">()</span>
+</code></pre></div><p>C++API 的用户必须始终传递显式 device_resources handle，并且应在单独调用之间重复使用此handle进行搜索。可以通过以下方式设置池分配器：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="n">raft</span><span class="o">::</span><span class="n">device_resources</span> <span class="n">dev_resources</span><span class="p">;</span>
+<span class="n">raft</span><span class="o">::</span><span class="n">resource</span><span class="o">::</span><span class="n">set_workspace_to_pool_resource</span><span class="p">(</span>
+    <span class="n">dev_resources</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024ull</span><span class="p">);</span>
+<span class="n">ivf_flat</span><span class="o">::</span><span class="n">search</span><span class="p">(</span><span class="n">dev_resources</span><span class="p">,</span> <span class="p">...);</span>
+</code></pre></div><p>C++ 用户可以为临时工作空间数组指定一个单独的分配器，这在前面的示例中已经使用过。全局分配器（用于创建输入/输出数组）可以使用 <a href="https://docs.rapids.ai/api/rmm/stable/api/#rmm.mr.set_current_device_resource">rmm::mr::set_current_device_resource</a>。</p>
+<h3 id="探针数量">探针数量</h3>
+<p>比率<code>n_probes/n_lists</code>表明数据集的哪一部分与每个查询进行比较。距离计算的数量减少到<code>n_probes/n_clusters</code>暴力搜索计算量的一小部分。搜索质量以及计算时间会随着<code>n_probes</code> 的增加而增加，正确的值取决于数据集。</p>
+<p>在图 3 和图 4 中，可以分别观察吞吐量（每秒查询次数）和搜索精度（召回率）如何取决于探测器数量。这里，从<a href="https://research.yandex.com/blog/benchmarks-for-billion-scale-similarity-search#14h2">DEEP1B 数据集</a>搜索 100M 个向量，并使用 H100 GPU 进行搜索。</p>
+<p>吞吐量与探针的数量成反比。数据集被分为 10 万个簇；每个查询仅搜索 100 个最接近的簇可实现 96% 的召回率，而搜索 1000 个簇（数据集的 1%）可实现 99.8% 的准确率。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/4.png" alt="The throughput graph follows 1/x trend."></p>
+<p><em>图 3.搜索吞吐量(每秒查询次数)作为n_probes搜索参数</em></p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/5.png" alt="Search accuracy graph shows that recall improves quickly as you increase n_probes from 20 to 200 and flattens out above that (region with 99% recall)."></p>
+<p><em>图 4.精度(召回)作为n_probes搜索参数</em></p>
+<p>通常会将这些图形组合到单个 QPS 与召回图中(图 5)。当想要紧凑地权衡准确性和搜索吞吐量时，这很有用。在比较不同的 ANN 方法时，这也很有用。</p>
+<p><a href="https://developer-blogs.nvidia.com/wp-content/uploads/2023/09/combined-qps-recall.png"><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/6.png" alt="Graph shows that the QPS drops when you require high recall."></a><em>图 5.组合 QPS 召回图</em></p>
+<p>如果 <code>n_lists=n_probes</code> 这就像精确(暴力)搜索：将所有数据集向量与所有查询向量进行比较。在这种情况下，预计召回率等于 1 (除了小的舍入误差)。</p>
+<p>当 <code>n_probes</code> 接近 <code>n_lists</code> 时，IVF-Flat 由于算法所做的额外工作(粗略加精细搜索)，速度比暴力慢。在实践中，搜索大约 0.1-1%的列表足以处理许多数据集。但这取决于输入的聚类效果。</p>
+<p><a href="https://bib.dbvis.de/uploadedFiles/155.pdf">On the Surprising Behavior of Distance Metrics in High Dimensional Space</a>论文中提到，如果数据集没有结构（例如，统一随机数），聚类会变得困难。在这种情况下，IVF 方法的效果不佳。</p>
+<p>（注：IVF-Flat算法依赖输入的数据集，以及聚类效果）</p>
+<h2 id="性能">性能</h2>
+<p>RAFT 库可快速实施 IVF-Flat 算法。索引 1 亿个向量可在一分钟内完成(图 6)。这比使用 CPU 快 14 倍。</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/7.png" alt="Bar chart showing high index building time on the CPU and significantly faster times with GPU implementations."></p>
+<p><em>图 6.不同数据集和簇大小的索引构建时间</em></p>
+<p>我们在 NVIDIA H100 SXM GPU (使用 RAFT 23.10 进行 GPU 测试)和 Intel Xeon Platinum 8480CL CPU 上执行了<a href="https://github.com/facebookresearch/faiss">FAISS</a> 1.7.4 的测量。</p>
+<p>实现这种加速有两个主要因素：</p>
+<ul>
+<li><strong>GPU 的高计算吞吐量</strong>：RAFT 利用 <a href="https://blog.paperspace.com/understanding-tensor-cores/">Tensor Core</a> 在索引构建期间加速 k-means 聚类。</li>
+<li><strong>改进的算法</strong>：RAFT 使用平衡的分层 k-means 聚类，即使数据集的向量数量达到数亿，也能高效地进行聚类。</li>
+</ul>
+<p>还可以观察到，构建索引的时间随向量数量线性增加，随聚类数量线性增加。</p>
+<p>GPU 的高内存吞吐量有助于搜索索引。RAFT 的 IVF-Flat 索引使用优化的内存布局。向量交错以进行向量化内存访问，以确保在遍历每个探测簇中的数据集向量时实现高带宽利用率。</p>
+<p>精细搜索过程中的另一个重要步骤是过滤掉前 k 个候选项。最新top-k算法on GPU论文 <a href="https://sc23.supercomputing.org/presentation/?id=pap294&amp;sess=sess156"><strong>Parallel Top-K Algorithms on GPU: A Comprehensive Study and New Methods</strong></a>。将优化的 block-select-k 内核融合到距离计算内核中。如图 7 所示，与 CPU 实现的性能相比，这可以将 RAFT IVF-Flat 的速度提高 20 倍以上（回顾值=0.95）。</p>
+<p>（<strong>注</strong>：top-k 这篇论文期待一下；和<a href="https://github.com/weedge/learn/blob/main/gpu/Efficient%20Top-K%20Query%20Processing%20on%20Massively%20Parallel%20Hardware.pdf">Efficient Top-K Query Processing on Massively Parallel Hardware</a> 对比学习下~）</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/8.png" alt="Graph compares IVF-Flat search throughput on the GPU and on the CPU."></p>
+<p><em>图 7.不同召回率(准确性)的搜索吞吐量</em></p>
+<p>在此基准测试中，我们使用了 FAISS IVF-Flat 的 CPU 实现。FAISS 还提供了此算法的 GPU 实现。如果使用 FAISS，则只需对代码进行细微更改即可从 GPU 加速中受益。与 Meta 合作，将 RAFT 的性能改进引入 FAISS，因此很快也可以通过 FAISS 使用 RAFT。</p>
+<p>（<strong>注</strong>： 相关PR见Reference,  IVF-Flat 已集成）</p>
+<h2 id="总结">总结</h2>
+<p>在大型数据库中执行向量搜索时，务必要注意精确搜索的高昂成本，因为这会导致不适合在线服务的低延迟。</p>
+<p>RAPIDS RAFT 库提供了高效的算法，通过将搜索集中到数据集中最相关的部分，以提高向量搜索的延迟和吞吐量。本文讨论了 RAFT IVF-Flat 算法的工作原理，以及如何设置索引构建和搜索的参数。最后，提供基准测试，以强调 GPU 在 IVF – Flat 搜索中的卓越性能。可以使用<a href="https://docs.rapids.ai/api/raft/stable/raft_ann_benchmarks/">基准测试工具</a>。</p>
+<h2 id="reference">Reference</h2>
+<ol>
+<li>
+<p><a href="https://developer.nvidia.com/blog/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/">https://developer.nvidia.com/blog/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/</a></p>
+</li>
+<li>
+<p><a href="https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/notebooks/ivf_flat_example.ipynb">https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/notebooks/ivf_flat_example.ipynb</a></p>
+</li>
+<li>
+<p><a href="https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/cpp/template/src/ivf_flat_example.cu">https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/cpp/template/src/ivf_flat_example.cu</a></p>
+</li>
+<li>
+<p><a href="https://bib.dbvis.de/uploadedFiles/155.pdf">On the Surprising Behavior of Distance Metrics in High Dimensional Space</a></p>
+</li>
+<li>
+<p><a href="https://www.kdnuggets.com/2018/05/wtf-tensor.html">https://www.kdnuggets.com/2018/05/wtf-tensor.html</a> ， <a href="https://en.wikipedia.org/wiki/Tensor">https://en.wikipedia.org/wiki/Tensor</a></p>
+</li>
+<li>
+<p><a href="https://blog.paperspace.com/understanding-tensor-cores/">https://blog.paperspace.com/understanding-tensor-cores/</a></p>
+</li>
+<li>
+<p><a href="https://github.com/facebookresearch/faiss/pull/2521">https://github.com/facebookresearch/faiss/pull/2521</a></p>
+<p><a href="https://github.com/facebookresearch/faiss/pull/2707">https://github.com/facebookresearch/faiss/pull/2707</a></p>
+</li>
+<li>
+<p><a href="https://github.com/facebookresearch/faiss/pull/3044">https://github.com/facebookresearch/faiss/pull/3044</a></p>
+</li>
+</ol>
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2023-11-03
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/oneday/">oneday</a>
+          <a href="https://weedge.github.io/tags/gpu/">gpu</a>
+          <a href="https://weedge.github.io/tags/ann/">ann</a>
+          <a href="https://weedge.github.io/tags/similarity-search/">similarity search</a>
+          <a href="https://weedge.github.io/tags/rapids-raft/">RAPIDS RAFT</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/gpu/2.accelerating-vector-search-fine-tuning-gpu-index-algorithms/">
+            <span class="next-text nav-default">译：加速向量搜索：微调 GPU 索引算法</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/post/gpu/3.accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:weege007@gmail.com" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/weedge" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://weibo.com/weedge" rel="me noopener" class="iconfont"
+      title="weibo"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M385.714286 733.714286q12-19.428571 6.285714-39.428571t-25.714286-28.571429q-19.428571-8-41.714286-0.571429t-34.285714 26.285714q-12.571429 19.428571-7.428571 39.142857t24.571429 28.857143 42.571429 1.428571 35.714286-27.142857zm53.714286-69.142857q4.571429-7.428571 2-15.142857t-10-10.571429q-8-2.857143-16.285714 2.857143t-12.285714 10.571429q-9.714286 17.714286 7.428571 25.714286 8 2.857143 16.571429 2.857143t12.571429-10.571429zm99.428571 61.142857q-25.714286 58.285714-90.285714 85.714286t-128 6.857143q-61.142857-19.428571-84.285714-72.285714t3.714286-107.142857q26.857143-53.142857 86.571429-79.428571t120.285714-10.857143q63.428571 16.571429 90.571429 68.285714t1.428571 108.857143zm178.285714-91.428571q-5.142857-54.857143-50.857143-97.142857t-119.142857-62.285714-156.857143-12q-127.428571 13.142857-211.142857 80.857143t-75.714286 151.142857q5.142857 54.857143 50.857143 97.142857t119.142857 62.285714 156.857143 12q127.428571-13.142857 211.142857-80.857143t75.714286-151.142857zm176 2.285714q0 38.857143-21.142857 79.714286t-62.285714 78.285714-96.285714 67.142857-129.142857 47.428571-154.571429 17.714286-157.142857-19.142857-137.428571-53.142857-98-86.285714-37.142857-114q0-65.714286 39.714286-140t112.857143-147.428571q96.571429-96.571429 195.142857-134.857143t140.857143 4q37.142857 36.571429 11.428571 119.428571-2.285714 8-0.571429 11.428571t5.714286 4 8.285714 2.857143 7.714286-2l3.428571-1.142857q79.428571-33.714286 140.571429-33.714286t87.428571 34.857143q25.714286 36 0 101.714286-1.142857 7.428571-2.571429 11.428571t2.571429 7.142857 6.857143 4.285714 9.714286 3.428571q32.571429 10.285714 58.857143 26.857143t45.714286 46.571429 19.428571 66.571429zm-42.285714-356.571429q24 26.857143 31.142857 62t-3.714286 67.142857q-4.571429 13.142857-16.857143 19.428571t-25.428571 2.285714q-13.142857-4.571429-19.428571-16.857143t-2.285714-25.428571q11.428571-36-13.714286-63.428571t-61.142857-20q-13.714286 2.857143-25.714286-4.571429t-14.285714-21.142857q-2.857143-13.714286 4.571429-25.428571t21.142857-14.571429q34.285714-7.428571 68 3.142857t57.714286 37.428571zm103.428571-93.142857q49.714286 54.857143 64.285714 127.142857t-7.714286 138q-5.142857 15.428571-19.428571 22.857143t-29.714286 2.285714-22.857143-19.428571-2.857143-29.714286q16-46.857143 5.714286-98.285714t-45.714286-90.285714q-35.428571-39.428571-84.571429-54.571429t-98.857143-4.857143q-16 3.428571-29.714286-5.428571t-17.142857-24.857143 5.428571-29.428571 24.857143-16.857143q70.285714-14.857143 139.428571 6.571429t118.857143 76.857143z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://weedge.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2013 -
+    2023
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        weedge
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//weedge.disqus.com/count.js" async></script>
+
+
+
+
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
+
+
+</body>
+</html>

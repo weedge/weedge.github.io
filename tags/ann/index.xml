@@ -6,21 +6,44 @@
     <description>Recent content in ann on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 03 Nov 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/ann/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 03 Nov 2023 15:00:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/ann/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>译：加速向量搜索：RAPIDS RAFT IVF-Flat 近似算法</title>
+      <link>https://weedge.github.io/post/gpu/3.accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/</link>
+      <pubDate>Fri, 03 Nov 2023 15:00:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/gpu/3.accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/</guid>
+      <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;执行详尽的精确 k 最近邻 (kNN) 搜索，也称为&lt;em&gt;暴力搜索(brute-force search)&lt;/em&gt;，成本高昂，并且它不能很好地扩展到更大的数据集。在向量搜索期间，暴力搜索需要计算每个查询向量和数据库向量之间的距离。对于常用的欧几里德和余弦距离，计算任务等同于大型矩阵乘法。&lt;/p&gt;
+&lt;p&gt;虽然 GPU 在执行矩阵乘法方面效率很高，但随着数据量的增加，计算成本变得令人望而却步。然而，许多应用程序不需要精确的结果，而是可以为了更快的搜索而牺牲一些准确性。当不需要精确的结果时，近似最近邻 (ANN) 方法通常可以减少搜索期间必须执行的距离计算的数量。&lt;/p&gt;
+&lt;p&gt;本文主要介绍了 IVF-Flat，这是 NVIDIA &lt;a href=&#34;https://developer.nvidia.cn/zh-cn/blog/reusable-computational-patterns-for-machine-learning-and-data-analytics-with-rapids-raft/&#34;&gt;RAPIDS RAFT&lt;/a&gt; 中的一种方法。IVF-Flat 方法使用原始（即Flat）向量的倒排索引 (IVF)。此算法提供了简单的调整手段，以减少整体搜索空间并在准确性和速度之间进行权衡。&lt;/p&gt;
+&lt;p&gt;为了帮助了解如何使用 IVF-Flat，我们讨论了该算法的工作原理，并演示了&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/pylibraft_api/neighbors/#ivf-flat&#34;&gt;Python&lt;/a&gt;和&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_flat/&#34;&gt;C++ APIs&lt;/a&gt;我们介绍了索引构建的设置参数，并提供了如何配置 GPU 加速的 IVF-Flat搜索的技巧。这些步骤也可以在示例中遵循&lt;a href=&#34;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/notebooks/ivf_flat_example.ipynb&#34;&gt;Python notebook&lt;/a&gt;和&lt;a href=&#34;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/cpp/template/src/ivf_flat_example.cu&#34;&gt;C++ project&lt;/a&gt;.最后，我们演示了 GPU 加速的向量搜索比 CPU 搜索快一个数量级。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>译：加速向量搜索：微调 GPU 索引算法</title>
+      <link>https://weedge.github.io/post/gpu/2.accelerating-vector-search-fine-tuning-gpu-index-algorithms/</link>
+      <pubDate>Fri, 03 Nov 2023 14:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/gpu/2.accelerating-vector-search-fine-tuning-gpu-index-algorithms/</guid>
+      <description>&lt;p&gt;这个 &lt;a href=&#34;https://developer.nvidia.cn/zh-cn/blog/accelerating-vector-search-using-gpu-accelerated-indexes-with-rapids-raft/&#34;&gt;系列的第一篇文章&lt;/a&gt; 介绍了向量搜索索引，解释了它们在实现广泛的重要应用中所起的作用，并使用了 &lt;a href=&#34;https://github.com/rapidsai/raft&#34;&gt;RAFT&lt;/a&gt; 库。&lt;/p&gt;
+&lt;p&gt;在这篇文章中，我们深入探讨第 1 部分中提到的每种 GPU 加速索引方法，并简要解释了算法的工作原理，以及总结重要的微调参数。&lt;/p&gt;
+&lt;p&gt;然后，我们通过一个简单的端到端示例，用预训练的大型语言模型演示 RAFT 在问答问题上的 Python API，并在涉及同时传递给搜索算法的不同查询向量数量的几个不同场景下，将 RAFT 的算法与 HNSW 的性能进行比较。&lt;/p&gt;
+&lt;p&gt;内容如下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;可与 GPU 一起使用的向量搜索索引算法概述&lt;/li&gt;
+&lt;li&gt;一个端到端的例子演示了使用 Python 在 GPU 上运行向量搜索是多么容易&lt;/li&gt;
+&lt;li&gt;GPU 上的向量搜索与 CPU 上当前最先进的 HNSW 方法的性能比较&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
     <item>
       <title>译：加速向量搜索：利用 GPU 索引的 RAPIDS RAFT</title>
       <link>https://weedge.github.io/post/gpu/1.accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/</link>
       <pubDate>Fri, 03 Nov 2023 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/post/gpu/1.accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/</guid>
-      <description>&lt;p&gt;目的何在：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;学习RAPIDS RAFT中的三种不同算法：&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_flat/&#34;&gt;IVF-Flat&lt;/a&gt;，&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_pq/&#34;&gt;IVF-PQ&lt;/a&gt;，&lt;a href=&#34;https://docs.rapids.ai/api/raft/nightly/cpp_api/neighbors_cagra/&#34;&gt;CAGRA&lt;/a&gt;, 并且调用RAPIDS RAFT 向量搜索库的相关接口工程实践下；&lt;/li&gt;
-&lt;li&gt;学习借鉴RAPIDS RAFT 库在 Milvus、Redis 和 FAISS 中的集成；&lt;/li&gt;
-&lt;li&gt;将开源改吧改吧，结合业务场景，某种商业目的变成闭源，然后美其名曰自研，岂不“妙哉”;)&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;好，开始吧~&lt;/p&gt;
-&lt;p&gt;在 2023 年的人工智能领域，向量搜索成为最热门的话题之一，因为它在&lt;a href=&#34;https://www.nvidia.cn/glossary/data-science/large-language-models/&#34;&gt;大语言模型&lt;/a&gt;（LLM）和&lt;a href=&#34;https://www.nvidia.cn/glossary/data-science/generative-ai/&#34;&gt;生成式人工智能&lt;/a&gt;中发挥了重要作用。语义向量搜索实现了一系列重要任务，如检测欺诈交易、向用户推荐产品、使用上下文信息增强全文搜索以及查找潜在安全风险的参与者。&lt;/p&gt;
+      <description>&lt;p&gt;在 2023 年的人工智能领域，向量搜索成为最热门的话题之一，因为它在&lt;a href=&#34;https://www.nvidia.cn/glossary/data-science/large-language-models/&#34;&gt;大语言模型&lt;/a&gt;（LLM）和&lt;a href=&#34;https://www.nvidia.cn/glossary/data-science/generative-ai/&#34;&gt;生成式人工智能&lt;/a&gt;中发挥了重要作用。语义向量搜索实现了一系列重要任务，如检测欺诈交易、向用户推荐产品、使用上下文信息增强全文搜索以及查找潜在安全风险的参与者。&lt;/p&gt;
 &lt;p&gt;数据量持续飙升，传统的逐一比较的方法在计算上变得不可行。向量搜索方法使用近似查找，这种查找更具可扩展性，可以更有效地处理大量数据。正如我们在这篇文章中所展示的，在 GPU 上加速向量搜索不仅提供了更快的搜索时间，而且索引构建时间也可以更快。&lt;/p&gt;
 &lt;p&gt;本文内容如下：&lt;/p&gt;
 &lt;ul&gt;

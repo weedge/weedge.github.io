@@ -77,8 +77,8 @@ GPU 上的向量搜索与 CPU 上当前最先进的 HNSW 方法的性能比较
 " />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://weedge.github.io/post/gpu/2.accelerating-vector-search-fine-tuning-gpu-index-algorithms/" /><meta property="article:section" content="post" />
-<meta property="article:published_time" content="2023-11-03T11:26:23+08:00" />
-<meta property="article:modified_time" content="2023-11-03T11:26:23+08:00" />
+<meta property="article:published_time" content="2023-11-03T14:26:23+08:00" />
+<meta property="article:modified_time" content="2023-11-03T14:26:23+08:00" />
 
 <meta itemprop="name" content="译：加速向量搜索：微调 GPU 索引算法">
 <meta itemprop="description" content="这个 系列的第一篇文章 介绍了向量搜索索引，解释了它们在实现广泛的重要应用中所起的作用，并使用了 RAFT 库。
@@ -89,8 +89,8 @@ GPU 上的向量搜索与 CPU 上当前最先进的 HNSW 方法的性能比较
 可与 GPU 一起使用的向量搜索索引算法概述
 一个端到端的例子演示了使用 Python 在 GPU 上运行向量搜索是多么容易
 GPU 上的向量搜索与 CPU 上当前最先进的 HNSW 方法的性能比较
-"><meta itemprop="datePublished" content="2023-11-03T11:26:23+08:00" />
-<meta itemprop="dateModified" content="2023-11-03T11:26:23+08:00" />
+"><meta itemprop="datePublished" content="2023-11-03T14:26:23+08:00" />
+<meta itemprop="dateModified" content="2023-11-03T14:26:23+08:00" />
 <meta itemprop="wordCount" content="3572">
 <meta itemprop="keywords" content="oneday,gpu,ann,similarity search,RAPIDS RAFT," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：加速向量搜索：微调 GPU 索引算法"/>
@@ -402,7 +402,7 @@ GPU 上的向量搜索与 CPU 上当前最先进的 HNSW 方法的性能比较
 <h3 id="cagra">CAGRA</h3>
 <p><a href="https://docs.rapids.ai/api/raft/nightly/pylibraft_api/neighbors/#cagra">CAGRA</a> 是 RAFT 最新的、最先进的 ANN索引。这是一种高性能的、 GPU 加速的、基于图的方法，专门针对小批量情况进行了优化，其中每次查找只包含一个或几个查询向量。与其他流行的基于图的方法一样，如分层可导航小世界图（HNSW）和 SONG，优化的 k-NN 图是在索引训练时构建的，具有各种qualities，可以在合理的召回水平上产生有效的搜索。</p>
 <p>CAGRA 通过首先从图中随机选择候选顶点，然后扩展或遍历这些顶点来计算到其子顶点的距离，并在搜索过程中存储最近的邻居来执行搜索（图 1）。每次遍历一组顶点时，它都会执行一次迭代。</p>
-<p><img src="https://developer.nvidia.cn/zh-cn/blog/wp-content/uploads/2023/08/cagra-multiple-thread-blocks.png" alt="Diagram shows how CAGRA can map subgraphs to separate thread blocks, enabling parallelism even for a single query."><em>图 1. 使用多个线程块的 CAGRA</em></p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-fine-tuning-gpu-index-algorithms/1.png" alt="Diagram shows how CAGRA can map subgraphs to separate thread blocks, enabling parallelism even for a single query."><em>图 1. 使用多个线程块的 CAGRA</em></p>
 <p>在图 1 中，CAGRA 使用多个线程块并行访问更多的图节点。这最大限度地提高了单查询搜索的 GPU 利用率。</p>
 <p>因为 CAGRA 像前面描述的算法一样返回近似的最近邻居，所以它还提供了一些参数来控制召回和速度。</p>
 <p>可以调整以权衡搜索速度的主要参数是<code>itopk_size</code>，指定内部排序列表的大小，该列表存储可以在下一次迭代中探索的节点。<code>itopk_size</code>的较高值在内存中保留更大的搜索上下文，这会以花费更多时间维护队列为代价来提高召回率。</p>
@@ -435,13 +435,13 @@ GPU 上的向量搜索与 CPU 上当前最先进的 HNSW 方法的性能比较
 <h2 id="基准">基准</h2>
 <p>使用 GPU 作为向量搜索应用程序的硬件加速器可以提高性能，这在大型数据集上表现得尤为明显。可以通过参考 <a href="https://docs.rapids.ai/api/raft/nightly/raft_ann_benchmarks/">RAFT 的端到端基准测试文档</a>来完全复制这个基准。我们的基准测试假设数据已经可以用于计算，这意味着数据传输没有被考虑在内，尽管由于最近 NVIDIA 硬件的高传输速度（超过 25 GB/s），这应该不会造成显著的差异。</p>
 <p>使用在 H100 GPU 上的 <a href="http://big-ann-benchmarks.com/neurips21.html">DEEP-100M</a> 数据集，以将 RAFT 索引与运行在 Intel Xeon Platinum 8480CL CPU 上的 HNSW 进行比较。</p>
-<p><img src="https://developer.nvidia.cn/zh-cn/blog/wp-content/uploads/2023/09/ann-throughput-batch-1-b.png" alt="Bar chart compares the throughput of HNSW, the state-of-the-art on CPU, against RAFT’s ANN algorithms for a single query at a time at various levels of recall."><em>图 2:比较不同召回率和吞吐量的 ANN 算法，批次为 1</em></p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-fine-tuning-gpu-index-algorithms/2.png" alt="Bar chart compares the throughput of HNSW, the state-of-the-art on CPU, against RAFT’s ANN algorithms for a single query at a time at various levels of recall."><em>图 2:比较不同召回率和吞吐量的 ANN 算法，批次为 1</em></p>
 <p>图 2 比较了单个查询在不同召回率和吞吐量下的 ANN 算法。在高召回率下，RAFT 的方法显示出比其他替代库更高的吞吐量。</p>
 <p>我们一次对单个向量的查询进行性能比较，称为<em>在线搜索</em>。它是向量搜索的主要用例之一。与使用 CPU 或 GPU 的其他库相比，基于 RAFT 的索引提供了更高的吞吐量（以每秒查询量（QPS）衡量）。</p>
-<p><img src="https://developer.nvidia.cn/zh-cn/blog/wp-content/uploads/2023/09/ann-throughput-batch-10-b.png" alt="Bar chart compares throughput for HNSW, the state-of-the-art on CPU, against RAFT’s ANN algorithms for a query of 10 vectors at a time."><em>图 3。比较不同召回率和吞吐量的ANN算法，批次为 10</em></p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-fine-tuning-gpu-index-algorithms/3.png" alt="Bar chart compares throughput for HNSW, the state-of-the-art on CPU, against RAFT’s ANN algorithms for a query of 10 vectors at a time."><em>图 3。比较不同召回率和吞吐量的ANN算法，批次为 10</em></p>
 <p>图 3 比较了不同召回和吞吐量级别的 ANN 算法与 10 个查询的批量大小。RAFT 的方法在所有实验中都表现出比 HNSW 更高的吞吐量。</p>
 <p>将 GPU 用于向量搜索应用程序的好处在更大的批量中最为普遍。 CPU 和 GPU 之间的性能差距很大，可以很容易地扩大规模。图 3 显示，对于批量大小为 10 的情况，当比较每秒的查询数时，只有基于 RAFT 的索引是最优的。对于 10k 的批量大小（图 4），CAGRA 迄今为止优于所有其他索引。</p>
-<p><img src="https://developer.nvidia.cn/zh-cn/blog/wp-content/uploads/2023/09/ann-throughput-batch-10k-b.png" alt="Bar chart compares throughput for HNSW, the state-of-the-art on CPU, against RAFT’s ANN algorithms for a query of 10k vectors at a time."><em>图 4。比较不同召回率和吞吐量的ANN算法，批次10k</em></p>
+<p><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerating-vector-search-fine-tuning-gpu-index-algorithms/4.png" alt="Bar chart compares throughput for HNSW, the state-of-the-art on CPU, against RAFT’s ANN algorithms for a query of 10k vectors at a time."><em>图 4。比较不同召回率和吞吐量的ANN算法，批次10k</em></p>
 <p>图 4 将不同召回和吞吐量级别的 ANN 算法与批量大小为 10K 的查询进行了比较。RAFT 的方法在所有实验中都表现出比 HNSW 更高的吞吐量。</p>
 <h2 id="总结">总结</h2>
 <p>每种不同的向量搜索索引类型都有优缺点，最终取决于场景需求。这篇文章概述了其中的一些优点和缺点，简要解释了每种不同算法的工作原理，以及一些最重要的参数，这些参数可以用来权衡存储成本、构建时间、搜索质量和搜索性能。在所有情况下， GPU 都可以提高索引构建和搜索性能。</p>
@@ -493,6 +493,19 @@ GPU 上的向量搜索与 CPU 上当前最先进的 HNSW 方法的性能比较
       
       <nav class="post-nav">
         
+          <a class="prev" href="/post/gpu/3.accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">译：加速向量搜索：RAPIDS RAFT IVF-Flat 近似算法</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
         
           <a class="next" href="/post/gpu/1.accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/">
             <span class="next-text nav-default">译：加速向量搜索：利用 GPU 索引的 RAPIDS RAFT</span>
