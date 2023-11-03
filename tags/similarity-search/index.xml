@@ -6,7 +6,31 @@
     <description>Recent content in similarity search on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 26 Sep 2023 23:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/similarity-search/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 03 Nov 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/similarity-search/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>译：加速向量搜索：利用 GPU 索引的 RAPIDS RAFT</title>
+      <link>https://weedge.github.io/post/gpu/1.accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/</link>
+      <pubDate>Fri, 03 Nov 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/gpu/1.accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/</guid>
+      <description>&lt;p&gt;目的何在：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;学习RAPIDS RAFT中的三种不同算法：&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_flat/&#34;&gt;IVF-Flat&lt;/a&gt;，&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_pq/&#34;&gt;IVF-PQ&lt;/a&gt;，&lt;a href=&#34;https://docs.rapids.ai/api/raft/nightly/cpp_api/neighbors_cagra/&#34;&gt;CAGRA&lt;/a&gt;, 并且调用RAPIDS RAFT 向量搜索库的相关接口工程实践下；&lt;/li&gt;
+&lt;li&gt;学习借鉴RAPIDS RAFT 库在 Milvus、Redis 和 FAISS 中的集成；&lt;/li&gt;
+&lt;li&gt;将开源改吧改吧，结合业务场景，某种商业目的变成闭源，然后美其名曰自研，岂不“妙哉”;)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;好，开始吧~&lt;/p&gt;
+&lt;p&gt;在 2023 年的人工智能领域，向量搜索成为最热门的话题之一，因为它在&lt;a href=&#34;https://www.nvidia.cn/glossary/data-science/large-language-models/&#34;&gt;大语言模型&lt;/a&gt;（LLM）和&lt;a href=&#34;https://www.nvidia.cn/glossary/data-science/generative-ai/&#34;&gt;生成式人工智能&lt;/a&gt;中发挥了重要作用。语义向量搜索实现了一系列重要任务，如检测欺诈交易、向用户推荐产品、使用上下文信息增强全文搜索以及查找潜在安全风险的参与者。&lt;/p&gt;
+&lt;p&gt;数据量持续飙升，传统的逐一比较的方法在计算上变得不可行。向量搜索方法使用近似查找，这种查找更具可扩展性，可以更有效地处理大量数据。正如我们在这篇文章中所展示的，在 GPU 上加速向量搜索不仅提供了更快的搜索时间，而且索引构建时间也可以更快。&lt;/p&gt;
+&lt;p&gt;本文内容如下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;向量搜索简介及流行应用综述&lt;/li&gt;
+&lt;li&gt;在 GPU 上加速向量搜索的 RAFT 库综述&lt;/li&gt;
+&lt;li&gt;GPU 加速向量搜索索引与 CPU 上最新技术的性能比较&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;本系列的第二篇文章深入探讨了每一个 GPU 加速指数，并简要解释了算法的工作原理以及微调其行为的重要参数摘要。想要了解更多信息，请访问 &lt;a href=&#34;https://developer.nvidia.cn/zh-cn/blog/accelerating-vector-search-fine-tuning-gpu-index-algorithms/&#34;&gt;加速向量搜索：微调 GPU 索引算法&lt;/a&gt;。&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>译：相似性搜索，第 7 部分：LSH 组合</title>
       <link>https://weedge.github.io/post/oneday/similarity-search/7.lsh-compositions/</link>
