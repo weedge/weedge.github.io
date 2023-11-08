@@ -297,6 +297,54 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/oneday/similarity-search/5.locality-sensitive-hashing/">译：相似性搜索，第 5 部分：局部敏感哈希 (LSH)</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2023-09-26" class="post-time">
+        2023-09-26
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <p><img src="https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/0.png" alt=""></p>
+<p><strong>探索如何将相似性信息合并到哈希函数中</strong></p>
+<h1 id="介绍">介绍</h1>
+<p>在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。</p>
+<p>在本系列文章的前几部分中，我们讨论了倒排文件索引、产品量化和 HNSW 以及如何将它们结合使用来提高搜索质量。在本章中，我们将研究一种主要不同的方法，该方法可以保持高搜索速度和质量。</p>
+<blockquote>
+<p><strong>局部敏感哈希</strong>（LSH）是一组方法，用于通过将数据向量转换为哈希值来缩小搜索范围，同时保留有关其相似性的信息。</p>
+</blockquote>
+<p>我们将讨论传统方法，该方法包括三个步骤：</p>
+<ol>
+<li><strong>Shingling</strong>：将原始文本编码为向量。</li>
+<li><strong>MinHashing</strong> ：将向量转换为称为<strong>签名</strong>的特殊表示，可用于比较它们之间的相似性。</li>
+<li><strong>LSH函数</strong>：将签名块散列到不同的桶中。如果一对向量的签名至少一次落入同一个桶中，则它们被视为候选向量。</li>
+</ol>
+<p>我们将在整篇文章中逐步深入探讨每个步骤的细节。</p>
+    </div>
+    <div class="read-more">
+      <a href="/post/oneday/similarity-search/5.locality-sensitive-hashing/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/oneday/similarity-search/4.hierarchical-navigable-small-world-hnsw/">译：相似性搜索，第 4 部分：分层可导航小世界 (HNSW)</a>
     </h1>
     
@@ -523,46 +571,6 @@
     </div>
     <div class="read-more">
       <a href="/post/oneday/manas-a-high-performing-customized-search-system/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/">译：如何避免事务期间读取不一致</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-08-26" class="post-time">
-        2023-08-26
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p>想象一下，当您尝试将 100 美元从账户 A 转账到账户 B，并且两个账户都在同一家银行时。启动传输后，您刷新屏幕。然而，当您刷新屏幕时，您的总余额就会下降——那 100 美元似乎凭空消失了。您看到帐户 A 少了 100 美元。然而，B账户并没有多出100美元。然后，您刷新屏幕几次，可以看到帐户 B 获得了 100 美元。</p>
-<p>您在事务期间遇到的这个问题称为读取偏差。当您在不幸运的时间（写入交易期间和之后）读取交易时，就会发生异常。</p>
-<p><img src="https://edward-huang.com/images/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/Distributed%20System%20Question_%20How%20to%20Avoid%20Read%20Inconsistency%20during%20a%20Transaction-%20bank%20transfer.png" alt="银行转账时序图"></p>
-<p>这可能会带来不好的用户体验，但如果转账交易成功后刷新页面，这不会造成任何问题。</p>
-<p>然而，在进行数据库备份或分析查询时，读取偏差会成为一个问题。</p>
-<p>在数据库备份中，我们需要制作数据库的副本。备份过程中可能会有写请求进来，如果出现读倾斜不一致的情况，可能会导致备份结果不一致。部分数据为旧版本，部分数据为新版本。通过这样的操作，这种不一致的问题可能会永久存在。</p>
-<p>我们需要在分析查询中扫描大型数据库并定期检查数据损坏。读取偏差可能会导致搜索和检查不一致 - 通常可能会产生不一致的结果并引发有关数据损坏的错误警报。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>

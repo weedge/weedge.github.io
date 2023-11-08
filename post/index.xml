@@ -6,7 +6,20 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 03 Nov 2023 15:00:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 07 Nov 2023 15:00:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>译：掌握 RAPIDS libcudf 中的字符串转换</title>
+      <link>https://weedge.github.io/post/gpu/mastering-string-transformations-in-rapids-libcudf/</link>
+      <pubDate>Tue, 07 Nov 2023 15:00:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/gpu/mastering-string-transformations-in-rapids-libcudf/</guid>
+      <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/mastering-string-transformations-in-rapids-libcudf/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;字符串数据的高效处理对于许多数据科学应用至关重要。为了从字符串数据中提取有价值的信息，&lt;a href=&#34;https://github.com/rapidsai/cudf&#34;&gt;RAPIDS libcudf&lt;/a&gt;提供了强大的工具来加速字符串数据转换。libcudf 是一个 C++ GPU DataFrame 库，用于加载、连接、聚合和过滤数据。&lt;/p&gt;
+&lt;p&gt;在数据科学中，字符串数据代表语音、文本、基因序列、日志记录和许多其他类型的信息。在使用字符串数据进行机器学习和特征工程时，必须经常对数据进行规范化和转换，然后才能将其应用于特定用例。libcudf 提供通用 API 和设备端实用程序，以支持各种自定义字符串操作。&lt;/p&gt;
+&lt;p&gt;这篇文章演示了如何使用 libcudf 通用 API 巧妙地转换字符串列。您将获得有关如何使用自定义内核和 libcudf 设备端实用程序解锁峰值性能的新知识。这篇文章还向您介绍了如何最好地管理 GPU 内存和高效构建 libcudf 列以加速字符串转换的示例。&lt;/p&gt;
+&lt;p&gt;(&lt;strong&gt;注&lt;/strong&gt;：从文件中获取数据到buffer中，都需要通过字符串处理操作，特别是split操作，如果是数值，需要atoi，atof操作进行数据分析，向量化操作等， 和数据处理打交道的 super 马里奥 应该学会这个工具，这里直接使用底层操作库libcudf；集成的其他语言有java(JNI)和python(cython), 主要是方便和现有 大数据生态打通(会有一些内存方面的性能损耗)，大多是离线处理场景，特别是LLM的预训练场景)&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>译：加速向量搜索：RAPIDS RAFT IVF-Flat 近似算法</title>
       <link>https://weedge.github.io/post/gpu/3.accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/</link>
@@ -300,16 +313,6 @@
 &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;	&lt;span class=&#34;c1&#34;&gt;// this example.
 &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
-    </item>
-    
-    <item>
-      <title>Go tips-笔记: 标准库 75-81 mistakes</title>
-      <link>https://weedge.github.io/post/notions/go-tips/go-tips-10-standard-lib/</link>
-      <pubDate>Sun, 19 Feb 2023 14:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/notions/go-tips/go-tips-10-standard-lib/</guid>
-      <description>&lt;h2 id=&#34;引言&#34;&gt;引言&lt;/h2&gt;
-&lt;p&gt;从程序中产生的错误中大多是使用姿势的不对，以及没有仔细阅读标准库相关包的开发文档，未查看源码导致，但是没有实践过这些问题，即使熟读文档和源码也可能避免不了。笔记中会以书中的mistake为切入点，结合源码升入分析其背后产生的原因，以及提出解决方案来避免。&lt;/p&gt;</description>
     </item>
     
   </channel>

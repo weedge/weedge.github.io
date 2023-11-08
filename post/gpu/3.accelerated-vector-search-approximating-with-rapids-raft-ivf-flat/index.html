@@ -83,7 +83,7 @@
 本文主要介绍了 IVF-Flat，这是 NVIDIA RAPIDS RAFT 中的一种方法。IVF-Flat 方法使用原始（即Flat）向量的倒排索引 (IVF)。此算法提供了简单的调整手段，以减少整体搜索空间并在准确性和速度之间进行权衡。
 为了帮助了解如何使用 IVF-Flat，我们讨论了该算法的工作原理，并演示了Python和C&#43;&#43; APIs我们介绍了索引构建的设置参数，并提供了如何配置 GPU 加速的 IVF-Flat搜索的技巧。这些步骤也可以在示例中遵循Python notebook和C&#43;&#43; project.最后，我们演示了 GPU 加速的向量搜索比 CPU 搜索快一个数量级。"><meta itemprop="datePublished" content="2023-11-03T15:00:23+08:00" />
 <meta itemprop="dateModified" content="2023-11-03T15:00:23+08:00" />
-<meta itemprop="wordCount" content="4620">
+<meta itemprop="wordCount" content="4632">
 <meta itemprop="keywords" content="oneday,gpu,ann,similarity search,RAPIDS RAFT," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：加速向量搜索：RAPIDS RAFT IVF-Flat 近似算法"/>
 <meta name="twitter:description" content="
@@ -567,7 +567,13 @@
 <p><a href="https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/cpp/template/src/ivf_flat_example.cu">https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/cpp/template/src/ivf_flat_example.cu</a></p>
 </li>
 <li>
+<p><a href="https://github.com/rapidsai/raft/blob/branch-23.12/docs/source/vector_search_tutorial.md">https://github.com/rapidsai/raft/blob/branch-23.12/docs/source/vector_search_tutorial.md</a></p>
+</li>
+<li>
 <p><a href="https://bib.dbvis.de/uploadedFiles/155.pdf">On the Surprising Behavior of Distance Metrics in High Dimensional Space</a></p>
+</li>
+<li>
+<p><a href="https://sc23.supercomputing.org/presentation/?id=pap294&amp;sess=sess156"><strong>Parallel Top-K Algorithms on GPU: A Comprehensive Study and New Methods</strong></a></p>
 </li>
 <li>
 <p><a href="https://www.kdnuggets.com/2018/05/wtf-tensor.html">https://www.kdnuggets.com/2018/05/wtf-tensor.html</a> ， <a href="https://en.wikipedia.org/wiki/Tensor">https://en.wikipedia.org/wiki/Tensor</a></p>
@@ -623,6 +629,19 @@
       
       <nav class="post-nav">
         
+          <a class="prev" href="/post/gpu/mastering-string-transformations-in-rapids-libcudf/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">译：掌握 RAPIDS libcudf 中的字符串转换</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
         
           <a class="next" href="/post/gpu/2.accelerating-vector-search-fine-tuning-gpu-index-algorithms/">
             <span class="next-text nav-default">译：加速向量搜索：微调 GPU 索引算法</span>

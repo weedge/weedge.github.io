@@ -6,20 +6,11 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 03 Nov 2023 15:00:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>ann</title>
-      <link>https://weedge.github.io/tags/ann/</link>
-      <pubDate>Fri, 03 Nov 2023 15:00:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/ann/</guid>
-      <description></description>
-    </item>
-    
+    <lastBuildDate>Tue, 07 Nov 2023 15:00:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>gpu</title>
       <link>https://weedge.github.io/tags/gpu/</link>
-      <pubDate>Fri, 03 Nov 2023 15:00:23 +0800</pubDate>
+      <pubDate>Tue, 07 Nov 2023 15:00:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/gpu/</guid>
       <description></description>
@@ -28,9 +19,36 @@
     <item>
       <title>oneday</title>
       <link>https://weedge.github.io/tags/oneday/</link>
-      <pubDate>Fri, 03 Nov 2023 15:00:23 +0800</pubDate>
+      <pubDate>Tue, 07 Nov 2023 15:00:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/oneday/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>RAPIDS libcudf</title>
+      <link>https://weedge.github.io/tags/rapids-libcudf/</link>
+      <pubDate>Tue, 07 Nov 2023 15:00:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/rapids-libcudf/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>string</title>
+      <link>https://weedge.github.io/tags/string/</link>
+      <pubDate>Tue, 07 Nov 2023 15:00:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/string/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>ann</title>
+      <link>https://weedge.github.io/tags/ann/</link>
+      <pubDate>Fri, 03 Nov 2023 15:00:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/ann/</guid>
       <description></description>
     </item>
     
@@ -166,24 +184,6 @@
       <pubDate>Sun, 30 Jul 2023 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/kv/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>openai</title>
-      <link>https://weedge.github.io/tags/openai/</link>
-      <pubDate>Sun, 26 Feb 2023 20:16:30 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/openai/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Golang</title>
-      <link>https://weedge.github.io/tags/golang/</link>
-      <pubDate>Thu, 23 Feb 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/golang/</guid>
       <description></description>
     </item>
     
