@@ -13,8 +13,9 @@
       <pubDate>Thu, 30 Nov 2023 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/post/simd/faster_integer_parsing/</guid>
-      <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/simd/faster_integer_parsing/0.jpeg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
-&lt;p&gt;字符串转换成整数，或者浮点类型数据，是在编程中经常遇到的问题，各种语言的标准库中多会有自带通用方案实现，本文通过一个常见问题场景，来研究优化如何使用cpu 硬件SIMD指令集结合编译器在 log(n) 时间内完成此类parse操作，由于最终的优化需要结合对应cpu arch的指令集，这里硬件平台cpu为Intel x86，整数类型以uint64_t为例，最大2^64-1 20个字符表示。目的：结合场景优化思路(以小见大)，熟悉下Intel cpu simd相关指令的使用。常见场景： &lt;a href=&#34;https://github.com/simdjson/simdjson&#34;&gt;simdjson&lt;/a&gt;  (PS: 不因过早优化，在对应场景下整体稳定性和优化成本/收益上折中)&lt;/p&gt;</description>
+      <description>&lt;p&gt;​                        &lt;img src=&#34;https://github.com/weedge/mypic/raw/master/simd/faster_integer_parsing/0.jpeg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;导读&#34;&gt;导读&lt;/h2&gt;
+&lt;p&gt;字符串转换成整数，或者浮点类型数据，是在编程中经常遇到的问题，各种语言的标准库中会有实现，本文通过一个常见问题场景，来研究优化如何使用cpu 硬件SIMD指令集，并结合编译器在 log(n) 时间内完成此类parse操作；由于最终的优化需要结合对应cpu arch的指令集，这里硬件平台cpu为Intel x86，整数类型以uint64_t为例，最大2^64-1 20个字符表示。目的：结合场景优化思路(以小见大)，熟悉下Intel cpu simd相关指令的使用。常见场景： &lt;a href=&#34;https://github.com/simdjson/simdjson&#34;&gt;simdjson&lt;/a&gt;  (PS: 不因过早优化，在对应场景下整体稳定性和优化成本/收益上折中)&lt;/p&gt;</description>
     </item>
     
     <item>
