@@ -6,7 +6,17 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 07 Nov 2023 15:00:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 30 Nov 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>更快的字符串转整数</title>
+      <link>https://weedge.github.io/post/simd/faster_integer_parsing/</link>
+      <pubDate>Thu, 30 Nov 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/simd/faster_integer_parsing/</guid>
+      <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/simd/faster_integer_parsing/0.jpeg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;字符串转换成整数，或者浮点类型数据，是在编程中经常遇到的问题，各种语言的标准库中多会有自带通用方案实现，本文通过一个常见问题场景，来研究优化如何使用cpu 硬件SIMD指令集结合编译器在 log(n) 时间内完成此类parse操作，由于最终的优化需要结合对应cpu arch的指令集，这里硬件平台cpu为Intel x86，整数类型以uint64_t为例，最大2^64-1 20个字符表示。目的：结合场景优化思路(以小见大)，熟悉下Intel cpu simd相关指令的使用。常见场景： &lt;a href=&#34;https://github.com/simdjson/simdjson&#34;&gt;simdjson&lt;/a&gt;  (PS: 不因过早优化，在对应场景下整体稳定性和优化成本/收益上折中)&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>译：掌握 RAPIDS libcudf 中的字符串转换</title>
       <link>https://weedge.github.io/post/gpu/mastering-string-transformations-in-rapids-libcudf/</link>
@@ -293,26 +303,6 @@
 &lt;p&gt;&lt;em&gt;Make it correct, make it clear, make it concise, make it fast, in that order.&lt;/em&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;并不意味着禁止为速度和效率优化应用程序, 了解并掌握这些优化点，以备不时之需；文中给出了常见的优化技术；有些特定于 Go 内存模型，内存分配，GPM调度模型；有些是关于了解硬件有助于写出好的代码(适用于不同语言)，其中会有硬件方面的术语，可以结合wiki进行学习；&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>Go tips-笔记: 测试 82-90 mistakes</title>
-      <link>https://weedge.github.io/post/notions/go-tips/go-tips-11-testing/</link>
-      <pubDate>Mon, 20 Feb 2023 14:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/notions/go-tips/go-tips-11-testing/</guid>
-      <description>&lt;h2 id=&#34;引言&#34;&gt;引言&lt;/h2&gt;
-&lt;p&gt;测试是项目生命周期的一个重要方面。它提供了无数的好处，例如建立对应用程序的信心、充当代码文档以及使重构更容易。与其他一些语言相比，Go 具有强大的编写测试原语。主要讨论测试过程变得脆弱、效率低下和准确性低的常见错误。这类问题属于工程规范实践，有些case同样适用于其他语言。&lt;/p&gt;
-&lt;p&gt;Go 中提供 go test 工具来执行测试，可以查看具体的开发文档： &lt;strong&gt;&lt;a href=&#34;https://pkg.go.dev/cmd/go#hdr-Testing_flags&#34;&gt;https://pkg.go.dev/cmd/go#hdr-Testing_flags&lt;/a&gt;&lt;/strong&gt;  里面介绍了每个模式的具体使用方式，使用好这些测试模式flag，可以更快执行或更好地发现可能错误，进而保证代码质量，工程代码稳定性建设上的重要一环。Go中支持4种测试函数：单测函数，基准压测函数，模糊测试，以及打印输出样例测试。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestXxx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;...&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;BenchmarkXxx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;b&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;B&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;...&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;FuzzXxx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;f&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;F&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;...&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;ExampleXxx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-	&lt;span class=&#34;nf&#34;&gt;Println&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;The output of\\nthis example.&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-	&lt;span class=&#34;c1&#34;&gt;// Output: The output of
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;	&lt;span class=&#34;c1&#34;&gt;// this example.
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
     </item>
     
   </channel>

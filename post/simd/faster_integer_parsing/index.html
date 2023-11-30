@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="zh-cn" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>更快的字符串转整数 - 时间飘过</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="weedge" />
+  <meta name="description" content="字符串转换成整数，或者浮点类型数据，是在编程中经常遇到的问题，各种语言的标准库中多会有自带通用方案实现，本文通过一个常见问题场景，来研究优化如何使用cpu 硬件SIMD指令集结合编译器在 log(n) 时间内完成此类parse操作，由于最终的优化需要结合对应cpu arch的指令集，这里硬件平台cpu为Intel x86，整数类型以uint64_t为例，最大2^64-1 20个字符表示。目的：结合场景优化思路(以小见大)，熟悉下Intel cpu simd相关指令的使用。常见场景： simdjson (PS: 不因过早优化，在对应场景下整体稳定性和优化成本/收益上折中)
+" />
+
+  <meta name="keywords" content="工作, 技术, 生活" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.91.0" />
+
+
+<link rel="canonical" href="https://weedge.github.io/post/simd/faster_integer_parsing/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css" integrity="sha256-&#43;ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
+
+<meta property="og:title" content="更快的字符串转整数" />
+<meta property="og:description" content="
+字符串转换成整数，或者浮点类型数据，是在编程中经常遇到的问题，各种语言的标准库中多会有自带通用方案实现，本文通过一个常见问题场景，来研究优化如何使用cpu 硬件SIMD指令集结合编译器在 log(n) 时间内完成此类parse操作，由于最终的优化需要结合对应cpu arch的指令集，这里硬件平台cpu为Intel x86，整数类型以uint64_t为例，最大2^64-1 20个字符表示。目的：结合场景优化思路(以小见大)，熟悉下Intel cpu simd相关指令的使用。常见场景： simdjson  (PS: 不因过早优化，在对应场景下整体稳定性和优化成本/收益上折中)" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/simd/faster_integer_parsing/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-11-30T10:26:23+08:00" />
+<meta property="article:modified_time" content="2023-11-30T10:26:23+08:00" />
+
+<meta itemprop="name" content="更快的字符串转整数">
+<meta itemprop="description" content="
+字符串转换成整数，或者浮点类型数据，是在编程中经常遇到的问题，各种语言的标准库中多会有自带通用方案实现，本文通过一个常见问题场景，来研究优化如何使用cpu 硬件SIMD指令集结合编译器在 log(n) 时间内完成此类parse操作，由于最终的优化需要结合对应cpu arch的指令集，这里硬件平台cpu为Intel x86，整数类型以uint64_t为例，最大2^64-1 20个字符表示。目的：结合场景优化思路(以小见大)，熟悉下Intel cpu simd相关指令的使用。常见场景： simdjson  (PS: 不因过早优化，在对应场景下整体稳定性和优化成本/收益上折中)"><meta itemprop="datePublished" content="2023-11-30T10:26:23+08:00" />
+<meta itemprop="dateModified" content="2023-11-30T10:26:23+08:00" />
+<meta itemprop="wordCount" content="4585">
+<meta itemprop="keywords" content="cpu,simd,integer parsing," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="更快的字符串转整数"/>
+<meta name="twitter:description" content="
+字符串转换成整数，或者浮点类型数据，是在编程中经常遇到的问题，各种语言的标准库中多会有自带通用方案实现，本文通过一个常见问题场景，来研究优化如何使用cpu 硬件SIMD指令集结合编译器在 log(n) 时间内完成此类parse操作，由于最终的优化需要结合对应cpu arch的指令集，这里硬件平台cpu为Intel x86，整数类型以uint64_t为例，最大2^64-1 20个字符表示。目的：结合场景优化思路(以小见大)，熟悉下Intel cpu simd相关指令的使用。常见场景： simdjson  (PS: 不因过早优化，在对应场景下整体稳定性和优化成本/收益上折中)"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">时间飘过</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      时间飘过
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">更快的字符串转整数</h1>
+      
+      <div class="post-meta">
+        <time datetime="2023-11-30" class="post-time">
+          2023-11-30
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#问题">问题</a></li>
+    <li><a href="#标准库中的方法">标准库中的方法</a></li>
+    <li><a href="#优化思路">优化思路</a>
+      <ul>
+        <li><a href="#常规线性遍历">常规线性遍历</a></li>
+        <li><a href="#字节交换byteswap">字节交换(byteswap)</a></li>
+        <li><a href="#分而治之">分而治之</a></li>
+        <li><a href="#组合">组合</a></li>
+        <li><a href="#simd">SIMD</a></li>
+      </ul>
+    </li>
+    <li><a href="#基准测试">基准测试</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#reference">Reference</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <p><img src="https://github.com/weedge/mypic/raw/master/simd/faster_integer_parsing/0.jpeg" alt=""></p>
+<p>字符串转换成整数，或者浮点类型数据，是在编程中经常遇到的问题，各种语言的标准库中多会有自带通用方案实现，本文通过一个常见问题场景，来研究优化如何使用cpu 硬件SIMD指令集结合编译器在 log(n) 时间内完成此类parse操作，由于最终的优化需要结合对应cpu arch的指令集，这里硬件平台cpu为Intel x86，整数类型以uint64_t为例，最大2^64-1 20个字符表示。目的：结合场景优化思路(以小见大)，熟悉下Intel cpu simd相关指令的使用。常见场景： <a href="https://github.com/simdjson/simdjson">simdjson</a>  (PS: 不因过早优化，在对应场景下整体稳定性和优化成本/收益上折中)</p>
+<h2 id="问题">问题</h2>
+<p>假设有一些基于网络(socket)的传输协议字符串或包含微秒时间戳的文件。需要尽快解析这些时间戳。也许是 json，也许是 csv 文件，也许是其他定制的文件。它有 16 个字符长(8*16)，这也适用于信用卡号码。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">timestamp,event_id
+1585201087123567,a
+1585201087123585,b
+1585201087123621,c
+</code></pre></div><p>实现类似这样的功能：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="kt">uint64_t</span> <span class="nf">parse</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string_view</span> <span class="n">s</span><span class="p">);</span><span class="c1">//c++17
+</span></code></pre></div><h2 id="标准库中的方法">标准库中的方法</h2>
+<p>在c/c++中可以调用标准库方法进行解析，比如 c中 <code>atoll</code>相关函数； c++中 <a href="https://en.cppreference.com/w/cpp/string/byte/atoi"><code>std::atoll</code></a>一个从 C 继承的函数； <a href="https://en.cppreference.com/w/cpp/io/basic_stringstream"><code>std::stringstream</code></a> 流方式处理；标准C++17 引入的  <a href="https://en.cppreference.com/w/cpp/header/charconv"><code>&lt;charconv&gt;</code></a>头文件中的方法；以及boost库 <a href="https://www.boost.org/doc/libs/1_73_0/libs/spirit/doc/html/spirit/qi/reference/basics.html"><code>boost::spirit::qi</code></a>中的方法。比如 使用from_chars 方法</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="kr">inline</span> <span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span> <span class="n">parse_char_conv</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string_view</span> <span class="n">s</span><span class="p">)</span> <span class="k">noexcept</span>
+<span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span> <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">auto</span> <span class="p">[</span><span class="n">ptr</span><span class="p">,</span> <span class="n">ec</span><span class="p">]</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">from_chars</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">()</span> <span class="o">+</span> <span class="n">s</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">result</span><span class="p">);</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">ec</span> <span class="o">!=</span> <span class="n">std</span><span class="o">::</span><span class="n">errc</span><span class="p">())</span> <span class="p">{}</span> <span class="c1">// I have an error !
+</span><span class="c1"></span>  <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div><h2 id="优化思路">优化思路</h2>
+<h3 id="常规线性遍历">常规线性遍历</h3>
+<p>将展开的解决方案中的操作绘制为一棵树，以将“1234”解析为 32 位整数的简化示例为例：</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/simd/faster_integer_parsing/1.png" alt=""></p>
+<p><em>“1234”操作的展开解图</em></p>
+<p>可以看到，乘法和加法的数量与字符数量成线性关系。很难看出如何改进这一点，因为每次乘法都是通过不同的因子（所以不能“一次性”相乘），并且在一天结束时需要将所有中间结果相加。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="kr">inline</span> <span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span> <span class="n">parse_naive</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string_view</span> <span class="n">s</span><span class="p">)</span> <span class="k">noexcept</span>
+<span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span> <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">for</span><span class="p">(</span><span class="kt">char</span> <span class="nl">digit</span> <span class="p">:</span> <span class="n">s</span><span class="p">)</span>
+  <span class="p">{</span>
+    <span class="n">result</span> <span class="o">+=</span> <span class="n">result</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="n">digit</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kr">inline</span> <span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span> <span class="n">parse_unrolled</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string_view</span> <span class="n">s</span><span class="p">)</span> <span class="k">noexcept</span>
+<span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span> <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+  <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000000000000000ULL</span><span class="p">;</span>
+  <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100000000000000ULL</span><span class="p">;</span>
+  <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10000000000000ULL</span><span class="p">;</span>
+  <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000000000000ULL</span><span class="p">;</span>
+  <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100000000000ULL</span><span class="p">;</span>
+  <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10000000000ULL</span><span class="p">;</span>
+  <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000000000ULL</span><span class="p">;</span>
+  <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100000000ULL</span><span class="p">;</span>
+  <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10000000ULL</span><span class="p">;</span>
+  <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000000ULL</span><span class="p">;</span>
+  <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100000ULL</span><span class="p">;</span>
+  <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10000ULL</span><span class="p">;</span>
+  <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">12</span><span class="p">]</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000ULL</span><span class="p">;</span>
+  <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">13</span><span class="p">]</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100ULL</span><span class="p">;</span>
+  <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">14</span><span class="p">]</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10ULL</span><span class="p">;</span>
+  <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">15</span><span class="p">]</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">);</span>
+
+  <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><hr>
+<h3 id="字节交换byteswap">字节交换(byteswap)</h3>
+<p>然而，它仍然非常有规律。一方面，字符串中的第一个字符乘以最大的因子，因为它是最高有效的数字。</p>
+<blockquote>
+<p>在小端机器（如 x86）上，整数的第一个字节包含最低有效数字，而字符串中的第一个字节包含最高有效数字。</p>
+</blockquote>
+<p><img src="https://github.com/weedge/mypic/raw/master/simd/faster_integer_parsing/2.png" alt=""></p>
+<p><em>将字符串视为整数，可以通过更少的操作更接近最终的解析状态 - 十六进制表示(机器只识别是01)</em></p>
+<p>现在，要将字符串的字节重新解释为整数，需要使用 <code>std::memcpy</code>（<a href="https://blog.regehr.org/archives/1307">以避免严格别名违规</a>），并且编译器本身<code>__builtin_bswap64</code>来交换一条指令中的字节。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="kr">inline</span> <span class="n">T</span> <span class="n">get_zeros_string</span><span class="p">()</span> <span class="k">noexcept</span><span class="p">;</span>
+
+<span class="k">template</span> <span class="o">&lt;&gt;</span>
+<span class="kr">inline</span> <span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span> <span class="n">get_zeros_string</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span><span class="o">&gt;</span><span class="p">()</span> <span class="k">noexcept</span>
+<span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span> <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">constexpr</span> <span class="kt">char</span> <span class="n">zeros</span><span class="p">[]</span> <span class="o">=</span> <span class="s">&#34;00000000&#34;</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">memcpy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">result</span><span class="p">,</span> <span class="n">zeros</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">result</span><span class="p">));</span>
+  <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// 64 = 8*8
+</span><span class="c1"></span><span class="kr">inline</span> <span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span> <span class="n">parse_8_chars</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">string</span><span class="p">)</span> <span class="k">noexcept</span>
+<span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span> <span class="n">chunk</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">memcpy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">chunk</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">chunk</span><span class="p">));</span>
+  <span class="n">chunk</span> <span class="o">=</span> <span class="n">__builtin_bswap64</span><span class="p">(</span><span class="n">chunk</span> <span class="o">-</span> <span class="n">get_zeros_string</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span><span class="o">&gt;</span><span class="p">());</span>
+  <span class="k">return</span> <span class="n">chunk</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p>这里使用了内置的64位swap进行反转</p>
+<hr>
+<h3 id="分而治之">分而治之</h3>
+<p>从上一步中，最终得到一个整数，其位表示形式将每个数字放置在单独的字节中。即，尽管一个字节8位最多可以表示 256 个值(0~2^8-1)，但整数的每个字节中都有值 0-9。它们也采用正确的小端顺序。现在只需要以某种方式将它们“粉碎”在一起即可。</p>
+<p>知道线性执行会太慢，下一个可能性是什么？ <strong>O(log(n))</strong>！需要一步将每个相邻数字组合成一对，然后将每对数字组合成四个一组，依此类推，直到得到整个整数。</p>
+<p><a href="https://www.reddit.com/r/cpp/comments/gr18ig/faster_integer_parsing/frx9agb">reddit 上的 Sopel97</a> 指出 byteswap 不是必需的。无论哪种方式都可以组合相邻数字 - 它们的顺序并不重要。我意识到它有助于我获得下一个见解，但可以在最终代码中省略。</p>
+<blockquote>
+<p>关键是同时处理相邻的数字。这允许操作树在 O(log(n)) 时间内运行。</p>
+</blockquote>
+<p>这涉及将偶数索引数字乘以 10 的幂并保留奇数索引数字。这可以通过位掩码来选择性地应用操作来完成</p>
+<p><img src="https://github.com/weedge/mypic/raw/master/simd/faster_integer_parsing/3.png" alt=""></p>
+<p>通过使用位掩码，我们可以一次对多个数字应用运算，将它们组合成一个更大的组</p>
+<p>让<code>parse_8_chars</code>通过使用这个掩码技巧来完成之前开始的函数。作为屏蔽的一个巧妙的副作用，不需要减去 <code>'0'</code>，因为它会被屏蔽掉。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="kr">inline</span> <span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span> <span class="n">parse_8_chars</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">string</span><span class="p">)</span> <span class="k">noexcept</span>
+<span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span> <span class="n">chunk</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">memcpy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">chunk</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">chunk</span><span class="p">));</span>
+
+  <span class="c1">// 1-byte mask trick (works on 4 pairs of single digits)
+</span><span class="c1"></span>  <span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span> <span class="n">lower_digits</span> <span class="o">=</span> <span class="p">(</span><span class="n">chunk</span> <span class="o">&amp;</span> <span class="mh">0x0f000f000f000f00</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span> <span class="n">upper_digits</span> <span class="o">=</span> <span class="p">(</span><span class="n">chunk</span> <span class="o">&amp;</span> <span class="mh">0x000f000f000f000f</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span><span class="p">;</span>
+  <span class="n">chunk</span> <span class="o">=</span> <span class="n">lower_digits</span> <span class="o">+</span> <span class="n">upper_digits</span><span class="p">;</span>
+
+  <span class="c1">// 2-byte mask trick (works on 2 pairs of two digits)
+</span><span class="c1"></span>  <span class="n">lower_digits</span> <span class="o">=</span> <span class="p">(</span><span class="n">chunk</span> <span class="o">&amp;</span> <span class="mh">0x00ff000000ff0000</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">16</span><span class="p">;</span>
+  <span class="n">upper_digits</span> <span class="o">=</span> <span class="p">(</span><span class="n">chunk</span> <span class="o">&amp;</span> <span class="mh">0x000000ff000000ff</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span><span class="p">;</span>
+  <span class="n">chunk</span> <span class="o">=</span> <span class="n">lower_digits</span> <span class="o">+</span> <span class="n">upper_digits</span><span class="p">;</span>
+
+  <span class="c1">// 4-byte mask trick (works on pair of four digits)
+</span><span class="c1"></span>  <span class="n">lower_digits</span> <span class="o">=</span> <span class="p">(</span><span class="n">chunk</span> <span class="o">&amp;</span> <span class="mh">0x0000ffff00000000</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">32</span><span class="p">;</span>
+  <span class="n">upper_digits</span> <span class="o">=</span> <span class="p">(</span><span class="n">chunk</span> <span class="o">&amp;</span> <span class="mh">0x000000000000ffff</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10000</span><span class="p">;</span>
+  <span class="n">chunk</span> <span class="o">=</span> <span class="n">lower_digits</span> <span class="o">+</span> <span class="n">upper_digits</span><span class="p">;</span>
+
+  <span class="k">return</span> <span class="n">chunk</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><hr>
+<h3 id="组合">组合</h3>
+<p>把它们放在一起，为了解析 16 位整数，将它分成两个 8 字节的块，运行<code>parse_8_chars</code>刚刚编写的代码，并对它进行基准测试！</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="kr">inline</span> <span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span> <span class="n">parse_trick</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string_view</span> <span class="n">s</span><span class="p">)</span> <span class="k">noexcept</span>
+<span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span> <span class="n">upper_digits</span> <span class="o">=</span> <span class="n">parse_8_chars</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">());</span>
+  <span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span> <span class="n">lower_digits</span> <span class="o">=</span> <span class="n">parse_8_chars</span><span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">()</span> <span class="o">+</span> <span class="mi">8</span><span class="p">);</span>
+  <span class="k">return</span> <span class="n">upper_digits</span> <span class="o">*</span> <span class="mi">100000000</span> <span class="o">+</span> <span class="n">lower_digits</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kt">void</span> <span class="nf">BM_trick</span><span class="p">(</span><span class="n">benchmark</span><span class="o">::</span><span class="n">State</span><span class="o">&amp;</span> <span class="n">state</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="nl">_</span> <span class="p">:</span> <span class="n">state</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">benchmark</span><span class="o">::</span><span class="n">DoNotOptimize</span><span class="p">(</span><span class="n">parse_trick</span><span class="p">(</span><span class="n">example_stringview</span><span class="p">));</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><p>还不错，将展开循环(unrolled)<a href="https://quick-bench.com/q/PJAjDeGoSS_OsTrSdtPq1alye34">基准测试</a>降低了近 50%左右；（注：这个和编译器优化相关，本文采用的是gcc 9.0 版本，高版本中unrolled版本指令有所优化，autosimd）尽管如此，感觉就像正在手动执行一堆屏蔽和元素操作。也许可以让 CPU SIMD指令集来进一优化，将指令存入更宽的寄存器，较少指令执行次数和执行周期。</p>
+<hr>
+<h3 id="simd">SIMD</h3>
+<p>有以下主要优化：</p>
+<ul>
+<li>同时组合数字组以实现 O(log(n)) 时间</li>
+</ul>
+<p>还有一个 16 个字符或 128 位字符串需要解析 - 可以使用 SIMD 吗？当然可以！<a href="https://en.wikipedia.org/wiki/SIMD">SIMD 代表单指令多数据，</a>Intel 和 AMD CPU 均支持 SSE 和 AVX 指令，并且它们通常适用于更宽的寄存器(128bit i)。</p>
+<p>使用<a href="https://software.intel.com/sites/landingpage/IntrinsicsGuide/">Intel 内部函数指南</a>来为正确的 SIMD CPU 指令找到正确的编译器内部函数。</p>
+<p>首先设置 16 个字节中每个字节的数字：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="kr">inline</span> <span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span> <span class="n">parse_16_chars</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">string</span><span class="p">)</span> <span class="k">noexcept</span>
+<span class="p">{</span>
+  <span class="c1">//__m128i  
+</span><span class="c1"></span>  <span class="c1">// This intrinsic may perform better than _mm_loadu_si128 when the data crosses a cache line boundary
+</span><span class="c1"></span>  <span class="k">auto</span> <span class="n">chunk</span> <span class="o">=</span> <span class="n">_mm_lddqu_si128</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="k">const</span> <span class="kr">__m128i</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">string</span><span class="p">));</span>
+  <span class="k">auto</span> <span class="n">zeros</span> <span class="o">=</span>  <span class="n">_mm_set1_epi8</span><span class="p">(</span><span class="sc">&#39;0&#39;</span><span class="p">);</span>
+  <span class="n">chunk</span> <span class="o">=</span> <span class="n">chunk</span> <span class="o">-</span> <span class="n">zeros</span><span class="p">;</span>
+  
+  <span class="c1">// ...
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></div><p>现在，最引人注目的是<code>madd</code>功能。这些 SIMD 函数的作用与使用位掩码技巧所做的完全一样 - 它们采用宽寄存器，将其解释为较小整数的向量，将每个乘数乘以给定的乘数，并将相邻的乘数加在一起形成更宽整数的向量。全部在一个指令中！</p>
+<p>作为获取每个字节，将奇数乘以 10 并将相邻对加在一起的示例，可以使用 <a href="https://www.felixcloutier.com/x86/pmaddubsw"><code>_mm_maddubs_epi16</code></a></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="c1">// The 1-byte &#34;trick&#34; in one instruction
+</span><span class="c1"></span><span class="k">const</span> <span class="k">auto</span> <span class="n">mult</span> <span class="o">=</span> <span class="n">_mm_set_epi8</span><span class="p">(</span>
+  <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span>
+<span class="p">);</span>
+<span class="n">chunk</span> <span class="o">=</span> <span class="n">_mm_maddubs_epi16</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="n">mult</span><span class="p">);</span>
+</code></pre></div><p>还有另一条用于 2 字节技巧的指令<code>_mm_maddubs_epi16</code>，但不幸的是找不到用于 4 字节技巧的指令<code>_mm_maddubs_epi32</code>木有 - 这需要两条指令。这是完成的<code>parse_16_chars</code>函数：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="kr">inline</span> <span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span> <span class="n">parse_16_chars</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">string</span><span class="p">)</span> <span class="k">noexcept</span>
+<span class="p">{</span>
+  <span class="k">auto</span> <span class="n">chunk</span> <span class="o">=</span> <span class="n">_mm_lddqu_si128</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="k">const</span> <span class="kr">__m128i</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">string</span><span class="p">));</span>
+  <span class="k">auto</span> <span class="n">zeros</span> <span class="o">=</span>  <span class="n">_mm_set1_epi8</span><span class="p">(</span><span class="sc">&#39;0&#39;</span><span class="p">);</span>
+  <span class="n">chunk</span> <span class="o">=</span> <span class="n">chunk</span> <span class="o">-</span> <span class="n">zeros</span><span class="p">;</span>
+
+  <span class="p">{</span>
+    <span class="k">const</span> <span class="k">auto</span> <span class="n">mult</span> <span class="o">=</span> <span class="n">_mm_set_epi8</span><span class="p">(</span>
+      <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span>
+    <span class="p">);</span>
+    <span class="n">chunk</span> <span class="o">=</span> <span class="n">_mm_maddubs_epi16</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="n">mult</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="p">{</span>
+    <span class="k">const</span> <span class="k">auto</span> <span class="n">mult</span> <span class="o">=</span> <span class="n">_mm_set_epi16</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">);</span>
+    <span class="n">chunk</span> <span class="o">=</span> <span class="n">_mm_madd_epi16</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="n">mult</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="p">{</span>
+    <span class="n">chunk</span> <span class="o">=</span> <span class="n">_mm_packus_epi32</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="n">chunk</span><span class="p">);</span>
+    <span class="k">const</span> <span class="k">auto</span> <span class="n">mult</span> <span class="o">=</span> <span class="n">_mm_set_epi16</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10000</span><span class="p">);</span>
+    <span class="n">chunk</span> <span class="o">=</span> <span class="n">_mm_madd_epi16</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="n">mult</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="p">((</span><span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&amp;</span> <span class="mh">0xffffffff</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100000000</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="mi">32</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div><p><strong>0.75纳秒</strong>！哇哦。</p>
+<p>在实际生产环境中，需要对输入验证或长度检查；例如如下naive代码：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="k">static</span> <span class="kt">int</span> <span class="nf">h_atoi</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">src</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kt">bool</span> <span class="n">isMinus</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="o">*</span><span class="n">src</span> <span class="o">==</span> <span class="sc">&#39; &#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">src</span><span class="o">++</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">src</span> <span class="o">==</span> <span class="sc">&#39;+&#39;</span> <span class="o">||</span> <span class="o">*</span><span class="n">src</span> <span class="o">==</span> <span class="sc">&#39;-&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">src</span> <span class="o">==</span> <span class="sc">&#39;-&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">isMinus</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">src</span><span class="o">++</span><span class="p">;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">src</span> <span class="o">&lt;</span> <span class="sc">&#39;0&#39;</span> <span class="o">||</span> <span class="o">*</span><span class="n">src</span> <span class="o">&gt;</span> <span class="sc">&#39;9&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="mi">2147483647</span><span class="p">;</span>
+        <span class="k">return</span> <span class="n">s</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="o">*</span><span class="n">src</span> <span class="o">!=</span> <span class="sc">&#39;\0&#39;</span> <span class="o">&amp;&amp;</span> <span class="o">*</span><span class="n">src</span> <span class="o">&gt;=</span> <span class="sc">&#39;0&#39;</span> <span class="o">&amp;&amp;</span> <span class="o">*</span><span class="n">src</span> <span class="o">&lt;=</span> <span class="sc">&#39;9&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="o">*</span><span class="n">src</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">;</span>
+        <span class="n">src</span><span class="o">++</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">s</span> <span class="o">*</span> <span class="p">(</span><span class="n">isMinus</span> <span class="o">?</span> <span class="o">-</span><span class="mi">1</span> <span class="o">:</span> <span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div><p>本文介绍的方法适用于固定长度的整数场景。一方面，当知道整数很长时，这可以用作“快速路径”，而在其他情况下则可以回退到简单循环。其次，通过使用一些更聪明的 SIMD 指令，可以在 2 纳秒内运行一些东西(甚至更快)，并完成验证和长度检查。比如simdjson场景。</p>
+<h2 id="基准测试">基准测试</h2>
+<p>使用<a href="https://github.com/google/benchmark">Google Benchmark</a>来衡量性能，并获得基线，与将最终结果直接加载到寄存器中进行比较 - 即不涉及实际解析。</p>
+<p>运行基准测试！代码在这里并不重要，它只是显示正在进行基准测试的内容。</p>
+<p>最终结果：https://quick-bench.com/q/PJAjDeGoSS_OsTrSdtPq1alye34</p>
+<p>注： boost库不是标准库，未显示在结果中，可以在本机上运行基准测试。</p>
+<h1 id="使用-avx-512-快速解析整数">使用 AVX-512 快速解析整数</h1>
+<p>最近的英特尔处理器有新的指令 AVX-512，它可以一次处理多个字节并进行屏蔽，以便您可以仅选择一系列数据。</p>
+<p>我假设您知道数字序列的开头和结尾。以下带有 AVX-512 内在函数的代码执行以下操作：</p>
+<ol>
+<li>计算以字节为单位的跨度 (digit_count)，</li>
+<li>如果有超过 20 个字节，就知道该整数太大，无法容纳 64 位整数，</li>
+<li>计算一个“掩码”：一个 32 位值，只有最高有效的 digital_count 位设置为 1，</li>
+<li>将 ASCII 或 UTF-8 字符串加载到 256 位寄存器中，</li>
+<li>减去字符值“0”以获得 0 到 9 之间的值（数字值），</li>
+<li>检查某个值是否超过 9，在这种情况下有一个非数字字符。</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="n">size_t</span> <span class="n">digit_count</span> <span class="o">=</span> <span class="n">size_t</span><span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">);</span>
+<span class="c1">// if (digit_count &gt; 20) { error ....}
+</span><span class="c1"></span><span class="k">const</span> <span class="n">simd8x32</span> <span class="n">ASCII_ZERO</span> <span class="o">=</span> <span class="n">_mm256_set1_epi8</span><span class="p">(</span><span class="sc">&#39;0&#39;</span><span class="p">);</span>
+<span class="k">const</span> <span class="n">simd8x32</span> <span class="n">NINE</span> <span class="o">=</span> <span class="n">_mm256_set1_epi8</span><span class="p">(</span><span class="mi">9</span><span class="p">);</span>
+<span class="kt">uint32_t</span> <span class="n">mask</span> <span class="o">=</span> <span class="kt">uint32_t</span><span class="p">(</span><span class="mh">0xFFFFFFFF</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">start</span> <span class="o">-</span> <span class="n">end</span> <span class="o">+</span> <span class="mi">32</span><span class="p">);</span>
+<span class="k">auto</span> <span class="n">in</span> <span class="o">=</span> <span class="n">_mm256_maskz_loadu_epi8</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="mi">32</span><span class="p">);</span>
+<span class="k">auto</span> <span class="n">base10_8bit</span> <span class="o">=</span> <span class="n">_mm256_maskz_sub_epi8</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">in</span><span class="p">,</span> <span class="n">ASCII_ZERO</span><span class="p">);</span>
+<span class="k">auto</span> <span class="n">nondigits</span> <span class="o">=</span> <span class="n">_mm256_mask_cmpgt_epu8_mask</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">base10_8bit</span><span class="p">,</span> <span class="n">NINE</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">nondigits</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// there is a non-digit
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></div><p>这是使用 AVX-512 功能的关键步骤。之后，对于熟悉传统 x64 处理器上的高级 Intel 内在函数的人来说，可以使用“老式”处理……大多数情况下，只需乘以 10、乘以 100、乘以 100000 即可创建四个 32 位值：第一个对应于最低有效的 8 个 ASCII 字节，第二个到下一个最高有效的 8 个 ASCII 字节，以及最多 4 个最高有效字节。当数字为 8 位或更少时，只有其中一个单词相关；当数字为 16 位或更少时，前两个单词有意义。总是浪费一个由零组成的 32 位值。代码如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="k">auto</span> <span class="n">DIGIT_VALUE_BASE10_8BIT</span> <span class="o">=</span> <span class="n">_mm256_set_epi8</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span>
+                                               <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span>
+                                               <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span>
+                                               <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">);</span>
+<span class="k">auto</span> <span class="n">DIGIT_VALUE_BASE10E2_8BIT</span> <span class="o">=</span> <span class="n">_mm_set_epi8</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">);</span>
+<span class="k">auto</span> <span class="n">DIGIT_VALUE_BASE10E4_16BIT</span> <span class="o">=</span> <span class="n">_mm_set_epi16</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10000</span><span class="p">);</span>
+<span class="k">auto</span> <span class="n">base10e2_16bit</span> <span class="o">=</span> <span class="n">_mm256_maddubs_epi16</span><span class="p">(</span><span class="n">base10_8bit</span><span class="p">,</span> <span class="n">DIGIT_VALUE_BASE10_8BIT</span><span class="p">);</span>
+<span class="k">auto</span> <span class="n">base10e2_8bit</span> <span class="o">=</span> <span class="n">_mm256_cvtepi16_epi8</span><span class="p">(</span><span class="n">base10e2_16bit</span><span class="p">);</span>
+<span class="k">auto</span> <span class="n">base10e4_16bit</span> <span class="o">=</span> <span class="n">_mm_maddubs_epi16</span><span class="p">(</span><span class="n">base10e2_8bit</span><span class="p">,</span> <span class="n">DIGIT_VALUE_BASE10E2_8BIT</span><span class="p">);</span>
+<span class="k">auto</span> <span class="n">base10e8_32bit</span> <span class="o">=</span> <span class="n">_mm_madd_epi16</span><span class="p">(</span><span class="n">base10e4_16bit</span><span class="p">,</span> <span class="n">DIGIT_VALUE_BASE10E4_16BIT</span><span class="p">);</span>
+</code></pre></div><p><a href="https://github.com/lemire/Code-used-on-Daniel-Lemire-s-blog/tree/master/2023/09/22">c++代码实现</a>，并使用GCC12编译。在 Ice Lake 服务器上运行基准测试。使用随机 32 位整数进行测试。AVX-512 的速度是标准方法<code>std::from_chars</code>的两倍多。</p>
+<table>
+<thead>
+<tr>
+<th>AVX-512</th>
+<th>1.8GB/秒</th>
+<th>57 指令/数量</th>
+<th>17 周期/次数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>std::from_chars</td>
+<td>0.8GB/秒</td>
+<td>128条指令/数量</td>
+<td>39 周期/次数</td>
+</tr>
+</tbody>
+</table>
+<p>目前的比较并不完全公平，因为 AVX-512 函数假设它知道数字序列的开头和结尾。</p>
+<p>假设正在循环内按顺序解析数字，可以通过使用内联函数来提高性能，使其达到 2.3 GB/s，性能提升 30%。</p>
+<p>原始代码将返回奇特的 std::Optional 值，但 GCC 受到负面影响，因此我将函数签名更改为更常规。甚至，在我的测试中，与 GCC 相比，LLVM/clang 稍微快一些。</p>
+<p><strong>NOTE:</strong></p>
+<p>这里没有进行传统的解析，这涉及从左到右（最重要到最不重要）的解析。使这项工作有效的原因是“右对齐”SIMD 寄存器中的数字（将最低有效数字放入 SIMD 寄存器的最高有效字节中）。</p>
+<p>这与传统的从左到右的数字解析器形成对比：通过知道数字的最低有效数字在哪里，我们确切地知道每个数字的价值（最右边的是数字 10^0，倒数第二个数字是数字 10^1，等等） ……）。我们不再需要执行传统的“读取下一个数字，将总数乘以 10，读取下一个数字并将其添加”，这会产生数字之间的数据依赖性。</p>
+<p>因为支持最多 20 个字符数字(uint64_t max 2^64-1)，20*8=160位，所以从支持 32 字节寄存器的SIMD指令集开始（尽管在步骤 2 中很快缩小到 16 字节寄存器，因为 2 位数字仍然可以容纳在一个字节中）：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">String: 1234567890
+SIMD step 1 (8-bit x 32): 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 2 3 4 5 6 7 8 9 0
+SIMD step 2 (8-bit x 16): 00 00 00 00 00 00 00 00 00 00 00 12 34 56 78 90
+SIMD step 3 (16-bit x 8): 0000 0000 0000 0000 0000 0012 3456 7890
+SIMD step 4 (32-bit x 4): 00000000 00000000 00000012 34567890
+</code></pre></div><p>之后，提取 32 位数字，将它们乘以 10^16、10^8 和 10^0，然后将它们相加以获得 64 位结果（在本例中为 1234567890）。</p>
+<p>值得注意的一点是：使用 AVX-512，还可以同时解析 2 个数字（每个数字字符串可由32字节(256位)寄存器存放处理），而无需修改算法。（如果知道数字字符串都是 8 字节(64位)或更少，可以解析更多！）如果想要 32 位数字，您可以一次解析 4 个！16位，8个！</p>
+<p>请注意，如果加载 32 个字节（假设填充，对齐操作），查找非数字，并使用它来查找末尾，然后使用“右对齐”所有数字，则可以在不知道数字的完整大小的情况下执行此操作字节移位/洗牌(shift/shuffle)。</p>
+<h2 id="reference">Reference</h2>
+<ol>
+<li><a href="https://kholdstare.github.io/technical/2020/05/26/faster-integer-parsing.html">https://kholdstare.github.io/technical/2020/05/26/faster-integer-parsing.html</a></li>
+<li><a href="https://www.reddit.com/r/cpp/comments/gr18ig/faster_integer_parsing/">https://www.reddit.com/r/cpp/comments/gr18ig/faster_integer_parsing/</a></li>
+<li><a href="https://quick-bench.com/q/-E78g-dkbnDvKlGVkgZc0owGrn0">https://quick-bench.com/q/-E78g-dkbnDvKlGVkgZc0owGrn0</a>  <a href="https://godbolt.org/z/czvqh6v1a">https://godbolt.org/z/czvqh6v1a</a></li>
+<li><a href="http://0x80.pl/articles/simd-parsing-int-sequences.html">http://0x80.pl/articles/simd-parsing-int-sequences.html</a> <a href="https://github.com/WojciechMula/parsing-int-series">github</a></li>
+<li><a href="https://lemire.me/blog/2023/09/22/parsing-integers-quickly-with-avx-512/">https://lemire.me/blog/2023/09/22/parsing-integers-quickly-with-avx-512/</a></li>
+<li><a href="https://en.wikichip.org/wiki/x86/avx512_vnni">https://en.wikichip.org/wiki/x86/avx512_vnni</a></li>
+<li><a href="https://blog.regehr.org/archives/1307">https://blog.regehr.org/archives/1307</a></li>
+<li><a href="https://lab.cs.tsinghua.edu.cn/hpc/doc/assignments/5.simd/">https://lab.cs.tsinghua.edu.cn/hpc/doc/assignments/5.simd/</a></li>
+<li><strong><a href="https://en.algorithmica.org/hpc/simd/">https://en.algorithmica.org/hpc/simd/</a></strong></li>
+</ol>
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2023-11-30
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/cpu/">cpu</a>
+          <a href="https://weedge.github.io/tags/simd/">simd</a>
+          <a href="https://weedge.github.io/tags/integer-parsing/">integer parsing</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/gpu/mastering-string-transformations-in-rapids-libcudf/">
+            <span class="next-text nav-default">译：掌握 RAPIDS libcudf 中的字符串转换</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/post/simd/faster_integer_parsing/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:weege007@gmail.com" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/weedge" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://weibo.com/weedge" rel="me noopener" class="iconfont"
+      title="weibo"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M385.714286 733.714286q12-19.428571 6.285714-39.428571t-25.714286-28.571429q-19.428571-8-41.714286-0.571429t-34.285714 26.285714q-12.571429 19.428571-7.428571 39.142857t24.571429 28.857143 42.571429 1.428571 35.714286-27.142857zm53.714286-69.142857q4.571429-7.428571 2-15.142857t-10-10.571429q-8-2.857143-16.285714 2.857143t-12.285714 10.571429q-9.714286 17.714286 7.428571 25.714286 8 2.857143 16.571429 2.857143t12.571429-10.571429zm99.428571 61.142857q-25.714286 58.285714-90.285714 85.714286t-128 6.857143q-61.142857-19.428571-84.285714-72.285714t3.714286-107.142857q26.857143-53.142857 86.571429-79.428571t120.285714-10.857143q63.428571 16.571429 90.571429 68.285714t1.428571 108.857143zm178.285714-91.428571q-5.142857-54.857143-50.857143-97.142857t-119.142857-62.285714-156.857143-12q-127.428571 13.142857-211.142857 80.857143t-75.714286 151.142857q5.142857 54.857143 50.857143 97.142857t119.142857 62.285714 156.857143 12q127.428571-13.142857 211.142857-80.857143t75.714286-151.142857zm176 2.285714q0 38.857143-21.142857 79.714286t-62.285714 78.285714-96.285714 67.142857-129.142857 47.428571-154.571429 17.714286-157.142857-19.142857-137.428571-53.142857-98-86.285714-37.142857-114q0-65.714286 39.714286-140t112.857143-147.428571q96.571429-96.571429 195.142857-134.857143t140.857143 4q37.142857 36.571429 11.428571 119.428571-2.285714 8-0.571429 11.428571t5.714286 4 8.285714 2.857143 7.714286-2l3.428571-1.142857q79.428571-33.714286 140.571429-33.714286t87.428571 34.857143q25.714286 36 0 101.714286-1.142857 7.428571-2.571429 11.428571t2.571429 7.142857 6.857143 4.285714 9.714286 3.428571q32.571429 10.285714 58.857143 26.857143t45.714286 46.571429 19.428571 66.571429zm-42.285714-356.571429q24 26.857143 31.142857 62t-3.714286 67.142857q-4.571429 13.142857-16.857143 19.428571t-25.428571 2.285714q-13.142857-4.571429-19.428571-16.857143t-2.285714-25.428571q11.428571-36-13.714286-63.428571t-61.142857-20q-13.714286 2.857143-25.714286-4.571429t-14.285714-21.142857q-2.857143-13.714286 4.571429-25.428571t21.142857-14.571429q34.285714-7.428571 68 3.142857t57.714286 37.428571zm103.428571-93.142857q49.714286 54.857143 64.285714 127.142857t-7.714286 138q-5.142857 15.428571-19.428571 22.857143t-29.714286 2.285714-22.857143-19.428571-2.857143-29.714286q16-46.857143 5.714286-98.285714t-45.714286-90.285714q-35.428571-39.428571-84.571429-54.571429t-98.857143-4.857143q-16 3.428571-29.714286-5.428571t-17.142857-24.857143 5.428571-29.428571 24.857143-16.857143q70.285714-14.857143 139.428571 6.571429t118.857143 76.857143z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://weedge.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2013 -
+    2023
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        weedge
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//weedge.disqus.com/count.js" async></script>
+
+
+
+
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
+
+
+</body>
+</html>

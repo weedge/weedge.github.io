@@ -6,7 +6,34 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 07 Nov 2023 15:00:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 30 Nov 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>cpu</title>
+      <link>https://weedge.github.io/tags/cpu/</link>
+      <pubDate>Thu, 30 Nov 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/cpu/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>integer parsing</title>
+      <link>https://weedge.github.io/tags/integer-parsing/</link>
+      <pubDate>Thu, 30 Nov 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/integer-parsing/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>simd</title>
+      <link>https://weedge.github.io/tags/simd/</link>
+      <pubDate>Thu, 30 Nov 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/simd/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>gpu</title>
       <link>https://weedge.github.io/tags/gpu/</link>
@@ -157,33 +184,6 @@
       <pubDate>Sun, 24 Sep 2023 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/inverted-index/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>knn</title>
-      <link>https://weedge.github.io/tags/knn/</link>
-      <pubDate>Sun, 24 Sep 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/knn/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>rust</title>
-      <link>https://weedge.github.io/tags/rust/</link>
-      <pubDate>Wed, 20 Sep 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/rust/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>kv</title>
-      <link>https://weedge.github.io/tags/kv/</link>
-      <pubDate>Sun, 30 Jul 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/kv/</guid>
       <description></description>
     </item>
     
