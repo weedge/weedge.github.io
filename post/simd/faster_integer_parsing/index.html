@@ -76,7 +76,7 @@
 导读
 字符串转换成整数，或者浮点类型数据，是在编程中经常遇到的问题，各种语言的标准库中会有实现，本文通过一个常见问题场景，来研究优化如何使用cpu 硬件SIMD指令集，并结合编译器在 log(n) 时间内完成此类parse操作；由于最终的优化需要结合对应cpu arch的指令集，这里硬件平台cpu为Intel x86，整数类型以uint64_t为例，最大2^64-1 20个字符表示。目的：结合场景优化思路(以小见大)，熟悉下Intel cpu simd相关指令的使用。常见场景： simdjson  (PS: 不因过早优化，在对应场景下整体稳定性和优化成本/收益上折中)"><meta itemprop="datePublished" content="2023-11-30T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-11-30T10:26:23+08:00" />
-<meta itemprop="wordCount" content="4531">
+<meta itemprop="wordCount" content="4559">
 <meta itemprop="keywords" content="cpu,simd,integer parsing," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：更快的字符串转整数"/>
 <meta name="twitter:description" content="​                        
@@ -544,7 +544,7 @@
   <span class="k">return</span> <span class="p">((</span><span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&amp;</span> <span class="mh">0xffffffff</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100000000</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="mi">32</span><span class="p">);</span>
 <span class="p">}</span>
 </code></pre></div><p><strong>0.75纳秒</strong>！哇哦。</p>
-<p>在实际生产环境中，需要对输入验证或长度检查；例如如下naive代码：</p>
+<p>在实际生产环境中，需要对输入验证或长度检查；例如如下naive代码：(加上__device__可在gpu kernel上运行)</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="k">static</span> <span class="kt">int</span> <span class="nf">h_atoi</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">src</span><span class="p">)</span> <span class="p">{</span>
     <span class="kt">int</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
     <span class="kt">bool</span> <span class="n">isMinus</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
@@ -647,7 +647,7 @@ SIMD step 4 (32-bit x 4): 00000000 00000000 00000012 34567890
 <li><a href="https://kholdstare.github.io/technical/2020/05/26/faster-integer-parsing.html">https://kholdstare.github.io/technical/2020/05/26/faster-integer-parsing.html</a></li>
 <li><a href="https://www.reddit.com/r/cpp/comments/gr18ig/faster_integer_parsing/">https://www.reddit.com/r/cpp/comments/gr18ig/faster_integer_parsing/</a></li>
 <li><a href="https://quick-bench.com/q/-E78g-dkbnDvKlGVkgZc0owGrn0">https://quick-bench.com/q/-E78g-dkbnDvKlGVkgZc0owGrn0</a>  <a href="https://godbolt.org/z/czvqh6v1a">https://godbolt.org/z/czvqh6v1a</a></li>
-<li><a href="http://0x80.pl/articles/simd-parsing-int-sequences.html">http://0x80.pl/articles/simd-parsing-int-sequences.html</a> <a href="https://github.com/WojciechMula/parsing-int-series">github</a></li>
+<li><strong><a href="http://0x80.pl/articles/simd-parsing-int-sequences.html">http://0x80.pl/articles/simd-parsing-int-sequences.html</a></strong> <a href="https://github.com/WojciechMula/parsing-int-series">github</a></li>
 <li><a href="https://lemire.me/blog/2023/09/22/parsing-integers-quickly-with-avx-512/">https://lemire.me/blog/2023/09/22/parsing-integers-quickly-with-avx-512/</a></li>
 <li><a href="https://en.wikichip.org/wiki/x86/avx512_vnni">https://en.wikichip.org/wiki/x86/avx512_vnni</a></li>
 <li><a href="https://blog.regehr.org/archives/1307">https://blog.regehr.org/archives/1307</a></li>
