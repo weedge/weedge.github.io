@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>时间飘过</title>
+  <title>LLM · 时间飘过</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -34,8 +34,8 @@
 <meta name="generator" content="Hugo 0.91.0" />
 
 
-<link rel="canonical" href="https://weedge.github.io/" />
-<link href="/index.xml" rel="alternate" type="application/rss+xml" title="时间飘过" />
+<link rel="canonical" href="https://weedge.github.io/tags/llm/" />
+<link href="/tags/llm/index.xml" rel="alternate" type="application/rss+xml" title="时间飘过" />
 
 
 
@@ -60,14 +60,14 @@
 <link rel="stylesheet" href="/css/copy-to-clipboard.css">
 
 
-<meta property="og:title" content="时间飘过" />
+<meta property="og:title" content="LLM" />
 <meta property="og:description" content="记录工作和生活" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://weedge.github.io/" />
+<meta property="og:url" content="https://weedge.github.io/tags/llm/" />
 
-<meta itemprop="name" content="时间飘过">
+<meta itemprop="name" content="LLM">
 <meta itemprop="description" content="记录工作和生活"><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="时间飘过"/>
+<meta name="twitter:title" content="LLM"/>
 <meta name="twitter:description" content="记录工作和生活"/>
 
 <!--[if lte IE 9]>
@@ -286,274 +286,27 @@
       <div class="content-wrapper">
         <div id="content" class="content container">
           
-<section id="posts" class="posts">
-  
+
+<section id="archive" class="archive">
   
     
-  
-  
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/oneday/vector-search-in-200-lines-of-rust/">译：FANN：200行Rust实现的向量搜索</a>
-    </h1>
+      <div class="archive-title tag">
+        <h2 class="archive-name">标签： LLM</h2>
+      </div>
     
-    <div class="post-meta">
-      <time datetime="2023-09-20" class="post-time">
-        2023-09-20
+  
+
+  
+    <div class="archive-post">
+      <time datetime="2023-12-03" class="archive-post-time">
+        2023-12-03
       </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
+      <span class="archive-post-title">
+        <a href="/post/llm/all-you-need-to-know-to-develop-using-large-language-models/" class="archive-post-link">
+          译：使用大型语言模型进行开发所需了解的知识
+        </a>
+      </span>
     </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p>由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。<a href="https://github.com/fennel-ai/fann">所有代码都可以在此 Github 存储库</a>中找到。我们这里使用的方法基于流行库Spotify <a href="https://github.com/spotify/annoy">annoy</a>中使用的一系列称为“<a href="https://en.wikipedia.org/wiki/Locality-sensitive_hashing">局部敏感散列(Locality-sensitive_hashing)</a>”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/oneday/vector-search-in-200-lines-of-rust/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/oneday/manas-a-high-performing-customized-search-system/">译：Manas：高性能定制搜索系统</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-09-14" class="post-time">
-        2023-09-14
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h1 id="章节一-manas高性能定制搜索系统">章节一 Manas：高性能定制搜索系统</h1>
-<p>Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出 <a href="https://blog.pinterest.com/en/search-and-lens-move-front-and-center">Search 和 Lens</a>，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。</p>
-<p>为了继续扩展搜索，系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着业务发展和引入新的发现功能，遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C++ 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/oneday/manas-a-high-performing-customized-search-system/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/">译：如何避免事务期间读取不一致</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-08-26" class="post-time">
-        2023-08-26
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p>想象一下，当您尝试将 100 美元从账户 A 转账到账户 B，并且两个账户都在同一家银行时。启动传输后，您刷新屏幕。然而，当您刷新屏幕时，您的总余额就会下降——那 100 美元似乎凭空消失了。您看到帐户 A 少了 100 美元。然而，B账户并没有多出100美元。然后，您刷新屏幕几次，可以看到帐户 B 获得了 100 美元。</p>
-<p>您在事务期间遇到的这个问题称为读取偏差。当您在不幸运的时间（写入交易期间和之后）读取交易时，就会发生异常。</p>
-<p><img src="https://edward-huang.com/images/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/Distributed%20System%20Question_%20How%20to%20Avoid%20Read%20Inconsistency%20during%20a%20Transaction-%20bank%20transfer.png" alt="银行转账时序图"></p>
-<p>这可能会带来不好的用户体验，但如果转账交易成功后刷新页面，这不会造成任何问题。</p>
-<p>然而，在进行数据库备份或分析查询时，读取偏差会成为一个问题。</p>
-<p>在数据库备份中，我们需要制作数据库的副本。备份过程中可能会有写请求进来，如果出现读倾斜不一致的情况，可能会导致备份结果不一致。部分数据为旧版本，部分数据为新版本。通过这样的操作，这种不一致的问题可能会永久存在。</p>
-<p>我们需要在分析查询中扫描大型数据库并定期检查数据损坏。读取偏差可能会导致搜索和检查不一致 - 通常可能会产生不一致的结果并引发有关数据损坏的错误警报。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/oneday/how-did-uber-solve-data-consistency-problem/">译：Uber是如何解决数据一致性问题的？</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-08-16" class="post-time">
-        2023-08-16
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h1 id="介绍">介绍</h1>
-<p><img src="https://github.com/weedge/mypic/raw/master/oneday/how-did-uber-solv-data-consistency-problem/1.png" alt=""></p>
-<p>Uber 的请求流程相当复杂，从上图可以看出，他们使用 Spanner 来存储大量数据。Spanner 是一种完全托管的关键任务关系数据库服务，可提供全球范围内的事务一致性、自动同步复制以实现高可用性。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/oneday/how-did-uber-solve-data-consistency-problem/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/codis-slot/">kv-codis迁移</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-07-30" class="post-time">
-        2023-07-30
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=1890574156&auto=1&height=66"></iframe>
-
-
-
-<p>最近在搞一个kv系统，想接入codis来管理slot，实现数据的迁移，进行scaling水平扩展，从网上找了点资料，然后随笔记录梳理一下，以便相应的代码可以联调接入时优化下~</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/codis-slot/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/doraemon/openai/">OpenAI体验</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-02-26" class="post-time">
-        2023-02-26
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E7%A7%91%E6%8A%80/"> 科技 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=1428273917&auto=1&height=66"></iframe>
-
-
-
-<p>OpenAI chatGPT 很火，体验了一把，哇哦之后，心想这个会成为内容创造的辅助工具，目前大部分是通过搜索寻找来解答难题，以后可能收敛到具体应用场景中了，不过底层可能还是掌握大数据公司来提供模型资源。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/doraemon/openai/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/notions/go-tips/go-tips-12-optimizations/">Go tips-笔记: 优化 91-100 mistakes</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-02-23" class="post-time">
-        2023-02-23
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h2 id="引言">引言</h2>
-<p>在大多数情况下，编写可读、清晰的代码比编写经过优化但更复杂、更难理解的代码要好，不要过早的优化。建议遵循软件工程师 Wes Dyer 的这句名言：</p>
-<blockquote>
-<p><em>Make it correct, make it clear, make it concise, make it fast, in that order.</em></p>
-</blockquote>
-<p>并不意味着禁止为速度和效率优化应用程序, 了解并掌握这些优化点，以备不时之需；文中给出了常见的优化技术；有些特定于 Go 内存模型，内存分配，GPM调度模型；有些是关于了解硬件有助于写出好的代码(适用于不同语言)，其中会有硬件方面的术语，可以结合wiki进行学习；</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/notions/go-tips/go-tips-12-optimizations/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
   
 </section>
 
@@ -574,50 +327,6 @@
 
   
   
-
-  
-  
-  <nav class="pagination">
-    <ul>
-      
-      <li >
-        <a href="/">1</a>
-      </li>
-      
-      <li >
-        <a href="/page/2/">2</a>
-      </li>
-      
-      <li  class="active" >
-        <a href="/page/3/">3</a>
-      </li>
-      
-      <li >
-        <a href="/page/4/">4</a>
-      </li>
-      
-      <li >
-        <a href="/page/5/">5</a>
-      </li>
-      
-      <li >
-        <a href="/page/6/">6</a>
-      </li>
-      
-      <li >
-        <a href="/page/7/">7</a>
-      </li>
-      
-      <li >
-        <a href="/page/8/">8</a>
-      </li>
-      
-      <li >
-        <a href="/page/9/">9</a>
-      </li>
-      
-    </ul>
-  </nav>
 
   
   

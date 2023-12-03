@@ -76,7 +76,7 @@
 导读
 字符串转换成整数，或者浮点类型数据，是在编程中经常遇到的问题，各种语言的标准库中会有实现，本文通过一个常见问题场景，来研究优化如何使用cpu 硬件SIMD指令集，并结合编译器在 log(n) 时间内完成此类parse操作；由于最终的优化需要结合对应cpu arch的指令集，这里硬件平台cpu为Intel x86，整数类型以uint64_t为例，最大2^64-1 20个字符表示。目的：结合场景优化思路(以小见大)，熟悉下Intel cpu simd相关指令的使用。常见场景： simdjson  (PS: 不因过早优化，在对应场景下整体稳定性和优化成本/收益上折中)"><meta itemprop="datePublished" content="2023-11-30T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-11-30T10:26:23+08:00" />
-<meta itemprop="wordCount" content="4559">
+<meta itemprop="wordCount" content="4562">
 <meta itemprop="keywords" content="cpu,simd,integer parsing," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：更快的字符串转整数"/>
 <meta name="twitter:description" content="​                        
@@ -652,7 +652,8 @@ SIMD step 4 (32-bit x 4): 00000000 00000000 00000012 34567890
 <li><a href="https://en.wikichip.org/wiki/x86/avx512_vnni">https://en.wikichip.org/wiki/x86/avx512_vnni</a></li>
 <li><a href="https://blog.regehr.org/archives/1307">https://blog.regehr.org/archives/1307</a></li>
 <li><a href="https://lab.cs.tsinghua.edu.cn/hpc/doc/assignments/5.simd/">https://lab.cs.tsinghua.edu.cn/hpc/doc/assignments/5.simd/</a></li>
-<li><strong><a href="https://en.algorithmica.org/hpc/simd/">https://en.algorithmica.org/hpc/simd/</a></strong></li>
+<li><strong><a href="https://en.algorithmica.org/hpc/simd/">https://en.algorithmica.org/hpc/simd/</a></strong> <a href="https://www.youtube.com/watch?v=vIRjSdTCIEU">https://www.youtube.com/watch?v=vIRjSdTCIEU</a></li>
+<li><strong><a href="https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html">https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html</a></strong> <a href="https://github.com/intel/optimization-manual">github</a></li>
 </ol>
     </div>
 
@@ -692,6 +693,19 @@ SIMD step 4 (32-bit x 4): 00000000 00000000 00000012 34567890
       
       <nav class="post-nav">
         
+          <a class="prev" href="/post/llm/all-you-need-to-know-to-develop-using-large-language-models/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">译：使用大型语言模型进行开发所需了解的知识</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
         
           <a class="next" href="/post/gpu/mastering-string-transformations-in-rapids-libcudf/">
             <span class="next-text nav-default">译：掌握 RAPIDS libcudf 中的字符串转换</span>

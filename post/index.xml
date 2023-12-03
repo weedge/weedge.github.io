@@ -6,7 +6,19 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Thu, 30 Nov 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 03 Dec 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>译：使用大型语言模型进行开发所需了解的知识</title>
+      <link>https://weedge.github.io/post/llm/all-you-need-to-know-to-develop-using-large-language-models/</link>
+      <pubDate>Sun, 03 Dec 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/llm/all-you-need-to-know-to-develop-using-large-language-models/</guid>
+      <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/0.jpeg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;导读&#34;&gt;导读&lt;/h2&gt;
+&lt;p&gt;本文的目的是简单地解释开始开发基于 LLM 的应用程序所需的关键技术。它面向对机器学习概念有基本了解并希望深入研究的软件开发人员、数据科学家和&lt;strong&gt;人工智能爱好者&lt;/strong&gt;。本文还提供了许多有用的链接以供进一步研究。这会很有趣！&lt;/p&gt;
+&lt;p&gt;注：本文可以作为一个索引目录(进一步阅读资料深入学习)，从整体上了解下，毕竟现在LLM发展很快，可以发散或者focus某个领域；大部分LLM相关开源实现，可以手动demo下过程，至于炼丹了解过程即可，主要在场景上结合工程去利用好大力神丸在生产环境落地；还有就是应用场景，国内app应该可以复刻，如果模型和数据有了，缺个落地idea的话~&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>译：更快的字符串转整数</title>
       <link>https://weedge.github.io/post/simd/faster_integer_parsing/</link>
@@ -290,20 +302,6 @@
 
 
 &lt;p&gt;OpenAI chatGPT 很火，体验了一把，哇哦之后，心想这个会成为内容创造的辅助工具，目前大部分是通过搜索寻找来解答难题，以后可能收敛到具体应用场景中了，不过底层可能还是掌握大数据公司来提供模型资源。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>Go tips-笔记: 优化 91-100 mistakes</title>
-      <link>https://weedge.github.io/post/notions/go-tips/go-tips-12-optimizations/</link>
-      <pubDate>Thu, 23 Feb 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/notions/go-tips/go-tips-12-optimizations/</guid>
-      <description>&lt;h2 id=&#34;引言&#34;&gt;引言&lt;/h2&gt;
-&lt;p&gt;在大多数情况下，编写可读、清晰的代码比编写经过优化但更复杂、更难理解的代码要好，不要过早的优化。建议遵循软件工程师 Wes Dyer 的这句名言：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;em&gt;Make it correct, make it clear, make it concise, make it fast, in that order.&lt;/em&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;并不意味着禁止为速度和效率优化应用程序, 了解并掌握这些优化点，以备不时之需；文中给出了常见的优化技术；有些特定于 Go 内存模型，内存分配，GPM调度模型；有些是关于了解硬件有助于写出好的代码(适用于不同语言)，其中会有硬件方面的术语，可以结合wiki进行学习；&lt;/p&gt;</description>
     </item>
     
   </channel>

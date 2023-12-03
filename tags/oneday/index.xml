@@ -6,7 +6,19 @@
     <description>Recent content in oneday on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 07 Nov 2023 15:00:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/oneday/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 03 Dec 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/oneday/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>译：使用大型语言模型进行开发所需了解的知识</title>
+      <link>https://weedge.github.io/post/llm/all-you-need-to-know-to-develop-using-large-language-models/</link>
+      <pubDate>Sun, 03 Dec 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/llm/all-you-need-to-know-to-develop-using-large-language-models/</guid>
+      <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/0.jpeg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;导读&#34;&gt;导读&lt;/h2&gt;
+&lt;p&gt;本文的目的是简单地解释开始开发基于 LLM 的应用程序所需的关键技术。它面向对机器学习概念有基本了解并希望深入研究的软件开发人员、数据科学家和&lt;strong&gt;人工智能爱好者&lt;/strong&gt;。本文还提供了许多有用的链接以供进一步研究。这会很有趣！&lt;/p&gt;
+&lt;p&gt;注：本文可以作为一个索引目录(进一步阅读资料深入学习)，从整体上了解下，毕竟现在LLM发展很快，可以发散或者focus某个领域；大部分LLM相关开源实现，可以手动demo下过程，至于炼丹了解过程即可，主要在场景上结合工程去利用好大力神丸在生产环境落地；还有就是应用场景，国内app应该可以复刻，如果模型和数据有了，缺个落地idea的话~&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>译：掌握 RAPIDS libcudf 中的字符串转换</title>
       <link>https://weedge.github.io/post/gpu/mastering-string-transformations-in-rapids-libcudf/</link>

@@ -10,7 +10,56 @@
   
   <url>
     <loc>https://weedge.github.io/categories/</loc>
-    <lastmod>2023-11-30T10:26:23+08:00</lastmod>
+    <lastmod>2023-12-03T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/llm/</loc>
+    <lastmod>2023-12-03T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/oneday/</loc>
+    <lastmod>2023-12-03T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/</loc>
+    <lastmod>2023-12-03T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/</loc>
+    <lastmod>2023-12-03T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/</loc>
+    <lastmod>2023-12-03T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/</loc>
+    <lastmod>2023-12-03T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/llm/all-you-need-to-know-to-develop-using-large-language-models/</loc>
+    <lastmod>2023-12-03T10:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -30,35 +79,7 @@
   </url>
   
   <url>
-    <loc>https://weedge.github.io/post/</loc>
-    <lastmod>2023-11-30T10:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
     <loc>https://weedge.github.io/tags/simd/</loc>
-    <lastmod>2023-11-30T10:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/tags/</loc>
-    <lastmod>2023-11-30T10:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/</loc>
-    <lastmod>2023-11-30T10:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/</loc>
     <lastmod>2023-11-30T10:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
@@ -73,13 +94,6 @@
   
   <url>
     <loc>https://weedge.github.io/tags/gpu/</loc>
-    <lastmod>2023-11-07T15:00:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/tags/oneday/</loc>
     <lastmod>2023-11-07T15:00:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>

@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="zh-cn" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>译：使用大型语言模型进行开发所需了解的知识 - 时间飘过</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="weedge" />
+  <meta name="description" content="导读 本文的目的是简单地解释开始开发基于 LLM 的应用程序所需的关键技术。它面向对机器学习概念有基本了解并希望深入研究的软件开发人员、数据科学家和人工智能爱好者。本文还提供了许多有用的链接以供进一步研究。这会很有趣！
+注：本文可以作为一个索引目录(进一步阅读资料深入学习)，从整体上了解下，毕竟现在LLM发展很快，可以发散或者focus某个领域；大部分LLM相关开源实现，可以手动demo下过程，至于炼丹了解过程即可，主要在场景上结合工程去利用好大力神丸在生产环境落地；还有就是应用场景，国内app应该可以复刻，如果模型和数据有了，缺个落地idea的话~
+" />
+
+  <meta name="keywords" content="工作, 技术, 生活" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.91.0" />
+
+
+<link rel="canonical" href="https://weedge.github.io/post/llm/all-you-need-to-know-to-develop-using-large-language-models/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css" integrity="sha256-&#43;ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
+
+<meta property="og:title" content="译：使用大型语言模型进行开发所需了解的知识" />
+<meta property="og:description" content="
+导读
+本文的目的是简单地解释开始开发基于 LLM 的应用程序所需的关键技术。它面向对机器学习概念有基本了解并希望深入研究的软件开发人员、数据科学家和人工智能爱好者。本文还提供了许多有用的链接以供进一步研究。这会很有趣！
+注：本文可以作为一个索引目录(进一步阅读资料深入学习)，从整体上了解下，毕竟现在LLM发展很快，可以发散或者focus某个领域；大部分LLM相关开源实现，可以手动demo下过程，至于炼丹了解过程即可，主要在场景上结合工程去利用好大力神丸在生产环境落地；还有就是应用场景，国内app应该可以复刻，如果模型和数据有了，缺个落地idea的话~" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/llm/all-you-need-to-know-to-develop-using-large-language-models/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-12-03T10:26:23+08:00" />
+<meta property="article:modified_time" content="2023-12-03T10:26:23+08:00" />
+
+<meta itemprop="name" content="译：使用大型语言模型进行开发所需了解的知识">
+<meta itemprop="description" content="
+导读
+本文的目的是简单地解释开始开发基于 LLM 的应用程序所需的关键技术。它面向对机器学习概念有基本了解并希望深入研究的软件开发人员、数据科学家和人工智能爱好者。本文还提供了许多有用的链接以供进一步研究。这会很有趣！
+注：本文可以作为一个索引目录(进一步阅读资料深入学习)，从整体上了解下，毕竟现在LLM发展很快，可以发散或者focus某个领域；大部分LLM相关开源实现，可以手动demo下过程，至于炼丹了解过程即可，主要在场景上结合工程去利用好大力神丸在生产环境落地；还有就是应用场景，国内app应该可以复刻，如果模型和数据有了，缺个落地idea的话~"><meta itemprop="datePublished" content="2023-12-03T10:26:23+08:00" />
+<meta itemprop="dateModified" content="2023-12-03T10:26:23+08:00" />
+<meta itemprop="wordCount" content="4895">
+<meta itemprop="keywords" content="oneday,LLM," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="译：使用大型语言模型进行开发所需了解的知识"/>
+<meta name="twitter:description" content="
+导读
+本文的目的是简单地解释开始开发基于 LLM 的应用程序所需的关键技术。它面向对机器学习概念有基本了解并希望深入研究的软件开发人员、数据科学家和人工智能爱好者。本文还提供了许多有用的链接以供进一步研究。这会很有趣！
+注：本文可以作为一个索引目录(进一步阅读资料深入学习)，从整体上了解下，毕竟现在LLM发展很快，可以发散或者focus某个领域；大部分LLM相关开源实现，可以手动demo下过程，至于炼丹了解过程即可，主要在场景上结合工程去利用好大力神丸在生产环境落地；还有就是应用场景，国内app应该可以复刻，如果模型和数据有了，缺个落地idea的话~"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">时间飘过</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      时间飘过
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">译：使用大型语言模型进行开发所需了解的知识</h1>
+      
+      <div class="post-meta">
+        <time datetime="2023-12-03" class="post-time">
+          2023-12-03
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#导读">导读</a></li>
+    <li><a href="#1-大型语言模型llm简介">1. 大型语言模型（LLM）简介</a></li>
+    <li><a href="#2-开源与闭源模型">2. 开源与闭源模型</a></li>
+    <li><a href="#3-提示词工程的艺术">3. 提示词工程的艺术</a>
+      <ul>
+        <li><a href="#有用的链接">有用的链接：</a></li>
+      </ul>
+    </li>
+    <li><a href="#4合并新数据检索增强生成rag">4.合并新数据：检索增强生成（RAG）</a>
+      <ul>
+        <li><a href="#何时使用">何时使用</a></li>
+        <li><a href="#何时不使用">何时不使用</a></li>
+        <li><a href="#使用-rag-构建应用程序">使用 RAG 构建应用程序</a></li>
+        <li><a href="#进一步阅读">进一步阅读</a></li>
+      </ul>
+    </li>
+    <li><a href="#5-微调大语言模型">5. 微调大语言模型</a>
+      <ul>
+        <li><a href="#何时使用-1">何时使用</a></li>
+        <li><a href="#何时不使用-1">何时不使用</a></li>
+        <li><a href="#微调llm">微调LLM</a></li>
+        <li><a href="#进一步阅读-1">进一步阅读</a></li>
+      </ul>
+    </li>
+    <li><a href="#6-部署-llm-工程化">6. 部署 LLM (工程化)</a>
+      <ul>
+        <li><a href="#选择正确的框架">选择正确的框架</a></li>
+        <li><a href="#部署示例代码">部署示例代码</a></li>
+        <li><a href="#进一步阅读-2">进一步阅读</a></li>
+      </ul>
+    </li>
+    <li><a href="#7-幕后还剩下什么">7. 幕后还剩下什么</a>
+      <ul>
+        <li><a href="#优化">优化</a></li>
+        <li><a href="#评估">评估</a></li>
+        <li><a href="#向量数据库">向量数据库</a></li>
+        <li><a href="#大语言模型agents">大语言模型Agents</a></li>
+        <li><a href="#存储-补充">存储 (补充)</a></li>
+        <li><a href="#根据人类反馈进行强化学习-rlhf">根据人类反馈进行强化学习 (RLHF)</a></li>
+      </ul>
+    </li>
+    <li><a href="#结论">结论</a></li>
+    <li><a href="#reference">Reference</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/0.jpeg" alt=""></p>
+<h2 id="导读">导读</h2>
+<p>本文的目的是简单地解释开始开发基于 LLM 的应用程序所需的关键技术。它面向对机器学习概念有基本了解并希望深入研究的软件开发人员、数据科学家和<strong>人工智能爱好者</strong>。本文还提供了许多有用的链接以供进一步研究。这会很有趣！</p>
+<p>注：本文可以作为一个索引目录(进一步阅读资料深入学习)，从整体上了解下，毕竟现在LLM发展很快，可以发散或者focus某个领域；大部分LLM相关开源实现，可以手动demo下过程，至于炼丹了解过程即可，主要在场景上结合工程去利用好大力神丸在生产环境落地；还有就是应用场景，国内app应该可以复刻，如果模型和数据有了，缺个落地idea的话~</p>
+<h2 id="1-大型语言模型llm简介">1. 大型语言模型（LLM）简介</h2>
+<p>我想你已经听过一千遍什么是大语言模型，所以不会让你负担过重。需要知道的是：大型语言模型（LLM）是一种大型神经网络模型，它根据先前预测的标记来预测下一个标记。就这样。</p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/1.png" alt="img"></p>
+<p>模型参数数量的比较。看看 GPT-3 有多大就知道了。没有人知道 GPT-4……</p>
+<p>大语言模型的受欢迎程度归因于其多功能性和有效性。它们完美地应对翻译、摘要、意义分析等任务。</p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/2.png" alt="img"></p>
+<p><em>大语言模型能力</em></p>
+<p>使用大语言模型的一些项目示例：</p>
+<ul>
+<li><a href="https://www.notion.so/product/ai"><strong>Notion AI</strong></a> — 帮助提高写作质量、生成内容、纠正拼写和语法、编辑语音和语调、翻译等。</li>
+<li><a href="https://github.com/features/copilot"><strong>GitHub Copilot</strong></a> — 通过提供自动完成风格的建议来改进您的代码。</li>
+<li><a href="https://blog.dropbox.com/topics/product/introducing-AI-powered-tools"><strong>Dropbox Dash</strong></a> — 提供自然语言搜索功能，并且还专门引用了答案源自哪些文件。</li>
+</ul>
+<p>如果想详细了解大语言模型的工作原理，建议您阅读优秀的文章“<a href="https://medium.com/@mark-riedl/a-very-gentle-introduction-to-large-language-models-without-the-hype-5f67941fa59e">对大型语言模型的非常温和的介绍，无需炒作</a>”</p>
+<h2 id="2-开源与闭源模型">2. 开源与闭源模型</h2>
+<p>主要差异：</p>
+<ul>
+<li><strong>隐私</strong>——大公司选择自托管解决方案的最重要原因之一。</li>
+<li><strong>快速原型制作</strong>——非常适合小型初创公司快速测试他们的想法，而无需过多的支出。</li>
+<li><strong>生成质量</strong>——可以针对特定任务微调模型，也可以使用付费 API。</li>
+</ul>
+<p>对于什么是好什么是坏，没有明确的答案。强调了以下几点：</p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/3.png" alt="img"></p>
+<p>如果有兴趣深入研究细节，建议阅读之前的文章“<a href="https://medium.com/better-programming/you-dont-need-hosted-llms-do-you-1160b2520526">您不需要托管大语言模型，是吗？</a>”。探索<a href="https://www.promptingguide.ai/models/collection">大语言模型系列</a>以查看所有模型。</p>
+<h2 id="3-提示词工程的艺术">3. 提示词工程的艺术</h2>
+<p>许多人认为这是伪科学或只是暂时的炒作。但事实是，我们仍然不完全了解大语言模型是如何运作的。为什么他们有时会提供高质量的答复，有时会捏造事实（<a href="https://medium.com/better-programming/fixing-hallucinations-in-llms-9ff0fd438e33">产生幻觉</a>）？或者为什么在提示中添加“让我们逐步思考”会突然提高质量？</p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/4.png" alt="img"></p>
+<p>添加情感色彩可以提高任何模型的质量。<a href="https://arxiv.org/pdf/2307.11760.pdf">来源</a></p>
+<p>由于这一切，科学家和爱好者只能尝试不同的提示，试图让模型表现得更好。</p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/5.png" alt="img"></p>
+<p>说明大语言模型解决问题的各种方法的示意图</p>
+<p>我不会用复杂的提示链让你感到厌烦；相反，我只给出一些可以立即提高性能的示例：</p>
+<ol>
+<li><a href="https://arxiv.org/pdf/2205.11916.pdf">&ldquo;让我们一步一步思考&rdquo;</a>  对于推理或逻辑任务非常有效。</li>
+<li><a href="https://arxiv.org/pdf/2309.03409.pdf">&ldquo;深吸一口气，一步步解决这个问题&rdquo;</a>  上一点的改进版本。它可以增加几个百分点的质量。</li>
+<li><a href="https://arxiv.org/pdf/2307.11760.pdf">&ldquo;这对我的职业生涯非常重要&rdquo;</a> 只需将其添加到提示的末尾，发现质量提高了 5-20%。</li>
+</ol>
+<p>另外，我会立即分享一个有用的提示模板：</p>
+<blockquote>
+<p>让我们结合我们的<strong>X</strong>命令和清晰的思维，以循序渐进的方式快速准确地破译答案。提供详细信息并在答案中包含来源。这对我的职业生涯非常重要。</p>
+<p>其中<strong>X</strong>是您正在解决的任务的行业，例如编程。</p>
+</blockquote>
+<p>我强烈建议您花几个晚上探索快速的工程技术。这不仅可以让您更好地控制模型的行为，还有助于提高质量并减少幻觉。为此，我建议阅读<a href="https://www.promptingguide.ai/introduction/basics">《提示词工程指南》</a></p>
+<h3 id="有用的链接">有用的链接：</h3>
+<ul>
+<li><a href="https://github.com/hegelai/prompttools">Prompttools</a> — 快速测试和实验，支持两种 LLM（例如 OpenAI、LLaMA）。</li>
+<li><a href="https://github.com/promptfoo/promptfoo">Promptfoo</a> — 测试和评估 LLM 输出质量。</li>
+<li><a href="https://github.com/f/awesome-chatgpt-prompts">Awesome ChatGPT Prompts</a> — 用于 ChatGPT 模型的提示示例集合。</li>
+</ul>
+<h2 id="4合并新数据检索增强生成rag">4.合并新数据：检索增强生成（RAG）</h2>
+<p>RAG是一种将LLM与外部知识库相结合的技术。这允许模型将原始训练集中未包含的相关信息或特定数据添加到模型中。</p>
+<p>尽管这个名字令人生畏（有时我们会在其中添加“reranker”一词），但它实际上是一种相当古老且出奇简单的技术：</p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/6.png" alt="img"></p>
+<p>RAG 工作原理示意图</p>
+<ol>
+<li>将文档转换为数字，称之为<a href="https://towardsdatascience.com/neural-network-embeddings-explained-4d028e6f0526"><strong>嵌入(embedding)</strong></a>。</li>
+<li>然后，使用相同的模型将用户的搜索查询转换为嵌入。</li>
+<li>查找前 K 个最接近的文档，通常基于<a href="https://en.wikipedia.org/wiki/Cosine_similarity">余弦相似度</a>。</li>
+<li>要求大语言模型根据这些文件生成回复。</li>
+</ol>
+<h3 id="何时使用">何时使用</h3>
+<ul>
+<li><strong>对当前信息的需求</strong>：当应用程序需要不断更新的信息（例如新闻文章）时。</li>
+<li><strong>特定领域的应用程序</strong>：适用于需要大语言模型培训数据之外的专业知识的应用程序。例如，公司内部文件。</li>
+</ul>
+<h3 id="何时不使用">何时不使用</h3>
+<ul>
+<li><strong>通用会话应用程序</strong>：信息需要通用且不需要附加数据的地方。</li>
+<li><strong>有限的资源场景</strong>： RAG 的检索组件涉及搜索大型知识库，这可能在计算上昂贵且缓慢，但仍然比微调更快且成本更低。</li>
+</ul>
+<h3 id="使用-rag-构建应用程序">使用 RAG 构建应用程序</h3>
+<p>一个很好的起点是使用<a href="https://github.com/run-llama/llama_index">LlamaIndex 库</a>。它允许您快速将数据连接到大语言模型。为此，只需要几行代码：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">llama_index</span> <span class="kn">import</span> <span class="n">VectorStoreIndex</span><span class="p">,</span> <span class="n">SimpleDirectoryReader</span>
+
+<span class="c1"># 1. Load your documents:</span>
+<span class="n">documents</span> <span class="o">=</span> <span class="n">SimpleDirectoryReader</span><span class="p">(</span><span class="s2">&#34;YOUR_DATA&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
+
+<span class="c1"># 2. Convert them to vectors:</span>
+<span class="n">index</span> <span class="o">=</span> <span class="n">VectorStoreIndex</span><span class="o">.</span><span class="n">from_documents</span><span class="p">(</span><span class="n">documents</span><span class="p">)</span>
+
+<span class="c1"># 3. Ask the question:</span>
+<span class="n">query_engine</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">as_query_engine</span><span class="p">()</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">query_engine</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&#34;When&#39;s my boss&#39;s birthday?&#34;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</code></pre></div><p>在实际应用中，事情明显更加复杂。就像在任何开发中一样，您会遇到许多细微差别。例如，检索到的文档可能并不总是与问题相关，或者可能存在速度问题。然而，即使在这个阶段，也可以显着提高搜索系统的质量。</p>
+<h3 id="进一步阅读">进一步阅读</h3>
+<ul>
+<li><a href="https://www.anyscale.com/blog/a-comprehensive-guide-for-building-rag-based-llm-applications-part-1">构建基于 RAG 的 LLM 应用程序用于生产</a> 一篇关于 RAG 主要组件的优秀详细文章。</li>
+<li><a href="https://towardsdatascience.com/why-your-rag-is-not-reliable-in-a-production-environment-9e6a73b3eddb">为什么您的 RAG 在生产环境中不可靠</a> 一篇很棒的文章，它以清晰的语言解释了使用 RAG 时可能出现的困难。</li>
+<li><a href="https://betterprogramming.pub/7-query-strategies-for-navigating-knowledge-graphs-with-llamaindex-ed551863d416">使用 LlamaIndex 导航知识图的 7 种查询策略</a> 一篇内容丰富的文章，详细而细致地了解了使用 LlamaIndex 构建 RAG 管道。</li>
+<li><a href="https://platform.openai.com/docs/assistants/tools/knowledge-retrieval">OpenAI 检索工具 </a>如果想要最少的工作，使用 OpenAI 的 RAG。</li>
+</ul>
+<h2 id="5-微调大语言模型">5. 微调大语言模型</h2>
+<p>微调是在特定数据集上继续训练预训练的 LLM 的过程。可能会问，如果已经可以使用 RAG 添加数据，为什么还需要进一步训练模型。简单的答案是，只有微调才能定制模型以理解特定领域或定义其风格。例如，<a href="https://medium.com/better-programming/unleash-your-digital-twin-how-fine-tuning-llm-can-create-your-perfect-doppelganger-b5913e7dda2e">通过对个人信件进行微调来创建自己的副本</a>：</p>
+<p>如果已经相信了它的重要性，那么看看它是如何工作的：</p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/7.png" alt="img"></p>
+<p><em>对特定领域数据进行微调的经典方法（所有图标均来自<a href="http://flaticon.com/">flaticon</a>）</em></p>
+<ol>
+<li>接受训练有素的大语言模型，有时称为基础大语言模型。可以从<a href="https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard">HuggingFace</a>下载它们。</li>
+<li>准备您的训练数据。只需编写说明和响应即可。这是此类数据集的<a href="https://huggingface.co/datasets/databricks/databricks-dolly-15k">示例</a>；还可以使用 GPT-4<a href="https://www.promptingguide.ai/applications/generating">生成合成数据</a>。</li>
+<li>选择合适的微调方法。目前比较流行的是<a href="https://github.com/microsoft/LoRA">LoRA</a>和<a href="https://github.com/artidoro/qlora">QLoRA</a>。</li>
+<li>根据新数据微调模型。</li>
+</ol>
+<h3 id="何时使用-1">何时使用</h3>
+<ul>
+<li><strong>垂直领域应用程序</strong>：当应用程序处理专门或非常规主题时。例如，法律文档应用需要理解和处理法律术语。</li>
+<li><strong>自定义语言风格</strong>：适用于需要特定语气或风格的应用程序。例如，创建一个<a href="https://beta.character.ai/">人工智能角色</a>，无论是名人还是书中的角色。（衍生场景：旅游景点数字人，游戏NPC，二次元社区）</li>
+</ul>
+<h3 id="何时不使用-1">何时不使用</h3>
+<ul>
+<li><strong>广泛的应用</strong>：应用范围是一般性的，不需要专业知识。</li>
+<li><strong>数据有限</strong>：微调需要大量相关数据。但是，始终可以<a href="https://www.confident-ai.com/blog/how-to-generate-synthetic-data-using-llms-part-1">使用另一个 LLM 生成它们</a>。例如，今年早些时候，使用包含 52k LLM 生成的指令响应对的<a href="https://github.com/gururise/AlpacaDataCleaned">Alpaca 数据集</a>创建了第一个微调<a href="https://arxiv.org/abs/2302.13971">Llama v1模型</a>。</li>
+</ul>
+<h3 id="微调llm">微调LLM</h3>
+<p>可以找到大量致力于模型微调的文章。仅在 Medium 上就有数千个。因此，不想太深入地研究这个主题，而是展示一个高级库<a href="https://github.com/Lightning-AI/lit-gpt">Lit-GPT</a>，它隐藏了所有的魔力。是的，它不允许对训练过程进行太多定制，但可以快速进行实验并获得初步结果。只需要几行代码：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 1. Download the model:</span>
+python scripts/download.py --repo_id meta-llama/Llama-2-7b
+
+<span class="c1"># 2. Convert the checkpoint to the lit-gpt format:</span>
+python scripts/convert_hf_checkpoint.py --checkpoint_dir checkpoints/llama
+
+<span class="c1"># 3. Generate an instruction tuning dataset:</span>
+python scripts/prepare_alpaca.py  <span class="c1"># it should be your dataset</span>
+
+<span class="c1"># 4. Run the finetuning script</span>
+python finetune/lora.py <span class="se">\
+</span><span class="se"></span>    --checkpoint_dir checkpoints/llama/
+    --data_dir your_data_folder/
+    --out_dir my_finetuned_model/ 
+</code></pre></div><p>就是这样！训练过程将开始：</p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/8.gif" alt="img"></p>
+<blockquote>
+<p>请注意，该过程可能需要很长时间。在单个 A100 GPU 上微调 Falcon-7B需要大约<strong>10 小时</strong>和<strong>30 GB内存。</strong></p>
+</blockquote>
+<p>当然，我有点过于简单化了，我们只触及了表面。实际上，微调过程要复杂得多，为了获得更好的结果，需要了解各种适配器及其参数等等。然而，即使经过如此简单的迭代，会得到一个遵循特定指示的新模型。</p>
+<h3 id="进一步阅读-1">进一步阅读</h3>
+<ul>
+<li><a href="https://medium.com/better-programming/unleash-your-digital-twin-how-fine-tuning-llm-can-create-your-perfect-doppelganger-b5913e7dda2e">使用微调的大语言模型创建自己的克隆</a> 作者在文章中写了有关收集数据集、使用参数的文章，并提供了有关微调的有用技巧。</li>
+<li><a href="https://lightning.ai/pages/community/article/understanding-llama-adapters/">了解大型语言模型的参数高效微调</a> 如果想了解微调概念和流行的参数高效替代方案的详细信息，这是一个很好的教程。</li>
+<li><a href="https://lightning.ai/pages/community/lora-insights/">使用 LoRA 和 QLoRA 微调大语言模型：数百次实验的见解 </a>了解 LoRA 功能的文章之一。</li>
+<li><a href="https://platform.openai.com/docs/guides/fine-tuning">OpenAI 微调 </a>如果想以最小的工作微调 GPT-3.5。</li>
+</ul>
+<h2 id="6-部署-llm-工程化">6. 部署 LLM (工程化)</h2>
+<p>有时，如果有用于推理的计算资源和模型,数据存储资源，想直接利用训练好的开源大模型，仅仅简单地按下“部署”按钮&hellip;&hellip;</p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/9.png" alt="img"></p>
+<p>幸运的是，这是相当可行的。有大量专门用于部署大型语言模型的框架。是什么让他们如此出色？</p>
+<ul>
+<li>许多预构建的包装器和集成。</li>
+<li>大量可用型号可供选择。</li>
+<li>大量内部优化。</li>
+<li>快速原型制作。</li>
+</ul>
+<h3 id="选择正确的框架">选择正确的框架</h3>
+<p>部署LLM应用程序的框架的选择取决于多种因素，包括模型的大小、应用程序的可扩展性要求和部署环境。目前，框架的多样性并不丰富，因此理解它们的差异应该不会太困难。下面，准备了一份备忘单，可以快速入门：</p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/10.png" alt="img"></p>
+<p>此外，在文章“<a href="https://medium.com/better-programming/frameworks-for-serving-llms-60b7f7b23407">为大语言模型提供服务的 7 个框架</a>”中，对现有解决方案进行了更详细的概述。如果打算部署模型，建议检查一下。</p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/11.png" alt="img"></p>
+<p><em>LLM 推理框架比较</em></p>
+<h3 id="部署示例代码">部署示例代码</h3>
+<p>从理论转向实践，并尝试使用<a href="https://github.com/huggingface/text-generation-inference">文本生成推理(Text Generation Inference)</a>来部署 LLaMA-2 。通过运行已经打包好的模型服务镜像，demo只需要几行代码：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 1. Create a folder where your model will be stored:</span>
+mkdir data
+
+<span class="c1"># 2. Run Docker container (launch RestAPI service):</span>
+docker run --gpus all --shm-size 1g -p 8080:80 <span class="se">\
+</span><span class="se"></span>    -v <span class="nv">$volume</span>:/data <span class="se">\
+</span><span class="se"></span>    ghcr.io/huggingface/text-generation-inference:1.1.0
+    --model-id meta-llama/Llama-2-7b
+
+<span class="c1"># 3. And now you can make requests:</span>
+curl 127.0.0.1:8080/generate <span class="se">\
+</span><span class="se"></span>    -X POST <span class="se">\
+</span><span class="se"></span>    -d <span class="s1">&#39;{&#34;inputs&#34;:&#34;Tell me a joke!&#34;,&#34;parameters&#34;:{&#34;max_new_tokens&#34;:20}}&#39;</span> <span class="se">\
+</span><span class="se"></span>    -H <span class="s1">&#39;Content-Type: application/json&#39;</span>
+</code></pre></div><p>设置了带有内置日志记录的 RestAPI 服务、用于监控的 Prometheus 端点、令牌流，并且模型已完全优化。这不是很神奇吗？这些工程化实现方案相对成熟，移动互联网时代的工程累积。</p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/12.png" alt="img"></p>
+<p><em>API文档</em></p>
+<h3 id="进一步阅读-2">进一步阅读</h3>
+<ul>
+<li><a href="https://medium.com/better-programming/frameworks-for-serving-llms-60b7f7b23407">为大语言模型提供服务的 7 个框架</a> 大语言模型推理和服务的综合指南，并进行了详细比较。</li>
+<li><a href="https://huggingface.co/inference-endpoints">Inference Endpoints</a> HuggingFace 的一款产品，只需点击几下即可部署任何 LLM。当需要快速原型设计时，这是一个不错的选择。</li>
+</ul>
+<h2 id="7-幕后还剩下什么">7. 幕后还剩下什么</h2>
+<p>尽管我们已经介绍了开发基于 LLM 的应用程序所需的主要概念，但将来可能会遇到一些问题。所以，想留下一些有用的链接：</p>
+<h3 id="优化">优化</h3>
+<p>当启动第一个模型时，不可避免地会发现它没有想要的那么快并且消耗了大量资源。需要了解如何对其进行优化。</p>
+<ul>
+<li>
+<p><a href="https://medium.com/better-programming/speed-up-llm-inference-83653aa24c47">加速托管 LLM 推理的 7 种方法 </a>加速 LLM 推理的技术，以提高令牌生成速度并减少内存消耗。</p>
+</li>
+<li>
+<p><a href="https://lightning.ai/pages/community/tutorial/pytorch-memory-vit-llm/">优化 PyTorch 中训练 LLM 的内存使用</a> 文章提供了一系列技术，可以将 PyTorch 中的内存消耗减少约 20 倍，而不会牺牲建模性能和预测准确性。</p>
+<p>补充：</p>
+</li>
+<li>
+<p><a href="https://mp.weixin.qq.com/s/owgDAUGnrsXmNwUXY2Ya0w">飞桨大模型分布式训练技术</a></p>
+</li>
+<li>
+<p><a href="https://mp.weixin.qq.com/s/PIh2gPhqF8r-9k8QZQ8GEw">⻜桨⼤模型推理部署⾼性能优化</a></p>
+</li>
+</ul>
+<h3 id="评估">评估</h3>
+<p>假设有一个经过微调的模型。但怎么能确定它的质量已经提高了呢？应该使用什么指标？</p>
+<ul>
+<li><a href="https://explodinggradients.com/all-about-evaluating-large-language-models">所有关于评估大型语言模型的内容 </a>一篇关于基准和指标的很好的概述文章。</li>
+<li><a href="https://github.com/openai/evals">evals</a> 用于评估大语言模型和大语言模型系统的最流行框架。</li>
+</ul>
+<h3 id="向量数据库">向量数据库</h3>
+<p>如果使用 RAG，在某些时候，将向量存储在内存中转移到数据库中。为此，了解当前市场上的产品及其局限性非常重要。</p>
+<ul>
+<li>
+<p><a href="https://towardsdatascience.com/all-you-need-to-know-about-vector-databases-and-how-to-use-them-to-augment-your-llm-apps-596f39adfedb">All You Need to Know about Vector Databases</a> 发现并利用向量数据库的力量。</p>
+</li>
+<li>
+<p><a href="https://benchmark.vectorview.ai/vectordbs.html">选择向量数据库：2023 年的比较和指南 </a> Pinecone、Weviate、Milvus、Qdrant、Chroma、Elasticsearch 和 PGvector 数据库的比较。</p>
+</li>
+</ul>
+<p>注： 尽管大模型提高了输入token数量(长文本)，但是对向量数据库的影响不大，特别是多模场景混合搜索的场景。</p>
+<h3 id="大语言模型agents">大语言模型Agents</h3>
+<p>在我看来，大语言模型最有前途的发展。如果希望多个模型协同工作，建议浏览以下链接：</p>
+<ul>
+<li>
+<p><a href="https://github.com/paitesanshi/llm-agent-survey#-more-comprehensive-summarization">基于 LLM 的自治agents的调查 </a>这可能是基于 LLM 的agents最全面的概述。</p>
+</li>
+<li>
+<p><a href="https://github.com/microsoft/autogen">autogen</a>  是一个框架，允许使用多个agents来开发 LLM 应用程序，这些agents可以相互对话来解决任务。</p>
+</li>
+<li>
+<p><a href="https://github.com/xlang-ai/OpenAgents">OpenAgents</a>  一个用于在使用和托管语言agents的开放平台。</p>
+<p>补充：</p>
+</li>
+<li>
+<p><a href="https://mp.weixin.qq.com/s/PL-QjlvVugUfmRD4g0P-qQ"><strong>从第一性原理看大模型Agent技术</strong></a></p>
+</li>
+</ul>
+<h3 id="存储-补充">存储 (补充)</h3>
+<p>注： 这块主要是聚焦用于训练模型的数据，以及训练好的模型数据，相关链接：</p>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s/c4MWpBuYK0b1DDufeDV1vg">面向大模型的存储加速方案设计和实践</a></li>
+</ul>
+<h3 id="根据人类反馈进行强化学习-rlhf">根据人类反馈进行强化学习 (RLHF)</h3>
+<p>一旦允许用户访问模型，如果对方反应粗鲁怎么办？或者揭示制造炸弹的成分？为了避免这种情况，请查看这些文章：</p>
+<ul>
+<li><a href="https://huggingface.co/blog/rlhf"><strong>介绍 根据人类反馈进行强化学习(RLHF)</strong></a>  一篇详细介绍 RLHF 技术的概述文章。</li>
+<li><a href="https://github.com/allenai/RL4LMs">RL4LMs</a>  一个模块化 RL 库，用于根据人类偏好微调语言模型。</li>
+<li><a href="https://github.com/huggingface/trl">TRL</a>  一组使用强化学习训练 Transformer 语言模型的工具，从监督微调步骤 (SFT)、奖励建模步骤 (RM) 到近端策略优化 (PPO) 步骤。</li>
+</ul>
+<h2 id="结论">结论</h2>
+<p>尽管我们都有点厌倦了炒作，但大语言模型将陪伴我们很长一段时间，并且理解他们的堆栈和编写简单应用程序的能力可以给你带来显着的提升。希望本文已经成功地让您稍微沉浸在这个领域，并向您展示它没有什么复杂或可怕的。</p>
+<h2 id="reference">Reference</h2>
+<ol>
+<li><a href="https://towardsdatascience.com/all-you-need-to-know-to-develop-using-large-language-models-5c45708156bc">https://towardsdatascience.com/all-you-need-to-know-to-develop-using-large-language-models-5c45708156bc</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Large_language_model">https://en.wikipedia.org/wiki/Large_language_model</a></li>
+<li><a href="https://developer.nvidia.com/blog/introduction-to-llm-agents/">https://developer.nvidia.com/blog/introduction-to-llm-agents/</a></li>
+</ol>
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2023-12-03
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/oneday/">oneday</a>
+          <a href="https://weedge.github.io/tags/llm/">LLM</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/simd/faster_integer_parsing/">
+            <span class="next-text nav-default">译：更快的字符串转整数</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/post/llm/all-you-need-to-know-to-develop-using-large-language-models/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:weege007@gmail.com" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/weedge" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://weibo.com/weedge" rel="me noopener" class="iconfont"
+      title="weibo"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M385.714286 733.714286q12-19.428571 6.285714-39.428571t-25.714286-28.571429q-19.428571-8-41.714286-0.571429t-34.285714 26.285714q-12.571429 19.428571-7.428571 39.142857t24.571429 28.857143 42.571429 1.428571 35.714286-27.142857zm53.714286-69.142857q4.571429-7.428571 2-15.142857t-10-10.571429q-8-2.857143-16.285714 2.857143t-12.285714 10.571429q-9.714286 17.714286 7.428571 25.714286 8 2.857143 16.571429 2.857143t12.571429-10.571429zm99.428571 61.142857q-25.714286 58.285714-90.285714 85.714286t-128 6.857143q-61.142857-19.428571-84.285714-72.285714t3.714286-107.142857q26.857143-53.142857 86.571429-79.428571t120.285714-10.857143q63.428571 16.571429 90.571429 68.285714t1.428571 108.857143zm178.285714-91.428571q-5.142857-54.857143-50.857143-97.142857t-119.142857-62.285714-156.857143-12q-127.428571 13.142857-211.142857 80.857143t-75.714286 151.142857q5.142857 54.857143 50.857143 97.142857t119.142857 62.285714 156.857143 12q127.428571-13.142857 211.142857-80.857143t75.714286-151.142857zm176 2.285714q0 38.857143-21.142857 79.714286t-62.285714 78.285714-96.285714 67.142857-129.142857 47.428571-154.571429 17.714286-157.142857-19.142857-137.428571-53.142857-98-86.285714-37.142857-114q0-65.714286 39.714286-140t112.857143-147.428571q96.571429-96.571429 195.142857-134.857143t140.857143 4q37.142857 36.571429 11.428571 119.428571-2.285714 8-0.571429 11.428571t5.714286 4 8.285714 2.857143 7.714286-2l3.428571-1.142857q79.428571-33.714286 140.571429-33.714286t87.428571 34.857143q25.714286 36 0 101.714286-1.142857 7.428571-2.571429 11.428571t2.571429 7.142857 6.857143 4.285714 9.714286 3.428571q32.571429 10.285714 58.857143 26.857143t45.714286 46.571429 19.428571 66.571429zm-42.285714-356.571429q24 26.857143 31.142857 62t-3.714286 67.142857q-4.571429 13.142857-16.857143 19.428571t-25.428571 2.285714q-13.142857-4.571429-19.428571-16.857143t-2.285714-25.428571q11.428571-36-13.714286-63.428571t-61.142857-20q-13.714286 2.857143-25.714286-4.571429t-14.285714-21.142857q-2.857143-13.714286 4.571429-25.428571t21.142857-14.571429q34.285714-7.428571 68 3.142857t57.714286 37.428571zm103.428571-93.142857q49.714286 54.857143 64.285714 127.142857t-7.714286 138q-5.142857 15.428571-19.428571 22.857143t-29.714286 2.285714-22.857143-19.428571-2.857143-29.714286q16-46.857143 5.714286-98.285714t-45.714286-90.285714q-35.428571-39.428571-84.571429-54.571429t-98.857143-4.857143q-16 3.428571-29.714286-5.428571t-17.142857-24.857143 5.428571-29.428571 24.857143-16.857143q70.285714-14.857143 139.428571 6.571429t118.857143 76.857143z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://weedge.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2013 -
+    2023
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        weedge
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//weedge.disqus.com/count.js" async></script>
+
+
+
+
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
+
+
+</body>
+</html>

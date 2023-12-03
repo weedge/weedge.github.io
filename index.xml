@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Thu, 30 Nov 2023 10:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 03 Dec 2023 10:26:23 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -45,6 +45,275 @@
 &lt;li&gt;&amp;ldquo;&lt;strong&gt;万物之始，大道至简，衍化至繁&lt;/strong&gt;&amp;rdquo; &amp;ndash; 老子《&lt;a href=&#34;https://baike.baidu.com/item/%E9%81%93%E5%BE%B7%E7%BB%8F/327138&#34;&gt;道德经&lt;/a&gt;》&lt;/li&gt;
 &lt;/ol&gt;
 </description>
+      
+    </item>
+    
+    <item>
+      <title>译：使用大型语言模型进行开发所需了解的知识</title>
+      <link>https://weedge.github.io/post/llm/all-you-need-to-know-to-develop-using-large-language-models/</link>
+      <pubDate>Sun, 03 Dec 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/llm/all-you-need-to-know-to-develop-using-large-language-models/</guid>
+      
+        <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/0.jpeg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;导读&#34;&gt;导读&lt;/h2&gt;
+&lt;p&gt;本文的目的是简单地解释开始开发基于 LLM 的应用程序所需的关键技术。它面向对机器学习概念有基本了解并希望深入研究的软件开发人员、数据科学家和&lt;strong&gt;人工智能爱好者&lt;/strong&gt;。本文还提供了许多有用的链接以供进一步研究。这会很有趣！&lt;/p&gt;
+&lt;p&gt;注：本文可以作为一个索引目录(进一步阅读资料深入学习)，从整体上了解下，毕竟现在LLM发展很快，可以发散或者focus某个领域；大部分LLM相关开源实现，可以手动demo下过程，至于炼丹了解过程即可，主要在场景上结合工程去利用好大力神丸在生产环境落地；还有就是应用场景，国内app应该可以复刻，如果模型和数据有了，缺个落地idea的话~&lt;/p&gt;
+&lt;h2 id=&#34;1-大型语言模型llm简介&#34;&gt;1. 大型语言模型（LLM）简介&lt;/h2&gt;
+&lt;p&gt;我想你已经听过一千遍什么是大语言模型，所以不会让你负担过重。需要知道的是：大型语言模型（LLM）是一种大型神经网络模型，它根据先前预测的标记来预测下一个标记。就这样。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;模型参数数量的比较。看看 GPT-3 有多大就知道了。没有人知道 GPT-4……&lt;/p&gt;
+&lt;p&gt;大语言模型的受欢迎程度归因于其多功能性和有效性。它们完美地应对翻译、摘要、意义分析等任务。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/2.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;大语言模型能力&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;使用大语言模型的一些项目示例：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.notion.so/product/ai&#34;&gt;&lt;strong&gt;Notion AI&lt;/strong&gt;&lt;/a&gt; — 帮助提高写作质量、生成内容、纠正拼写和语法、编辑语音和语调、翻译等。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/features/copilot&#34;&gt;&lt;strong&gt;GitHub Copilot&lt;/strong&gt;&lt;/a&gt; — 通过提供自动完成风格的建议来改进您的代码。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://blog.dropbox.com/topics/product/introducing-AI-powered-tools&#34;&gt;&lt;strong&gt;Dropbox Dash&lt;/strong&gt;&lt;/a&gt; — 提供自然语言搜索功能，并且还专门引用了答案源自哪些文件。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果想详细了解大语言模型的工作原理，建议您阅读优秀的文章“&lt;a href=&#34;https://medium.com/@mark-riedl/a-very-gentle-introduction-to-large-language-models-without-the-hype-5f67941fa59e&#34;&gt;对大型语言模型的非常温和的介绍，无需炒作&lt;/a&gt;”&lt;/p&gt;
+&lt;h2 id=&#34;2-开源与闭源模型&#34;&gt;2. 开源与闭源模型&lt;/h2&gt;
+&lt;p&gt;主要差异：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;隐私&lt;/strong&gt;——大公司选择自托管解决方案的最重要原因之一。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;快速原型制作&lt;/strong&gt;——非常适合小型初创公司快速测试他们的想法，而无需过多的支出。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;生成质量&lt;/strong&gt;——可以针对特定任务微调模型，也可以使用付费 API。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;对于什么是好什么是坏，没有明确的答案。强调了以下几点：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/3.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;如果有兴趣深入研究细节，建议阅读之前的文章“&lt;a href=&#34;https://medium.com/better-programming/you-dont-need-hosted-llms-do-you-1160b2520526&#34;&gt;您不需要托管大语言模型，是吗？&lt;/a&gt;”。探索&lt;a href=&#34;https://www.promptingguide.ai/models/collection&#34;&gt;大语言模型系列&lt;/a&gt;以查看所有模型。&lt;/p&gt;
+&lt;h2 id=&#34;3-提示词工程的艺术&#34;&gt;3. 提示词工程的艺术&lt;/h2&gt;
+&lt;p&gt;许多人认为这是伪科学或只是暂时的炒作。但事实是，我们仍然不完全了解大语言模型是如何运作的。为什么他们有时会提供高质量的答复，有时会捏造事实（&lt;a href=&#34;https://medium.com/better-programming/fixing-hallucinations-in-llms-9ff0fd438e33&#34;&gt;产生幻觉&lt;/a&gt;）？或者为什么在提示中添加“让我们逐步思考”会突然提高质量？&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/4.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;添加情感色彩可以提高任何模型的质量。&lt;a href=&#34;https://arxiv.org/pdf/2307.11760.pdf&#34;&gt;来源&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;由于这一切，科学家和爱好者只能尝试不同的提示，试图让模型表现得更好。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/5.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;说明大语言模型解决问题的各种方法的示意图&lt;/p&gt;
+&lt;p&gt;我不会用复杂的提示链让你感到厌烦；相反，我只给出一些可以立即提高性能的示例：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/pdf/2205.11916.pdf&#34;&gt;&amp;ldquo;让我们一步一步思考&amp;rdquo;&lt;/a&gt;  对于推理或逻辑任务非常有效。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/pdf/2309.03409.pdf&#34;&gt;&amp;ldquo;深吸一口气，一步步解决这个问题&amp;rdquo;&lt;/a&gt;  上一点的改进版本。它可以增加几个百分点的质量。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/pdf/2307.11760.pdf&#34;&gt;&amp;ldquo;这对我的职业生涯非常重要&amp;rdquo;&lt;/a&gt; 只需将其添加到提示的末尾，发现质量提高了 5-20%。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;另外，我会立即分享一个有用的提示模板：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;让我们结合我们的&lt;strong&gt;X&lt;/strong&gt;命令和清晰的思维，以循序渐进的方式快速准确地破译答案。提供详细信息并在答案中包含来源。这对我的职业生涯非常重要。&lt;/p&gt;
+&lt;p&gt;其中&lt;strong&gt;X&lt;/strong&gt;是您正在解决的任务的行业，例如编程。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;我强烈建议您花几个晚上探索快速的工程技术。这不仅可以让您更好地控制模型的行为，还有助于提高质量并减少幻觉。为此，我建议阅读&lt;a href=&#34;https://www.promptingguide.ai/introduction/basics&#34;&gt;《提示词工程指南》&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;有用的链接&#34;&gt;有用的链接：&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/hegelai/prompttools&#34;&gt;Prompttools&lt;/a&gt; — 快速测试和实验，支持两种 LLM（例如 OpenAI、LLaMA）。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/promptfoo/promptfoo&#34;&gt;Promptfoo&lt;/a&gt; — 测试和评估 LLM 输出质量。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/f/awesome-chatgpt-prompts&#34;&gt;Awesome ChatGPT Prompts&lt;/a&gt; — 用于 ChatGPT 模型的提示示例集合。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;4合并新数据检索增强生成rag&#34;&gt;4.合并新数据：检索增强生成（RAG）&lt;/h2&gt;
+&lt;p&gt;RAG是一种将LLM与外部知识库相结合的技术。这允许模型将原始训练集中未包含的相关信息或特定数据添加到模型中。&lt;/p&gt;
+&lt;p&gt;尽管这个名字令人生畏（有时我们会在其中添加“reranker”一词），但它实际上是一种相当古老且出奇简单的技术：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/6.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;RAG 工作原理示意图&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;将文档转换为数字，称之为&lt;a href=&#34;https://towardsdatascience.com/neural-network-embeddings-explained-4d028e6f0526&#34;&gt;&lt;strong&gt;嵌入(embedding)&lt;/strong&gt;&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;然后，使用相同的模型将用户的搜索查询转换为嵌入。&lt;/li&gt;
+&lt;li&gt;查找前 K 个最接近的文档，通常基于&lt;a href=&#34;https://en.wikipedia.org/wiki/Cosine_similarity&#34;&gt;余弦相似度&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;要求大语言模型根据这些文件生成回复。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;何时使用&#34;&gt;何时使用&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;对当前信息的需求&lt;/strong&gt;：当应用程序需要不断更新的信息（例如新闻文章）时。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;特定领域的应用程序&lt;/strong&gt;：适用于需要大语言模型培训数据之外的专业知识的应用程序。例如，公司内部文件。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;何时不使用&#34;&gt;何时不使用&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;通用会话应用程序&lt;/strong&gt;：信息需要通用且不需要附加数据的地方。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;有限的资源场景&lt;/strong&gt;： RAG 的检索组件涉及搜索大型知识库，这可能在计算上昂贵且缓慢，但仍然比微调更快且成本更低。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;使用-rag-构建应用程序&#34;&gt;使用 RAG 构建应用程序&lt;/h3&gt;
+&lt;p&gt;一个很好的起点是使用&lt;a href=&#34;https://github.com/run-llama/llama_index&#34;&gt;LlamaIndex 库&lt;/a&gt;。它允许您快速将数据连接到大语言模型。为此，只需要几行代码：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;llama_index&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;VectorStoreIndex&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;SimpleDirectoryReader&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# 1. Load your documents:&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;documents&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;SimpleDirectoryReader&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;YOUR_DATA&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;load_data&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# 2. Convert them to vectors:&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;index&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;VectorStoreIndex&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;from_documents&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;documents&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# 3. Ask the question:&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;query_engine&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;index&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;as_query_engine&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;response&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;query_engine&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;When&amp;#39;s my boss&amp;#39;s birthday?&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;response&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在实际应用中，事情明显更加复杂。就像在任何开发中一样，您会遇到许多细微差别。例如，检索到的文档可能并不总是与问题相关，或者可能存在速度问题。然而，即使在这个阶段，也可以显着提高搜索系统的质量。&lt;/p&gt;
+&lt;h3 id=&#34;进一步阅读&#34;&gt;进一步阅读&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.anyscale.com/blog/a-comprehensive-guide-for-building-rag-based-llm-applications-part-1&#34;&gt;构建基于 RAG 的 LLM 应用程序用于生产&lt;/a&gt; 一篇关于 RAG 主要组件的优秀详细文章。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/why-your-rag-is-not-reliable-in-a-production-environment-9e6a73b3eddb&#34;&gt;为什么您的 RAG 在生产环境中不可靠&lt;/a&gt; 一篇很棒的文章，它以清晰的语言解释了使用 RAG 时可能出现的困难。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://betterprogramming.pub/7-query-strategies-for-navigating-knowledge-graphs-with-llamaindex-ed551863d416&#34;&gt;使用 LlamaIndex 导航知识图的 7 种查询策略&lt;/a&gt; 一篇内容丰富的文章，详细而细致地了解了使用 LlamaIndex 构建 RAG 管道。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://platform.openai.com/docs/assistants/tools/knowledge-retrieval&#34;&gt;OpenAI 检索工具 &lt;/a&gt;如果想要最少的工作，使用 OpenAI 的 RAG。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;5-微调大语言模型&#34;&gt;5. 微调大语言模型&lt;/h2&gt;
+&lt;p&gt;微调是在特定数据集上继续训练预训练的 LLM 的过程。可能会问，如果已经可以使用 RAG 添加数据，为什么还需要进一步训练模型。简单的答案是，只有微调才能定制模型以理解特定领域或定义其风格。例如，&lt;a href=&#34;https://medium.com/better-programming/unleash-your-digital-twin-how-fine-tuning-llm-can-create-your-perfect-doppelganger-b5913e7dda2e&#34;&gt;通过对个人信件进行微调来创建自己的副本&lt;/a&gt;：&lt;/p&gt;
+&lt;p&gt;如果已经相信了它的重要性，那么看看它是如何工作的：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/7.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;对特定领域数据进行微调的经典方法（所有图标均来自&lt;a href=&#34;http://flaticon.com/&#34;&gt;flaticon&lt;/a&gt;）&lt;/em&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;接受训练有素的大语言模型，有时称为基础大语言模型。可以从&lt;a href=&#34;https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard&#34;&gt;HuggingFace&lt;/a&gt;下载它们。&lt;/li&gt;
+&lt;li&gt;准备您的训练数据。只需编写说明和响应即可。这是此类数据集的&lt;a href=&#34;https://huggingface.co/datasets/databricks/databricks-dolly-15k&#34;&gt;示例&lt;/a&gt;；还可以使用 GPT-4&lt;a href=&#34;https://www.promptingguide.ai/applications/generating&#34;&gt;生成合成数据&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;选择合适的微调方法。目前比较流行的是&lt;a href=&#34;https://github.com/microsoft/LoRA&#34;&gt;LoRA&lt;/a&gt;和&lt;a href=&#34;https://github.com/artidoro/qlora&#34;&gt;QLoRA&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;根据新数据微调模型。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;何时使用-1&#34;&gt;何时使用&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;垂直领域应用程序&lt;/strong&gt;：当应用程序处理专门或非常规主题时。例如，法律文档应用需要理解和处理法律术语。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;自定义语言风格&lt;/strong&gt;：适用于需要特定语气或风格的应用程序。例如，创建一个&lt;a href=&#34;https://beta.character.ai/&#34;&gt;人工智能角色&lt;/a&gt;，无论是名人还是书中的角色。（衍生场景：旅游景点数字人，游戏NPC，二次元社区）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;何时不使用-1&#34;&gt;何时不使用&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;广泛的应用&lt;/strong&gt;：应用范围是一般性的，不需要专业知识。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;数据有限&lt;/strong&gt;：微调需要大量相关数据。但是，始终可以&lt;a href=&#34;https://www.confident-ai.com/blog/how-to-generate-synthetic-data-using-llms-part-1&#34;&gt;使用另一个 LLM 生成它们&lt;/a&gt;。例如，今年早些时候，使用包含 52k LLM 生成的指令响应对的&lt;a href=&#34;https://github.com/gururise/AlpacaDataCleaned&#34;&gt;Alpaca 数据集&lt;/a&gt;创建了第一个微调&lt;a href=&#34;https://arxiv.org/abs/2302.13971&#34;&gt;Llama v1模型&lt;/a&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;微调llm&#34;&gt;微调LLM&lt;/h3&gt;
+&lt;p&gt;可以找到大量致力于模型微调的文章。仅在 Medium 上就有数千个。因此，不想太深入地研究这个主题，而是展示一个高级库&lt;a href=&#34;https://github.com/Lightning-AI/lit-gpt&#34;&gt;Lit-GPT&lt;/a&gt;，它隐藏了所有的魔力。是的，它不允许对训练过程进行太多定制，但可以快速进行实验并获得初步结果。只需要几行代码：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 1. Download the model:&lt;/span&gt;
+python scripts/download.py --repo_id meta-llama/Llama-2-7b
+
+&lt;span class=&#34;c1&#34;&gt;# 2. Convert the checkpoint to the lit-gpt format:&lt;/span&gt;
+python scripts/convert_hf_checkpoint.py --checkpoint_dir checkpoints/llama
+
+&lt;span class=&#34;c1&#34;&gt;# 3. Generate an instruction tuning dataset:&lt;/span&gt;
+python scripts/prepare_alpaca.py  &lt;span class=&#34;c1&#34;&gt;# it should be your dataset&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# 4. Run the finetuning script&lt;/span&gt;
+python finetune/lora.py &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;    --checkpoint_dir checkpoints/llama/
+    --data_dir your_data_folder/
+    --out_dir my_finetuned_model/ 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;就是这样！训练过程将开始：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/8.gif&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;请注意，该过程可能需要很长时间。在单个 A100 GPU 上微调 Falcon-7B需要大约&lt;strong&gt;10 小时&lt;/strong&gt;和&lt;strong&gt;30 GB内存。&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;当然，我有点过于简单化了，我们只触及了表面。实际上，微调过程要复杂得多，为了获得更好的结果，需要了解各种适配器及其参数等等。然而，即使经过如此简单的迭代，会得到一个遵循特定指示的新模型。&lt;/p&gt;
+&lt;h3 id=&#34;进一步阅读-1&#34;&gt;进一步阅读&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://medium.com/better-programming/unleash-your-digital-twin-how-fine-tuning-llm-can-create-your-perfect-doppelganger-b5913e7dda2e&#34;&gt;使用微调的大语言模型创建自己的克隆&lt;/a&gt; 作者在文章中写了有关收集数据集、使用参数的文章，并提供了有关微调的有用技巧。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://lightning.ai/pages/community/article/understanding-llama-adapters/&#34;&gt;了解大型语言模型的参数高效微调&lt;/a&gt; 如果想了解微调概念和流行的参数高效替代方案的详细信息，这是一个很好的教程。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://lightning.ai/pages/community/lora-insights/&#34;&gt;使用 LoRA 和 QLoRA 微调大语言模型：数百次实验的见解 &lt;/a&gt;了解 LoRA 功能的文章之一。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://platform.openai.com/docs/guides/fine-tuning&#34;&gt;OpenAI 微调 &lt;/a&gt;如果想以最小的工作微调 GPT-3.5。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;6-部署-llm-工程化&#34;&gt;6. 部署 LLM (工程化)&lt;/h2&gt;
+&lt;p&gt;有时，如果有用于推理的计算资源和模型,数据存储资源，想直接利用训练好的开源大模型，仅仅简单地按下“部署”按钮&amp;hellip;&amp;hellip;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/9.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;幸运的是，这是相当可行的。有大量专门用于部署大型语言模型的框架。是什么让他们如此出色？&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;许多预构建的包装器和集成。&lt;/li&gt;
+&lt;li&gt;大量可用型号可供选择。&lt;/li&gt;
+&lt;li&gt;大量内部优化。&lt;/li&gt;
+&lt;li&gt;快速原型制作。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;选择正确的框架&#34;&gt;选择正确的框架&lt;/h3&gt;
+&lt;p&gt;部署LLM应用程序的框架的选择取决于多种因素，包括模型的大小、应用程序的可扩展性要求和部署环境。目前，框架的多样性并不丰富，因此理解它们的差异应该不会太困难。下面，准备了一份备忘单，可以快速入门：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/10.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;此外，在文章“&lt;a href=&#34;https://medium.com/better-programming/frameworks-for-serving-llms-60b7f7b23407&#34;&gt;为大语言模型提供服务的 7 个框架&lt;/a&gt;”中，对现有解决方案进行了更详细的概述。如果打算部署模型，建议检查一下。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/11.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;LLM 推理框架比较&lt;/em&gt;&lt;/p&gt;
+&lt;h3 id=&#34;部署示例代码&#34;&gt;部署示例代码&lt;/h3&gt;
+&lt;p&gt;从理论转向实践，并尝试使用&lt;a href=&#34;https://github.com/huggingface/text-generation-inference&#34;&gt;文本生成推理(Text Generation Inference)&lt;/a&gt;来部署 LLaMA-2 。通过运行已经打包好的模型服务镜像，demo只需要几行代码：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 1. Create a folder where your model will be stored:&lt;/span&gt;
+mkdir data
+
+&lt;span class=&#34;c1&#34;&gt;# 2. Run Docker container (launch RestAPI service):&lt;/span&gt;
+docker run --gpus all --shm-size 1g -p 8080:80 &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;    -v &lt;span class=&#34;nv&#34;&gt;$volume&lt;/span&gt;:/data &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;    ghcr.io/huggingface/text-generation-inference:1.1.0
+    --model-id meta-llama/Llama-2-7b
+
+&lt;span class=&#34;c1&#34;&gt;# 3. And now you can make requests:&lt;/span&gt;
+curl 127.0.0.1:8080/generate &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;    -X POST &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;    -d &lt;span class=&#34;s1&#34;&gt;&amp;#39;{&amp;#34;inputs&amp;#34;:&amp;#34;Tell me a joke!&amp;#34;,&amp;#34;parameters&amp;#34;:{&amp;#34;max_new_tokens&amp;#34;:20}}&amp;#39;&lt;/span&gt; &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;    -H &lt;span class=&#34;s1&#34;&gt;&amp;#39;Content-Type: application/json&amp;#39;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;设置了带有内置日志记录的 RestAPI 服务、用于监控的 Prometheus 端点、令牌流，并且模型已完全优化。这不是很神奇吗？这些工程化实现方案相对成熟，移动互联网时代的工程累积。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/12.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;API文档&lt;/em&gt;&lt;/p&gt;
+&lt;h3 id=&#34;进一步阅读-2&#34;&gt;进一步阅读&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://medium.com/better-programming/frameworks-for-serving-llms-60b7f7b23407&#34;&gt;为大语言模型提供服务的 7 个框架&lt;/a&gt; 大语言模型推理和服务的综合指南，并进行了详细比较。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://huggingface.co/inference-endpoints&#34;&gt;Inference Endpoints&lt;/a&gt; HuggingFace 的一款产品，只需点击几下即可部署任何 LLM。当需要快速原型设计时，这是一个不错的选择。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;7-幕后还剩下什么&#34;&gt;7. 幕后还剩下什么&lt;/h2&gt;
+&lt;p&gt;尽管我们已经介绍了开发基于 LLM 的应用程序所需的主要概念，但将来可能会遇到一些问题。所以，想留下一些有用的链接：&lt;/p&gt;
+&lt;h3 id=&#34;优化&#34;&gt;优化&lt;/h3&gt;
+&lt;p&gt;当启动第一个模型时，不可避免地会发现它没有想要的那么快并且消耗了大量资源。需要了解如何对其进行优化。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://medium.com/better-programming/speed-up-llm-inference-83653aa24c47&#34;&gt;加速托管 LLM 推理的 7 种方法 &lt;/a&gt;加速 LLM 推理的技术，以提高令牌生成速度并减少内存消耗。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://lightning.ai/pages/community/tutorial/pytorch-memory-vit-llm/&#34;&gt;优化 PyTorch 中训练 LLM 的内存使用&lt;/a&gt; 文章提供了一系列技术，可以将 PyTorch 中的内存消耗减少约 20 倍，而不会牺牲建模性能和预测准确性。&lt;/p&gt;
+&lt;p&gt;补充：&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/owgDAUGnrsXmNwUXY2Ya0w&#34;&gt;飞桨大模型分布式训练技术&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/PIh2gPhqF8r-9k8QZQ8GEw&#34;&gt;⻜桨⼤模型推理部署⾼性能优化&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;评估&#34;&gt;评估&lt;/h3&gt;
+&lt;p&gt;假设有一个经过微调的模型。但怎么能确定它的质量已经提高了呢？应该使用什么指标？&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://explodinggradients.com/all-about-evaluating-large-language-models&#34;&gt;所有关于评估大型语言模型的内容 &lt;/a&gt;一篇关于基准和指标的很好的概述文章。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/openai/evals&#34;&gt;evals&lt;/a&gt; 用于评估大语言模型和大语言模型系统的最流行框架。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;向量数据库&#34;&gt;向量数据库&lt;/h3&gt;
+&lt;p&gt;如果使用 RAG，在某些时候，将向量存储在内存中转移到数据库中。为此，了解当前市场上的产品及其局限性非常重要。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/all-you-need-to-know-about-vector-databases-and-how-to-use-them-to-augment-your-llm-apps-596f39adfedb&#34;&gt;All You Need to Know about Vector Databases&lt;/a&gt; 发现并利用向量数据库的力量。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://benchmark.vectorview.ai/vectordbs.html&#34;&gt;选择向量数据库：2023 年的比较和指南 &lt;/a&gt; Pinecone、Weviate、Milvus、Qdrant、Chroma、Elasticsearch 和 PGvector 数据库的比较。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;注： 尽管大模型提高了输入token数量(长文本)，但是对向量数据库的影响不大，特别是多模场景混合搜索的场景。&lt;/p&gt;
+&lt;h3 id=&#34;大语言模型agents&#34;&gt;大语言模型Agents&lt;/h3&gt;
+&lt;p&gt;在我看来，大语言模型最有前途的发展。如果希望多个模型协同工作，建议浏览以下链接：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/paitesanshi/llm-agent-survey#-more-comprehensive-summarization&#34;&gt;基于 LLM 的自治agents的调查 &lt;/a&gt;这可能是基于 LLM 的agents最全面的概述。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/microsoft/autogen&#34;&gt;autogen&lt;/a&gt;  是一个框架，允许使用多个agents来开发 LLM 应用程序，这些agents可以相互对话来解决任务。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/xlang-ai/OpenAgents&#34;&gt;OpenAgents&lt;/a&gt;  一个用于在使用和托管语言agents的开放平台。&lt;/p&gt;
+&lt;p&gt;补充：&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/PL-QjlvVugUfmRD4g0P-qQ&#34;&gt;&lt;strong&gt;从第一性原理看大模型Agent技术&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;存储-补充&#34;&gt;存储 (补充)&lt;/h3&gt;
+&lt;p&gt;注： 这块主要是聚焦用于训练模型的数据，以及训练好的模型数据，相关链接：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/c4MWpBuYK0b1DDufeDV1vg&#34;&gt;面向大模型的存储加速方案设计和实践&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;根据人类反馈进行强化学习-rlhf&#34;&gt;根据人类反馈进行强化学习 (RLHF)&lt;/h3&gt;
+&lt;p&gt;一旦允许用户访问模型，如果对方反应粗鲁怎么办？或者揭示制造炸弹的成分？为了避免这种情况，请查看这些文章：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://huggingface.co/blog/rlhf&#34;&gt;&lt;strong&gt;介绍 根据人类反馈进行强化学习(RLHF)&lt;/strong&gt;&lt;/a&gt;  一篇详细介绍 RLHF 技术的概述文章。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/allenai/RL4LMs&#34;&gt;RL4LMs&lt;/a&gt;  一个模块化 RL 库，用于根据人类偏好微调语言模型。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/huggingface/trl&#34;&gt;TRL&lt;/a&gt;  一组使用强化学习训练 Transformer 语言模型的工具，从监督微调步骤 (SFT)、奖励建模步骤 (RM) 到近端策略优化 (PPO) 步骤。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;结论&#34;&gt;结论&lt;/h2&gt;
+&lt;p&gt;尽管我们都有点厌倦了炒作，但大语言模型将陪伴我们很长一段时间，并且理解他们的堆栈和编写简单应用程序的能力可以给你带来显着的提升。希望本文已经成功地让您稍微沉浸在这个领域，并向您展示它没有什么复杂或可怕的。&lt;/p&gt;
+&lt;h2 id=&#34;reference&#34;&gt;Reference&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/all-you-need-to-know-to-develop-using-large-language-models-5c45708156bc&#34;&gt;https://towardsdatascience.com/all-you-need-to-know-to-develop-using-large-language-models-5c45708156bc&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Large_language_model&#34;&gt;https://en.wikipedia.org/wiki/Large_language_model&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://developer.nvidia.com/blog/introduction-to-llm-agents/&#34;&gt;https://developer.nvidia.com/blog/introduction-to-llm-agents/&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;</description>
       
     </item>
     
@@ -355,7 +624,8 @@ SIMD step 4 (32-bit x 4): 00000000 00000000 00000012 34567890
 &lt;li&gt;&lt;a href=&#34;https://en.wikichip.org/wiki/x86/avx512_vnni&#34;&gt;https://en.wikichip.org/wiki/x86/avx512_vnni&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://blog.regehr.org/archives/1307&#34;&gt;https://blog.regehr.org/archives/1307&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://lab.cs.tsinghua.edu.cn/hpc/doc/assignments/5.simd/&#34;&gt;https://lab.cs.tsinghua.edu.cn/hpc/doc/assignments/5.simd/&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://en.algorithmica.org/hpc/simd/&#34;&gt;https://en.algorithmica.org/hpc/simd/&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://en.algorithmica.org/hpc/simd/&#34;&gt;https://en.algorithmica.org/hpc/simd/&lt;/a&gt;&lt;/strong&gt; &lt;a href=&#34;https://www.youtube.com/watch?v=vIRjSdTCIEU&#34;&gt;https://www.youtube.com/watch?v=vIRjSdTCIEU&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html&#34;&gt;https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html&lt;/a&gt;&lt;/strong&gt; &lt;a href=&#34;https://github.com/intel/optimization-manual&#34;&gt;github&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>
@@ -3422,108 +3692,6 @@ make_strings_column    0.5ms
 &lt;li&gt;&lt;a href=&#34;https://www.dragonflydb.io/docs/managing-dragonfly/high-availability&#34;&gt;dragonfly/high-availability&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://docs.google.com/document/d/1hJXa0LjMaGYHgL3PeQQu3QMrstxof241OVxbdDKvSbY/edit?usp=sharing&#34;&gt;RebornDB: the Next Generation Distributed Key-Value Store&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>OpenAI体验</title>
-      <link>https://weedge.github.io/post/doraemon/openai/</link>
-      <pubDate>Sun, 26 Feb 2023 20:16:30 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/doraemon/openai/</guid>
-      
-        <description>&lt;iframe frameborder=&#34;no&#34; border=&#34;0&#34; marginwidth=&#34;0&#34; marginheight=&#34;0&#34; width=330 height=86 src=&#34;//music.163.com/outchain/player?type=2&amp;id=1428273917&amp;auto=1&amp;height=66&#34;&gt;&lt;/iframe&gt;
-
-
-
-&lt;p&gt;OpenAI chatGPT 很火，体验了一把，哇哦之后，心想这个会成为内容创造的辅助工具，目前大部分是通过搜索寻找来解答难题，以后可能收敛到具体应用场景中了，不过底层可能还是掌握大数据公司来提供模型资源。&lt;/p&gt;
-&lt;p&gt;按使用方大致分为如下场景：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;企业ToB常应用在Saas办公软件，低代码，客服，生物医疗，教育当中，比如微软办公软件，notion等相关笔记软件, 飞书，钉钉，企业微信等办公聊天，文档，视屏会议等软件，以及银行智能客服，生物蛋白质生成和基因测序领域等等；付费模式，开放的模型Pass平台提供模型训练，以及微调，交互api等；按使用资源和更好的体验质量速度来收费，比如国内BAT；上层SaaS服务通过租户使用更多实用便利功能组合(三方资源和内部资源整合)来付费。&lt;/li&gt;
-&lt;li&gt;ToC主要是UGC的场景，随着多模交互场景下的大模型出现，AIGC方面的应用应该会更多，普通玩家更多，想象空间应该也更大，这块比ToB要大的多，而且较为通用，有UGC大数据公司才可能出大模型吧，并且开放给上游应用玩家使用，按功能体验质量来付费；比如国内抖音，微信这些app应用，以及和企业合作的实验室。可能还会有其他好玩的智能硬件出现。&lt;/li&gt;
-&lt;li&gt;可能还有数据库方向，结合用户经常输入查询，结合数据库产品特性进行智能补偿纠错优化推荐等，类似tabnine, &lt;a href=&#34;https://docs.github.com/en/copilot&#34;&gt;Copilot&lt;/a&gt; 这类型工具，反正上层交互类的场景应该都可以渗透到。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;总的概括玩家分为3种：底层大模型 -&amp;gt; 定制场景下的数据模型微调 -&amp;gt; 上层应用百花齐放；&lt;/p&gt;
-&lt;p&gt;想象空间有限，未来是怎样，以上说的可能有误:)，anyway，Just Do IT~&lt;/p&gt;
-&lt;p&gt;PS: 梯子不要选择香港，可以使用美国的节点；openai如何注册可以google一下，教程很多，注册的邮箱用的gmail，使用 &lt;a href=&#34;https://sms-activate.org/&#34;&gt;https://sms-activate.org/&lt;/a&gt; 代理接受短信验证码，可以选择🇮🇳印度。&lt;/p&gt;
-&lt;p&gt;chatGPT体验挺有意思的，如果问一些理性逻辑相关的case, 比如自然语言处理怎么学习相关的语义，可以给出相同的参考标准答案，逻辑套路满满，而且还可以纠正错别字意图，(关于如何学习的模版套路，可以用来建个思维导图，然后自己填充学习内容笔记，或者ppt之类的等等)；如果问一些感性的case, 比如一段歌词，一首诗歌，会给出相应的场景，文字还挺优美的，一个字绝，懂你的。感觉AI很适合逻辑套路，但是人类的情感是很难琢磨的哈，人心难测嘛；当然提问也是比较重要的，也有些bad case，比如：&amp;ldquo;什么是快乐星球&amp;rdquo;，需要多沟通，让它理解上下文（只能意会不能言传-人类专属功能，它倒像个三体人），继续追问，会出现一本正经的错误回答，明明是胡歌，舒淇，张艺兴等小朋友~ （模型自我迭代学习，下次访问回答时已经就正确了，知错能改，善莫大焉）&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/doraemon/openai-case.png&#34; alt=&#34;openai-case&#34;&gt;&lt;/p&gt;
-&lt;p&gt;openai使用GPT模型(公开使用的是GPT-3以上), 底层具体对应的大模型已经训练好了，提供openAPI给应用开发者来进行微调模型使用。&lt;/p&gt;
-&lt;p&gt;作为一个开发者，当然想在通过开放的api来使用openai模型啦；如果是研究人员，虽然木有大数据和服务器计算资源来玩，也可以使用openai开放的GPT-3以及以上的模型来微调。&lt;/p&gt;
-&lt;p&gt;以下是chatGPT 对使用的回答(这个就相当于是智能客服场景)，提供的开放的(text/image/audio/video)多模交互api使用如下：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;GPT-3, GPT-3.5 &amp;hellip; 模型，用于模型参数微调；文本补全，编辑；以及搜索(相关性排序)，聚类(相似性分组)，推荐(推荐相关文本)，异常检测(识别相关性很小的异常值)，多样性测试(分析相似性分布)，分类(最相似的标签分类)等embedding，通过向量列表表示，计算文本相关性(向量距离)；主要用于文本类交互，以及基于上下文聊天场景；&lt;/li&gt;
-&lt;li&gt;Codex api 通过描述文本提示&lt;strong&gt;Prompt&lt;/strong&gt;生成对应代码；这个挺适合开发人员的，对于新语言的新手，结合ide，记事本通过Prompt提示词语来生成相关代码还是挺爽的，至少不用去google 来回找确认是否是需要方案代码，搜索则可以用于兜底方案；&lt;/li&gt;
-&lt;li&gt;DALL-E /2 api 通过描述文本提示&lt;strong&gt;Prompt&lt;/strong&gt;生成图片或者编辑原始图片 ；插画，设计师 辅助类工具，大概构思草图；&lt;/li&gt;
-&lt;li&gt;音频转换为文本, 使用开源大型 v2 &lt;a href=&#34;https://openai.com/blog/whisper/&#34;&gt;Whisper 模型&lt;/a&gt;。 这个用在硬件设备上挺好的，硬件操作系统如果有开放口子可以开发的话，直接就可以对接上赋能了。将音频转录成音频所使用的任何语言；将音频翻译并转录成英文；&lt;/li&gt;
-&lt;li&gt;视频类的api暂时还没有；&lt;/li&gt;
-&lt;li&gt;需要生成 &lt;a href=&#34;https://platform.openai.com/account/api-keys&#34;&gt;api-keys&lt;/a&gt; 用于api接口调用时使用；&lt;/li&gt;
-&lt;li&gt;提供了不同开发语言的 &lt;a href=&#34;https://platform.openai.com/docs/libraries/community-libraries&#34;&gt;client库&lt;/a&gt; ，默认包括：python,nodejs, 还有其他语言三方包，比如golang: &lt;a href=&#34;https://github.com/sashabaranov/go-gpt3&#34;&gt;sashabaranov/go-gpt3&lt;/a&gt; ; 以及api 错误说明；&lt;/li&gt;
-&lt;li&gt;可以在 &lt;a href=&#34;https://platform.openai.com/playground&#34;&gt;playground&lt;/a&gt; 中编辑描述文本提示&lt;strong&gt;Prompt&lt;/strong&gt;对模型接口调试测试，还可以用语音生成描述文本(speech to text)，适合端到端的语音智能设备；&lt;/li&gt;
-&lt;li&gt;而且在 &lt;a href=&#34;https://platform.openai.com/examples&#34;&gt;openai examples&lt;/a&gt; 中提供各种应用场景样例和Q&amp;amp;A；&lt;/li&gt;
-&lt;li&gt;文档中还介绍了最佳实践：&lt;a href=&#34;https://platform.openai.com/docs/guides/safety-best-practices&#34;&gt;&lt;strong&gt;&lt;!-- raw HTML omitted --&gt;安全最佳实践&lt;!-- raw HTML omitted --&gt;&lt;/strong&gt;&lt;/a&gt; 和 &lt;a href=&#34;https://platform.openai.com/docs/guides/production-best-practices&#34;&gt;&lt;strong&gt;&lt;!-- raw HTML omitted --&gt;生产最佳实践&lt;!-- raw HTML omitted --&gt;&lt;/strong&gt;&lt;/a&gt; ；&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/doraemon/openai.png&#34; alt=&#34;openai&#34;&gt;&lt;/p&gt;
-&lt;p&gt;像国内BAT在这块也早已开始布局了，大概15,16年左右就已经开始搭建智能平台底座，只不过被国外chatGPT “大力出奇迹” 给引爆了；大模型的训练需要大量的数据和参数调整，而且需要消耗大量服务器计算资源，特别是GPU 。像百度的 &lt;a href=&#34;https://wenxin.baidu.com/&#34;&gt;文心大模型&lt;/a&gt; （塑造了一个二次元create大会） ; 中国素有基建狂魔之称，希望能在中国版的&amp;quot;大力神丸&amp;quot;上出奇迹。&lt;/p&gt;
-&lt;p&gt;Tips: 国内微信也已经有对应类似开放api，https://welm.weixin.qq.com/docs/api/  微信应该最适合的应用场景，对应背景论文：&lt;a href=&#34;https://arxiv.org/pdf/2209.10372.pdf&#34;&gt;WeLM: A Well-Read Pre-trained Language Model for Chinese&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;附学习demo:&lt;/p&gt;
-&lt;p&gt;openai提供了开放接口，借这个AI东风，推进下工程方面的熟练。大部分是dev/app ops工作，业务由应用场景和idea来决定。&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;本地命令行交互&lt;/p&gt;
-&lt;p&gt;目的：&lt;!-- raw HTML omitted --&gt;快速熟悉openai的调用接口进行参数设置， 或者对模型进行微调训练。&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
-&lt;p&gt;源码地址：&lt;a href=&#34;https://github.com/weedge/craftsman/tree/main/doraemon/openai&#34;&gt;https://github.com/weedge/craftsman/tree/main/doraemon/openai&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;git clone  https://github.com/weedge/craftsman &amp;amp;&amp;amp; cd craftsman/doraemon/openai
-# cmd chat Q&amp;amp;A
-export OPENAI_API_SK=
-make run
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;2&#34;&gt;
-&lt;li&gt;
-&lt;p&gt;web交互(使用AWS &lt;a href=&#34;https://serverlessland.com/&#34;&gt;&lt;strong&gt;Serverless&lt;/strong&gt;&lt;/a&gt;  架构搭建)☁️智能底座+上层轻/微应用，适合快速迭代的业务，just code serverless biz logic handler func run on the could  &lt;a href=&#34;https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html&#34;&gt;lambda runtime&lt;/a&gt;, like shell/c++/rust use &lt;a href=&#34;https://docs.aws.amazon.com/lambda/latest/dg/runtimes-walkthrough.html&#34;&gt;custom runtime&lt;/a&gt; 特别是rust lambda runtime 是开源的，值得关注，对于使用运行时语言来进行无服务化平台化改造，比如数据模型训练是的pipeline，数据库cloud平台，而且在aws内部大量使用，Rust 已迅速成为大规模构建基础设施的关键语言，&lt;a href=&#34;https://firecracker-microvm.github.io/&#34;&gt;Firecracker&lt;/a&gt; 是一种开源虚拟化技术，为&lt;a href=&#34;https://aws.amazon.com/lambda/&#34;&gt;AWS Lambda&lt;/a&gt;和其他无服务器产品提供支持。 aws抽象出来的服务，复杂都留在后面，简单交互留给用户，按业务场景自由组装infrastructure。智能底座需要这样的抽象工程给上层应用赋能。&lt;/p&gt;
-&lt;p&gt;目的： &lt;!-- raw HTML omitted --&gt;熟悉aws serverless 事件驱动整体架构，以及整体lambda runtime运行原理； 在数据库cloud 或者内部/外部pass平台场景中，提供给客户使用serverless来实现具体业务逻辑。aws在这块做的深入，通过学习以便这些思想用于实际工作场景中。&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
-&lt;p&gt;源码地址：&lt;a href=&#34;https://github.com/weedge/craftsman/tree/main/cloud/aws/cdk/serverless-openai-chatbot&#34;&gt;https://github.com/weedge/craftsman/tree/main/cloud/aws/cdk/serverless-openai-chatbot&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;使用aws无服务lambda系统设施架构如下：(push模块异步对接openai 推送结果，这里分不同开放语言，是为了熟悉lambda对不同语言runtime，具体语言根据公司组织应用场景而定，不过 golang挺适合push服务的，分channel治之)&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/doraemon/aws-serverless-openai-chatbot.drawio.png&#34; alt=&#34;architecture&#34;&gt;&lt;/p&gt;
-&lt;p&gt;按照demo readme 配置好文件，后端服务可以一键部署这个demo应用，第一次部署过程可能比较长，主要是用docker容器来CI lambda不同语言所依赖的库，用于部署至aws lambda容器环境中；前段静态资源则需要手动配置, 看 &lt;a href=&#34;https://docs.aws.amazon.com/AmazonS3/latest/userguide/HostingWebsiteOnS3Setup.html&#34;&gt;Tutorial: Configuring a static website on Amazon S3&lt;/a&gt; 这个教程就可以，配置好后可提供对象存储S3域名使用，如果需要配置公司组织域名，使用CDN加速，则自行查看相关文档解决~&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;k8s部署方式&lt;/p&gt;
-&lt;p&gt;目的：&lt;!-- raw HTML omitted --&gt;熟悉k8s资源工程化部署，了解整体生态， 熟练相关工具及原理。&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
-&lt;p&gt;源码地址：&lt;a href=&#34;https://github.com/weedge/craftsman/tree/main/doraemon/ai-creator&#34;&gt;https://github.com/weedge/craftsman/tree/main/doraemon/ai-creator&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;Tips: 技术上 不要把openAI 放大了，对于工程化方面来说只是多了一项方便调试的智能化接口，加上了更多的赋能，应用上玩出花，也只是在原有的产品功能上定制化数据场景模型的微调，至于算法模型，大部分都开源，关键是大数据场景下的训练资源调度调优，垂直领域场景下用于参数微调训练的数据吧；对边缘模型在边缘端自适应学习调优推理，占用少的资源就能快速响应的模型，可能离机器人智能不远了。&lt;/p&gt;
-&lt;p&gt;附2 好玩的网站：(国外玩出花了)&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.notion.so/product/ai&#34;&gt;https://www.notion.so/product/ai&lt;/a&gt; 笔记思路智能套路&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.midjourney.com/&#34;&gt;https://www.midjourney.com/&lt;/a&gt; 需要注册Discord 在channel下通过聊天命令交互 生成图片 &lt;a href=&#34;https://docs.midjourney.com/docs/quick-start&#34;&gt;https://docs.midjourney.com/docs/quick-start&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://piggy.to/&#34;&gt;https://piggy.to/&lt;/a&gt; ui设计师&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://soundraw.io/&#34;&gt;https://soundraw.io/&lt;/a&gt;  寻找音乐灵感&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://typeset.io/&#34;&gt;https://typeset.io/&lt;/a&gt;&lt;/strong&gt; 读论文神器，非常值得推荐，so nice~&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://you.com/&#34;&gt;https://you.com/&lt;/a&gt;&lt;/strong&gt; 新一代人工智能搜索引擎(遵从用户隐私数据，结合AI技术,chat,code,study等)，加入了社交属性，搜索质量很高；(国内搜索引擎应该有跟进一波的吧~) ；一些反馈功能还在迭代完善 &lt;a href=&#34;https://yousearch.canny.io/&#34;&gt;https://yousearch.canny.io/&lt;/a&gt;；&lt;a href=&#34;https://www.socher.org/&#34;&gt;Richard Socher&lt;/a&gt; - &lt;a href=&#34;https://www.youtube.com/playlist?list=PL3FW7Lu3i5Jsnh1rnUwq_TcylNr7EkRe6&#34;&gt;&lt;strong&gt;Natural Language Processing with Deep Learning&lt;/strong&gt;&lt;/a&gt;( &lt;a href=&#34;https://web.stanford.edu/class/cs224n/&#34;&gt;当前课程&lt;/a&gt;挺贵的,可以看下&lt;a href=&#34;https://www.youtube.com/playlist?list=PLoROMvodv4rOSH4v6133s9LFPRHjEmbmJ&#34;&gt;以前免费视频&lt;/a&gt;, 感觉听不懂先用notion记录下，再去找资料了解下，orz, ps: CMU数据库课程 &lt;a href=&#34;https://15721.courses.cs.cmu.edu/spring2023/&#34;&gt;Advanced Database Systems&lt;/a&gt; 类似学习，今年的学习OKR有了~)&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;携手AI前行，效率优先，压缩时间成本~&lt;/p&gt;
-&lt;p&gt;附3 openai 官方提供的应用类产品，&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://chat.openai.com/&#34;&gt;chatGPT&lt;/a&gt;: 这个大家都知道一款火爆应用产品，发现社交永远是人类永恒需求哈；&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://labs.openai.com/&#34;&gt;DALL·E 2&lt;/a&gt;：使用文本生成图片；有相关的提示文本推荐，体验更好；&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.yabble.com/&#34;&gt;yabble&lt;/a&gt;：数据洞察(insights)，进行归纳终结，并且帮助规划日程，提出建议；小助手类型工具，网上有用来分析炒股的~；&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://openai.com/research/jukebox&#34;&gt;jukebox&lt;/a&gt;：使用文本生成音乐；涉及到音乐版权，数据资源可能不好弄~；&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://waymark.com/&#34;&gt;waymark&lt;/a&gt;：使用文本生成视频；主要用于制作电视广告和数字视频广告；&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;以上应用产品底层大模型大多是基于GPT相关最新模型，官网提供的GPT-3: &lt;a href=&#34;https://openai.com/blog/gpt-3-apps&#34;&gt;https://openai.com/blog/gpt-3-apps&lt;/a&gt;介绍。&lt;/p&gt;
-&lt;p&gt;附一张midjourney 生成的图片，采用的prompt 描述如下：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;/imagine prompt a cute long distance couple with souls connection, asian, chinese, fantasy style 
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/doraemon/midjourney-aigc-chinese-couple.png&#34; alt=&#34;midjourney&#34;&gt;&lt;/p&gt;
-&lt;h2 id=&#34;reference&#34;&gt;reference&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&#34;https://openai.com/product&#34;&gt;https://openai.com/product&lt;/a&gt; (可以先了解清楚openai自己的应用根源产品，后续有时间整理下，感兴趣的话，然后去发散吧)&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://openai.com/blog&#34;&gt;https://openai.com/blog&lt;/a&gt; (技术宅，可以订阅一波)&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://platform.openai.com/docs/introduction/overview&#34;&gt;https://platform.openai.com/docs/introduction/overview&lt;/a&gt; (适合开发，模型微调)&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://platform.openai.com/examples/&#34;&gt;https://platform.openai.com/examples/&lt;/a&gt; (找灵感)&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://gpt3demo.com/&#34;&gt;https://gpt3demo.com/&lt;/a&gt;  &lt;a href=&#34;https://gpt4demo.com/&#34;&gt;https://gpt4demo.com/&lt;/a&gt; （潘多拉盒子）&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/mli/paper-reading#%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86---transformer&#34;&gt;https://github.com/mli/paper-reading#自然语言处理-transformer&lt;/a&gt; (背后模型原理导读)&lt;/p&gt;</description>
       
     </item>
     

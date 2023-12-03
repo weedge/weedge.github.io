@@ -6,7 +6,25 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Thu, 30 Nov 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 03 Dec 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>LLM</title>
+      <link>https://weedge.github.io/tags/llm/</link>
+      <pubDate>Sun, 03 Dec 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/llm/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>oneday</title>
+      <link>https://weedge.github.io/tags/oneday/</link>
+      <pubDate>Sun, 03 Dec 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/oneday/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>cpu</title>
       <link>https://weedge.github.io/tags/cpu/</link>
@@ -40,15 +58,6 @@
       <pubDate>Tue, 07 Nov 2023 15:00:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/gpu/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>oneday</title>
-      <link>https://weedge.github.io/tags/oneday/</link>
-      <pubDate>Tue, 07 Nov 2023 15:00:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/oneday/</guid>
       <description></description>
     </item>
     
@@ -175,15 +184,6 @@
       <pubDate>Mon, 25 Sep 2023 11:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/product-quantization/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>inverted index</title>
-      <link>https://weedge.github.io/tags/inverted-index/</link>
-      <pubDate>Sun, 24 Sep 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/inverted-index/</guid>
       <description></description>
     </item>
     
