@@ -82,7 +82,7 @@
 这就是我们要做的事情。我们将温和地介绍一些与大型语言模型和 ChatGPT 相关的术语，不使用任何行话。如果我必须使用行话，我会不使用行话来分解它。我们将从“什么是人工智能”开始，然后逐步提高。我会尽可能地使用一些反复出现的隐喻。我将讨论这些技术的影响，即我们应该期望它们做什么或不应该期望它们做什么。let&rsquo;s go~!
 注： 主要是结合论文「Attention Is All You Need」理解Transformer"><meta itemprop="datePublished" content="2023-12-04T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-12-04T10:26:23+08:00" />
-<meta itemprop="wordCount" content="17436">
+<meta itemprop="wordCount" content="17431">
 <meta itemprop="keywords" content="oneday,LLM,transformer," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：大型语言模型入门介绍"/>
 <meta name="twitter:description" content="
@@ -576,7 +576,7 @@
 <p>“所以我听说 RLHF 使 ChatGPT 变得非常智能。”</p>
 <p>“ChatGPT 使用强化学习，这就是它如此智能的原因。”</p>
 <p>嗯……有点。</p>
-<p>*截至撰写本文时，人们对 RLHF（即人类反馈强化学习）*感到非常兴奋。我们做了一些事情来特别训练 ChatGPT（以及越来越多的其他大型语言模型）。它们并不是全新的，但在 ChatGPT 发布时被广泛引入并产生了巨大的效果。</p>
+<p>截至撰写本文时，人们对 <em>RLHF</em> (即人类反馈强化学习)感到非常兴奋。我们做了一些事情来特别训练 ChatGPT（以及越来越多的其他大型语言模型）。它们并不是全新的，但在 ChatGPT 发布时被广泛引入并产生了巨大的效果。</p>
 <p>ChatGPT 是一个基于 Transformer 的大型语言模型。ChatGPT 因其非常擅长对输入提示做出响应以及拒绝回答有关某些可能被认为有毒或固执己见的主题的问题而赢得了声誉。它没有做任何与上面描述的特别不同的事情。事实上，它很香。但有一个区别：它是如何训练的。ChatGPT 的训练方式与往常一样——抓取互联网的一大块内容，获取该文本的片段，然后让系统预测下一个单词。这产生了一个已经是非常强大的单词预测器的基本模型（相当于 GPT-3）。但接下来还有两个额外的训练步骤。通过人类反馈进行指令调整和强化学习。</p>
 <h3 id="91-指令调优-instruction-tuning">9.1. 指令调优 Instruction Tuning</h3>
 <p>大型语言模型有一个特殊问题：它们只想获取输入的单词序列并生成接下来的内容。大多数时候，这就是一个人想要的。但不总是。考虑以下输入提示：</p>
@@ -615,7 +615,7 @@
 <p>强化学习将文本的生成视为一个游戏，其中每个动作都是一个单词。在序列结束时，语言模型会被告知它是赢得了一些分数还是失去了一些分数。语言模型并不完全像上一节中讨论的那样进行前瞻，但在某种意义上它已经被训练来预测哪些单词会获得好评。大语言模型仍然没有明确的目标，但它有一个“获得点赞”的隐含目标（或者我们也可以说它有“让普通人满意”的隐含目标），并且已经学会了关联对某些提示的某些响应并获得竖起大拇指。这具有很多规划特性，但没有明确的前瞻机制。更像是它记住了在很多情况下都有效的获得奖励的策略。</p>
 <p>重要的是 RLHF 是否使 ChatGPT 更加智能……它使 ChatGPT 更有可能产生我们希望看到的响应类型。它看起来更聪明，因为它的输出似乎传达了一种感觉，即它理解我们输入的意图并有自己的响应意图。这是一种错觉，因为它仍然只是对单词进行编码和解码。但话又说回来，这就是我们开始这篇文章的地方。</p>
 <p>指令调整和 RLHF 还使 ChatGPT 能够抵抗某些类型的滥用，例如生成种族主义、性别歧视或带有政治色彩的内容。它仍然可以做到，而且无论如何旧版本的 GPT-3 始终能够做到这一点。然而，作为一项免费的面向公众的服务，ChatGPT 针对某些类型的滥用行为产生的摩擦传达了一种安全感。它还拒绝将意见作为事实提供，这也消除了对用户的一种潜在伤害。</p>
-<p>[使用强化学习来修改预先训练的语言模型并不新鲜。它至少可以追溯到 2016 年，并已被用于使大型语言模型更加安全。大多数基于强化学习的大型语言模型调整都使用第二个模型来提供奖励，这也是通过 ChatGPT 完成的。ChatGPT 值得注意的是通过强化学习调整的系统规模，以及大规模的人类反馈收集工作。</p>
+<p>使用强化学习来修改预先训练的语言模型并不新鲜。它至少可以追溯到 2016 年，并已被用于使大型语言模型更加安全。大多数基于强化学习的大型语言模型调整都使用第二个模型来提供奖励，这也是通过 ChatGPT 完成的。ChatGPT 值得注意的是通过强化学习调整的系统规模，以及大规模的人类反馈收集工作。</p>
 <h2 id="10-结论">10. 结论</h2>
 <p>当手绘神经网络时，它看起来像鲸须。不管怎样，希望能够过滤掉一些围绕大型语言模型的炒作。</p>
 <p>LLM 可视化过程： <a href="https://bbycroft.net/llm">https://bbycroft.net/llm</a></p>
@@ -630,6 +630,7 @@
 <li><a href="https://mp.weixin.qq.com/s/PIh2gPhqF8r-9k8QZQ8GEw">https://mp.weixin.qq.com/s/PIh2gPhqF8r-9k8QZQ8GEw</a></li>
 <li><a href="https://nvidia.github.io/TensorRT-LLM/">https://nvidia.github.io/TensorRT-LLM/</a>   <a href="https://github.com/NVIDIA/TensorRT-LLM">https://github.com/NVIDIA/TensorRT-LLM</a></li>
 <li><strong><a href="https://transformers.run/">https://transformers.run/</a></strong></li>
+<li><strong><a href="https://huggingface.co/learn/nlp-course/chapter1/4">https://huggingface.co/learn/nlp-course/chapter1/4</a></strong></li>
 </ol>
     </div>
 
