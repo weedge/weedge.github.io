@@ -79,7 +79,7 @@
 本文的目的是简单地解释开始开发基于 LLM 的应用程序所需的关键技术。它面向对机器学习概念有基本了解并希望深入研究的软件开发人员、数据科学家和人工智能爱好者。本文还提供了许多有用的链接以供进一步研究。这会很有趣！
 注：本文可以作为一个索引目录(进一步阅读资料深入学习)，从整体上了解下，毕竟现在LLM发展很快，可以发散或者focus某个领域；大部分LLM相关开源实现，可以手动demo下过程，至于炼丹了解过程即可，主要在场景上结合工程去利用好大力神丸在生产环境落地；还有就是应用场景，国内app应该可以复刻，如果模型和数据有了，缺个落地idea的话~"><meta itemprop="datePublished" content="2023-12-03T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-12-03T10:26:23+08:00" />
-<meta itemprop="wordCount" content="4895">
+<meta itemprop="wordCount" content="4916">
 <meta itemprop="keywords" content="oneday,LLM," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：使用大型语言模型进行开发所需了解的知识"/>
 <meta name="twitter:description" content="
@@ -601,6 +601,10 @@ curl 127.0.0.1:8080/generate <span class="se">\
 </li>
 <li>
 <p><a href="https://benchmark.vectorview.ai/vectordbs.html">选择向量数据库：2023 年的比较和指南 </a> Pinecone、Weviate、Milvus、Qdrant、Chroma、Elasticsearch 和 PGvector 数据库的比较。</p>
+<p>补充：</p>
+</li>
+<li>
+<p><a href="https://mp.weixin.qq.com/s/-io_q8WCdAxfSCY9qlrgCw">向量检索在大模型应用场景的技术和实践</a></p>
 </li>
 </ul>
 <p>注： 尽管大模型提高了输入token数量(长文本)，但是对向量数据库的影响不大，特别是多模场景混合搜索的场景。</p>
@@ -639,7 +643,7 @@ curl 127.0.0.1:8080/generate <span class="se">\
 <ol>
 <li><a href="https://towardsdatascience.com/all-you-need-to-know-to-develop-using-large-language-models-5c45708156bc">https://towardsdatascience.com/all-you-need-to-know-to-develop-using-large-language-models-5c45708156bc</a></li>
 <li><a href="https://en.wikipedia.org/wiki/Large_language_model">https://en.wikipedia.org/wiki/Large_language_model</a></li>
-<li><a href="https://developer.nvidia.com/blog/introduction-to-llm-agents/">https://developer.nvidia.com/blog/introduction-to-llm-agents/</a></li>
+<li><a href="https://bbycroft.net/llm">https://bbycroft.net/llm</a></li>
 </ol>
     </div>
 
@@ -678,6 +682,19 @@ curl 127.0.0.1:8080/generate <span class="se">\
       
       <nav class="post-nav">
         
+          <a class="prev" href="/post/llm/a-very-gentle-introduction-to-large-language-models-without-the-hype/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">译：大型语言模型入门介绍</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
         
           <a class="next" href="/post/simd/faster_integer_parsing/">
             <span class="next-text nav-default">译：更快的字符串转整数</span>

@@ -6,7 +6,20 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sun, 03 Dec 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 04 Dec 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>译：大型语言模型入门介绍</title>
+      <link>https://weedge.github.io/post/llm/a-very-gentle-introduction-to-large-language-models-without-the-hype/</link>
+      <pubDate>Mon, 04 Dec 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/llm/a-very-gentle-introduction-to-large-language-models-without-the-hype/</guid>
+      <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/a-very-gentle-introduction-to-large-language-models-without-the-hype/transformers.svg&#34; alt=&#34;原始的 Transformer 模型结构&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;简介&#34;&gt;简介&lt;/h2&gt;
+&lt;p&gt;本文旨在让没有计算机科学背景的人深入了解 ChatGPT 和类似的 AI 系统（GPT-3、GPT-4、Bing Chat、Bard 等）的工作原理。ChatGPT 是一个聊天机器人——一种构建的对话式人工智能——但建立在&lt;em&gt;大型语言模型&lt;/em&gt;之上。这些绝对是文字，我们将把它们全部分解。在此过程中，我们将讨论它们背后的核心概念。本文不需要任何技术或数学背景。我们将大量使用隐喻来说明这些概念。我们将讨论为什么核心概念以它们的方式工作，以及我们可以期望或不期望像 ChatGPT 这样的大型语言模型做什么。&lt;/p&gt;
+&lt;p&gt;这就是我们要做的事情。我们将温和地介绍一些与大型语言模型和 ChatGPT 相关的术语，不使用任何行话。如果我必须使用行话，我会不使用行话来分解它。我们将从“什么是人工智能”开始，然后逐步提高。我会尽可能地使用一些反复出现的隐喻。我将讨论这些技术的影响，即我们应该期望它们做什么或不应该期望它们做什么。let&amp;rsquo;s go~!&lt;/p&gt;
+&lt;p&gt;注： 主要是结合论文「&lt;a href=&#34;https://arxiv.org/pdf/1706.03762.pdf&#34;&gt;Attention Is All You Need&lt;/a&gt;」理解Transformer&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>译：使用大型语言模型进行开发所需了解的知识</title>
       <link>https://weedge.github.io/post/llm/all-you-need-to-know-to-develop-using-large-language-models/</link>
@@ -289,19 +302,6 @@
 
 
 &lt;p&gt;最近在搞一个kv系统，想接入codis来管理slot，实现数据的迁移，进行scaling水平扩展，从网上找了点资料，然后随笔记录梳理一下，以便相应的代码可以联调接入时优化下~&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>OpenAI体验</title>
-      <link>https://weedge.github.io/post/doraemon/openai/</link>
-      <pubDate>Sun, 26 Feb 2023 20:16:30 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/doraemon/openai/</guid>
-      <description>&lt;iframe frameborder=&#34;no&#34; border=&#34;0&#34; marginwidth=&#34;0&#34; marginheight=&#34;0&#34; width=330 height=86 src=&#34;//music.163.com/outchain/player?type=2&amp;id=1428273917&amp;auto=1&amp;height=66&#34;&gt;&lt;/iframe&gt;
-
-
-
-&lt;p&gt;OpenAI chatGPT 很火，体验了一把，哇哦之后，心想这个会成为内容创造的辅助工具，目前大部分是通过搜索寻找来解答难题，以后可能收敛到具体应用场景中了，不过底层可能还是掌握大数据公司来提供模型资源。&lt;/p&gt;</description>
     </item>
     
   </channel>

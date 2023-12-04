@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>LLM on 时间飘过</title>
-    <link>https://weedge.github.io/tags/llm/</link>
-    <description>Recent content in LLM on 时间飘过</description>
+    <title>transformer on 时间飘过</title>
+    <link>https://weedge.github.io/tags/transformer/</link>
+    <description>Recent content in transformer on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 04 Dec 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/llm/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 04 Dec 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/transformer/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>译：大型语言模型入门介绍</title>
       <link>https://weedge.github.io/post/llm/a-very-gentle-introduction-to-large-language-models-without-the-hype/</link>
@@ -18,18 +18,6 @@
 &lt;p&gt;本文旨在让没有计算机科学背景的人深入了解 ChatGPT 和类似的 AI 系统（GPT-3、GPT-4、Bing Chat、Bard 等）的工作原理。ChatGPT 是一个聊天机器人——一种构建的对话式人工智能——但建立在&lt;em&gt;大型语言模型&lt;/em&gt;之上。这些绝对是文字，我们将把它们全部分解。在此过程中，我们将讨论它们背后的核心概念。本文不需要任何技术或数学背景。我们将大量使用隐喻来说明这些概念。我们将讨论为什么核心概念以它们的方式工作，以及我们可以期望或不期望像 ChatGPT 这样的大型语言模型做什么。&lt;/p&gt;
 &lt;p&gt;这就是我们要做的事情。我们将温和地介绍一些与大型语言模型和 ChatGPT 相关的术语，不使用任何行话。如果我必须使用行话，我会不使用行话来分解它。我们将从“什么是人工智能”开始，然后逐步提高。我会尽可能地使用一些反复出现的隐喻。我将讨论这些技术的影响，即我们应该期望它们做什么或不应该期望它们做什么。let&amp;rsquo;s go~!&lt;/p&gt;
 &lt;p&gt;注： 主要是结合论文「&lt;a href=&#34;https://arxiv.org/pdf/1706.03762.pdf&#34;&gt;Attention Is All You Need&lt;/a&gt;」理解Transformer&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>译：使用大型语言模型进行开发所需了解的知识</title>
-      <link>https://weedge.github.io/post/llm/all-you-need-to-know-to-develop-using-large-language-models/</link>
-      <pubDate>Sun, 03 Dec 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/llm/all-you-need-to-know-to-develop-using-large-language-models/</guid>
-      <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/0.jpeg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
-&lt;h2 id=&#34;导读&#34;&gt;导读&lt;/h2&gt;
-&lt;p&gt;本文的目的是简单地解释开始开发基于 LLM 的应用程序所需的关键技术。它面向对机器学习概念有基本了解并希望深入研究的软件开发人员、数据科学家和&lt;strong&gt;人工智能爱好者&lt;/strong&gt;。本文还提供了许多有用的链接以供进一步研究。这会很有趣！&lt;/p&gt;
-&lt;p&gt;注：本文可以作为一个索引目录(进一步阅读资料深入学习)，从整体上了解下，毕竟现在LLM发展很快，可以发散或者focus某个领域；大部分LLM相关开源实现，可以手动demo下过程，至于炼丹了解过程即可，主要在场景上结合工程去利用好大力神丸在生产环境落地；还有就是应用场景，国内app应该可以复刻，如果模型和数据有了，缺个落地idea的话~&lt;/p&gt;</description>
     </item>
     
   </channel>

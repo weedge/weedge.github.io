@@ -297,6 +297,46 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/notions/go-tips/go-tips-12-optimizations/">Go tips-笔记: 优化 91-100 mistakes</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2023-02-23" class="post-time">
+        2023-02-23
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <h2 id="引言">引言</h2>
+<p>在大多数情况下，编写可读、清晰的代码比编写经过优化但更复杂、更难理解的代码要好，不要过早的优化。建议遵循软件工程师 Wes Dyer 的这句名言：</p>
+<blockquote>
+<p><em>Make it correct, make it clear, make it concise, make it fast, in that order.</em></p>
+</blockquote>
+<p>并不意味着禁止为速度和效率优化应用程序, 了解并掌握这些优化点，以备不时之需；文中给出了常见的优化技术；有些特定于 Go 内存模型，内存分配，GPM调度模型；有些是关于了解硬件有助于写出好的代码(适用于不同语言)，其中会有硬件方面的术语，可以结合wiki进行学习；</p>
+    </div>
+    <div class="read-more">
+      <a href="/post/notions/go-tips/go-tips-12-optimizations/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/notions/go-tips/go-tips-11-testing/">Go tips-笔记: 测试 82-90 mistakes</a>
     </h1>
     
@@ -523,59 +563,6 @@
 </article>
 
   
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/notions/go-tips/go-tips-05-strings/">Go tips-笔记: string 36-41 mistakes</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-02-14" class="post-time">
-        2023-02-14
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h2 id="笔记">笔记</h2>
-<p>在 Go 中，string是一种不可变的数据结构，包含以下内容：</p>
-<ul>
-<li>指向不可变字节序列的指针，指向一个byte类型的数组</li>
-<li>此序列中的总字节数</li>
-</ul>
-<p>string在Go中的内部结构是<code>reflect.StringHeader</code>位于<code>reflect/value.go</code></p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// StringHeader is the runtime representation of a string.
-</span><span class="c1">// It cannot be used safely or portably and its representation may
-</span><span class="c1">// change in a later release.
-</span><span class="c1">// Moreover, the Data field is not sufficient to guarantee the data
-</span><span class="c1">// it references will not be garbage collected, so programs must keep
-</span><span class="c1">// a separate, correctly typed pointer to the underlying data.
-</span><span class="c1"></span><span class="kd">type</span> <span class="nx">StringHeader</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">Data</span> <span class="kt">uintptr</span>
-	<span class="nx">Len</span>  <span class="kt">int</span>
-<span class="p">}</span>
-<span class="c1">//uintptr  an unsigned integer large enough to store the uninterpreted bits of a pointer value
-</span></code></pre></div>
-    </div>
-    <div class="read-more">
-      <a href="/post/notions/go-tips/go-tips-05-strings/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
 </section>
 
 
@@ -635,6 +622,10 @@
       
       <li >
         <a href="/page/9/">9</a>
+      </li>
+      
+      <li >
+        <a href="/page/10/">10</a>
       </li>
       
     </ul>
