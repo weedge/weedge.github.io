@@ -17,7 +17,8 @@
 &lt;h2 id=&#34;简介&#34;&gt;简介&lt;/h2&gt;
 &lt;p&gt;本文旨在让没有计算机科学背景的人深入了解 ChatGPT 和类似的 AI 系统（GPT-3、GPT-4、Bing Chat、Bard 等）的工作原理。ChatGPT 是一个聊天机器人——一种构建的对话式人工智能——但建立在&lt;em&gt;大型语言模型&lt;/em&gt;之上。这些绝对是文字，我们将把它们全部分解。在此过程中，我们将讨论它们背后的核心概念。本文不需要任何技术或数学背景。我们将大量使用隐喻来说明这些概念。我们将讨论为什么核心概念以它们的方式工作，以及我们可以期望或不期望像 ChatGPT 这样的大型语言模型做什么。&lt;/p&gt;
 &lt;p&gt;这就是我们要做的事情。我们将温和地介绍一些与大型语言模型和 ChatGPT 相关的术语，不使用任何行话。如果我必须使用行话，我会不使用行话来分解它。我们将从“什么是人工智能”开始，然后逐步提高。我会尽可能地使用一些反复出现的隐喻。我将讨论这些技术的影响，即我们应该期望它们做什么或不应该期望它们做什么。let&amp;rsquo;s go~!&lt;/p&gt;
-&lt;p&gt;注： 主要是结合论文「&lt;a href=&#34;https://arxiv.org/pdf/1706.03762.pdf&#34;&gt;Attention Is All You Need&lt;/a&gt;」理解Transformer&lt;/p&gt;</description>
+&lt;p&gt;注：主要是结合论文「&lt;a href=&#34;https://arxiv.org/pdf/1706.03762.pdf&#34;&gt;Attention Is All You Need&lt;/a&gt;」理解Transformer。&lt;/p&gt;
+&lt;p&gt;附：&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/transformer.ipynb&#34;&gt;Transformer学习笔记&lt;/a&gt;&lt;/p&gt;</description>
     </item>
     
   </channel>
