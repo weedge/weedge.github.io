@@ -80,7 +80,7 @@
 本文讨论了LLM推理中最紧迫的挑战，以及一些实用的解决方案。读者应该对transformer架构和注意力机制有基本的理解。理解LLM推理的复杂性至关重要，我们将在接下来的部分进行介绍。
 注：上篇译文有对 transformer 有相关的介绍，以及相关编码笔记入门；或者深入学习CS25: Transformers United V2"><meta itemprop="datePublished" content="2023-12-30T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-12-30T10:26:23+08:00" />
-<meta itemprop="wordCount" content="19070">
+<meta itemprop="wordCount" content="19332">
 <meta itemprop="keywords" content="LLM,inference optimization," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：掌握 LLM 技术：推理优化"/>
 <meta name="twitter:description" content="
@@ -416,7 +416,7 @@
 <p>通过缓存键和值，可以避免在每次生成新标记时都重新计算它们，从而节省计算资源和时间。当处理多个请求时，如果某些键值对在不同请求中重复出现，通过缓存这些中间状态，可以减少冗余计算，提高推理效率。</p>
 <p><strong>注</strong>：但是对于参数量比较大的模型，kv cache成为瓶颈， 常使用MQA, GQA来避免，在llama2模型参数34B/70B中使用GQA来缓解。</p>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/mastering-llm-techniques-inference-optimization/1.png" alt="在图示中，可以将KV缓存的作用在预填充（Prefill）和解码（Decode）阶段进行说明。"></p>
-<!-- raw HTML omitted -->
+<p><em>图1. 键值缓存机制的示例</em></p>
 <p>在图示中，可以将KV缓存的作用在预填充（Prefill）和解码（Decode）阶段进行说明。</p>
 <h3 id="预填充阶段prefill-phase">预填充阶段（Prefill Phase）</h3>
 <ul>
@@ -475,7 +475,7 @@
 <p>这种方法的主要局限性在于，由于处理的顺序性质，一些设备或层可能会在等待前一层输出（激活activations、梯度gradients）时保持空闲。这导致了前向和后向传播中的低效或“流水线气泡”。在图2b中，白色的空白区域表示朴素流水线并行中的大型流水线气泡，设备空闲和资源利用不足。</p>
 <p>微批处理可以在一定程度上缓解这个问题，如图2c所示。输入的全局批次大小被分成子批次，逐个处理，梯度在最后累积。请注意，$F_{n,m}$和$B_{n,m}$分别表示设备n上微批m的前向传播和反向传播。这种方法缩小了流水线气泡的大小，但并没有完全消除它们。</p>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/mastering-llm-techniques-inference-optimization/2.png" alt="四向管道并行"></p>
-<!-- raw HTML omitted -->
+<p><em>图2. 四路管道并行</em></p>
 <p>来源：<a href="https://arxiv.org/pdf/1811.06965.pdf">GPipe: Easy Scaling with Micro-Batch Pipeline Parallelism</a></p>
 <p>描述四路流水线并行的示意图：</p>
 <p>（图2 a）在四路流水线并行中，模型被划分成四个部分，每个部分包含模型的四分之一层，每个子集在不同的设备上执行。</p>
@@ -494,7 +494,7 @@
 <h3 id="张量并行-tensor-parallelism">张量并行 Tensor parallelism</h3>
 <p>张量并行涉及将模型的各个层水平切分成更小、独立的计算块，这些块可以在不同设备上执行。注意力块(Attention block)和多层感知器（MLP）层是transformer中可以利用张量并行的主要组件。在多头注意力块(multi-head attention blocks)中，每个注意力头或一组注意力头可以分配到不同的设备上，这样它们可以独立且并行地计算。这有助于提高计算效率，并充分利用不同设备的计算资源。</p>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/mastering-llm-techniques-inference-optimization/3.png" alt="多层感知器(MLP)和自注意层中张量并行性 "></p>
-<!-- raw HTML omitted -->
+<p><em>图3. 多层感知器(MLP)和自注意层中张量并行性</em></p>
 <p>来源: <a href="https://arxiv.org/pdf/1909.08053.pdf">Megatron-LM: Training Multi-Billion Parameter Language Models Using Model Parallelism</a></p>
 <p>图3a 展示了一个双向张量并行在一个两层MLP中的示例，其中每一层由一个圆角框表示。在第一层内部，权重矩阵$A$被分割成$A_1$和$A_2$。计算$XA_1$和$XA_2$可以独立地在两个不同的设备上执行相同批次（$f$是一个恒等操作）的输入$X$。这有效地减半了在每个设备上存储权重的内存需求。在第二层中，一个合并操作$g$结合这两个输出。</p>
 <p>图3b 展示了自注意力层中双向张量并行的示例。多个注意力头天然地是并行的，可以分配到不同的设备上。每个注意力头可以独立地处理输入，并在计算过程中不需要与其他注意力头交互。</p>
@@ -526,7 +526,7 @@
 <p>在大型模型中，张量并行存在一些局限性，因为它要求层被划分为独立、可管理的块。这种方法并不适用于诸如LayerNorm和Dropout等操作，而是将这些操作在张量并行组中复制。虽然LayerNorm和Dropout在计算上不那么昂贵，但它们确实需要大量内存来存储（冗余的）激活值。</p>
 <p>正如<a href="https://arxiv.org/pdf/2205.05198.pdf">Reducing Activation Recomputation in Large Transformer Models</a>所示，这些操作在输入序列中是独立的，可以沿着“sequence-dimension(序列维度)”对它们进行分割，从而使它们更加内存高效。这就是所谓的序列并行。</p>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/mastering-llm-techniques-inference-optimization/4.png" alt="一个Transformer层中，可以同时应用张量并行和序列并行"></p>
-<!-- raw HTML omitted -->
+<p><em>图4. 一个Transformer层中，可以同时应用张量并行和序列并行</em></p>
 <p>来源: <a href="https://arxiv.org/pdf/2205.05198.pdf">Reducing Activation Recomputation in Large Transformer Models</a></p>
 <p>在一个Transformer层中，可以同时应用张量并行和序列并行。如下：</p>
 <h4 id="张量并行">张量并行：</h4>
@@ -560,7 +560,7 @@
 <p>正如图5所示，多个并行的注意力操作的输出被串联并进行线性投影以合并它们。每个并行的注意力层被称为一个“头”，这种方法被称为多头注意力（MHA）。</p>
 <p>在最初的工作中，每个注意力头作用于模型的降维维度（例如，当使用八个并行注意力头时，降至 $d_{model}/8$）。这样做可以保持计算成本与单头注意力相似的水平。</p>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/mastering-llm-techniques-inference-optimization/5.png" alt="缩放点积注意和多头注意"></p>
-<!-- raw HTML omitted -->
+<p><em>图 5. 缩放点积注意(左)和多头注意(右)的说明，多个SDPA头部并行</em></p>
 <p>来源：<a href="https://arxiv.org/pdf/1706.03762.pdf">Attention Is All You Need</a></p>
 <p><strong>ChatGPT</strong>: 多头注意力（Multi-head Attention）是Transformer模型中的一个关键组件，用于处理输入序列中的不同特征与位置之间的交互关系。它允许模型同时关注序列中不同位置的信息，并在多个表示子空间上进行注意力计算。</p>
 <p>这个机制的核心思想是将输入通过线性变换（通常是矩阵乘法）分为多个头（即多个子空间），然后在每个头中计算注意力权重。每个头得到的注意力输出会被拼接或合并，经过另一个线性变换后，形成最终的多头注意力输出。</p>
@@ -584,7 +584,7 @@
 <p>“Grouped-query attention”（GQA）在多头注意力（MHA）和多查询注意力（MQA）之间取得了平衡，通过将键（keys）和值（values）投影到少数查询头组中（见图6）。在每个组内部，它的行为类似于多查询注意力。</p>
 <p>图6显示了多头注意力有多个键-值头（左侧）。而组查询注意力（中间）的键-值头比一个要多，但比查询头的数量少，这是在内存需求和模型质量之间取得的平衡。而多查询注意力（右侧）只有一个键-值头，有助于节省内存。</p>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/mastering-llm-techniques-inference-optimization/6.png" alt="不同注意机制的比较。左:多头注意有多个键值头。右:多查询注意有一个键值头，这减少了内存需求。中:分组查询注意有几个键值头，平衡内存和模型质量"></p>
-<!-- raw HTML omitted -->
+<p><em>图6. 不同注意机制的比较</em></p>
 <p>来源：<a href="https://arxiv.org/pdf/2305.13245v2.pdf">GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints</a></p>
 <p>这种新的训练方法可以在使用少量原始训练计算资源的情况下，将最初采用多头注意力（MHA）训练的模型进行“上训练”（uptraining），转换为采用组查询注意力（GQA）。这种方法可以使模型在保持接近多头注意力（MHA）的质量的同时，保持更接近多查询注意力（MQA）的计算效率。<a href="https://ai.meta.com/llama/">Llama 2 70B</a>就是一个采用组查询注意力（GQA）的模型的例子。</p>
 <p>像多查询注意力（MQA）和组查询注意力（GQA）这样的优化方法有助于通过减少存储的键和值头的数量来减少键值（KV）缓存所需的内存。但在<strong>如何管理这种KV缓存方面可能仍存在一些低效性</strong>。在优化注意力模块本身之外，下一节将介绍一种更高效的KV缓存管理技术。</p>
@@ -599,7 +599,7 @@
 <p><em>IO感知(I/O aware)</em> 意味着它在合并操作时考虑了先前讨论的一些内存移动成本。具体而言，FlashAttention使用“tiling”一次性完全计算并写出最终矩阵的一小部分，而不是分步在整个矩阵上进行部分计算，并在其中间写入中间值。</p>
 <p>图7展示了瓦片化(tiling)的FlashAttention计算模式和40GB GPU上的内存层次结构。右侧的图表显示了通过融合和重新排序注意力机制的不同组件而获得的相对加速度。</p>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/mastering-llm-techniques-inference-optimization/7.png" alt="描述记忆层次和FlashAttention计算的图表"></p>
-<!-- raw HTML omitted -->
+<p><em>图7. 平铺式FlashAttention计算模式和40gb GPU上的内存层次结构</em></p>
 <p>来源: <a href="https://arxiv.org/abs/2205.14135">FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</a></p>
 <p><strong>ChatGPT</strong>: FlashAttention是一种针对注意力机制的优化技术，旨在提高模型的计算效率和内存利用率。它专注于减少多头自注意力机制中的内存移动成本，并优化计算操作，特别是针对大规模语言模型的推理过程。</p>
 <p>这项技术通过引入I/O感知（IO-Aware）的确切注意力算法来解决这些问题。它利用“tiling”技术，在计算和一次性写入最终矩阵的小部分时进行完全计算，而不是分步骤在整个矩阵上进行部分计算并在中间写入中间值。</p>
@@ -607,7 +607,7 @@
 <h2 id="使用paging有效管理kv缓存-efficient-management-of-kv-cache-with-paging">使用paging有效管理KV缓存 (Efficient management of KV cache with paging)</h2>
 <p>在某些情况下，KV缓存可能会静态地“超额配置”，以考虑可能的最大输入（支持的序列长度），因为输入的大小是不可预测的。例如，如果模型支持的最大序列长度为2,048，那么不管请求中的输入大小和生成的输出大小如何，都会在内存中预留2,048大小的空间。这个空间可能是连续分配的，但通常大部分空间都未被使用，导致内存浪费或碎片化。这种保留的空间将被绑定在请求的生命周期中。</p>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/mastering-llm-techniques-inference-optimization/8.png" alt="在KV缓存过度配置和管理不当的情况下，可能会出现内存浪费和碎片化的问题"></p>
-<!-- raw HTML omitted -->
+<p><em>图8. 由于过度供应和低效的KV缓存管理导致的内存浪费和碎片</em></p>
 <p>来源: <a href="https://arxiv.org/pdf/2309.06180.pdf">Efficient Memory Management for Large Language Model Serving with PagedAttention</a></p>
 <p>在KV缓存过度配置和管理不当的情况下，可能会出现内存浪费和碎片化的问题：</p>
 <ol>
@@ -638,7 +638,7 @@
 <p><em>量化</em>是减少模型权重和激活值精度的过程。大多数模型使用32位或16位的精度进行训练，其中每个参数和激活元素占用32位或16位的内存，即单精度浮点数。然而，大多数深度学习模型可以用8位甚至更少的位数来有效表示。</p>
 <p>图9展示了一种量化方法前后数值的分布。在这种情况下，一些精度会因四舍五入而丢失，并且一些动态范围会因剪裁而丢失，使得数值可以用更小的格式表示。</p>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/mastering-llm-techniques-inference-optimization/9.png" alt="两个分布图，一个显示高精度时的全范围值，另一个显示低精度时的压缩和四舍五入范围"></p>
-<!-- raw HTML omitted -->
+<p><em>图9. 一种量化前后数值的分布</em></p>
 <p>降低模型的精度可以带来多种好处。如果模型在内存中占用空间更小，您可以在相同硬件上容纳更大的模型。量化还意味着您可以在相同的带宽下传输更多的参数，这有助于加速受带宽限制的模型。</p>
 <p>对于大型语言模型（LLM），有许多不同的量化技术，涉及降低激活值、权重或两者的精度。量化权重要简单得多，因为它们在训练后就是固定的。然而，这可能会牺牲一些性能，因为激活值保持在较高的精度。GPU没有专门的硬件来执行INT8和FP16数值的乘法运算，因此权重必须转换回更高的精度进行实际操作。</p>
 <p>也可以对激活值进行量化，即转换Transformer块和网络层的输入，但这会带来自己的挑战。激活向量通常包含异常值，有效地增加了它们的动态范围，并且以比权重更低的精度表示这些值更具挑战性。</p>
@@ -657,7 +657,7 @@
 <h3 id="稀疏-sparsity">稀疏 Sparsity</h3>
 <p>类似于量化，已经证明许多深度学习模型对剪枝是具有鲁棒性的，或者说可以将接近0的某些值替换为0本身。<em>稀疏矩阵</em>是指其中许多元素为0的矩阵。这些矩阵可以用比完整的密集矩阵占用更少空间的压缩形式表示出来。</p>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/mastering-llm-techniques-inference-optimization/10.png" alt="用压缩格式表示的稀疏矩阵"></p>
-<!-- raw HTML omitted -->
+<p><em>图10. 用压缩格式表示的稀疏矩阵，由非零数据值及其对应的两位索引组成</em></p>
 <p>特别是GPU在某种<em>结构化稀疏性</em>方面拥有硬件加速，其中每四个值中有两个是零。稀疏表示法还可以与量化相结合，以实现更大的执行加速。寻找以稀疏格式表示大型语言模型的最佳方式仍然是一个活跃的研究领域，并为未来提升推断速度提供了一个有前景的方向。</p>
 <p><strong>ChatGPT</strong>: 稀疏性是指在神经网络中的某些权重或激活值中有很多零值。稀疏矩阵是指其中许多元素为零的矩阵，这种矩阵的紧凑表示占用的空间比完整的密集矩阵小。</p>
 <p>在 GPU 中，有针对一定结构的稀疏性的硬件加速，例如结构化稀疏性，即每四个数中有两个是零。这种稀疏表示方式能够有效减少存储和计算需求，进而提高模型的执行速度。</p>
@@ -671,8 +671,7 @@
 <li>被匹配的老师输出可以是最后一层（称为<em>logits</em>）或中间层激活。</li>
 </ul>
 <p>图11展示了知识蒸馏的一般框架。老师的logits是学生优化的软目标，使用了蒸馏损失。其他蒸馏方法可能使用其他损失度量来从老师那里“蒸馏”知识。</p>
-<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/mastering-llm-techniques-inference-optimization/11.png" alt="图中描述了利用教师和学生逻辑之间的蒸馏损失进行知识蒸馏的一般框架"></p>
-<!-- raw HTML omitted -->
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/mastering-llm-techniques-inference-optimization/11.png" alt="图中描述了利用教师和学生逻辑之间的蒸馏损失进行知识蒸馏的一般框架"><em>图11. 知识提炼框架</em></p>
 <p>来源: <a href="https://arxiv.org/pdf/2006.05525.pdf">Knowledge Distillation: A Survey</a></p>
 <p>这种替代蒸馏的方法是利用老师模型合成的数据，对学生LLM进行监督训练，<strong>特别是在人类注释稀缺或不可得时尤为有用</strong>。<a href="https://arxiv.org/abs/2305.02301">Distilling Step by Step! Outperforming Larger Language Models with Less Training Data and Smaller Model Sizes</a> 除了作为地面真实标签的标签外，还从老师LLM中提取了基于原理的理由。这些原理作为中间推理步骤，以数据高效的方式训练较小的学生LLM。</p>
 <p>需要注意的是，如今许多最先进的LLM都有限制性的许可证，禁止使用它们的输出来训练其他LLM，这使得找到合适的老师模型变得具有挑战性。</p>
@@ -740,7 +739,7 @@
 <p>生成的每个标记都依赖于之前的所有标记提供的上下文。这意味着在常规执行中，不可能并行地生成同一序列中的多个标记——你必须等待第n个标记生成后才能生成n+1。</p>
 <p>图12显示了投机式推理的示例，在这种情况下，草稿模型暂时预测多个未来步骤，这些步骤会并行进行验证或拒绝。在这种情况下，草稿中的前两个预测标记被接受，而最后一个被拒绝并在继续生成之前被移除。</p>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/mastering-llm-techniques-inference-optimization/12.png" alt="根据提示“我看到一只狗在骑车”，草图模型预测“在公交车上”。验证模型并行预测“在车里”，因此我们拒绝“车”toke"></p>
-<!-- raw HTML omitted -->
+<p><em>图12. 投机式推理示例</em></p>
 <p>根据提示“I saw a dog ride”，草图模型预测“in the bus”。验证模型并行预测“in the car”，因此我们拒绝“car” token。</p>
 <p>来源: <a href="https://arxiv.org/abs/1811.03115">Blockwise Parallel Decoding for Deep Autoregressive Models</a></p>
 <p>Speculative sampling 提供了一种变通方法。这种方法的基本思想是使用一些“更廉价”的过程生成一个长度为数个标记的草稿延续。然后，在多个步骤中并行执行主要的“验证”模型，将廉价的草稿作为执行步骤所需的“推测”上下文。</p>
