@@ -6,11 +6,20 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 04 Dec 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 30 Dec 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>inference optimization</title>
+      <link>https://weedge.github.io/tags/inference-optimization/</link>
+      <pubDate>Sat, 30 Dec 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/inference-optimization/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>LLM</title>
       <link>https://weedge.github.io/tags/llm/</link>
-      <pubDate>Mon, 04 Dec 2023 10:26:23 +0800</pubDate>
+      <pubDate>Sat, 30 Dec 2023 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/llm/</guid>
       <description></description>
@@ -175,15 +184,6 @@
       <pubDate>Mon, 25 Sep 2023 15:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/hnsw/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>inverted file index</title>
-      <link>https://weedge.github.io/tags/inverted-file-index/</link>
-      <pubDate>Mon, 25 Sep 2023 11:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/inverted-file-index/</guid>
       <description></description>
     </item>
     
