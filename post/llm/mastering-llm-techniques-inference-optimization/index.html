@@ -80,7 +80,7 @@
 本文讨论了LLM推理中最紧迫的挑战，以及一些实用的解决方案。读者应该对transformer架构和注意力机制有基本的理解。理解LLM推理的复杂性至关重要，我们将在接下来的部分进行介绍。
 注：上篇译文有对 transformer 有相关的介绍，以及相关编码笔记入门；或者深入学习CS25: Transformers United V2"><meta itemprop="datePublished" content="2023-12-30T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-12-30T10:26:23+08:00" />
-<meta itemprop="wordCount" content="19332">
+<meta itemprop="wordCount" content="19336">
 <meta itemprop="keywords" content="LLM,inference optimization," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：掌握 LLM 技术：推理优化"/>
 <meta name="twitter:description" content="
@@ -96,6 +96,30 @@
   <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
 <![endif]-->
+
+
+
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [["$", "$"]],
+    },
+    displayMath: [
+      ["$$", "$$"],
+      ["\[\[", "\]\]"],
+    ],
+    svg: {
+      fontCache: "global",
+    },
+  };
+</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script
+  id="MathJax-script"
+  async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+></script>
+
 
 
 
@@ -754,8 +778,12 @@
 <h1 id="参考">参考</h1>
 <ol>
 <li><a href="https://developer.nvidia.com/blog/mastering-llm-techniques-inference-optimization/">https://developer.nvidia.com/blog/mastering-llm-techniques-inference-optimization/</a></li>
+<li><a href="https://developer.nvidia.com/blog/search-posts/?q=Mastering+LLM+Techniques">https://developer.nvidia.com/blog/search-posts/?q=Mastering+LLM+Techniques</a></li>
 <li><strong><a href="https://lilianweng.github.io/posts/2023-01-10-inference-optimization/">https://lilianweng.github.io/posts/2023-01-10-inference-optimization/</a></strong> (早期文章，介绍比较全)</li>
 <li><strong><a href="https://kipp.ly/transformer-inference-arithmetic/">https://kipp.ly/transformer-inference-arithmetic/</a></strong></li>
+<li><a href="https://github.com/vllm-project/vllm">https://github.com/vllm-project/vllm</a></li>
+<li><a href="https://github.com/microsoft/DeepSpeed-MII">https://github.com/microsoft/DeepSpeed-MII</a></li>
+<li><a href="https://github.com/NVIDIA/TensorRT-LLM">https://github.com/NVIDIA/TensorRT-LLM</a></li>
 </ol>
     </div>
 

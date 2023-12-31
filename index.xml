@@ -425,8 +425,12 @@
 &lt;h1 id=&#34;参考&#34;&gt;参考&lt;/h1&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://developer.nvidia.com/blog/mastering-llm-techniques-inference-optimization/&#34;&gt;https://developer.nvidia.com/blog/mastering-llm-techniques-inference-optimization/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://developer.nvidia.com/blog/search-posts/?q=Mastering+LLM+Techniques&#34;&gt;https://developer.nvidia.com/blog/search-posts/?q=Mastering+LLM+Techniques&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://lilianweng.github.io/posts/2023-01-10-inference-optimization/&#34;&gt;https://lilianweng.github.io/posts/2023-01-10-inference-optimization/&lt;/a&gt;&lt;/strong&gt; (早期文章，介绍比较全)&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://kipp.ly/transformer-inference-arithmetic/&#34;&gt;https://kipp.ly/transformer-inference-arithmetic/&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/vllm-project/vllm&#34;&gt;https://github.com/vllm-project/vllm&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/microsoft/DeepSpeed-MII&#34;&gt;https://github.com/microsoft/DeepSpeed-MII&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/NVIDIA/TensorRT-LLM&#34;&gt;https://github.com/NVIDIA/TensorRT-LLM&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>

@@ -106,6 +106,9 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 
 
 
+
+
+
 </head>
 <body>
   <div id="mobile-navbar" class="mobile-navbar">
@@ -378,7 +381,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 </blockquote>
 <p>简而言之，当了解系统的设计用途时，无论是 F1 赛车、飞机还是计算机，都可以与设计保持一致以获得最佳性能。对 CPU 缓存工作方式的机械同情可以帮助优化 Go 应用程序。</p>
 <h4 id="cpu架构-cpu-architecture">CPU架构 CPU architecture</h4>
-<p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F01_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F01_Harsanyi.png"></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F01_Harsanyi.png" alt="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F01_Harsanyi.png"></p>
 <p>上图为简单的Intel Core i5-7300u cpu架构图；<a href="https://en.wikichip.org/wiki/intel/core_i5/i5-7300u">https://en.wikichip.org/wiki/intel/core_i5/i5-7300u</a></p>
 <p>每个物理核心（Core0和Core1）被分成两个逻辑核心Hyper-Threading（T0和T1）。</p>
 <p>L1 缓存分为两个子缓存：用于数据的 L1D 和用于指令的 L1I（每个 32 KB）。当 CPU 执行应用程序时，缓存不仅仅与数据相关，它还可以缓存一些指令，L2, L3其原理相同：加快整体执行速度。</p>
@@ -418,7 +421,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 	<span class="nx">b</span> <span class="p">[]</span><span class="kt">int64</span>
 <span class="p">}</span>
 </code></pre></div><p>对[]Foo 和 Bar.a 容量长度为16的切片遍历，遍历数据结构切片 比 遍历切片结构 慢， 因为cache line的空间局部性原理，加载切片结构更紧凑，需要更少的缓存行来迭代，如图所示：</p>
-<p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F04_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F04_Harsanyi.png"></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F04_Harsanyi.png" alt="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F04_Harsanyi.png"></p>
 <h4 id="可预测性-predictability">可预测性 Predictability</h4>
 <p>要理解这一点，必须了解跨步striding的概念。跨步与 CPU 如何处理数据有关。共有三种不同类型的步幅(stride)</p>
 <ul>
@@ -426,7 +429,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 <li><em>恒定步幅Constant stride</em>：对于 CPU 来说仍然是可预测的：例如，一个切片每两个元素迭代一次。此步幅需要更多缓存行来遍历数据，因此它的效率低于单位步幅。</li>
 <li><em>非单位步幅Non-unit stride</em> ：CPU 无法预测的跨步：例如，链表或指针切片。因为 CPU 不知道数据是否连续分配，所以它不会获取任何缓存行。</li>
 </ul>
-<p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F06_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F06_Harsanyi.png"></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F06_Harsanyi.png" alt="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F06_Harsanyi.png"></p>
 <p>由于不同的步幅和相似的空间局部性，迭代链表比值的切片要慢得多。由于更好的空间局部性，通常应该支持单位步幅而不是恒定步幅。但是当CPU 都无法预测非单位步长，无论数据如何分配，都会有性能上的影响。</p>
 <p>到目前为止，已经讨论了 CPU 缓存速度很快但比主内存小得多。因此，CPU 需要一种策略来将内存块提取到缓存行。此策略称为<em>缓存放置策略</em>，并且会显着影响性能。</p>
 <h4 id="缓存放置策略-cache-placement-policy">缓存放置策略 Cache placement policy</h4>
@@ -437,7 +440,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 <p><a href="https://lwn.net/Articles/250967/">https://lwn.net/Articles/250967/</a></p>
 <p><a href="https://coolshell.cn/articles/20793.html">https://coolshell.cn/articles/20793.html</a> (结合文章中<a href="https://github.com/haoel/cpu-cache">c++代码</a>)</p>
 <p>为了便于理解，举一个简单的例子，有一个矩阵 二维数组arr [4][32]int64  4行32列存放int64，从中取出前8列res [4][8]int64；假设L1D缓存大小512B,  缓存行cache line 64B， 有8个cache line；</p>
-<p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F07_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F07_Harsanyi.png"></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F07_Harsanyi.png" alt="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F07_Harsanyi.png"></p>
 <p>图中所示该矩阵如何存储在内存中。这里使用二进制表示来表示内存块地址,为简单起见，使用 13 位表示一个地址；灰色块代表迭代的前 8 个int64元素，其余块在迭代期间被跳过。每个主存内存块包含 64 个字节，因此块内包含 8 个int64元素。第一个内存块从 0x0000000000000 开始，第二个从 0001000000000（二进制为 512）开始，依此类推。 以及可以容纳 8 行的缓存cache。</p>
 <p>使用集合关联缓存策略(<em>set-associative cache)</em>，缓存被划分为集合。假设缓存是N-way集合关联的(N=2)，这意味着每个集合包含两行。一个内存块只能属于一个集合，其放置位置由其内存地址决定。要理解这一点，必须将内存块地址分解为三个部分：</p>
 <ul>
@@ -446,14 +449,14 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 <li>地址的其余部分由标记位 (tb) 组成。为简单起见使用 13 位表示一个地址。计算 tb 位数 = 13 – bo – si。这意味着剩下的两位代表标记位。</li>
 </ul>
 <p>假设该函数启动并尝试读取<code>s[0][0]</code>属于地址 0000000000000 的地址。由于该地址尚未出现在缓存中，因此 CPU 计算其集合索引并将其复制到相应的缓存集合。</p>
-<p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F08_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F08_Harsanyi.png"></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F08_Harsanyi.png" alt="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F08_Harsanyi.png"></p>
 <p>如前所述，9 位表示块偏移量：它是每个内存块地址的最小公共前缀。然后，2位表示集合索引。地址为 0000000000000 时，si 等于 00。因此，该内存块被复制到Set 0。</p>
 <p>当函数从 读取<code>s[0][1]</code>到时<code>s[0][7]</code>，数据已经在缓存中。CPU 是怎么知道的？CPU 计算内存块的起始地址，计算集合索引和标记位，然后检查Set 0 中是否存在 00。</p>
 <p>接下来函数读取<code>s[1][0]</code>，这个地址还没有被缓存。因此复制内存块 0100000000000 时发生相同的操作</p>
-<p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F09_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F09_Harsanyi.png"></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F09_Harsanyi.png" alt="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F09_Harsanyi.png"></p>
 <p>该内存的集合索引等于 00，因此它也属于Set 0。缓存行被复制到Set 0 中的下一个可用行。然后，再次从 读取到导致缓存<code>s[1][1]</code>命中<code>s[1][7]</code>。</p>
 <p>现在事情变得有趣了。该函数读取<code>s[2][0]</code>，并且该地址不存在于缓存中。执行相同的操作</p>
-<p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F10_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F10_Harsanyi.png"></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F10_Harsanyi.png" alt="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F10_Harsanyi.png"></p>
 <p>集合索引再次等于 00。但是， Set0 已满，CPU 会替换现有缓存行之一以复制内存块 1000000000000。</p>
 <p>缓存替换策略(<a href="https://en.wikipedia.org/wiki/Cache_replacement_policies">Cache replacement policies</a>)取决于 CPU，但它通常是伪 LRU 策略（真正的 LRU [最近最少使用] 会太复杂而无法处理）。在这种情况下，假设它替换了第一个缓存行：0000000000000。当迭代第 3 行时会重复这种情况：内存地址 1100000000000 也有一个等于 00 的集合索引，导致替换现有的缓存行。</p>
 <p>现在，假设基准测试执行函数，其中一个切片指向从地址 0000000000000 开始的相同矩阵。每次基准测试，当函数读取时，<code>s[0][0]</code>地址不在缓存中；该块已被替换。</p>
@@ -488,7 +491,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 <p>数据对齐是一种安排数据分配方式以加速 CPU 访问内存的方法。不了解这个概念会导致额外的内存消耗甚至性能下降。</p>
 <p>tips: 这个属于老生常谈的问题了，尤其在c语言开发的程序中，数据对齐，直接通过地址+偏移大小来指向对应内存数据，进行读写操作；golang很多思想来自c，自然也会有，只不过更加友好，unsafe形式来操作指针。</p>
 <p>在 64 位cpu架构上,处理最小单位是8字节的地址，如果没有数据对齐，变量j分配可以分布在两个地址上。如果 CPU 想要读取j，则需要两次而不是一次内存访问。</p>
-<p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F22_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F22_Harsanyi.png"></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F22_Harsanyi.png" alt="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F22_Harsanyi.png"></p>
 <p>为防止这种情况，变量的内存地址应该是其自身大小的倍数。这就是数据对齐的概念。在 Go 中，对齐保证如下：</p>
 <ul>
 <li><code>byte</code>, <code>uint8</code>, <code>int8</code>: 1 字节</li>
@@ -498,7 +501,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 <li><code>complex128</code>: 16 字节</li>
 </ul>
 <p>所有这些类型都保证对齐：它们的地址是它们大小的倍数。例如，任何<code>int32</code>变量的地址都是 4 的倍数。</p>
-<p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F23_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F23_Harsanyi.png"></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F23_Harsanyi.png" alt="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F23_Harsanyi.png"></p>
 <p>这样上面的情况，按在字节对齐，出现两种情况：</p>
 <p>第一种情况，在i之前分配了一个32位变量。因此i和j被连续分配。</p>
 <p>第二种情况，在i之前没有分配32位变量；i被分配在一个词的开头。为了数据对齐（地址是 64 的倍数），i不能与下一个 64 的倍数j一起分配。灰色框表示 32 位填充。</p>
@@ -513,17 +516,17 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 <p>tips: Go 在1.3之前栈扩容采用的是分段栈（Segemented Stack），在栈空间不够的时候新申请一个栈空间用于被调用函数的执行， 执行后销毁新申请的栈空间并回到老的栈空间继续执行，当函数出现频繁调用（递归）时可能会引发hot split。为了避免hot split, 1.3之后采用的是连续栈（Contiguous Stack），栈空间不足的时候申请一个2倍于当前大小的新栈，并把所有数据拷贝到新栈， 接下来的所有调用执行都发生在新栈上。</p>
 <p>当 Go 进入一个函数时，会创建一个栈帧，代表内存中只有当前函数才能访问的一个区间。</p>
 <p>通过一个简单示例来介绍stack的指令执行过程</p>
-<p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F27_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F27_Harsanyi.png"></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F27_Harsanyi.png" alt="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F27_Harsanyi.png"></p>
 <p>为了简化，图中stack没有使用汇编指令来表明，执行了<code>main</code>，所以为这个函数创建了一个栈帧，<code>a</code>和<code>b</code>都分配在栈上，valid为有效地址，invalid为无效地址。栈从高地址往地址空间增长，其中基准指针寄存器BP 来维护栈基地址 ，栈指针寄存器SP 指向栈顶地址； 至于汇编相关的细节见官方文档查阅解释：<strong><a href="https://go.dev/doc/asm">https://go.dev/doc/asm</a></strong>。查看命令如下：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">GOOS=linux GOARCH=amd64 go tool compile -S -L -N -l -m 12-optimizations/95-stack-heap/main.go | less
-</code></pre></div><p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F28_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F28_Harsanyi.png"></p>
+</code></pre></div><p><img src="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F28_Harsanyi.png" alt="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F28_Harsanyi.png"></p>
 <p>调用<code>sumValue</code>创建一个新的栈帧。x,y为值传递分别赋值，x+y后(简单起见，操作指令未给出)，z赋值; 先前的栈帧<code>(main)</code>包含仍被视为有效的地址，但无法访问a和b对其操作，如果是指针传递则可以获取地址对其操作。</p>
-<p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F29_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F29_Harsanyi.png"></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F29_Harsanyi.png" alt="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F29_Harsanyi.png"></p>
 <p>执行完出函数，出栈，sumValue栈帧被擦除，替换为原来的main栈帧，x已经被擦除，y和z仍在内存中分配，但是无法访问。</p>
 <p>注意 栈<code>sumValue</code>帧并未从内存中完全删除。当函数返回时，Go 不会花时间释放变量来回收可用空间。但是这些以前的变量不能再被访问，当来自父函数的新变量被分配到栈时，它们取代了之前的分配。从某种意义上说，栈是自清洁的；它不需要额外的机制，例如 GC。</p>
-<p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F30_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F30_Harsanyi.png"></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F30_Harsanyi.png" alt="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F30_Harsanyi.png"></p>
 <p>把调用函数改成指针返回时，z 如果 继续分配在栈上的话，函数返回后，z不在有效，main栈帧继续增长，会擦除掉z, 这样c指向的地址空间已经不存在了，变成了错位的悬挂指针，如果使用c进行操作会出现异常(C语言中，会出现Segmentation fault)，所以在Go中，为了代码安全，在编译的时候，将z 原本在栈上分配的空间，逃逸分配到了堆上。</p>
-<p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F31_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F31_Harsanyi.png"></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F31_Harsanyi.png" alt="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F31_Harsanyi.png"></p>
 <p>堆内存空间是所有goroutine的共享池，由Go的内存分配器来管理，具体见<a href="https://medium.com/@ankur_anand/a-visual-guide-to-golang-memory-allocator-from-ground-up-e132258453ed">Go Memory Allocator</a></p>
 <p>三个协程<code>G1</code>,<code>G2</code>和<code>G3</code>都有自己的栈，共享同一个堆进行内存分配管理。</p>
 <p>tips: 在Go中，为了加速内存分配，Golang自己维护了类似https://github.com/google/tcmalloc 的内存分配器来管理，每个运行时P都有一个本地mcache，用于执行状态的协程G分配内存空间，对应多线程中内存tcmalloc的分配机制，线程本地mcache。</p>
@@ -596,7 +599,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 </span><span class="c1"></span>	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">x</span>
 <span class="p">}</span>
 </code></pre></div><p>如果指向栈对象的指针存在于栈中；这不会分配到堆上，比如</p>
-<p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F32_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F32_Harsanyi.png"></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F32_Harsanyi.png" alt="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F32_Harsanyi.png"></p>
 <p>x, y 的值(对象地址)，以及指向对象 a 和 b. 都在栈上，所以不会分配在堆上。</p>
 <p>以下是变量可以逃逸到堆的其他情况：</p>
 <ul>
@@ -657,7 +660,7 @@ Make it correct, make it clear, make it concise, make it fast, in that order.
 <h4 id="池化syncpool">池化sync.Pool</h4>
 <p>当处理的对象，分配在堆上，且频繁被创建使用，这样会触发频繁gc，对这些临时对象标记扫描，会带来额外性能影响，所以在Go引入了sync.Pool，复用临时对象，减少频繁创建，并且在池中的临时对象一段时间不在使用时，会从对象池中移出，并被gc回收，合理的触发机制由gc来管理，进而减少频繁gc。而且sync.Pool 本身就是线程安全的，多个 goroutine 可以并发地调用Get方法存取对象；sync.Pool 不可在使用之后再复制使用，引入了noCopy机制，可以通过go vet来检查。</p>
 <p>sync.Pool有两个公开方法Get， Put 以及初始化Pool是的New 函数成员。</p>
-<p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F34_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F34_Harsanyi.png"></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F34_Harsanyi.png" alt="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F34_Harsanyi.png"></p>
 <p>Get 方法分为两种情况：</p>
 <ol>
 <li>pool为空，通过自定义的New方法创建一个新对象，注意这个对象是同一类型；然后返回刚创建的对象，除了返回值是正常实例化的对象，Get 方法的返回值还可能会是一个 nil（Pool.New 字段没有设置，又没有空闲元素可以返回），所以在使用的时候，需要判断。当没有设置 New 字段，没有更多的空闲元素可返回时，Get 方法将返回 nil，表明当前没有可用的元素。</li>
@@ -909,10 +912,10 @@ go <span class="nb">test</span> -v -bench<span class="o">=</span>Benchmark_paral
 </ul>
 <p>前者定义了一个时期，后者定义了一个配额。默认情况下，周期设置为 100 毫秒。同时，默认配额值是应用程序在 100 毫秒内可以消耗多少 CPU 时间。限制设置为四个核心，这意味着 400 ms (4 × 100 ms)。因此，CFS 将确保应用程序不会在 100 毫秒内消耗超过 400 毫秒的 CPU 时间。</p>
 <p>想象一个场景，多个 goroutine 当前正在四个不同的线程上执行。每个线程被安排在不同的核心（1、3、4 和 8）上；</p>
-<p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F49_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F49_Harsanyi.png"></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F49_Harsanyi.png" alt="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F49_Harsanyi.png"></p>
 <p>在第一个 100 ms 期间，有四个线程处于忙碌状态，因此消耗了 400 ms 中的 400：100% 的配额。在第二个时期，消耗了 400 毫秒中的 360 毫秒，依此类推。一切都很好，因为应用程序消耗的资源少于配额。</p>
 <p>但是，记住GOMAXPROCS设置为8。因此，在最坏的情况下，可以有八个线程，每个线程都安排在不同的核心上。</p>
-<p><img src="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F50_Harsanyi.png" alt="https://learning.oreilly.com/api/v2/epubs/urn:orm:book:9781617299599/files/Images/CH12_F50_Harsanyi.png"></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F50_Harsanyi.png" alt="https://raw.githubusercontent.com/weedge/mypic/master/notions/go-tips-12-optimization/CH12_F50_Harsanyi.png"></p>
 <p>对于每 100 毫秒，配额设置为 400 毫秒。如果八个线程忙于执行 goroutine，50 毫秒后，达到 400 毫秒的配额（8 × 50 毫秒 = 400 毫秒）。会有什么后果？CFS 将限制 CPU 资源。因此，在另一个周期开始之前不会分配更多的 CPU 资源。换句话说，应用程序将暂停 50 毫秒。</p>
 <p>例如，平均延迟为 50 毫秒的服务最多可能需要 150 毫秒才能完成。这可能是延迟的 300% 惩罚。</p>
 <p>首先，请关注 Go <a href="https://github.com/golang/go/issues/33803">issue 33803</a>。也许在 Go 的未来版本中，GOMAXPROCS将支持 CFS。</p>
