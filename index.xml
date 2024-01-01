@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sat, 30 Dec 2023 10:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 01 Jan 2024 20:26:12 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -24,6 +24,11 @@
 &lt;script src=&#34;https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js&#34;&gt;&lt;/script&gt;
 
 &lt;script src=&#34;https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js&#34;&gt;&lt;/script&gt;&lt;meting-js server=&#34;netease&#34; type=&#34;playlist&#34; id=&#34;304060&#34; theme=&#34;#2980b9&#34;&gt;&lt;/meting-js&gt;
+&lt;blockquote&gt;
+&lt;p&gt;成长型奶爸，保持好奇心，陪小朋友一起长大；&lt;/p&gt;
+&lt;p&gt;对分布式数据库，机器学习，底层未知的东东感兴趣，&amp;ldquo;三无&amp;quot;人员，不喜欢贴标签，评论自己和他人，人生没有限定。&lt;/p&gt;
+&lt;p&gt;新年愿望：身体健康，喜乐发财。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h3 id=&#34;人生&#34;&gt;人生&lt;/h3&gt;
 &lt;ol&gt;
 &lt;li&gt;
@@ -48,6 +53,157 @@
     </item>
     
     <item>
+      <title>LLM 知识点 All u need</title>
+      <link>https://weedge.github.io/post/llm/llm-knowledge-point-all-u-need/</link>
+      <pubDate>Mon, 01 Jan 2024 20:26:12 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/llm/llm-knowledge-point-all-u-need/</guid>
+      
+        <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/LLM.png&#34; alt=&#34;LLM知识点&#34;&gt;&lt;/p&gt;
+&lt;p&gt;上图给出了学习LLM所需要的知识点。&lt;/p&gt;
+&lt;p&gt;该文主要是梳理LLM基础结构知识点，模型结构大多相同，以llama2模型结构为切入点，梳理相关知识点，以便构建整体知识体系，可方便快速阅读其他论文的改进点；结合参考学习中给出的链接补充基础知识。&lt;/p&gt;
+&lt;h2 id=&#34;训练推理llm结构知识点-the-llm-architecture&#34;&gt;训练推理LLM结构知识点 The LLM architecture&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/1808.06226&#34;&gt;SentencePiece: A simple and language independent subword tokenizer and detokenizer for Neural Text Processing&lt;/a&gt; tokenizer 使用 BPE 算法，将一个大的词汇表分成多个小的词汇表，然后将每个词汇表中的词汇进行编码，最后将编码后的词汇进行拼接，形成一个新的词汇表。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/google/sentencepiece&#34;&gt;https://github.com/google/sentencepiece&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;训练的分词模型 用于 模型的训练和推断&lt;/li&gt;
+&lt;li&gt;训练的词汇表 用于 词汇表的构建&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;BPE&lt;/strong&gt; [&lt;a href=&#34;https://www.aclweb.org/anthology/P16-1162&#34;&gt;Sennrich et al.&lt;/a&gt;] llama2 使用BPE算法&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;unigram language model&lt;/strong&gt; [&lt;a href=&#34;https://arxiv.org/abs/1804.10959&#34;&gt;Kudo.&lt;/a&gt;]&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;定义一个神经网络Embedding嵌入权重层：torch.nn.Embedding(params.vocab_size, params.dim)&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;embedding 把数据集合映射到向量空间，进而把数据进行向量化的过程&lt;/li&gt;
+&lt;li&gt;将稀疏向量转化为稠密向量，便于上层神经网络的处理&lt;/li&gt;
+&lt;li&gt;在训练的过程中 找到一组合适的向量，来刻画现有的数据集合&lt;/li&gt;
+&lt;li&gt;将客观世界中的物体不失真的映射到高维特征空间中，进而可以使用这些embedding向量 实现分类、回归和预测等操作&lt;/li&gt;
+&lt;li&gt;详细介绍：&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/FsqCNPtDPMdH0WGI0niELw&#34;&gt;https://mp.weixin.qq.com/s/FsqCNPtDPMdH0WGI0niELw&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://vickiboykis.com/what_are_embeddings/&#34;&gt;https://vickiboykis.com/what_are_embeddings/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;定义一个全连接神经网络线性权重层：torch.nn.Linear 特征维度转化，
+$$y = xA^T + b$$&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;训练权重和偏置bias&lt;/li&gt;
+&lt;li&gt;可将输出维度变大，参数变多了，模型的拟合能力也变强&lt;/li&gt;
+&lt;li&gt;多层组合为多层感知机 (Multilayer Perceptron, MLP)，后面接一个激活函数,&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://openreview.net/pdf?id=SygkZ3MTJE&#34;&gt;Root Mean Square Layer Normalization&lt;/a&gt; RMSNorm 归一化权重层.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/bzhangGo/rmsnorm&#34;&gt;https://github.com/bzhangGo/rmsnorm&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;RMSNorm 根据均方根 (RMS) 对一层神经元的输入求和进行正则化，从而赋予模型重新缩放不变性和隐式学习率自适应能力。&lt;/li&gt;
+&lt;li&gt;RMSNorm 计算更简单，因此比 &lt;a href=&#34;https://arxiv.org/abs/1607.06450&#34;&gt;LayerNorm&lt;/a&gt; 更高效。&lt;/li&gt;
+&lt;li&gt;计算公式：&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;$$ \begin{align} \begin{split} &amp;amp; \bar{a}i = \frac{a_i}{\text{RMS}(\mathbf{a})} g_i, \quad \text{where}~~ \text{RMS}(\mathbf{a}) = \sqrt{\frac{1}{n} \sum{i=1}^{n} a_i^2}. \end{split}\nonumber \end{align} $$&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/pdf/1706.03762.pdf&#34;&gt;attention is all u need&lt;/a&gt;, transformer 注意力机制
+&lt;ul&gt;
+&lt;li&gt;MHA: multihead attention -&amp;gt; MQA: Multi-Query Attention -&amp;gt; GQA: Grouped-Query Attention(llama2-34B/70B)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/1911.02150&#34;&gt;Fast Transformer Decoding: One Write-Head is All You Need&lt;/a&gt; MQA: Multi-Query Attention&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2305.13245&#34;&gt;GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints&lt;/a&gt; 较大模型kv缓存成为瓶颈, 训练质量和MHA差不多, 但是速度快很多,与MQA相当.&lt;/li&gt;
+&lt;li&gt;MHA简单来说就是通过多次线性投影linear projection得到原始输入的多个子空间，然后再每个子空间分别进行SDPA(Scaled Dot-Product Attention), 再把SDPA的结果进行聚合Concatenation,最后再做一个linear projection。&lt;/li&gt;
+&lt;li&gt;SDPA的全称为Scaled Dot-Product Attention, 属于点积注意力机制， 简单一句话来说就是，根据Query (Q)与Key之间的匹配度来对Value进行加权，而事实上不管是Query, Key还是Value都来自于输入，因此所谓的SDPA本质上是对输入信息信息进行重组。&lt;/li&gt;
+&lt;li&gt;通过计算Query和各个Key的相似性或者相关性，得到每个Key对应Value的权重系数，然后对Value进行加权求和，即得到了最终的Attention数值。所以本质上Attention机制是对Source中元素的Value值进行加权求和，而Query和Key用来计算对应Value的权重系数。&lt;/li&gt;
+&lt;li&gt;self-attention 自注意力机制用于计算序列中当前token关注与其他token的联系，就是一个序列内的token，互相看其他token对自己的影响力有多大&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2104.09864&#34;&gt;Enhanced Transformer with Rotary Position Embedding&lt;/a&gt; RoPE relative positional embeddings
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/ZhuiyiTechnology/roformer&#34;&gt;https://github.com/ZhuiyiTechnology/roformer&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Residual_neural_network&#34;&gt;residual connection&lt;/a&gt; 残差连接（residual connection）是深度神经网络中的一种常见技术，它的作用是解决梯度消失和梯度爆炸问题，同时也可以帮助模型更快地收敛。
+&lt;ul&gt;
+&lt;li&gt;在传统的神经网络中，每个层的输出都是通过对前一层输出的非线性变换得到的。但是，当网络的深度增加时，前一层的输出可能会被过度压缩或拉伸，导致信息丢失或重复。这种情况下，网络的性能可能会受到影响，同时也会出现梯度消失或梯度爆炸的问题。&lt;/li&gt;
+&lt;li&gt;残差连接通过在每个层的输出与输入之间添加一个跨层连接来解决这个问题。更具体地说，残差连接将前一层的输出直接添加到当前层的输出中，从而提供了一种绕过非线性变换的路径。这样，网络就可以学习到在信息压缩或拉伸后保留重要信息的方法，同时也减轻了梯度消失或梯度爆炸的问题。&lt;/li&gt;
+&lt;li&gt;残差网络（ResNet）  &lt;a href=&#34;https://zh-v2.d2l.ai/chapter_convolutional-modern/resnet.html&#34;&gt;https://zh-v2.d2l.ai/chapter_convolutional-modern/resnet.html&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/1207.0580&#34;&gt;Improving neural networks by preventing co-adaptation of feature detectors&lt;/a&gt; dropout 解决过拟合
+&lt;ul&gt;
+&lt;li&gt;训练神经网络的时候经常会遇到过拟合的问题，过拟合具体表现在：模型在训练数据上损失函数较小，预测准确率较高；但是在测试数据上损失函数比较大，预测准确率较低&lt;/li&gt;
+&lt;li&gt;Dropout说的简单一点就是：我们在前向传播的时候，让某个神经元的激活值以一定的概率p停止工作，这样可以使模型泛化性更强，因为它不会太依赖某些局部的特征，&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/pdf/2002.05202.pdf&#34;&gt;GLU Variants Improve Transformer&lt;/a&gt; FFN 中激活函数SwiGLU/SiLU&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/1512.00567&#34;&gt;Rethinking the Inception Architecture for Computer Vision&lt;/a&gt; 交叉熵 cross_entropy 损失函数的计算公式：
+$$L = -\frac{1}{N}\sum_{i=1}^{N}y_i\log(p_i)$$
+&lt;ul&gt;
+&lt;li&gt;$y_i$ 表示真实值&lt;/li&gt;
+&lt;li&gt;$p_i$ 表示预测值&lt;/li&gt;
+&lt;li&gt;目的是获取输出概率（P）并测量与真值的距离&lt;/li&gt;
+&lt;li&gt;使用softmax函数或者sigmoid函数将网络的输出转换为概率&lt;/li&gt;
+&lt;li&gt;PyTorch中它自带的命令torch.nn.functional.cross_entropy已经将转换概率值的操作整合了进去，所以不需要额外进行转换概率值的操作&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Backpropagation&#34;&gt;backpropagation&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=Ilg3gGewQ5U&#34;&gt;3blue1brown-nn-bp-video&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/1711.05101&#34;&gt;Decoupled Weight Decay Regularization&lt;/a&gt; 优化器 AdamW: Adam + Weight Decay（权重衰减）;
+&lt;ul&gt;
+&lt;li&gt;learning rate和weight decay 参数调整，固定一个调整另一个&lt;/li&gt;
+&lt;li&gt;在训练llama2模型中，
+&lt;ul&gt;
+&lt;li&gt;$β_1 = 0.9, β_2 = 0.95, eps = 10^{-5}$&lt;/li&gt;
+&lt;li&gt;权重衰减(weight_decay)：0.1；梯度裁剪(gradient_clipping)：1.0&lt;/li&gt;
+&lt;li&gt;learning rate: 3e-4(7B/13B), 1.5e-4(34B/70B)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/pdf/2204.02311.pdf&#34;&gt;PaLM: Scaling Language Modeling with Pathways&lt;/a&gt; 模型训练效率的评估工作 比如 MFU&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;预训练基础模型简单概括-pre-training-models&#34;&gt;预训练基础模型简单概括 Pre-training models&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;训练一个神经网络(transformer结构)，数据通过tokenizer分词，输入token数据embedding, 首先要跑一遍前向Forward的过程，计算wx+b线性层权重，激活函数，之后计算Loss function,利用损失函数进行Backward对参数求导得到梯度Grad，拿到Grad后扔给优化器Optimizer更新模型权重，反复迭代，直到损失函数收敛。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;推理&#34;&gt;推理&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Inference Sampling params (top-k, top-p, temperature)
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://huggingface.co/blog/how-to-generate&#34;&gt;https://huggingface.co/blog/how-to-generate&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://docs.cohere.com/docs/controlling-generation-with-top-k-top-p&#34;&gt;https://docs.cohere.com/docs/controlling-generation-with-top-k-top-p&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://peterchng.com/blog/2023/05/02/token-selection-strategies-top-k-top-p-and-temperature/&#34;&gt;https://peterchng.com/blog/2023/05/02/token-selection-strategies-top-k-top-p-and-temperature/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;参考学习&#34;&gt;参考学习&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://vickiboykis.com/what_are_embeddings/&#34;&gt;https://vickiboykis.com/what_are_embeddings/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://neuralnetworksanddeeplearning.com/&#34;&gt;http://neuralnetworksanddeeplearning.com/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.3blue1brown.com/topics/neural-networks&#34;&gt;https://www.3blue1brown.com/topics/neural-networks&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://karpathy.ai/zero-to-hero.html&#34;&gt;https://karpathy.ai/zero-to-hero.html&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://courses.d2l.ai/zh-v2/&#34;&gt;https://courses.d2l.ai/zh-v2/&lt;/a&gt; (看沐神视频学)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/mlabonne/llm-course&#34;&gt;https://github.com/mlabonne/llm-course&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;llms&#34;&gt;LLMs&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://openai.com/research/language-unsupervised&#34;&gt;GPT1: Improving Language Understanding by Generative Pre-Training&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://openai.com/research/better-language-models&#34;&gt;GPT2: Language Models are Unsupervised Multitask Learners&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2005.14165&#34;&gt;GPT-3: Language Models are Few-Shot Learners&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://openai.com/research/instruction-following&#34;&gt;InstructGPT: Aligning language models to follow instructions&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://openai.com/blog/chatgpt&#34;&gt;ChatGPT&lt;/a&gt; | &lt;a href=&#34;https://openai.com/research/openai-baselines-ppo&#34;&gt;Proximal Policy Optimization Algorithms&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://openai.com/research/gpt-4&#34;&gt;GPT-4 Technical Report&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://ai.meta.com/research/publications/llama-open-and-efficient-foundation-language-models/&#34;&gt;LLaMA: Open and Efficient Foundation Language Models&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://ai.meta.com/research/publications/llama-2-open-foundation-and-fine-tuned-chat-models/&#34;&gt;&lt;strong&gt;LLaMA 2: Open Foundation and Fine-Tuned Chat Models&lt;/strong&gt;&lt;/a&gt; (GQA, GAtt for chat 长序列上下文tokens 有用，保多轮对话一致)&lt;/li&gt;
+&lt;/ul&gt;</description>
+      
+    </item>
+    
+    <item>
       <title>译：掌握 LLM 技术：推理优化</title>
       <link>https://weedge.github.io/post/llm/mastering-llm-techniques-inference-optimization/</link>
       <pubDate>Sat, 30 Dec 2023 10:26:23 +0800</pubDate>
@@ -57,29 +213,43 @@
         <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/mastering-llm-techniques-inference-optimization/0.png&#34; alt=&#34;llm-optimize-deploy&#34;&gt;&lt;/p&gt;
 &lt;p&gt;将transformer层叠以创建大型模型会在各种语言任务中带来更高的准确性、少样本学习能力，甚至接近人类的新兴能力。这些基础模型在训练过程中成本高昂，而在推理过程中（一个经常发生的成本）可能需要大量内存和计算资源。如今最受欢迎的&lt;a href=&#34;https://www.nvidia.com/en-us/glossary/data-science/large-language-models/&#34;&gt;大型语言模型（LLMs）&lt;/a&gt;可以达到数百亿到数千亿个参数的规模，并且根据使用情况，可能需要处理长输入（或上下文），这也会增加成本。&lt;/p&gt;
 &lt;p&gt;本文讨论了LLM推理中最紧迫的挑战，以及一些实用的解决方案。读者应该对&lt;a href=&#34;https://arxiv.org/pdf/1706.03762.pdf&#34;&gt;transformer架构&lt;/a&gt;和注意力机制有基本的理解。理解LLM推理的复杂性至关重要，我们将在接下来的部分进行介绍。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;：上篇译文有对 transformer 有相关的介绍，以及相关编码笔记入门；或者深入学习&lt;a href=&#34;https://web.stanford.edu/class/cs25/prev_years/2023_winter/index.html&#34;&gt;CS25: Transformers United V2&lt;/a&gt;&lt;/p&gt;
-&lt;h1 id=&#34;理解大语言模型推理-understanding-llm-inference&#34;&gt;理解大语言模型推理 Understanding LLM inference&lt;/h1&gt;
+&lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;：上篇译文有对 transformer 有相关的介绍，以及相关编码笔记入门；或者深入学习&lt;a href=&#34;https://web.stanford.edu/class/cs25/prev_years/2023_winter/index.html&#34;&gt;CS25: Transformers United V2&lt;/a&gt; &lt;a href=&#34;https://www.youtube.com/playlist?list=PLoROMvodv4rNiJRchCzutFw5ItR_Z27CM&#34;&gt;video&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;llm-推理的核心指标&#34;&gt;LLM 推理的核心指标&lt;/h2&gt;
+&lt;p&gt;想要优化 LLM 推理，首先要了解 LLM 推理的核心指标。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Time To First Token (TTFT): 首 Token 延迟，即从输入到输出第一个 token 的延迟。在在线的流式应用中，TTFT 是最重要的指标，因为它决定了用户体验。&lt;/li&gt;
+&lt;li&gt;Time Per Output Token (TPOT)： 每个输出 token 的延迟（不含首个Token）。在离线的批处理应用中，TPOT 是最重要的指标，因为它决定了整个推理过程的时间。&lt;/li&gt;
+&lt;li&gt;Latency：延迟，即从输入到输出最后一个 token 的延迟。 Latency = (TTFT) + (TPOT) * (the number of tokens to be generated). Latency 可以转换为 Tokens Per Second (TPS)：TPS = (the number of tokens to be generated) / Latency。&lt;/li&gt;
+&lt;li&gt;Throughput：吞吐量，即每秒针对所有请求生成的 token 数。以上三个指标都针对单个请求，而吞吐量是针对所有并发请求的。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;我们将 LLM 应用分为两种：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;在线流式应用：对 TTFT、TPOT、Latency 敏感，需要尽可能快的生成 token。&lt;/li&gt;
+&lt;li&gt;离线批量应用：对 Throughput 敏感，需要在单位时间内尽可能多的生成 token。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;而实际在某种应用（如在线流式应用），我们也应该在Latency 和 Throughput 之间进行权衡，提高 Throughtput 可以提高单个 GPU 承担的并发数，从而降低推理成本。&lt;/p&gt;
+&lt;h2 id=&#34;理解大语言模型推理-understanding-llm-inference&#34;&gt;理解大语言模型推理 Understanding LLM inference&lt;/h2&gt;
 &lt;p&gt;对于大多数流行的仅解码器型大型语言模型（LLMs）（比如GPT-3），它们通常是基于因果建模目标进行预训练的，基本上是作为下一个单词的预测器。这些LLMs将一系列标记（tokens）作为输入，并自回归地生成后续的标记，直到满足停止条件（比如生成标记的数量限制或停止词列表），或者直到生成特殊的&amp;lt;end&amp;gt;标记来标志生成结束。这个过程包括两个阶段：预填充阶段和解码阶段。&lt;/p&gt;
 &lt;p&gt;需要注意的是，标记是模型处理的语言的原子部分。一个标记大约相当于四个英文字符。自然语言中的所有输入在输入模型之前都会转换为标记。&lt;/p&gt;
-&lt;h2 id=&#34;预填充阶段或处理输入-prefill-phase-or-processing-the-input&#34;&gt;预填充阶段或处理输入 Prefill phase or processing the input&lt;/h2&gt;
+&lt;h3 id=&#34;预填充阶段或处理输入-prefill-phase-or-processing-the-input&#34;&gt;预填充阶段或处理输入 Prefill phase or processing the input&lt;/h3&gt;
 &lt;p&gt;在预填充阶段，大型语言模型（LLM）处理输入的标记以计算中间状态（键和值），这些中间状态用于生成“第一个”新标记。每个新标记都依赖于所有先前的标记，但因为知道输入的完整范围，在高层次上，这是一个高度并行化的矩阵-矩阵操作。它有效地充分利用了GPU的利用率。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;ChatGPT&lt;/strong&gt;：预填充阶段是在模型进行生成之前处理输入的阶段。在这个阶段，模型接收到输入数据（通常是一系列标记或者文本），并对其进行预处理。这个阶段的目的是为了将输入转换为模型可以理解和处理的格式。&lt;/p&gt;
 &lt;p&gt;在处理输入时，通常会进行一些操作，比如将文本分割成标记（tokens），对文本进行编码以便模型能够理解，可能还会进行标准化、清洗或其他预处理操作。预处理的目标是将输入数据转换为模型能够接受并有效处理的形式，以便在解码阶段进行后续的生成任务。&lt;/p&gt;
-&lt;h2 id=&#34;解码阶段或生成输出-decode-phase-or-generating-the-output&#34;&gt;解码阶段或生成输出 Decode phase or generating the output&lt;/h2&gt;
+&lt;h3 id=&#34;解码阶段或生成输出-decode-phase-or-generating-the-output&#34;&gt;解码阶段或生成输出 Decode phase or generating the output&lt;/h3&gt;
 &lt;p&gt;在解码阶段，大型语言模型（LLM）以自回归的方式逐个生成输出标记，直到达到停止条件为止。每个顺序输出标记都需要了解所有先前迭代的输出状态（键和值）。这类似于一个矩阵-向量操作，与预填充阶段相比，它没有充分利用GPU的计算能力。数据（权重、键、值、激活）从内存传输到GPU的速度决定了延迟，而不是计算的速度。换句话说，这是一个受限于内存的操作。&lt;/p&gt;
 &lt;p&gt;本文介绍的许多推理挑战及相应的解决方案都涉及优化这个解码阶段：高效的注意力模块、有效管理键和值等等。&lt;/p&gt;
 &lt;p&gt;不同的LLMs可能使用不同的分词器，因此，直接比较它们之间的输出标记可能并不直观。在比较推理吞吐量时，即使两个LLM的每秒输出的标记数量相似，如果它们使用不同的分词器，它们可能并不等价。这是因为相应的标记可能表示不同数量的字符。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;ChatGPT&lt;/strong&gt;： 解码阶段是大型语言模型（LLM）根据先前生成的部分序列和中间状态，生成最终输出的阶段。在这个阶段，模型使用已经计算得到的中间状态（keys和values）以及先前生成的标记序列，来自回归地生成接下来的标记。&lt;/p&gt;
 &lt;p&gt;在解码阶段，模型根据先前的上下文和当前生成的标记，预测下一个标记，并将其追加到已生成的序列中。这个过程会一直持续，直到达到设定的停止条件，比如生成了特定数量的标记、达到了预先设定的序列长度，或者遇到了特殊的结束标记。&lt;/p&gt;
 &lt;p&gt;解码阶段涉及逐步生成输出序列的过程，模型根据先前的部分输出和中间状态，逐步推断和生成接下来的标记，直到生成完整的输出序列为止。&lt;/p&gt;
-&lt;h2 id=&#34;批处理-batching&#34;&gt;批处理 Batching&lt;/h2&gt;
+&lt;h3 id=&#34;批处理-batching&#34;&gt;批处理 Batching&lt;/h3&gt;
 &lt;p&gt;批处理是提高GPU利用率和吞吐量的最简单方法。由于多个请求使用相同的模型，权重的内存成本被分摊开来。将较大的批次一次性传输到GPU进行处理将更充分地利用可用的计算资源。&lt;/p&gt;
 &lt;p&gt;然而，批处理大小只能增加到一定限度，超过这个限度可能会导致内存溢出。要更好地理解为什么会发生这种情况，需要看一下键值（KV）缓存和LLM内存需求。&lt;/p&gt;
 &lt;p&gt;传统的批处理（也称为静态批处理）是不够优化的。这是因为在批处理中的每个请求中，LLM可能会生成不同数量的完成标记，因此它们具有不同的执行时间。结果是，批处理中的所有请求必须等到最长的请求完成，这可能会加剧生成长度存在较大变化时的等待时间。有一些方法可以缓解这个问题，比如在途批处理(&lt;a href=&#34;https://github.com/NVIDIA/TensorRT-LLM/issues/155&#34;&gt;&lt;strong&gt;in-flight batching&lt;/strong&gt;&lt;/a&gt;)，这将在稍后讨论。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;ChatGPT&lt;/strong&gt;：批处理是在深度学习中一种重要的优化技术，用于同时处理多个样本或数据点。在大型语言模型（LLM）的推理过程中，批处理也起着关键的作用。&lt;/p&gt;
 &lt;p&gt;通常情况下，批处理允许模型同时处理多个输入序列，从而提高了计算效率。LLMs可以在推理过程中对多个输入序列执行操作，这意味着可以将多个序列的计算合并在一起，利用GPU并行性和计算能力，从而减少总体的推理时间。&lt;/p&gt;
 &lt;p&gt;在推理阶段，合理设置批处理大小可以有效地提高模型的性能。较大的批处理大小通常会带来更高的吞吐量和更高效的GPU利用率，但同时也可能增加内存占用和计算复杂度。因此，在选择批处理大小时需要权衡这些因素，以便在保持高性能的同时避免资源浪费。&lt;/p&gt;
-&lt;h2 id=&#34;kv缓存-key-value-caching&#34;&gt;KV缓存 Key-value caching&lt;/h2&gt;
+&lt;h3 id=&#34;kv缓存-key-value-caching&#34;&gt;KV缓存 Key-value caching&lt;/h3&gt;
 &lt;p&gt;KV（键值）缓存是解码阶段常见的一种优化技术。在解码阶段，每个时间步生成一个标记，但每个标记都依赖于之前所有标记的键和值张量（包括预填充时计算的输入标记的KV张量，以及直到当前时间步计算的任何新KV张量）。&lt;/p&gt;
 &lt;p&gt;为了避免在每个时间步重新计算所有这些张量的值，可以将它们缓存到GPU内存中。在每次迭代中，当新的元素被计算出来时，它们被简单地添加到正在运行的缓存中，以便在下一次迭代中使用。在某些实现中，模型的每一层都可能有一个KV缓存。&lt;/p&gt;
 &lt;p&gt;通过使用KV缓存，可以避免重复计算先前时间步骤中生成的中间状态，提高了解码阶段的效率。这样做可以减少计算成本，加快推理速度，并有效利用GPU的内存和计算资源。&lt;/p&gt;
@@ -89,18 +259,18 @@
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/mastering-llm-techniques-inference-optimization/1.png&#34; alt=&#34;在图示中，可以将KV缓存的作用在预填充（Prefill）和解码（Decode）阶段进行说明。&#34;&gt;&lt;/p&gt;
 &lt;p&gt;&lt;em&gt;图1. 键值缓存机制的示例&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;在图示中，可以将KV缓存的作用在预填充（Prefill）和解码（Decode）阶段进行说明。&lt;/p&gt;
-&lt;h3 id=&#34;预填充阶段prefill-phase&#34;&gt;预填充阶段（Prefill Phase）&lt;/h3&gt;
+&lt;h4 id=&#34;预填充阶段prefill-phase&#34;&gt;预填充阶段（Prefill Phase）&lt;/h4&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;高度并行化的操作：&lt;/strong&gt; 在预填充阶段，模型同时计算所有输入标记的KV张量。这是一个高度并行化的操作，可以在GPU上同时进行计算。每个输入标记都经过处理，其对应的键值对被计算并存储在KV缓存中。&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;KV张量计算：&lt;/strong&gt; 图示中展示了多个输入标记（token），每个标记经过模型处理后产生对应的键（keys）和值（values）张量。这些张量在计算后被缓存，以备后续解码阶段使用。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&#34;解码阶段decode-phase&#34;&gt;解码阶段（Decode Phase）&lt;/h3&gt;
+&lt;h4 id=&#34;解码阶段decode-phase&#34;&gt;解码阶段（Decode Phase）&lt;/h4&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;自回归生成新标记：&lt;/strong&gt; 在解码阶段，模型逐步生成新的输出标记。对于每个时间步，模型根据先前生成的标记、前一个时间步的KV张量以及先前缓存的KV张量来计算新的输出标记。这个过程是自回归的，每个新的标记都依赖于先前的计算结果。&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;KV缓存的利用：&lt;/strong&gt; 在解码阶段，模型会使用之前缓存的KV张量，这样就避免了在每个时间步重新计算所有先前的中间状态。随着每个时间步的计算，新的KV张量也被生成并添加到缓存中，以备下一个时间步骤的使用。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;这种KV缓存的使用方式有助于减少重复计算，提高了解码阶段的效率。通过缓存已经计算过的中间状态，模型能够更有效地利用GPU的计算资源，加速推理过程。&lt;/p&gt;
-&lt;h2 id=&#34;大语言模型内存要求-llm-memory-requirement&#34;&gt;大语言模型内存要求 LLM memory requirement&lt;/h2&gt;
+&lt;h3 id=&#34;大语言模型内存要求-llm-memory-requirement&#34;&gt;大语言模型内存要求 LLM memory requirement&lt;/h3&gt;
 &lt;p&gt;实际上，影响 GPU 大型语言模型（LLM）内存需求的两个主要因素是模型权重和 KV 缓存。&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -128,7 +298,7 @@
 &lt;li&gt;&lt;strong&gt;硬件平台：&lt;/strong&gt; 不同的硬件平台对内存的使用方式和限制可能有所不同。LLMs在不同的GPU或TPU上可能表现出不同的内存需求。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;由于这些因素的综合影响，LLMs在推理过程中通常需要大量内存来存储参数、中间状态以及处理输入和输出数据。优化内存使用和管理对于提高推理效率和减少资源消耗非常重要。&lt;/p&gt;
-&lt;h1 id=&#34;利用模型并行化扩展llms-scaling-up-llms-with-model-parallelization&#34;&gt;利用模型并行化扩展LLMs (Scaling up LLMs with model parallelization)&lt;/h1&gt;
+&lt;h2 id=&#34;利用模型并行化扩展llms-scaling-up-llms-with-model-parallelization&#34;&gt;利用模型并行化扩展LLMs (Scaling up LLMs with model parallelization)&lt;/h2&gt;
 &lt;p&gt;分布模型到多个GPU上是减少模型权重每个设备内存占用的一种方式。将内存和计算负载分散开来，可以运行更大规模的模型或更大规模的输入批次。模型并行化是训练或推理一个需要比单个设备可用内存更多的模型的必要手段，并且使得针对某些用例的训练时间和推理指标（延迟或吞吐量）合适。根据如何划分模型权重，有几种模型并行化的方式。&lt;/p&gt;
 &lt;p&gt;需要注意的是，在提到以下列出的方法时，&lt;strong&gt;数据并行化（data parallelism）通常也是一个经常提及的技术。在数据并行化中，模型的权重被复制到多个设备上，并且输入的（全局）批次被分片到每个设备上形成微批次。通过处理更大批次的数据，它可以减少总体执行时间。但是，在推理过程中它是一个相对不那么相关的训练时间优化技术&lt;/strong&gt;。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;ChatGPT&lt;/strong&gt;：将大型语言模型（LLMs）进行模型并行化是一种扩展模型以处理更大规模问题的方法。这种技术涉及将模型的不同部分分配到多个设备或处理单元上进行并行处理。&lt;/p&gt;
@@ -224,7 +394,7 @@
 &lt;li&gt;&lt;strong&gt;序列关联：&lt;/strong&gt; 在一些情况下，可能需要在处理过程中对处理结果进行关联或整合，以获得最终的输出结果。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;序列并行常用于处理长序列数据，例如自然语言处理中的长文本、语音识别中的长音频片段等。通过将长序列划分成多个部分，在多个设备上并行处理这些部分可以提高处理效率，并降低处理长序列数据时的计算负担。&lt;/p&gt;
-&lt;h2 id=&#34;优化注意机制-optimizing-the-attention-mechanism&#34;&gt;优化注意机制 Optimizing the attention mechanism&lt;/h2&gt;
+&lt;h2 id=&#34;优化注意力机制-optimizing-the-attention-mechanism&#34;&gt;优化注意力机制 Optimizing the attention mechanism&lt;/h2&gt;
 &lt;p&gt;SDPA (scaling dot-product attention)操作将查询和键值对映射到输出，如&lt;a href=&#34;https://arxiv.org/pdf/1706.03762.pdf&#34;&gt;attention Is All You Need&lt;/a&gt;所述。&lt;/p&gt;
 &lt;h3 id=&#34;多头注意力机制-multi-head-attention&#34;&gt;多头注意力机制 Multi-head attention&lt;/h3&gt;
 &lt;p&gt;这种方法是对自注意力机制（SDPA）的一种增强，它使得注意力层能够并行执行多次，每次使用不同的、经过学习的投影矩阵作用于Q、K和V矩阵。这样的设计让模型能够同时关注来自不同表示子空间的信息，并应用于不同的位置。这些表示子空间是独立学习的，为模型提供了对输入中不同位置更丰富的理解。&lt;/p&gt;
@@ -422,7 +592,7 @@
 &lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
 &lt;p&gt;这篇文章概述了许多优化和高效提供大型语言模型（LLMs）的最流行解决方案，无论是在数据中心还是在个人电脑边缘。其中许多技术都经过优化，并通过 &lt;a href=&#34;https://github.com/NVIDIA/TensorRT-LLM/tree/release/0.5.0&#34;&gt;NVIDIA TensorRT-LLM&lt;/a&gt; 提供支持。TensorRT-LLM 是一个开源库，包括 TensorRT 深度学习编译器、优化内核、预处理和后处理步骤，以及用于 NVIDIA GPU 的多GPU/多节点通信原语，可实现突破性的性能。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;： 推理优化相关的解决方案关键字，使用ChatGPT 询问答案，可以作为对比，相对模板化，用来提炼一篇文章知识点是非常有效的&lt;/p&gt;
-&lt;h1 id=&#34;参考&#34;&gt;参考&lt;/h1&gt;
+&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;https://developer.nvidia.com/blog/mastering-llm-techniques-inference-optimization/&#34;&gt;https://developer.nvidia.com/blog/mastering-llm-techniques-inference-optimization/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://developer.nvidia.com/blog/search-posts/?q=Mastering+LLM+Techniques&#34;&gt;https://developer.nvidia.com/blog/search-posts/?q=Mastering+LLM+Techniques&lt;/a&gt;&lt;/li&gt;
@@ -431,6 +601,7 @@
 &lt;li&gt;&lt;a href=&#34;https://github.com/vllm-project/vllm&#34;&gt;https://github.com/vllm-project/vllm&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/microsoft/DeepSpeed-MII&#34;&gt;https://github.com/microsoft/DeepSpeed-MII&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/NVIDIA/TensorRT-LLM&#34;&gt;https://github.com/NVIDIA/TensorRT-LLM&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/ninehills/llm-inference-benchmark/blob/main/LLM%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96.md&#34;&gt;https://github.com/ninehills/llm-inference-benchmark/blob/main/LLM%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96.md&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>
@@ -4162,66 +4333,6 @@ make_strings_column    0.5ms
 &lt;li&gt;&lt;a href=&#34;https://www.elastic.co/guide/en/elasticsearch/reference/8.0/knn-search.html&#34;&gt;ES8.0/knn-search&lt;/a&gt; &lt;a href=&#34;https://opensearch.org/docs/latest/search-plugins/knn/index/&#34;&gt;OpenSearch-plugin-knn&lt;/a&gt; &lt;a href=&#34;https://github.com/opensearch-project/k-NN&#34;&gt;https://github.com/opensearch-project/k-NN&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://redis.io/docs/interact/search-and-query/search/vectors/&#34;&gt;Redis Stack7.2/vss&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.alibabacloud.com/help/zh/tair/developer-reference/vector&#34;&gt;alibabacloud-tair-vector&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>译：如何避免事务期间读取不一致</title>
-      <link>https://weedge.github.io/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/</link>
-      <pubDate>Sat, 26 Aug 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/</guid>
-      
-        <description>&lt;p&gt;想象一下，当您尝试将 100 美元从账户 A 转账到账户 B，并且两个账户都在同一家银行时。启动传输后，您刷新屏幕。然而，当您刷新屏幕时，您的总余额就会下降——那 100 美元似乎凭空消失了。您看到帐户 A 少了 100 美元。然而，B账户并没有多出100美元。然后，您刷新屏幕几次，可以看到帐户 B 获得了 100 美元。&lt;/p&gt;
-&lt;p&gt;您在事务期间遇到的这个问题称为读取偏差。当您在不幸运的时间（写入交易期间和之后）读取交易时，就会发生异常。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://edward-huang.com/images/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/Distributed%20System%20Question_%20How%20to%20Avoid%20Read%20Inconsistency%20during%20a%20Transaction-%20bank%20transfer.png&#34; alt=&#34;银行转账时序图&#34;&gt;&lt;/p&gt;
-&lt;p&gt;这可能会带来不好的用户体验，但如果转账交易成功后刷新页面，这不会造成任何问题。&lt;/p&gt;
-&lt;p&gt;然而，在进行数据库备份或分析查询时，读取偏差会成为一个问题。&lt;/p&gt;
-&lt;p&gt;在数据库备份中，我们需要制作数据库的副本。备份过程中可能会有写请求进来，如果出现读倾斜不一致的情况，可能会导致备份结果不一致。部分数据为旧版本，部分数据为新版本。通过这样的操作，这种不一致的问题可能会永久存在。&lt;/p&gt;
-&lt;p&gt;我们需要在分析查询中扫描大型数据库并定期检查数据损坏。读取偏差可能会导致搜索和检查不一致 - 通常可能会产生不一致的结果并引发有关数据损坏的错误警报。&lt;/p&gt;
-&lt;h2 id=&#34;解决读取偏差&#34;&gt;解决读取偏差&lt;/h2&gt;
-&lt;p&gt;读取倾斜的问题是读事务在旧数据库版本中读取一次，在新数据库版本中读取另一次。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://edward-huang.com/images/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/Distributed%20System%20Question_%20How%20to%20Avoid%20Read%20Inconsistency%20during%20a%20Transaction-reading%20skew.png&#34; alt=&#34;读取倾斜的图像&#34;&gt;&lt;/p&gt;
-&lt;p&gt;这里重要的一点是读取事务需要一致 - 它不需要是最新版本。从事务开始到结束需要保持一致，所以我们需要保持数据版本相同。&lt;/p&gt;
-&lt;p&gt;例如，如果 Bob 正在以数据版本 1 运行读事务，则在整个事务中，Bob 应该只能读取数据库数据版本 1。如果在事务处理过程中，发生新的写事务，这将导致更新数据库中的数据。Bob 将不会在他的交易中看到该新版本。&lt;/p&gt;
-&lt;p&gt;因此，我们可以使事务从数据库的一致快照中读取——事务将从事务开始时其他事务在数据库中提交的所有数据中看到。&lt;/p&gt;
-&lt;p&gt;此功能称为快照隔离，许多关系数据库都提供此功能，例如 PostgreSQL 和 MySQL。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://edward-huang.com/images/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/Distributed%20System%20Question_%20How%20to%20Avoid%20Read%20Inconsistency%20during%20a%20Transaction-snapshot%20isolation%20sequence%20diagram.png&#34; alt=&#34;快照隔离序列图的图像&#34;&gt;&lt;/p&gt;
-&lt;h2 id=&#34;实施快照隔离&#34;&gt;实施快照隔离&lt;/h2&gt;
-&lt;p&gt;我们需要在数据库中保留各种快照版本来实现快照隔离。每次事务开始时，数据库都会将最新提交的快照版本赋予该事务。然后，数据库将跟踪每个事务及其相应的快照版本，以保持读取的一致性。&lt;/p&gt;
-&lt;p&gt;每个事务都有一个&lt;code&gt;transactionId&lt;/code&gt;，并且&lt;code&gt;transactionId&lt;/code&gt;是从数据库中检索的。因此，&lt;code&gt;transactionId&lt;/code&gt;总是在增加。数据库跟踪每个&lt;code&gt;transactionId&lt;/code&gt;写入数据库的使用&lt;code&gt;createdAt&lt;/code&gt;和&lt;code&gt;deletedAt&lt;/code&gt;值。&lt;code&gt;transactionId&lt;/code&gt;提交事务后，数据库使用事务中的 对该操作创建了一个标记。数据库进一步制作新交易的快照，并用最新的 transactionId 标记该快照。当有新的事务从数据库读取时，数据库会检索该事务之前最新提交的事务，有以下几个规则：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;即使提交了后续事务，也不会显示当前尚未提交到数据库的任何 transactionId。&lt;/li&gt;
-&lt;li&gt;任何中止的交易也不会显示。&lt;/li&gt;
-&lt;li&gt;数据库不会显示任何晚于&lt;code&gt;transactionId&lt;/code&gt;（大于）当前的事务&lt;code&gt;transactionId&lt;/code&gt;。&lt;/li&gt;
-&lt;li&gt;数据库将向读取数据库的其他传入事务显示任何其他事务。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;让我们看看 Bob 的场景中会发生什么：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://edward-huang.com/images/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/Distributed%20System%20Question_%20How%20to%20Avoid%20Read%20Inconsistency%20during%20a%20Transaction-snapshot%20isolation%20on%20Bob%20banking%20scenario%20with%20the%20algorithm%20implementation.png&#34; alt=&#34;Bob 银行业务场景的快照隔离图像以及算法实现&#34;&gt;&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;当 Bob 发起转账交易时，它会启动一个后台进程，将 100 美元从账户 A 转账到账户 B。该交易将首先调用数据库或辅助服务来获取增量，然后发起交易 - 假设交易是&lt;code&gt;transactionId&lt;/code&gt;1234 。&lt;/li&gt;
-&lt;li&gt;后续的读取事务将需要通过获取增量&lt;code&gt;transactionId&lt;/code&gt;并向数据库调用读取请求来执行相同的操作 - 假设是&lt;code&gt;transactionId&lt;/code&gt;1345。&lt;/li&gt;
-&lt;li&gt;当传输尚未完成时，数据库不会向 Bob 显示&lt;code&gt;transactionId&lt;/code&gt;1234（规则 1）应用的数据。&lt;/li&gt;
-&lt;li&gt;如果在 1345 之后启动另一个写入事务&lt;code&gt;transactionId&lt;/code&gt;，因为该事务具有更大的&lt;code&gt;transactionId&lt;/code&gt;，数据库将不会向&lt;code&gt;transactionId&lt;/code&gt;1345 显示该事务（规则号 3）。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;在删除过程中，数据库不会立即删除该字段中的值，而是会在该字段上标记一个&lt;a href=&#34;https://en.wikipedia.org/wiki/Tombstone_(data_store)#:~:text=A%20tombstone%20is%20a%20deleted,is%20considered%20to%20be%20successful.&#34;&gt;墓碑&lt;/a&gt; 逻辑删除。不立即删除该值的原因之一是那些早期的交易可能仍然使用该值。因此，一旦所有事务都使用提交给其事务的值，我们就可以利用垃圾收集来异步检查和删除该值。&lt;/p&gt;
-&lt;h2 id=&#34;对分布式环境进行快照隔离&#34;&gt;对分布式环境进行快照隔离&lt;/h2&gt;
-&lt;p&gt;到目前为止，我们已经探索了如何解决单节点环境中的读取倾斜——我们假设数据库不分布在多个集群上。&lt;/p&gt;
-&lt;p&gt;如何在分布式环境中扩展快照隔离？&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;transactionId&lt;/code&gt;在分布式环境中很难得到一个全局的、不断增长的。出于一个原因，可能驻留在不同数据库中的每台计算机可能都有其 UUID 计数器，我们需要进行一些协调以确保因果关系。如果事务B从事务A读取值，我们要确保事务B的值大于&lt;code&gt;transactionId&lt;/code&gt;事务A。我们如何处理复制数据库中的一致快照？&lt;/p&gt;
-&lt;p&gt;我们可以使用时钟或一天中的时间作为&lt;code&gt;transactionId&lt;/code&gt;写入数据库吗？当天时钟不可靠，因为 NTP 同步基于不可靠的网络。因此，有些机器可能会出现时钟偏差，在时间上任意向后移动。一个节点的时间也可能与另一节点的时间不同。然而，如果我们能让时钟足够准确，它就可以作为&lt;code&gt;transactionId&lt;/code&gt;——时钟的时间晚意味着事件产生的晚。我们如何确保时钟对于 transactionId 来说足够准确？&lt;/p&gt;
-&lt;p&gt;当检索每台机器中的时间值时，我们希望它返回一个置信区间，&lt;code&gt;[Tbegin, Tlast]&lt;/code&gt;而不是获取单个值。置信区间表示时钟的标准偏差为正负范围&lt;code&gt;Begin&lt;/code&gt;和&lt;code&gt;Tlast&lt;/code&gt;。如果有两笔交易，&lt;code&gt;transactionX&lt;/code&gt;，&lt;code&gt;transactionY&lt;/code&gt;进来，&lt;code&gt;[TbeginX, TlastX]&lt;/code&gt;，&lt;code&gt;[TbeginY, TlastY]&lt;/code&gt;， 和&lt;code&gt;TlastX &amp;lt; TbeginY&lt;/code&gt;。我们可以确保&lt;code&gt;transactionX&lt;/code&gt;早于&lt;code&gt;tranasctionY&lt;/code&gt;。但是，如果值重叠，我们就无法确定顺序。&lt;a href=&#34;https://cloud.google.com/spanner/docs/true-time-external-consistency&#34;&gt;Google Spanner&lt;/a&gt;使用的是这种方法实现其快照隔离。Spanner 会故意等到超过前一个事务的置信区间而不重叠时才提交当前事务。因此，他们需要保持机器上每个时钟的置信时间间隔尽可能小，以避免延迟。Google 在每个数据中心部署原子钟或 GPS 服务器，以实现时钟同步。&lt;/p&gt;
-&lt;p&gt;为了确保每个数据库副本上的快照都是最新的，我们可以使用&lt;a href=&#34;https://en.wikipedia.org/wiki/Quorum_(distributed_computing)#:~:text=A%20quorum%20is%20the%20minimum,operation%20in%20a%20distributed%20system.&#34;&gt;Quorum&lt;/a&gt;仲裁策略从其所有数据库集群中获取所有最新的事务快照。我们可以使用的另一个策略是确保事务始终路由到同一数据库实例以获得一致的快照结果。&lt;/p&gt;
-&lt;h2 id=&#34;概括&#34;&gt;概括&lt;/h2&gt;
-&lt;p&gt;当由于后台发生另一个写入事务而无法从读取数据库数据中看到一致的结果时，就会发生读取偏差。一致性快照是单节点数据库读取倾斜的解决方案。&lt;/p&gt;
-&lt;p&gt;一致性快照是一种隔离级别，可保证每个事务都从数据库的一致性快照中读取数据，通常是当前启动的事务之前的最新快照。&lt;/p&gt;
-&lt;p&gt;实现快照隔离需要一个单调递增的计数器transactionId来确定返回哪个版本给事务调用。然而，在处理分布式环境时，这可能很困难，因为需要协调才能产生因果关系。解决此问题的一种解决方案是使用时钟返回置信区间来创建不断增加的&lt;code&gt;transactionId&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;最后，为了确保每个事务获得一致的快照，我们可以使用仲裁策略始终返回大多数节点返回的当前事务的最新快照，或者在事务调用和数据库实例上具有会话关联性。&lt;/p&gt;
-&lt;p&gt;如何确保分布式系统中的读取一致性？将如何解决创建全局的问题&lt;code&gt;transactionId&lt;/code&gt;？&lt;/p&gt;
-&lt;h2 id=&#34;reference&#34;&gt;reference&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://edward-huang.com/distributed-system/2022/04/03/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/&#34;&gt;https://edward-huang.com/distributed-system/2022/04/03/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>

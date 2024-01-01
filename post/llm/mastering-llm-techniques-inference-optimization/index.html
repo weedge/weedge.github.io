@@ -25,7 +25,7 @@
 <meta name="author" content="weedge" />
   <meta name="description" content="将transformer层叠以创建大型模型会在各种语言任务中带来更高的准确性、少样本学习能力，甚至接近人类的新兴能力。这些基础模型在训练过程中成本高昂，而在推理过程中（一个经常发生的成本）可能需要大量内存和计算资源。如今最受欢迎的大型语言模型（LLMs）可以达到数百亿到数千亿个参数的规模，并且根据使用情况，可能需要处理长输入（或上下文），这也会增加成本。
 本文讨论了LLM推理中最紧迫的挑战，以及一些实用的解决方案。读者应该对transformer架构和注意力机制有基本的理解。理解LLM推理的复杂性至关重要，我们将在接下来的部分进行介绍。
-注：上篇译文有对 transformer 有相关的介绍，以及相关编码笔记入门；或者深入学习CS25: Transformers United V2
+注：上篇译文有对 transformer 有相关的介绍，以及相关编码笔记入门；或者深入学习CS25: Transformers United V2 video
 " />
 
   <meta name="keywords" content="工作, 技术, 生活" />
@@ -68,7 +68,7 @@
 <meta property="og:description" content="
 将transformer层叠以创建大型模型会在各种语言任务中带来更高的准确性、少样本学习能力，甚至接近人类的新兴能力。这些基础模型在训练过程中成本高昂，而在推理过程中（一个经常发生的成本）可能需要大量内存和计算资源。如今最受欢迎的大型语言模型（LLMs）可以达到数百亿到数千亿个参数的规模，并且根据使用情况，可能需要处理长输入（或上下文），这也会增加成本。
 本文讨论了LLM推理中最紧迫的挑战，以及一些实用的解决方案。读者应该对transformer架构和注意力机制有基本的理解。理解LLM推理的复杂性至关重要，我们将在接下来的部分进行介绍。
-注：上篇译文有对 transformer 有相关的介绍，以及相关编码笔记入门；或者深入学习CS25: Transformers United V2" />
+注：上篇译文有对 transformer 有相关的介绍，以及相关编码笔记入门；或者深入学习CS25: Transformers United V2 video" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://weedge.github.io/post/llm/mastering-llm-techniques-inference-optimization/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2023-12-30T10:26:23+08:00" />
@@ -78,15 +78,15 @@
 <meta itemprop="description" content="
 将transformer层叠以创建大型模型会在各种语言任务中带来更高的准确性、少样本学习能力，甚至接近人类的新兴能力。这些基础模型在训练过程中成本高昂，而在推理过程中（一个经常发生的成本）可能需要大量内存和计算资源。如今最受欢迎的大型语言模型（LLMs）可以达到数百亿到数千亿个参数的规模，并且根据使用情况，可能需要处理长输入（或上下文），这也会增加成本。
 本文讨论了LLM推理中最紧迫的挑战，以及一些实用的解决方案。读者应该对transformer架构和注意力机制有基本的理解。理解LLM推理的复杂性至关重要，我们将在接下来的部分进行介绍。
-注：上篇译文有对 transformer 有相关的介绍，以及相关编码笔记入门；或者深入学习CS25: Transformers United V2"><meta itemprop="datePublished" content="2023-12-30T10:26:23+08:00" />
+注：上篇译文有对 transformer 有相关的介绍，以及相关编码笔记入门；或者深入学习CS25: Transformers United V2 video"><meta itemprop="datePublished" content="2023-12-30T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2023-12-30T10:26:23+08:00" />
-<meta itemprop="wordCount" content="19336">
+<meta itemprop="wordCount" content="19784">
 <meta itemprop="keywords" content="LLM,inference optimization," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="译：掌握 LLM 技术：推理优化"/>
 <meta name="twitter:description" content="
 将transformer层叠以创建大型模型会在各种语言任务中带来更高的准确性、少样本学习能力，甚至接近人类的新兴能力。这些基础模型在训练过程中成本高昂，而在推理过程中（一个经常发生的成本）可能需要大量内存和计算资源。如今最受欢迎的大型语言模型（LLMs）可以达到数百亿到数千亿个参数的规模，并且根据使用情况，可能需要处理长输入（或上下文），这也会增加成本。
 本文讨论了LLM推理中最紧迫的挑战，以及一些实用的解决方案。读者应该对transformer架构和注意力机制有基本的理解。理解LLM推理的复杂性至关重要，我们将在接下来的部分进行介绍。
-注：上篇译文有对 transformer 有相关的介绍，以及相关编码笔记入门；或者深入学习CS25: Transformers United V2"/>
+注：上篇译文有对 transformer 有相关的介绍，以及相关编码笔记入门；或者深入学习CS25: Transformers United V2 video"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -357,27 +357,24 @@
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#预填充阶段或处理输入-prefill-phase-or-processing-the-input">预填充阶段或处理输入 Prefill phase or processing the input</a></li>
-    <li><a href="#解码阶段或生成输出-decode-phase-or-generating-the-output">解码阶段或生成输出 Decode phase or generating the output</a></li>
-    <li><a href="#批处理-batching">批处理 Batching</a></li>
-    <li><a href="#kv缓存-key-value-caching">KV缓存 Key-value caching</a>
+    <li><a href="#llm-推理的核心指标">LLM 推理的核心指标</a></li>
+    <li><a href="#理解大语言模型推理-understanding-llm-inference">理解大语言模型推理 Understanding LLM inference</a>
       <ul>
-        <li><a href="#预填充阶段prefill-phase">预填充阶段（Prefill Phase）</a></li>
-        <li><a href="#解码阶段decode-phase">解码阶段（Decode Phase）</a></li>
+        <li><a href="#预填充阶段或处理输入-prefill-phase-or-processing-the-input">预填充阶段或处理输入 Prefill phase or processing the input</a></li>
+        <li><a href="#解码阶段或生成输出-decode-phase-or-generating-the-output">解码阶段或生成输出 Decode phase or generating the output</a></li>
+        <li><a href="#批处理-batching">批处理 Batching</a></li>
+        <li><a href="#kv缓存-key-value-caching">KV缓存 Key-value caching</a></li>
+        <li><a href="#大语言模型内存要求-llm-memory-requirement">大语言模型内存要求 LLM memory requirement</a></li>
       </ul>
     </li>
-    <li><a href="#大语言模型内存要求-llm-memory-requirement">大语言模型内存要求 LLM memory requirement</a></li>
-  </ul>
-
-  <ul>
-    <li>
+    <li><a href="#利用模型并行化扩展llms-scaling-up-llms-with-model-parallelization">利用模型并行化扩展LLMs (Scaling up LLMs with model parallelization)</a>
       <ul>
         <li><a href="#流水线并行-pipeline-parallelism">流水线并行 Pipeline parallelism</a></li>
         <li><a href="#张量并行-tensor-parallelism">张量并行 Tensor parallelism</a></li>
         <li><a href="#序列并行-sequence-parallelism">序列并行 Sequence parallelism</a></li>
       </ul>
     </li>
-    <li><a href="#优化注意机制-optimizing-the-attention-mechanism">优化注意机制 Optimizing the attention mechanism</a>
+    <li><a href="#优化注意力机制-optimizing-the-attention-mechanism">优化注意力机制 Optimizing the attention mechanism</a>
       <ul>
         <li><a href="#多头注意力机制-multi-head-attention">多头注意力机制 Multi-head attention</a></li>
         <li><a href="#多查询注意力-multi-query-attention">多查询注意力 Multi-query attention</a></li>
@@ -400,6 +397,7 @@
       </ul>
     </li>
     <li><a href="#总结">总结</a></li>
+    <li><a href="#参考">参考</a></li>
   </ul>
 </nav>
   </div>
@@ -410,29 +408,43 @@
       <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/mastering-llm-techniques-inference-optimization/0.png" alt="llm-optimize-deploy"></p>
 <p>将transformer层叠以创建大型模型会在各种语言任务中带来更高的准确性、少样本学习能力，甚至接近人类的新兴能力。这些基础模型在训练过程中成本高昂，而在推理过程中（一个经常发生的成本）可能需要大量内存和计算资源。如今最受欢迎的<a href="https://www.nvidia.com/en-us/glossary/data-science/large-language-models/">大型语言模型（LLMs）</a>可以达到数百亿到数千亿个参数的规模，并且根据使用情况，可能需要处理长输入（或上下文），这也会增加成本。</p>
 <p>本文讨论了LLM推理中最紧迫的挑战，以及一些实用的解决方案。读者应该对<a href="https://arxiv.org/pdf/1706.03762.pdf">transformer架构</a>和注意力机制有基本的理解。理解LLM推理的复杂性至关重要，我们将在接下来的部分进行介绍。</p>
-<p><strong>注</strong>：上篇译文有对 transformer 有相关的介绍，以及相关编码笔记入门；或者深入学习<a href="https://web.stanford.edu/class/cs25/prev_years/2023_winter/index.html">CS25: Transformers United V2</a></p>
-<h1 id="理解大语言模型推理-understanding-llm-inference">理解大语言模型推理 Understanding LLM inference</h1>
+<p><strong>注</strong>：上篇译文有对 transformer 有相关的介绍，以及相关编码笔记入门；或者深入学习<a href="https://web.stanford.edu/class/cs25/prev_years/2023_winter/index.html">CS25: Transformers United V2</a> <a href="https://www.youtube.com/playlist?list=PLoROMvodv4rNiJRchCzutFw5ItR_Z27CM">video</a></p>
+<h2 id="llm-推理的核心指标">LLM 推理的核心指标</h2>
+<p>想要优化 LLM 推理，首先要了解 LLM 推理的核心指标。</p>
+<ul>
+<li>Time To First Token (TTFT): 首 Token 延迟，即从输入到输出第一个 token 的延迟。在在线的流式应用中，TTFT 是最重要的指标，因为它决定了用户体验。</li>
+<li>Time Per Output Token (TPOT)： 每个输出 token 的延迟（不含首个Token）。在离线的批处理应用中，TPOT 是最重要的指标，因为它决定了整个推理过程的时间。</li>
+<li>Latency：延迟，即从输入到输出最后一个 token 的延迟。 Latency = (TTFT) + (TPOT) * (the number of tokens to be generated). Latency 可以转换为 Tokens Per Second (TPS)：TPS = (the number of tokens to be generated) / Latency。</li>
+<li>Throughput：吞吐量，即每秒针对所有请求生成的 token 数。以上三个指标都针对单个请求，而吞吐量是针对所有并发请求的。</li>
+</ul>
+<p>我们将 LLM 应用分为两种：</p>
+<ul>
+<li>在线流式应用：对 TTFT、TPOT、Latency 敏感，需要尽可能快的生成 token。</li>
+<li>离线批量应用：对 Throughput 敏感，需要在单位时间内尽可能多的生成 token。</li>
+</ul>
+<p>而实际在某种应用（如在线流式应用），我们也应该在Latency 和 Throughput 之间进行权衡，提高 Throughtput 可以提高单个 GPU 承担的并发数，从而降低推理成本。</p>
+<h2 id="理解大语言模型推理-understanding-llm-inference">理解大语言模型推理 Understanding LLM inference</h2>
 <p>对于大多数流行的仅解码器型大型语言模型（LLMs）（比如GPT-3），它们通常是基于因果建模目标进行预训练的，基本上是作为下一个单词的预测器。这些LLMs将一系列标记（tokens）作为输入，并自回归地生成后续的标记，直到满足停止条件（比如生成标记的数量限制或停止词列表），或者直到生成特殊的&lt;end&gt;标记来标志生成结束。这个过程包括两个阶段：预填充阶段和解码阶段。</p>
 <p>需要注意的是，标记是模型处理的语言的原子部分。一个标记大约相当于四个英文字符。自然语言中的所有输入在输入模型之前都会转换为标记。</p>
-<h2 id="预填充阶段或处理输入-prefill-phase-or-processing-the-input">预填充阶段或处理输入 Prefill phase or processing the input</h2>
+<h3 id="预填充阶段或处理输入-prefill-phase-or-processing-the-input">预填充阶段或处理输入 Prefill phase or processing the input</h3>
 <p>在预填充阶段，大型语言模型（LLM）处理输入的标记以计算中间状态（键和值），这些中间状态用于生成“第一个”新标记。每个新标记都依赖于所有先前的标记，但因为知道输入的完整范围，在高层次上，这是一个高度并行化的矩阵-矩阵操作。它有效地充分利用了GPU的利用率。</p>
 <p><strong>ChatGPT</strong>：预填充阶段是在模型进行生成之前处理输入的阶段。在这个阶段，模型接收到输入数据（通常是一系列标记或者文本），并对其进行预处理。这个阶段的目的是为了将输入转换为模型可以理解和处理的格式。</p>
 <p>在处理输入时，通常会进行一些操作，比如将文本分割成标记（tokens），对文本进行编码以便模型能够理解，可能还会进行标准化、清洗或其他预处理操作。预处理的目标是将输入数据转换为模型能够接受并有效处理的形式，以便在解码阶段进行后续的生成任务。</p>
-<h2 id="解码阶段或生成输出-decode-phase-or-generating-the-output">解码阶段或生成输出 Decode phase or generating the output</h2>
+<h3 id="解码阶段或生成输出-decode-phase-or-generating-the-output">解码阶段或生成输出 Decode phase or generating the output</h3>
 <p>在解码阶段，大型语言模型（LLM）以自回归的方式逐个生成输出标记，直到达到停止条件为止。每个顺序输出标记都需要了解所有先前迭代的输出状态（键和值）。这类似于一个矩阵-向量操作，与预填充阶段相比，它没有充分利用GPU的计算能力。数据（权重、键、值、激活）从内存传输到GPU的速度决定了延迟，而不是计算的速度。换句话说，这是一个受限于内存的操作。</p>
 <p>本文介绍的许多推理挑战及相应的解决方案都涉及优化这个解码阶段：高效的注意力模块、有效管理键和值等等。</p>
 <p>不同的LLMs可能使用不同的分词器，因此，直接比较它们之间的输出标记可能并不直观。在比较推理吞吐量时，即使两个LLM的每秒输出的标记数量相似，如果它们使用不同的分词器，它们可能并不等价。这是因为相应的标记可能表示不同数量的字符。</p>
 <p><strong>ChatGPT</strong>： 解码阶段是大型语言模型（LLM）根据先前生成的部分序列和中间状态，生成最终输出的阶段。在这个阶段，模型使用已经计算得到的中间状态（keys和values）以及先前生成的标记序列，来自回归地生成接下来的标记。</p>
 <p>在解码阶段，模型根据先前的上下文和当前生成的标记，预测下一个标记，并将其追加到已生成的序列中。这个过程会一直持续，直到达到设定的停止条件，比如生成了特定数量的标记、达到了预先设定的序列长度，或者遇到了特殊的结束标记。</p>
 <p>解码阶段涉及逐步生成输出序列的过程，模型根据先前的部分输出和中间状态，逐步推断和生成接下来的标记，直到生成完整的输出序列为止。</p>
-<h2 id="批处理-batching">批处理 Batching</h2>
+<h3 id="批处理-batching">批处理 Batching</h3>
 <p>批处理是提高GPU利用率和吞吐量的最简单方法。由于多个请求使用相同的模型，权重的内存成本被分摊开来。将较大的批次一次性传输到GPU进行处理将更充分地利用可用的计算资源。</p>
 <p>然而，批处理大小只能增加到一定限度，超过这个限度可能会导致内存溢出。要更好地理解为什么会发生这种情况，需要看一下键值（KV）缓存和LLM内存需求。</p>
 <p>传统的批处理（也称为静态批处理）是不够优化的。这是因为在批处理中的每个请求中，LLM可能会生成不同数量的完成标记，因此它们具有不同的执行时间。结果是，批处理中的所有请求必须等到最长的请求完成，这可能会加剧生成长度存在较大变化时的等待时间。有一些方法可以缓解这个问题，比如在途批处理(<a href="https://github.com/NVIDIA/TensorRT-LLM/issues/155"><strong>in-flight batching</strong></a>)，这将在稍后讨论。</p>
 <p><strong>ChatGPT</strong>：批处理是在深度学习中一种重要的优化技术，用于同时处理多个样本或数据点。在大型语言模型（LLM）的推理过程中，批处理也起着关键的作用。</p>
 <p>通常情况下，批处理允许模型同时处理多个输入序列，从而提高了计算效率。LLMs可以在推理过程中对多个输入序列执行操作，这意味着可以将多个序列的计算合并在一起，利用GPU并行性和计算能力，从而减少总体的推理时间。</p>
 <p>在推理阶段，合理设置批处理大小可以有效地提高模型的性能。较大的批处理大小通常会带来更高的吞吐量和更高效的GPU利用率，但同时也可能增加内存占用和计算复杂度。因此，在选择批处理大小时需要权衡这些因素，以便在保持高性能的同时避免资源浪费。</p>
-<h2 id="kv缓存-key-value-caching">KV缓存 Key-value caching</h2>
+<h3 id="kv缓存-key-value-caching">KV缓存 Key-value caching</h3>
 <p>KV（键值）缓存是解码阶段常见的一种优化技术。在解码阶段，每个时间步生成一个标记，但每个标记都依赖于之前所有标记的键和值张量（包括预填充时计算的输入标记的KV张量，以及直到当前时间步计算的任何新KV张量）。</p>
 <p>为了避免在每个时间步重新计算所有这些张量的值，可以将它们缓存到GPU内存中。在每次迭代中，当新的元素被计算出来时，它们被简单地添加到正在运行的缓存中，以便在下一次迭代中使用。在某些实现中，模型的每一层都可能有一个KV缓存。</p>
 <p>通过使用KV缓存，可以避免重复计算先前时间步骤中生成的中间状态，提高了解码阶段的效率。这样做可以减少计算成本，加快推理速度，并有效利用GPU的内存和计算资源。</p>
@@ -442,18 +454,18 @@
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/mastering-llm-techniques-inference-optimization/1.png" alt="在图示中，可以将KV缓存的作用在预填充（Prefill）和解码（Decode）阶段进行说明。"></p>
 <p><em>图1. 键值缓存机制的示例</em></p>
 <p>在图示中，可以将KV缓存的作用在预填充（Prefill）和解码（Decode）阶段进行说明。</p>
-<h3 id="预填充阶段prefill-phase">预填充阶段（Prefill Phase）</h3>
+<h4 id="预填充阶段prefill-phase">预填充阶段（Prefill Phase）</h4>
 <ul>
 <li><strong>高度并行化的操作：</strong> 在预填充阶段，模型同时计算所有输入标记的KV张量。这是一个高度并行化的操作，可以在GPU上同时进行计算。每个输入标记都经过处理，其对应的键值对被计算并存储在KV缓存中。</li>
 <li><strong>KV张量计算：</strong> 图示中展示了多个输入标记（token），每个标记经过模型处理后产生对应的键（keys）和值（values）张量。这些张量在计算后被缓存，以备后续解码阶段使用。</li>
 </ul>
-<h3 id="解码阶段decode-phase">解码阶段（Decode Phase）</h3>
+<h4 id="解码阶段decode-phase">解码阶段（Decode Phase）</h4>
 <ul>
 <li><strong>自回归生成新标记：</strong> 在解码阶段，模型逐步生成新的输出标记。对于每个时间步，模型根据先前生成的标记、前一个时间步的KV张量以及先前缓存的KV张量来计算新的输出标记。这个过程是自回归的，每个新的标记都依赖于先前的计算结果。</li>
 <li><strong>KV缓存的利用：</strong> 在解码阶段，模型会使用之前缓存的KV张量，这样就避免了在每个时间步重新计算所有先前的中间状态。随着每个时间步的计算，新的KV张量也被生成并添加到缓存中，以备下一个时间步骤的使用。</li>
 </ul>
 <p>这种KV缓存的使用方式有助于减少重复计算，提高了解码阶段的效率。通过缓存已经计算过的中间状态，模型能够更有效地利用GPU的计算资源，加速推理过程。</p>
-<h2 id="大语言模型内存要求-llm-memory-requirement">大语言模型内存要求 LLM memory requirement</h2>
+<h3 id="大语言模型内存要求-llm-memory-requirement">大语言模型内存要求 LLM memory requirement</h3>
 <p>实际上，影响 GPU 大型语言模型（LLM）内存需求的两个主要因素是模型权重和 KV 缓存。</p>
 <ul>
 <li>
@@ -481,7 +493,7 @@
 <li><strong>硬件平台：</strong> 不同的硬件平台对内存的使用方式和限制可能有所不同。LLMs在不同的GPU或TPU上可能表现出不同的内存需求。</li>
 </ol>
 <p>由于这些因素的综合影响，LLMs在推理过程中通常需要大量内存来存储参数、中间状态以及处理输入和输出数据。优化内存使用和管理对于提高推理效率和减少资源消耗非常重要。</p>
-<h1 id="利用模型并行化扩展llms-scaling-up-llms-with-model-parallelization">利用模型并行化扩展LLMs (Scaling up LLMs with model parallelization)</h1>
+<h2 id="利用模型并行化扩展llms-scaling-up-llms-with-model-parallelization">利用模型并行化扩展LLMs (Scaling up LLMs with model parallelization)</h2>
 <p>分布模型到多个GPU上是减少模型权重每个设备内存占用的一种方式。将内存和计算负载分散开来，可以运行更大规模的模型或更大规模的输入批次。模型并行化是训练或推理一个需要比单个设备可用内存更多的模型的必要手段，并且使得针对某些用例的训练时间和推理指标（延迟或吞吐量）合适。根据如何划分模型权重，有几种模型并行化的方式。</p>
 <p>需要注意的是，在提到以下列出的方法时，<strong>数据并行化（data parallelism）通常也是一个经常提及的技术。在数据并行化中，模型的权重被复制到多个设备上，并且输入的（全局）批次被分片到每个设备上形成微批次。通过处理更大批次的数据，它可以减少总体执行时间。但是，在推理过程中它是一个相对不那么相关的训练时间优化技术</strong>。</p>
 <p><strong>ChatGPT</strong>：将大型语言模型（LLMs）进行模型并行化是一种扩展模型以处理更大规模问题的方法。这种技术涉及将模型的不同部分分配到多个设备或处理单元上进行并行处理。</p>
@@ -577,7 +589,7 @@
 <li><strong>序列关联：</strong> 在一些情况下，可能需要在处理过程中对处理结果进行关联或整合，以获得最终的输出结果。</li>
 </ol>
 <p>序列并行常用于处理长序列数据，例如自然语言处理中的长文本、语音识别中的长音频片段等。通过将长序列划分成多个部分，在多个设备上并行处理这些部分可以提高处理效率，并降低处理长序列数据时的计算负担。</p>
-<h2 id="优化注意机制-optimizing-the-attention-mechanism">优化注意机制 Optimizing the attention mechanism</h2>
+<h2 id="优化注意力机制-optimizing-the-attention-mechanism">优化注意力机制 Optimizing the attention mechanism</h2>
 <p>SDPA (scaling dot-product attention)操作将查询和键值对映射到输出，如<a href="https://arxiv.org/pdf/1706.03762.pdf">attention Is All You Need</a>所述。</p>
 <h3 id="多头注意力机制-multi-head-attention">多头注意力机制 Multi-head attention</h3>
 <p>这种方法是对自注意力机制（SDPA）的一种增强，它使得注意力层能够并行执行多次，每次使用不同的、经过学习的投影矩阵作用于Q、K和V矩阵。这样的设计让模型能够同时关注来自不同表示子空间的信息，并应用于不同的位置。这些表示子空间是独立学习的，为模型提供了对输入中不同位置更丰富的理解。</p>
@@ -775,7 +787,7 @@
 <h2 id="总结">总结</h2>
 <p>这篇文章概述了许多优化和高效提供大型语言模型（LLMs）的最流行解决方案，无论是在数据中心还是在个人电脑边缘。其中许多技术都经过优化，并通过 <a href="https://github.com/NVIDIA/TensorRT-LLM/tree/release/0.5.0">NVIDIA TensorRT-LLM</a> 提供支持。TensorRT-LLM 是一个开源库，包括 TensorRT 深度学习编译器、优化内核、预处理和后处理步骤，以及用于 NVIDIA GPU 的多GPU/多节点通信原语，可实现突破性的性能。</p>
 <p><strong>注</strong>： 推理优化相关的解决方案关键字，使用ChatGPT 询问答案，可以作为对比，相对模板化，用来提炼一篇文章知识点是非常有效的</p>
-<h1 id="参考">参考</h1>
+<h2 id="参考">参考</h2>
 <ol>
 <li><a href="https://developer.nvidia.com/blog/mastering-llm-techniques-inference-optimization/">https://developer.nvidia.com/blog/mastering-llm-techniques-inference-optimization/</a></li>
 <li><a href="https://developer.nvidia.com/blog/search-posts/?q=Mastering+LLM+Techniques">https://developer.nvidia.com/blog/search-posts/?q=Mastering+LLM+Techniques</a></li>
@@ -784,6 +796,7 @@
 <li><a href="https://github.com/vllm-project/vllm">https://github.com/vllm-project/vllm</a></li>
 <li><a href="https://github.com/microsoft/DeepSpeed-MII">https://github.com/microsoft/DeepSpeed-MII</a></li>
 <li><a href="https://github.com/NVIDIA/TensorRT-LLM">https://github.com/NVIDIA/TensorRT-LLM</a></li>
+<li><a href="https://github.com/ninehills/llm-inference-benchmark/blob/main/LLM%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96.md">https://github.com/ninehills/llm-inference-benchmark/blob/main/LLM%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96.md</a></li>
 </ol>
     </div>
 
@@ -822,6 +835,19 @@
       
       <nav class="post-nav">
         
+          <a class="prev" href="/post/llm/llm-knowledge-point-all-u-need/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">LLM 知识点 All u need</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
         
           <a class="next" href="/post/llm/a-very-gentle-introduction-to-large-language-models-without-the-hype/">
             <span class="next-text nav-default">译：大型语言模型入门介绍</span>
@@ -953,7 +979,7 @@
     &copy;
     
       2013 -
-    2023
+    2024
     <span class="heart">
       
       <i class="iconfont">

@@ -6,7 +6,18 @@
     <description>Recent content in 技术 on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sat, 30 Dec 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 01 Jan 2024 20:26:12 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>LLM 知识点 All u need</title>
+      <link>https://weedge.github.io/post/llm/llm-knowledge-point-all-u-need/</link>
+      <pubDate>Mon, 01 Jan 2024 20:26:12 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/llm/llm-knowledge-point-all-u-need/</guid>
+      <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/LLM.png&#34; alt=&#34;LLM知识点&#34;&gt;&lt;/p&gt;
+&lt;p&gt;上图给出了学习LLM所需要的知识点。&lt;/p&gt;
+&lt;p&gt;该文主要是梳理LLM基础结构知识点，模型结构大多相同，以llama2模型结构为切入点，梳理相关知识点，以便构建整体知识体系，可方便快速阅读其他论文的改进点；结合参考学习中给出的链接补充基础知识。&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>译：掌握 LLM 技术：推理优化</title>
       <link>https://weedge.github.io/post/llm/mastering-llm-techniques-inference-optimization/</link>
@@ -16,7 +27,7 @@
       <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/mastering-llm-techniques-inference-optimization/0.png&#34; alt=&#34;llm-optimize-deploy&#34;&gt;&lt;/p&gt;
 &lt;p&gt;将transformer层叠以创建大型模型会在各种语言任务中带来更高的准确性、少样本学习能力，甚至接近人类的新兴能力。这些基础模型在训练过程中成本高昂，而在推理过程中（一个经常发生的成本）可能需要大量内存和计算资源。如今最受欢迎的&lt;a href=&#34;https://www.nvidia.com/en-us/glossary/data-science/large-language-models/&#34;&gt;大型语言模型（LLMs）&lt;/a&gt;可以达到数百亿到数千亿个参数的规模，并且根据使用情况，可能需要处理长输入（或上下文），这也会增加成本。&lt;/p&gt;
 &lt;p&gt;本文讨论了LLM推理中最紧迫的挑战，以及一些实用的解决方案。读者应该对&lt;a href=&#34;https://arxiv.org/pdf/1706.03762.pdf&#34;&gt;transformer架构&lt;/a&gt;和注意力机制有基本的理解。理解LLM推理的复杂性至关重要，我们将在接下来的部分进行介绍。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;：上篇译文有对 transformer 有相关的介绍，以及相关编码笔记入门；或者深入学习&lt;a href=&#34;https://web.stanford.edu/class/cs25/prev_years/2023_winter/index.html&#34;&gt;CS25: Transformers United V2&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;：上篇译文有对 transformer 有相关的介绍，以及相关编码笔记入门；或者深入学习&lt;a href=&#34;https://web.stanford.edu/class/cs25/prev_years/2023_winter/index.html&#34;&gt;CS25: Transformers United V2&lt;/a&gt; &lt;a href=&#34;https://www.youtube.com/playlist?list=PLoROMvodv4rNiJRchCzutFw5ItR_Z27CM&#34;&gt;video&lt;/a&gt;&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -292,17 +303,6 @@
 &lt;p&gt;然而，在进行数据库备份或分析查询时，读取偏差会成为一个问题。&lt;/p&gt;
 &lt;p&gt;在数据库备份中，我们需要制作数据库的副本。备份过程中可能会有写请求进来，如果出现读倾斜不一致的情况，可能会导致备份结果不一致。部分数据为旧版本，部分数据为新版本。通过这样的操作，这种不一致的问题可能会永久存在。&lt;/p&gt;
 &lt;p&gt;我们需要在分析查询中扫描大型数据库并定期检查数据损坏。读取偏差可能会导致搜索和检查不一致 - 通常可能会产生不一致的结果并引发有关数据损坏的错误警报。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>译：Uber是如何解决数据一致性问题的？</title>
-      <link>https://weedge.github.io/post/oneday/how-did-uber-solve-data-consistency-problem/</link>
-      <pubDate>Wed, 16 Aug 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/oneday/how-did-uber-solve-data-consistency-problem/</guid>
-      <description>&lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/how-did-uber-solv-data-consistency-problem/1.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
-&lt;p&gt;Uber 的请求流程相当复杂，从上图可以看出，他们使用 Spanner 来存储大量数据。Spanner 是一种完全托管的关键任务关系数据库服务，可提供全球范围内的事务一致性、自动同步复制以实现高可用性。&lt;/p&gt;</description>
     </item>
     
   </channel>
