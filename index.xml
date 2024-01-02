@@ -138,13 +138,16 @@ $$y = xA^T + b$$&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/pdf/2002.05202.pdf&#34;&gt;GLU Variants Improve Transformer&lt;/a&gt; FFN 中激活函数SwiGLU/SiLU&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/1512.00567&#34;&gt;Rethinking the Inception Architecture for Computer Vision&lt;/a&gt; 交叉熵 cross_entropy 损失函数的计算公式：
-$$L = -\frac{1}{N}\sum_{i=1}^{N}y_i\log(p_i)$$
+$$L = -\frac{1}{N}\sum_{i=1}^{N}t_i\log(y_i)$$
 &lt;ul&gt;
-&lt;li&gt;$y_i$ 表示真实值&lt;/li&gt;
-&lt;li&gt;$p_i$ 表示预测值&lt;/li&gt;
-&lt;li&gt;目的是获取输出概率（P）并测量与真值的距离&lt;/li&gt;
-&lt;li&gt;使用softmax函数或者sigmoid函数将网络的输出转换为概率&lt;/li&gt;
+&lt;li&gt;$t_i$ 表示真实值&lt;/li&gt;
+&lt;li&gt;$y_i$ 表示预测值&lt;/li&gt;
+&lt;li&gt;目的是获取输出概率（$y$）并测量与真值的误差&lt;/li&gt;
+&lt;li&gt;一般 $t$ 为one-hot编码, 交叉熵误差值是由正确解标签所对应的输出结果决定&lt;/li&gt;
+&lt;li&gt;使用softmax函数(多类问题)或者sigmoid函数(二类问题)将网络的输出转换为概率&lt;/li&gt;
 &lt;li&gt;PyTorch中它自带的命令torch.nn.functional.cross_entropy已经将转换概率值的操作整合了进去，所以不需要额外进行转换概率值的操作&lt;/li&gt;
+&lt;li&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/llm-knowledge-point-all-u-need/1.png&#34; alt=&#34;image-20240102223236939&#34;&gt;&lt;/li&gt;
+&lt;li&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/llm-knowledge-point-all-u-need/2.png&#34; alt=&#34;image-20240102223210431&#34;&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Backpropagation&#34;&gt;backpropagation&lt;/a&gt;
