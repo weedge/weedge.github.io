@@ -6,18 +6,7 @@
     <description>Recent content in inference optimization on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 01 Jan 2024 20:26:12 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/inference-optimization/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>LLM 知识点 All u need</title>
-      <link>https://weedge.github.io/post/llm/llm-knowledge-point-all-u-need/</link>
-      <pubDate>Mon, 01 Jan 2024 20:26:12 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/llm/llm-knowledge-point-all-u-need/</guid>
-      <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/LLM.png&#34; alt=&#34;LLM知识点&#34;&gt;&lt;/p&gt;
-&lt;p&gt;上图给出了学习LLM所需要的知识点。&lt;/p&gt;
-&lt;p&gt;该文主要是梳理LLM基础结构知识点，模型结构大多相同，以llama2模型结构为切入点，梳理相关知识点，以便构建整体知识体系，可方便快速阅读其他论文的改进点；结合参考学习中给出的链接补充基础知识。&lt;/p&gt;</description>
-    </item>
-    
+    <lastBuildDate>Sat, 30 Dec 2023 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/inference-optimization/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>译：掌握 LLM 技术：推理优化</title>
       <link>https://weedge.github.io/post/llm/mastering-llm-techniques-inference-optimization/</link>

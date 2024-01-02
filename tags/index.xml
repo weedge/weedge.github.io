@@ -8,20 +8,29 @@
     <language>zh-cn</language>
     <lastBuildDate>Mon, 01 Jan 2024 20:26:12 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>inference optimization</title>
-      <link>https://weedge.github.io/tags/inference-optimization/</link>
-      <pubDate>Mon, 01 Jan 2024 20:26:12 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/inference-optimization/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>LLM</title>
       <link>https://weedge.github.io/tags/llm/</link>
       <pubDate>Mon, 01 Jan 2024 20:26:12 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/llm/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>model</title>
+      <link>https://weedge.github.io/tags/model/</link>
+      <pubDate>Mon, 01 Jan 2024 20:26:12 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/model/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>inference optimization</title>
+      <link>https://weedge.github.io/tags/inference-optimization/</link>
+      <pubDate>Sat, 30 Dec 2023 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/inference-optimization/</guid>
       <description></description>
     </item>
     
@@ -175,15 +184,6 @@
       <pubDate>Mon, 25 Sep 2023 15:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/hierarchical-navigable-small-world/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>hnsw</title>
-      <link>https://weedge.github.io/tags/hnsw/</link>
-      <pubDate>Mon, 25 Sep 2023 15:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/hnsw/</guid>
       <description></description>
     </item>
     
