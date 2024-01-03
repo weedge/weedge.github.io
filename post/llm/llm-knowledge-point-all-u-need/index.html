@@ -70,7 +70,7 @@
 <meta itemprop="name" content="LLM 知识点 All u need">
 <meta itemprop="description" content="LLM所需要了解的知识点"><meta itemprop="datePublished" content="2024-01-01T20:26:12+08:00" />
 <meta itemprop="dateModified" content="2024-01-01T20:26:12+08:00" />
-<meta itemprop="wordCount" content="2489">
+<meta itemprop="wordCount" content="2759">
 <meta itemprop="keywords" content="LLM,model," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="LLM 知识点 All u need"/>
 <meta name="twitter:description" content="LLM所需要了解的知识点"/>
@@ -407,7 +407,8 @@ $$y = xA^T + b$$</p>
 </ul>
 <p>$$ \begin{align} \begin{split} &amp; \bar{a}i = \frac{a_i}{\text{RMS}(\mathbf{a})} g_i, \quad \text{where}~~ \text{RMS}(\mathbf{a}) = \sqrt{\frac{1}{n} \sum{i=1}^{n} a_i^2}. \end{split}\nonumber \end{align} $$</p>
 <ul>
-<li><a href="https://arxiv.org/pdf/1706.03762.pdf">attention is all u need</a>, transformer 注意力机制
+<li>
+<p><a href="https://arxiv.org/pdf/1706.03762.pdf">attention is all u need</a>, transformer 注意力机制</p>
 <ul>
 <li>MHA: multihead attention -&gt; MQA: Multi-Query Attention -&gt; GQA: Grouped-Query Attention(llama2-34B/70B)</li>
 <li><a href="https://arxiv.org/abs/1911.02150">Fast Transformer Decoding: One Write-Head is All You Need</a> MQA: Multi-Query Attention</li>
@@ -418,27 +419,35 @@ $$y = xA^T + b$$</p>
 <li>self-attention 自注意力机制用于计算序列中当前token关注与其他token的联系，就是一个序列内的token，互相看其他token对自己的影响力有多大</li>
 </ul>
 </li>
-<li><a href="https://arxiv.org/abs/2104.09864">Enhanced Transformer with Rotary Position Embedding</a> RoPE relative positional embeddings
+<li>
+<p><a href="https://arxiv.org/abs/2104.09864">Enhanced Transformer with Rotary Position Embedding</a> RoPE relative positional embeddings</p>
 <ul>
 <li><a href="https://github.com/ZhuiyiTechnology/roformer">https://github.com/ZhuiyiTechnology/roformer</a></li>
 </ul>
 </li>
-<li><a href="https://en.wikipedia.org/wiki/Residual_neural_network">residual connection</a> 残差连接（residual connection）是深度神经网络中的一种常见技术，它的作用是解决梯度消失和梯度爆炸问题，同时也可以帮助模型更快地收敛。
+<li>
+<p><a href="https://en.wikipedia.org/wiki/Residual_neural_network">residual connection</a> 残差连接（residual connection）是深度神经网络中的一种常见技术，它的作用是解决梯度消失和梯度爆炸问题，同时也可以帮助模型更快地收敛。</p>
 <ul>
 <li>在传统的神经网络中，每个层的输出都是通过对前一层输出的非线性变换得到的。但是，当网络的深度增加时，前一层的输出可能会被过度压缩或拉伸，导致信息丢失或重复。这种情况下，网络的性能可能会受到影响，同时也会出现梯度消失或梯度爆炸的问题。</li>
 <li>残差连接通过在每个层的输出与输入之间添加一个跨层连接来解决这个问题。更具体地说，残差连接将前一层的输出直接添加到当前层的输出中，从而提供了一种绕过非线性变换的路径。这样，网络就可以学习到在信息压缩或拉伸后保留重要信息的方法，同时也减轻了梯度消失或梯度爆炸的问题。</li>
-<li>残差网络（ResNet）  <a href="https://zh-v2.d2l.ai/chapter_convolutional-modern/resnet.html">https://zh-v2.d2l.ai/chapter_convolutional-modern/resnet.html</a></li>
 </ul>
 </li>
-<li><a href="https://arxiv.org/abs/1207.0580">Improving neural networks by preventing co-adaptation of feature detectors</a> dropout 解决过拟合
+<li>
+<p><a href="https://arxiv.org/abs/1207.0580">Improving neural networks by preventing co-adaptation of feature detectors</a> dropout 解决过拟合</p>
 <ul>
 <li>训练神经网络的时候经常会遇到过拟合的问题，过拟合具体表现在：模型在训练数据上损失函数较小，预测准确率较高；但是在测试数据上损失函数比较大，预测准确率较低</li>
 <li>Dropout说的简单一点就是：我们在前向传播的时候，让某个神经元的激活值以一定的概率p停止工作，这样可以使模型泛化性更强，因为它不会太依赖某些局部的特征，</li>
 </ul>
 </li>
-<li><a href="https://arxiv.org/pdf/2002.05202.pdf">GLU Variants Improve Transformer</a> FFN 中激活函数SwiGLU/SiLU</li>
-<li><a href="https://arxiv.org/abs/1512.00567">Rethinking the Inception Architecture for Computer Vision</a> 交叉熵 cross_entropy 损失函数的计算公式：
-$$L = -\frac{1}{N}\sum_{i=1}^{N}t_i\log(y_i)$$
+<li>
+<p><a href="https://arxiv.org/pdf/2002.05202.pdf">GLU Variants Improve Transformer</a> FFN 中激活函数SwiGLU/SiLU</p>
+<ul>
+<li>Transformers库中支持的激活函数：https://github.com/huggingface/transformers/blob/v4.36.2/src/transformers/activations.py#L200-L221</li>
+</ul>
+</li>
+<li>
+<p><a href="https://arxiv.org/abs/1512.00567">Rethinking the Inception Architecture for Computer Vision</a> 交叉熵 cross_entropy 损失函数的计算公式：
+$$L = -\frac{1}{N}\sum_{i=1}^{N}t_i\log(y_i)$$</p>
 <ul>
 <li>$t_i$ 表示真实值</li>
 <li>$y_i$ 表示预测值</li>
@@ -450,14 +459,16 @@ $$L = -\frac{1}{N}\sum_{i=1}^{N}t_i\log(y_i)$$
 <li><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/llm-knowledge-point-all-u-need/2.png" alt="image-20240102223210431"></li>
 </ul>
 </li>
-<li><a href="https://en.wikipedia.org/wiki/Backpropagation">backpropagation</a>
+<li>
+<p><a href="https://en.wikipedia.org/wiki/Backpropagation">backpropagation</a></p>
 <ul>
 <li><a href="https://www.youtube.com/watch?v=Ilg3gGewQ5U">3blue1brown-nn-bp-video</a></li>
 </ul>
 </li>
-<li><a href="https://arxiv.org/abs/1711.05101">Decoupled Weight Decay Regularization</a> 优化器 AdamW: Adam + Weight Decay（权重衰减）;
+<li>
+<p><a href="https://arxiv.org/abs/1711.05101">Decoupled Weight Decay Regularization</a> 优化器 AdamW: Adam + Weight Decay（权重衰减,抑制权重变大）;</p>
 <ul>
-<li>learning rate和weight decay 参数调整，固定一个调整另一个</li>
+<li>learning rate (学习率)和weight decay (权重衰减) 参数调整，固定一个调整另一个</li>
 <li>在训练llama2模型中，
 <ul>
 <li>$β_1 = 0.9, β_2 = 0.95, eps = 10^{-5}$</li>
@@ -465,9 +476,18 @@ $$L = -\frac{1}{N}\sum_{i=1}^{N}t_i\log(y_i)$$
 <li>learning rate: 3e-4(7B/13B), 1.5e-4(34B/70B)</li>
 </ul>
 </li>
+<li>学习率调度器：
+<ul>
+<li><a href="https://arxiv.org/abs/1608.03983">SGDR: Stochastic Gradient Descent with Warm Restarts</a> 余弦调度器。不想在一开始就太大地降低学习率，而且可能希望最终能用非常小的学习率来“改进”解决方案 ；</li>
+<li>使用预热期，在此期间学习率将增加至初始最大值，然后冷却直到优化过程结束(类似tcp中流量控制机制想法)；预热可以应用于任何调度器；</li>
+<li><a href="https://zh-v2.d2l.ai/chapter_optimization/lr-scheduler.html#id8">https://zh-v2.d2l.ai/chapter_optimization/lr-scheduler.html#id8</a></li>
 </ul>
 </li>
-<li><a href="https://arxiv.org/pdf/2204.02311.pdf">PaLM: Scaling Language Modeling with Pathways</a> 模型训练效率的评估工作 比如 MFU</li>
+</ul>
+</li>
+<li>
+<p><a href="https://arxiv.org/pdf/2204.02311.pdf">PaLM: Scaling Language Modeling with Pathways</a> 模型训练效率的评估工作 比如 MFU</p>
+</li>
 </ul>
 <h3 id="预训练基础模型简单概括-pre-training-models">预训练基础模型简单概括 Pre-training models</h3>
 <ul>
@@ -485,12 +505,12 @@ $$L = -\frac{1}{N}\sum_{i=1}^{N}t_i\log(y_i)$$
 </ul>
 <h2 id="参考学习">参考学习</h2>
 <ol>
-<li>《深度学习入门基于Python的理论与实现》(通俗易懂)</li>
+<li><a href="https://github.com/weedge/learn/blob/main/llm/%E3%80%8A%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E5%85%A5%E9%97%A8%EF%BC%9A%E5%9F%BA%E4%BA%8EPython%E7%9A%84%E7%90%86%E8%AE%BA%E4%B8%8E%E5%AE%9E%E7%8E%B0%E3%80%8B%E9%AB%98%E6%B8%85%E4%B8%AD%E6%96%87%E7%89%88.pdf">《深度学习入门基于Python的理论与实现》</a>(前2-6章相关基础知识解释,通俗易懂)</li>
 <li><a href="https://vickiboykis.com/what_are_embeddings/">https://vickiboykis.com/what_are_embeddings/</a></li>
 <li><a href="http://neuralnetworksanddeeplearning.com/">http://neuralnetworksanddeeplearning.com/</a></li>
 <li><a href="https://www.3blue1brown.com/topics/neural-networks">https://www.3blue1brown.com/topics/neural-networks</a></li>
-<li><a href="https://karpathy.ai/zero-to-hero.html">https://karpathy.ai/zero-to-hero.html</a> | <a href="https://karpathy.github.io/neuralnets/">Andrej Karpathy’s blog “Hacker’s guide to Neural Networks”</a></li>
-<li><a href="https://courses.d2l.ai/zh-v2/">https://courses.d2l.ai/zh-v2/</a> (看沐神视频学)</li>
+<li><a href="https://karpathy.ai/zero-to-hero.html">https://karpathy.ai/zero-to-hero.html</a> (<a href="https://github.com/karpathy/nanoGPT">nanoGPT</a>,<a href="https://github.com/karpathy/llama2.c">llama2.c</a>)| <a href="https://karpathy.github.io/neuralnets/">Andrej Karpathy’s blog “Hacker’s guide to Neural Networks”</a></li>
+<li><a href="https://courses.d2l.ai/zh-v2/">https://courses.d2l.ai/zh-v2/</a> (看沐神视频学+代码运行)</li>
 <li><a href="https://github.com/mlabonne/llm-course">https://github.com/mlabonne/llm-course</a></li>
 </ol>
 <h2 id="llms">LLMs</h2>
