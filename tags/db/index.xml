@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>db on 时间飘过</title>
+    <link>https://weedge.github.io/tags/db/</link>
+    <description>Recent content in db on 时间飘过</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Tue, 09 Jan 2024 11:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/db/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>[译]构建一个简单的数据库</title>
+      <link>https://weedge.github.io/post/db_tutorial_zh/</link>
+      <pubDate>Tue, 09 Jan 2024 11:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/db_tutorial_zh/</guid>
+      <description>&lt;p&gt;用 C 从头开始编写 SQLite 克隆；&lt;/p&gt;
+&lt;p&gt;注：用chatGPT翻译+人工稍微整理下，耗时一个多小时整理完成，使用这个简单的db from scratch试下效果, 代码简单；现在高中甚至初中生有在学这个。&lt;/p&gt;
+&lt;p&gt;原文地址： &lt;a href=&#34;https://cstack.github.io/db_tutorial/&#34;&gt;https://cstack.github.io/db_tutorial/&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;数据库如何工作&#34;&gt;数据库如何工作？&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;数据以什么格式保存？（在内存和磁盘上）&lt;/li&gt;
+&lt;li&gt;它什么时候从内存移动到磁盘？&lt;/li&gt;
+&lt;li&gt;为什么一张表只能有一个主键？&lt;/li&gt;
+&lt;li&gt;回滚事务如何进行？&lt;/li&gt;
+&lt;li&gt;索引是如何格式化的？&lt;/li&gt;
+&lt;li&gt;全表扫描何时以及如何发生？&lt;/li&gt;
+&lt;li&gt;准备好的语句以什么格式保存？&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;简而言之，数据库是如何&lt;strong&gt;工作的&lt;/strong&gt;？&lt;/p&gt;
+&lt;p&gt;为了理解，我正在用 C 从头开始构建&lt;a href=&#34;https://www.sqlite.org/arch.html&#34;&gt;sqlite&lt;/a&gt;的克隆，并且我将记录我的过程。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;“我无法创造的东西，我就不明白。&lt;em&gt;What I cannot create, I do not understand&lt;/em&gt;” ——&lt;a href=&#34;https://en.m.wikiquote.org/wiki/Richard_Feynman&#34;&gt;理查德·费曼&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;a href=&#34;https://cstack.github.io/db_tutorial/assets/images/arch2.gif&#34;&gt;&lt;img src=&#34;https://cstack.github.io/db_tutorial/assets/images/arch2.gif&#34; alt=&#34;sqlite 架构（https://www.sqlite.org/arch.html）&#34;&gt;&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

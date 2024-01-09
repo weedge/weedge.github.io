@@ -300,6 +300,58 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/db_tutorial_zh/">[译]构建一个简单的数据库</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2024-01-09" class="post-time">
+        2024-01-09
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <p>用 C 从头开始编写 SQLite 克隆；</p>
+<p>注：用chatGPT翻译+人工稍微整理下，耗时一个多小时整理完成，使用这个简单的db from scratch试下效果, 代码简单；现在高中甚至初中生有在学这个。</p>
+<p>原文地址： <a href="https://cstack.github.io/db_tutorial/">https://cstack.github.io/db_tutorial/</a></p>
+<h2 id="数据库如何工作">数据库如何工作？</h2>
+<ul>
+<li>数据以什么格式保存？（在内存和磁盘上）</li>
+<li>它什么时候从内存移动到磁盘？</li>
+<li>为什么一张表只能有一个主键？</li>
+<li>回滚事务如何进行？</li>
+<li>索引是如何格式化的？</li>
+<li>全表扫描何时以及如何发生？</li>
+<li>准备好的语句以什么格式保存？</li>
+</ul>
+<p>简而言之，数据库是如何<strong>工作的</strong>？</p>
+<p>为了理解，我正在用 C 从头开始构建<a href="https://www.sqlite.org/arch.html">sqlite</a>的克隆，并且我将记录我的过程。</p>
+<blockquote>
+<p>“我无法创造的东西，我就不明白。<em>What I cannot create, I do not understand</em>” ——<a href="https://en.m.wikiquote.org/wiki/Richard_Feynman">理查德·费曼</a></p>
+</blockquote>
+<p><a href="https://cstack.github.io/db_tutorial/assets/images/arch2.gif"><img src="https://cstack.github.io/db_tutorial/assets/images/arch2.gif" alt="sqlite 架构（https://www.sqlite.org/arch.html）"></a></p>
+    </div>
+    <div class="read-more">
+      <a href="/post/db_tutorial_zh/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/llm/llm-knowledge-point-all-u-need/">LLM 知识点 All u need</a>
     </h1>
     
@@ -514,44 +566,6 @@
     </div>
     <div class="read-more">
       <a href="/post/gpu/mastering-string-transformations-in-rapids-libcudf/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/gpu/3.accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/">译：加速向量搜索：RAPIDS RAFT IVF-Flat 近似算法</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-11-03" class="post-time">
-        2023-11-03
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/1.png" alt="img"></p>
-<p>执行详尽的精确 k 最近邻 (kNN) 搜索，也称为<em>暴力搜索(brute-force search)</em>，成本高昂，并且它不能很好地扩展到更大的数据集。在向量搜索期间，暴力搜索需要计算每个查询向量和数据库向量之间的距离。对于常用的欧几里德和余弦距离，计算任务等同于大型矩阵乘法。</p>
-<p>虽然 GPU 在执行矩阵乘法方面效率很高，但随着数据量的增加，计算成本变得令人望而却步。然而，许多应用程序不需要精确的结果，而是可以为了更快的搜索而牺牲一些准确性。当不需要精确的结果时，近似最近邻 (ANN) 方法通常可以减少搜索期间必须执行的距离计算的数量。</p>
-<p>本文主要介绍了 IVF-Flat，这是 NVIDIA <a href="https://developer.nvidia.cn/zh-cn/blog/reusable-computational-patterns-for-machine-learning-and-data-analytics-with-rapids-raft/">RAPIDS RAFT</a> 中的一种方法。IVF-Flat 方法使用原始（即Flat）向量的倒排索引 (IVF)。此算法提供了简单的调整手段，以减少整体搜索空间并在准确性和速度之间进行权衡。</p>
-<p>为了帮助了解如何使用 IVF-Flat，我们讨论了该算法的工作原理，并演示了<a href="https://docs.rapids.ai/api/raft/stable/pylibraft_api/neighbors/#ivf-flat">Python</a>和<a href="https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_flat/">C++ APIs</a>我们介绍了索引构建的设置参数，并提供了如何配置 GPU 加速的 IVF-Flat搜索的技巧。这些步骤也可以在示例中遵循<a href="https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/notebooks/ivf_flat_example.ipynb">Python notebook</a>和<a href="https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/cpp/template/src/ivf_flat_example.cu">C++ project</a>.最后，我们演示了 GPU 加速的向量搜索比 CPU 搜索快一个数量级。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/gpu/3.accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>

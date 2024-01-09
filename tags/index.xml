@@ -6,7 +6,16 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 01 Jan 2024 20:26:12 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 09 Jan 2024 11:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>db</title>
+      <link>https://weedge.github.io/tags/db/</link>
+      <pubDate>Tue, 09 Jan 2024 11:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/db/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>LLM</title>
       <link>https://weedge.github.io/tags/llm/</link>
@@ -175,15 +184,6 @@
       <pubDate>Tue, 26 Sep 2023 21:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/random-projections/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>hierarchical navigable small world</title>
-      <link>https://weedge.github.io/tags/hierarchical-navigable-small-world/</link>
-      <pubDate>Mon, 25 Sep 2023 15:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/hierarchical-navigable-small-world/</guid>
       <description></description>
     </item>
     

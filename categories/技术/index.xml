@@ -6,7 +6,34 @@
     <description>Recent content in 技术 on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 01 Jan 2024 20:26:12 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 09 Jan 2024 11:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>[译]构建一个简单的数据库</title>
+      <link>https://weedge.github.io/post/db_tutorial_zh/</link>
+      <pubDate>Tue, 09 Jan 2024 11:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/db_tutorial_zh/</guid>
+      <description>&lt;p&gt;用 C 从头开始编写 SQLite 克隆；&lt;/p&gt;
+&lt;p&gt;注：用chatGPT翻译+人工稍微整理下，耗时一个多小时整理完成，使用这个简单的db from scratch试下效果, 代码简单；现在高中甚至初中生有在学这个。&lt;/p&gt;
+&lt;p&gt;原文地址： &lt;a href=&#34;https://cstack.github.io/db_tutorial/&#34;&gt;https://cstack.github.io/db_tutorial/&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;数据库如何工作&#34;&gt;数据库如何工作？&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;数据以什么格式保存？（在内存和磁盘上）&lt;/li&gt;
+&lt;li&gt;它什么时候从内存移动到磁盘？&lt;/li&gt;
+&lt;li&gt;为什么一张表只能有一个主键？&lt;/li&gt;
+&lt;li&gt;回滚事务如何进行？&lt;/li&gt;
+&lt;li&gt;索引是如何格式化的？&lt;/li&gt;
+&lt;li&gt;全表扫描何时以及如何发生？&lt;/li&gt;
+&lt;li&gt;准备好的语句以什么格式保存？&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;简而言之，数据库是如何&lt;strong&gt;工作的&lt;/strong&gt;？&lt;/p&gt;
+&lt;p&gt;为了理解，我正在用 C 从头开始构建&lt;a href=&#34;https://www.sqlite.org/arch.html&#34;&gt;sqlite&lt;/a&gt;的克隆，并且我将记录我的过程。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;“我无法创造的东西，我就不明白。&lt;em&gt;What I cannot create, I do not understand&lt;/em&gt;” ——&lt;a href=&#34;https://en.m.wikiquote.org/wiki/Richard_Feynman&#34;&gt;理查德·费曼&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;a href=&#34;https://cstack.github.io/db_tutorial/assets/images/arch2.gif&#34;&gt;&lt;img src=&#34;https://cstack.github.io/db_tutorial/assets/images/arch2.gif&#34; alt=&#34;sqlite 架构（https://www.sqlite.org/arch.html）&#34;&gt;&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>LLM 知识点 All u need</title>
       <link>https://weedge.github.io/post/llm/llm-knowledge-point-all-u-need/</link>
@@ -288,21 +315,6 @@
       <description>&lt;h1 id=&#34;章节一-manas高性能定制搜索系统&#34;&gt;章节一 Manas：高性能定制搜索系统&lt;/h1&gt;
 &lt;p&gt;Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出 &lt;a href=&#34;https://blog.pinterest.com/en/search-and-lens-move-front-and-center&#34;&gt;Search 和 Lens&lt;/a&gt;，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。&lt;/p&gt;
 &lt;p&gt;为了继续扩展搜索，系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着业务发展和引入新的发现功能，遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C++ 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>译：如何避免事务期间读取不一致</title>
-      <link>https://weedge.github.io/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/</link>
-      <pubDate>Sat, 26 Aug 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/oneday/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/</guid>
-      <description>&lt;p&gt;想象一下，当您尝试将 100 美元从账户 A 转账到账户 B，并且两个账户都在同一家银行时。启动传输后，您刷新屏幕。然而，当您刷新屏幕时，您的总余额就会下降——那 100 美元似乎凭空消失了。您看到帐户 A 少了 100 美元。然而，B账户并没有多出100美元。然后，您刷新屏幕几次，可以看到帐户 B 获得了 100 美元。&lt;/p&gt;
-&lt;p&gt;您在事务期间遇到的这个问题称为读取偏差。当您在不幸运的时间（写入交易期间和之后）读取交易时，就会发生异常。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://edward-huang.com/images/distributed-system-question-how-to-avoid-read-inconsistency-during-a-transaction/Distributed%20System%20Question_%20How%20to%20Avoid%20Read%20Inconsistency%20during%20a%20Transaction-%20bank%20transfer.png&#34; alt=&#34;银行转账时序图&#34;&gt;&lt;/p&gt;
-&lt;p&gt;这可能会带来不好的用户体验，但如果转账交易成功后刷新页面，这不会造成任何问题。&lt;/p&gt;
-&lt;p&gt;然而，在进行数据库备份或分析查询时，读取偏差会成为一个问题。&lt;/p&gt;
-&lt;p&gt;在数据库备份中，我们需要制作数据库的副本。备份过程中可能会有写请求进来，如果出现读倾斜不一致的情况，可能会导致备份结果不一致。部分数据为旧版本，部分数据为新版本。通过这样的操作，这种不一致的问题可能会永久存在。&lt;/p&gt;
-&lt;p&gt;我们需要在分析查询中扫描大型数据库并定期检查数据损坏。读取偏差可能会导致搜索和检查不一致 - 通常可能会产生不一致的结果并引发有关数据损坏的错误警报。&lt;/p&gt;</description>
     </item>
     
   </channel>
