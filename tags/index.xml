@@ -6,13 +6,22 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 09 Jan 2024 11:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 10 Jan 2024 10:58:28 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>db</title>
       <link>https://weedge.github.io/tags/db/</link>
-      <pubDate>Tue, 09 Jan 2024 11:26:23 +0800</pubDate>
+      <pubDate>Wed, 10 Jan 2024 10:58:28 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/db/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>golang</title>
+      <link>https://weedge.github.io/tags/golang/</link>
+      <pubDate>Wed, 10 Jan 2024 10:58:28 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/golang/</guid>
       <description></description>
     </item>
     
@@ -175,15 +184,6 @@
       <pubDate>Tue, 26 Sep 2023 23:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/lsh/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>random projections</title>
-      <link>https://weedge.github.io/tags/random-projections/</link>
-      <pubDate>Tue, 26 Sep 2023 21:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/random-projections/</guid>
       <description></description>
     </item>
     

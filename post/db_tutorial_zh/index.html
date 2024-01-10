@@ -114,7 +114,7 @@
 
 "><meta itemprop="datePublished" content="2024-01-09T11:26:23+08:00" />
 <meta itemprop="dateModified" content="2024-01-09T11:26:23+08:00" />
-<meta itemprop="wordCount" content="32036">
+<meta itemprop="wordCount" content="32285">
 <meta itemprop="keywords" content="db," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="[译]构建一个简单的数据库"/>
 <meta name="twitter:description" content="用 C 从头开始编写 SQLite 克隆；
@@ -862,9 +862,7 @@ db &gt; .exit
 <span class="o">+</span><span class="p">}</span>
 <span class="o">+</span>
  <span class="kt">int</span> <span class="n">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
-   <span class="n">InputBuffer</span>
-
-<span class="o">*</span> <span class="n">input_buffer</span> <span class="o">=</span> <span class="n">new_input_buffer</span><span class="p">();</span>
+   <span class="n">InputBuffer</span><span class="o">*</span> <span class="n">input_buffer</span> <span class="o">=</span> <span class="n">new_input_buffer</span><span class="p">();</span>
    <span class="k">while</span> <span class="p">(</span><span class="nb">true</span><span class="p">)</span> <span class="p">{</span>
      <span class="n">print_prompt</span><span class="p">();</span>
      <span class="n">read_input</span><span class="p">(</span><span class="n">input_buffer</span><span class="p">);</span>
@@ -1547,45 +1545,47 @@ Finished in 0.0188 seconds <span class="o">(</span>files took 0.08516 seconds to
 Finished in 0.02284 seconds (files took 0.116 seconds to load)
 4 examples, 0 failures
 </code></pre></div><p>在这里，我们也可以处理一个额外的错误情况：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff">it &#39;prints an error message if id is negative&#39; do
-  script = [
-    &#34;insert -1 cstack foo@bar.com&#34;,
-    &#34;select&#34;,
-    &#34;.exit&#34;,
-  ]
-  result = run_script(script)
-  expect(result).to match_array([
-    &#34;db &gt; ID must be positive.&#34;,
-    &#34;db &gt; Executed.&#34;,
-    &#34;db &gt; &#34;,
-  ])
-end
- enum PrepareResult_t {
-   PREPARE_SUCCESS,
-<span class="gi">+  PREPARE_NEGATIVE_ID,
-</span><span class="gi"></span>   PREPARE_STRING_TOO_LONG,
-   PREPARE_SYNTAX_ERROR,
-   PREPARE_UNRECOGNIZED_STATEMENT
-<span class="gu">@@ -148,9 +147,6 @@ PrepareResult prepare_insert(InputBuffer* input_buffer, Statement* statement) {
-</span><span class="gu"></span>   }
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="n">it</span> <span class="s1">&#39;prints an error message if id is negative&#39;</span> <span class="k">do</span>
+  <span class="n">script</span> <span class="o">=</span> <span class="o">[</span>
+    <span class="s2">&#34;insert -1 cstack foo@bar.com&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;select&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;.exit&#34;</span><span class="p">,</span>
+  <span class="o">]</span>
+  <span class="n">result</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
+  <span class="n">expect</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">match_array</span><span class="p">(</span><span class="o">[</span>
+    <span class="s2">&#34;db &gt; ID must be positive.&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;db &gt; Executed.&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;db &gt; &#34;</span><span class="p">,</span>
+  <span class="o">]</span><span class="p">)</span>
+<span class="k">end</span>
 
-   int id = atoi(id_string);
-<span class="gi">+  if (id &lt; 0) {
-</span><span class="gi">+    return PREPARE_NEGATIVE_ID;
-</span><span class="gi">+  }
-</span><span class="gi"></span>   if (strlen(username) &gt; COLUMN_USERNAME_SIZE) {
-     return PREPARE_STRING_TOO_LONG;
-   }
-<span class="gu">@@ -230,9 +226,6 @@ int main(int argc, char* argv[]) {
-</span><span class="gu"></span>     switch (prepare_statement(input_buffer, &amp;statement)) {
-       case (PREPARE_SUCCESS):
-         break;
-<span class="gi">+      case (PREPARE_NEGATIVE_ID):
-</span><span class="gi">+        printf(&#34;ID must be positive.\n&#34;);
-</span><span class="gi">+        continue;
-</span><span class="gi"></span>       case (PREPARE_STRING_TOO_LONG):
-         printf(&#34;String is too long.\n&#34;);
-         continue;
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c">
+ <span class="k">enum</span> <span class="n">PrepareResult_t</span> <span class="p">{</span>
+   <span class="n">PREPARE_SUCCESS</span><span class="p">,</span>
+<span class="o">+</span>  <span class="n">PREPARE_NEGATIVE_ID</span><span class="p">,</span>
+   <span class="n">PREPARE_STRING_TOO_LONG</span><span class="p">,</span>
+   <span class="n">PREPARE_SYNTAX_ERROR</span><span class="p">,</span>
+   <span class="n">PREPARE_UNRECOGNIZED_STATEMENT</span>
+<span class="err">@@</span> <span class="o">-</span><span class="mi">148</span><span class="p">,</span><span class="mi">9</span> <span class="o">+</span><span class="mi">147</span><span class="p">,</span><span class="mi">6</span> <span class="err">@@</span> <span class="n">PrepareResult</span> <span class="n">prepare_insert</span><span class="p">(</span><span class="n">InputBuffer</span><span class="o">*</span> <span class="n">input_buffer</span><span class="p">,</span> <span class="n">Statement</span><span class="o">*</span> <span class="n">statement</span><span class="p">)</span> <span class="p">{</span>
+   <span class="p">}</span>
+
+   <span class="kt">int</span> <span class="n">id</span> <span class="o">=</span> <span class="n">atoi</span><span class="p">(</span><span class="n">id_string</span><span class="p">);</span>
+<span class="o">+</span>  <span class="k">if</span> <span class="p">(</span><span class="n">id</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+<span class="o">+</span>    <span class="k">return</span> <span class="n">PREPARE_NEGATIVE_ID</span><span class="p">;</span>
+<span class="o">+</span>  <span class="p">}</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">strlen</span><span class="p">(</span><span class="n">username</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">COLUMN_USERNAME_SIZE</span><span class="p">)</span> <span class="p">{</span>
+     <span class="k">return</span> <span class="n">PREPARE_STRING_TOO_LONG</span><span class="p">;</span>
+   <span class="p">}</span>
+<span class="err">@@</span> <span class="o">-</span><span class="mi">230</span><span class="p">,</span><span class="mi">9</span> <span class="o">+</span><span class="mi">226</span><span class="p">,</span><span class="mi">6</span> <span class="err">@@</span> <span class="kt">int</span> <span class="n">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+     <span class="k">switch</span> <span class="p">(</span><span class="n">prepare_statement</span><span class="p">(</span><span class="n">input_buffer</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">statement</span><span class="p">))</span> <span class="p">{</span>
+       <span class="k">case</span> <span class="p">(</span><span class="n">PREPARE_SUCCESS</span><span class="p">)</span><span class="o">:</span>
+         <span class="k">break</span><span class="p">;</span>
+<span class="o">+</span>      <span class="k">case</span> <span class="p">(</span><span class="n">PREPARE_NEGATIVE_ID</span><span class="p">)</span><span class="o">:</span>
+<span class="o">+</span>        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;ID must be positive.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+<span class="o">+</span>        <span class="k">continue</span><span class="p">;</span>
+       <span class="k">case</span> <span class="p">(</span><span class="n">PREPARE_STRING_TOO_LONG</span><span class="p">)</span><span class="o">:</span>
+         <span class="n">printf</span><span class="p">(</span><span class="s">&#34;String is too long.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+         <span class="k">continue</span><span class="p">;</span>
 </code></pre></div><p>好了，现在测试足够了。接下来是一个非常重要的特性：持久性！我们将把数据库保存到文件中，然后再读取出来。</p>
 <p>接下来会很棒。</p>
 <p>这是本部分的完整差异：</p>
@@ -1674,9 +1674,77 @@ end
 <span class="o">+</span>    <span class="n">raw_output</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
 <span class="o">+</span>  <span class="k">end</span>
 <span class="o">+</span>
-<span class="o">+</span>  <span class="c1"># 其他测试案例</span>
+<span class="o">+</span>  <span class="n">it</span> <span class="s1">&#39;inserts and retrieves a row&#39;</span> <span class="k">do</span>
+<span class="o">+</span>    <span class="n">result</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">(</span><span class="o">[</span>
+<span class="o">+</span>      <span class="s2">&#34;insert 1 user1 person1@example.com&#34;</span><span class="p">,</span>
+<span class="o">+</span>      <span class="s2">&#34;select&#34;</span><span class="p">,</span>
+<span class="o">+</span>      <span class="s2">&#34;.exit&#34;</span><span class="p">,</span>
+<span class="o">+</span>    <span class="o">]</span><span class="p">)</span>
+<span class="o">+</span>    <span class="n">expect</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">match_array</span><span class="p">(</span><span class="o">[</span>
+<span class="o">+</span>      <span class="s2">&#34;db &gt; Executed.&#34;</span><span class="p">,</span>
+<span class="o">+</span>      <span class="s2">&#34;db &gt; (1, user1, person1@example.com)&#34;</span><span class="p">,</span>
+<span class="o">+</span>      <span class="s2">&#34;Executed.&#34;</span><span class="p">,</span>
+<span class="o">+</span>      <span class="s2">&#34;db &gt; &#34;</span><span class="p">,</span>
+<span class="o">+</span>    <span class="o">]</span><span class="p">)</span>
+<span class="o">+</span>  <span class="k">end</span>
 <span class="o">+</span>
+<span class="o">+</span>  <span class="n">it</span> <span class="s1">&#39;prints error message when table is full&#39;</span> <span class="k">do</span>
+<span class="o">+</span>    <span class="n">script</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">1401</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">i</span><span class="o">|</span>
+<span class="o">+</span>      <span class="s2">&#34;insert </span><span class="si">#{</span><span class="n">i</span><span class="si">}</span><span class="s2"> user</span><span class="si">#{</span><span class="n">i</span><span class="si">}</span><span class="s2"> person</span><span class="si">#{</span><span class="n">i</span><span class="si">}</span><span class="s2">@example.com&#34;</span>
+<span class="o">+</span>    <span class="k">end</span>
+<span class="o">+</span>    <span class="n">script</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;.exit&#34;</span>
+<span class="o">+</span>    <span class="n">result</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
+<span class="o">+</span>    <span class="n">expect</span><span class="p">(</span><span class="n">result</span><span class="o">[-</span><span class="mi">2</span><span class="o">]</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">eq</span><span class="p">(</span><span class="s1">&#39;db &gt; Error: Table full.&#39;</span><span class="p">)</span>
+<span class="o">+</span>  <span class="k">end</span>
+<span class="o">+</span>
+<span class="o">+</span>  <span class="n">it</span> <span class="s1">&#39;allows inserting strings that are the maximum length&#39;</span> <span class="k">do</span>
+<span class="o">+</span>    <span class="n">long_username</span> <span class="o">=</span> <span class="s2">&#34;a&#34;</span><span class="o">*</span><span class="mi">32</span>
+<span class="o">+</span>    <span class="n">long_email</span> <span class="o">=</span> <span class="s2">&#34;a&#34;</span><span class="o">*</span><span class="mi">255</span>
+<span class="o">+</span>    <span class="n">script</span> <span class="o">=</span> <span class="o">[</span>
+<span class="o">+</span>      <span class="s2">&#34;insert 1 </span><span class="si">#{</span><span class="n">long_username</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">long_email</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">,</span>
+<span class="o">+</span>      <span class="s2">&#34;select&#34;</span><span class="p">,</span>
+<span class="o">+</span>      <span class="s2">&#34;.exit&#34;</span><span class="p">,</span>
+<span class="o">+</span>    <span class="o">]</span>
+<span class="o">+</span>    <span class="n">result</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
+<span class="o">+</span>    <span class="n">expect</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">match_array</span><span class="p">(</span><span class="o">[</span>
+<span class="o">+</span>      <span class="s2">&#34;db &gt; Executed.&#34;</span><span class="p">,</span>
+<span class="o">+</span>      <span class="s2">&#34;db &gt; (1, </span><span class="si">#{</span><span class="n">long_username</span><span class="si">}</span><span class="s2">, </span><span class="si">#{</span><span class="n">long_email</span><span class="si">}</span><span class="s2">)&#34;</span><span class="p">,</span>
+<span class="o">+</span>      <span class="s2">&#34;Executed.&#34;</span><span class="p">,</span>
+<span class="o">+</span>      <span class="s2">&#34;db &gt; &#34;</span><span class="p">,</span>
+<span class="o">+</span>    <span class="o">]</span><span class="p">)</span>
+<span class="o">+</span>  <span class="k">end</span>
+<span class="o">+</span>
+<span class="o">+</span>  <span class="n">it</span> <span class="s1">&#39;prints error message if strings are too long&#39;</span> <span class="k">do</span>
+<span class="o">+</span>    <span class="n">long_username</span> <span class="o">=</span> <span class="s2">&#34;a&#34;</span><span class="o">*</span><span class="mi">33</span>
+<span class="o">+</span>    <span class="n">long_email</span> <span class="o">=</span> <span class="s2">&#34;a&#34;</span><span class="o">*</span><span class="mi">256</span>
+<span class="o">+</span>    <span class="n">script</span> <span class="o">=</span> <span class="o">[</span>
+<span class="o">+</span>      <span class="s2">&#34;insert 1 </span><span class="si">#{</span><span class="n">long_username</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">long_email</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">,</span>
+<span class="o">+</span>      <span class="s2">&#34;select&#34;</span><span class="p">,</span>
+<span class="o">+</span>      <span class="s2">&#34;.exit&#34;</span><span class="p">,</span>
+<span class="o">+</span>    <span class="o">]</span>
+<span class="o">+</span>    <span class="n">result</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
+<span class="o">+</span>    <span class="n">expect</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">match_array</span><span class="p">(</span><span class="o">[</span>
+<span class="o">+</span>      <span class="s2">&#34;db &gt; String is too long.&#34;</span><span class="p">,</span>
+<span class="o">+</span>      <span class="s2">&#34;db &gt; Executed.&#34;</span><span class="p">,</span>
+<span class="o">+</span>      <span class="s2">&#34;db &gt; &#34;</span><span class="p">,</span>
+<span class="o">+</span>    <span class="o">]</span><span class="p">)</span>
+<span class="o">+</span>  <span class="k">end</span>
+<span class="o">+</span>
+<span class="o">+</span>  <span class="n">it</span> <span class="s1">&#39;prints an error message if id is negative&#39;</span> <span class="k">do</span>
+<span class="o">+</span>    <span class="n">script</span> <span class="o">=</span> <span class="o">[</span>
+<span class="o">+</span>      <span class="s2">&#34;insert -1 cstack foo@bar.com&#34;</span><span class="p">,</span>
+<span class="o">+</span>      <span class="s2">&#34;select&#34;</span><span class="p">,</span>
+<span class="o">+</span>      <span class="s2">&#34;.exit&#34;</span><span class="p">,</span>
+<span class="o">+</span>    <span class="o">]</span>
+<span class="o">+</span>    <span class="n">result</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
+<span class="o">+</span>    <span class="n">expect</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">match_array</span><span class="p">(</span><span class="o">[</span>
+<span class="o">+</span>      <span class="s2">&#34;db &gt; ID must be positive.&#34;</span><span class="p">,</span>
+<span class="o">+</span>      <span class="s2">&#34;db &gt; Executed.&#34;</span><span class="p">,</span>
+<span class="o">+</span>      <span class="s2">&#34;db &gt; &#34;</span><span class="p">,</span>
+<span class="o">+</span>    <span class="o">]</span><span class="p">)</span>
+<span class="o">+</span>  <span class="k">end</span>
 <span class="o">+</span><span class="k">end</span>
+
 </code></pre></div><h2 id="第五部分---持久性到磁盘">第五部分 - 持久性到磁盘</h2>
 <blockquote>
 <p>“世界上没有什么可以取代坚持。Nothing in the world can take the place of persistence.” - <a href="https://en.wikiquote.org/wiki/Calvin_Coolidge">卡尔文·柯立芝</a></p>
@@ -4877,6 +4945,19 @@ _num);
       
       <nav class="post-nav">
         
+          <a class="prev" href="/post/db_tutorial_go/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">构建一个简单的数据库[golang版]</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
         
           <a class="next" href="/post/llm/llm-knowledge-point-all-u-need/">
             <span class="next-text nav-default">LLM 知识点 All u need</span>

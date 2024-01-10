@@ -6,7 +6,17 @@
     <description>Recent content in 技术 on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 09 Jan 2024 11:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 10 Jan 2024 10:58:28 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>构建一个简单的数据库[golang版]</title>
+      <link>https://weedge.github.io/post/db_tutorial_go/</link>
+      <pubDate>Wed, 10 Jan 2024 10:58:28 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/db_tutorial_go/</guid>
+      <description>&lt;p&gt;上篇文章使用chatGPT翻译了&lt;a href=&#34;https://cstack.github.io/db_tutorial/&#34;&gt;db_tutorial&lt;/a&gt; 文章，文中使用的是c语言开发； 这篇文章使用chatGPT根据db_tutorial中的c源码，使用golang进行重写, 测试的ruby代码使用python进行重写；同理其他语言也适用。&lt;/p&gt;
+&lt;p&gt;注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下。&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>[译]构建一个简单的数据库</title>
       <link>https://weedge.github.io/post/db_tutorial_zh/</link>
@@ -304,17 +314,6 @@
       
       <guid>https://weedge.github.io/post/oneday/vector-search-in-200-lines-of-rust/</guid>
       <description>&lt;p&gt;由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。&lt;a href=&#34;https://github.com/fennel-ai/fann&#34;&gt;所有代码都可以在此 Github 存储库&lt;/a&gt;中找到。我们这里使用的方法基于流行库Spotify &lt;a href=&#34;https://github.com/spotify/annoy&#34;&gt;annoy&lt;/a&gt;中使用的一系列称为“&lt;a href=&#34;https://en.wikipedia.org/wiki/Locality-sensitive_hashing&#34;&gt;局部敏感散列(Locality-sensitive_hashing)&lt;/a&gt;”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>译：Manas：高性能定制搜索系统</title>
-      <link>https://weedge.github.io/post/oneday/manas-a-high-performing-customized-search-system/</link>
-      <pubDate>Thu, 14 Sep 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/oneday/manas-a-high-performing-customized-search-system/</guid>
-      <description>&lt;h1 id=&#34;章节一-manas高性能定制搜索系统&#34;&gt;章节一 Manas：高性能定制搜索系统&lt;/h1&gt;
-&lt;p&gt;Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出 &lt;a href=&#34;https://blog.pinterest.com/en/search-and-lens-move-front-and-center&#34;&gt;Search 和 Lens&lt;/a&gt;，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。&lt;/p&gt;
-&lt;p&gt;为了继续扩展搜索，系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着业务发展和引入新的发现功能，遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C++ 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。&lt;/p&gt;</description>
     </item>
     
   </channel>
