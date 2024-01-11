@@ -75,7 +75,7 @@
 <meta itemprop="description" content="上篇文章使用chatGPT翻译了db_tutorial 文章，文中使用的是c语言开发； 这篇文章使用chatGPT根据db_tutorial中的c源码，使用golang进行重写, 测试的ruby代码使用python进行重写；同理其他语言也适用。
 注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下。"><meta itemprop="datePublished" content="2024-01-10T10:58:28+08:00" />
 <meta itemprop="dateModified" content="2024-01-10T10:58:28+08:00" />
-<meta itemprop="wordCount" content="1748">
+<meta itemprop="wordCount" content="3637">
 <meta itemprop="keywords" content="db,golang," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="构建一个简单的数据库[golang版]"/>
 <meta name="twitter:description" content="上篇文章使用chatGPT翻译了db_tutorial 文章，文中使用的是c语言开发； 这篇文章使用chatGPT根据db_tutorial中的c源码，使用golang进行重写, 测试的ruby代码使用python进行重写；同理其他语言也适用。
@@ -814,13 +814,295 @@ db &gt; insert foo bar <span class="m">1</span>
 Syntax error. Could not parse statement.
 db &gt; .exit
 </code></pre></div><h2 id="第四部分---我们的第一个测试bug">第四部分 - 我们的第一个测试（Bug）</h2>
-<p>使用python重写测试：</p>
+<p>使用golang重写:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-golang" data-lang="golang"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;bufio&#34;</span>
+	<span class="s">&#34;fmt&#34;</span>
+	<span class="s">&#34;os&#34;</span>
+	<span class="s">&#34;strconv&#34;</span>
+	<span class="s">&#34;strings&#34;</span>
+	<span class="s">&#34;unsafe&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">const</span> <span class="p">(</span>
+	<span class="nx">COLUMN_USERNAME_SIZE</span> <span class="p">=</span> <span class="mi">32</span>
+	<span class="nx">COLUMN_EMAIL_SIZE</span>    <span class="p">=</span> <span class="mi">255</span>
+	<span class="nx">ID_SIZE</span>              <span class="p">=</span> <span class="mi">4</span>
+	<span class="nx">USERNAME_SIZE</span>        <span class="p">=</span> <span class="nx">COLUMN_USERNAME_SIZE</span> <span class="o">+</span> <span class="mi">1</span>
+	<span class="nx">EMAIL_SIZE</span>           <span class="p">=</span> <span class="nx">COLUMN_EMAIL_SIZE</span> <span class="o">+</span> <span class="mi">1</span>
+	<span class="nx">ID_OFFSET</span>            <span class="p">=</span> <span class="mi">0</span>
+	<span class="nx">USERNAME_OFFSET</span>      <span class="p">=</span> <span class="nx">ID_OFFSET</span> <span class="o">+</span> <span class="nx">ID_SIZE</span>
+	<span class="nx">EMAIL_OFFSET</span>         <span class="p">=</span> <span class="nx">USERNAME_OFFSET</span> <span class="o">+</span> <span class="nx">USERNAME_SIZE</span>
+	<span class="nx">ROW_SIZE</span>             <span class="p">=</span> <span class="nx">ID_SIZE</span> <span class="o">+</span> <span class="nx">USERNAME_SIZE</span> <span class="o">+</span> <span class="nx">EMAIL_SIZE</span>
+	<span class="nx">PAGE_SIZE</span>            <span class="p">=</span> <span class="mi">4096</span>
+	<span class="nx">TABLE_MAX_PAGES</span>      <span class="p">=</span> <span class="mi">100</span>
+	<span class="nx">ROWS_PER_PAGE</span>        <span class="p">=</span> <span class="nx">PAGE_SIZE</span> <span class="o">/</span> <span class="nx">ROW_SIZE</span>
+	<span class="nx">TABLE_MAX_ROWS</span>       <span class="p">=</span> <span class="nx">ROWS_PER_PAGE</span> <span class="o">*</span> <span class="nx">TABLE_MAX_PAGES</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">Row</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">id</span>       <span class="kt">uint32</span>
+	<span class="nx">username</span> <span class="p">[</span><span class="nx">COLUMN_USERNAME_SIZE</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="kt">byte</span>
+	<span class="nx">email</span>    <span class="p">[</span><span class="nx">COLUMN_EMAIL_SIZE</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="kt">byte</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">Table</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">numRows</span> <span class="kt">uint32</span>
+	<span class="nx">pages</span>   <span class="p">[</span><span class="nx">TABLE_MAX_PAGES</span><span class="p">][]</span><span class="kt">byte</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">InputBuffer</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">buffer</span>       <span class="p">[]</span><span class="kt">byte</span>
+	<span class="nx">bufferLength</span> <span class="kt">int</span>
+	<span class="nx">inputLength</span>  <span class="kt">int</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">StatementType</span> <span class="kt">int</span>
+
+<span class="kd">const</span> <span class="p">(</span>
+	<span class="nx">STATEMENT_INSERT</span> <span class="nx">StatementType</span> <span class="p">=</span> <span class="kc">iota</span>
+	<span class="nx">STATEMENT_SELECT</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">Statement</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">stmtType</span>    <span class="nx">StatementType</span>
+	<span class="nx">rowToInsert</span> <span class="nx">Row</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">ExecuteResult</span> <span class="kt">int</span>
+
+<span class="kd">const</span> <span class="p">(</span>
+	<span class="nx">EXECUTE_SUCCESS</span> <span class="nx">ExecuteResult</span> <span class="p">=</span> <span class="kc">iota</span>
+	<span class="nx">EXECUTE_TABLE_FULL</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">MetaCommandResult</span> <span class="kt">int</span>
+
+<span class="kd">const</span> <span class="p">(</span>
+	<span class="nx">META_COMMAND_SUCCESS</span> <span class="nx">MetaCommandResult</span> <span class="p">=</span> <span class="kc">iota</span>
+	<span class="nx">META_COMMAND_UNRECOGNIZED_COMMAND</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">PrepareResult</span> <span class="kt">int</span>
+
+<span class="kd">const</span> <span class="p">(</span>
+	<span class="nx">PREPARE_SUCCESS</span> <span class="nx">PrepareResult</span> <span class="p">=</span> <span class="kc">iota</span>
+	<span class="nx">PREPARE_NEGATIVE_ID</span>
+	<span class="nx">PREPARE_STRING_TOO_LONG</span>
+	<span class="nx">PREPARE_SYNTAX_ERROR</span>
+	<span class="nx">PREPARE_UNRECOGNIZED_STATEMENT</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">newInputBuffer</span><span class="p">()</span> <span class="o">*</span><span class="nx">InputBuffer</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">InputBuffer</span><span class="p">{</span>
+		<span class="nx">buffer</span><span class="p">:</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">newTable</span><span class="p">()</span> <span class="o">*</span><span class="nx">Table</span> <span class="p">{</span>
+	<span class="nx">table</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">Table</span><span class="p">{</span>
+		<span class="nx">numRows</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+	<span class="p">}</span>
+	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">TABLE_MAX_PAGES</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="nx">table</span><span class="p">.</span><span class="nx">pages</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="kc">nil</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="nx">table</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">printRow</span><span class="p">(</span><span class="nx">row</span> <span class="o">*</span><span class="nx">Row</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;(%d, %s, %s)\n&#34;</span><span class="p">,</span> <span class="nx">row</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">TrimRight</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">row</span><span class="p">.</span><span class="nx">username</span><span class="p">[:]),</span> <span class="s">&#34;\x00&#34;</span><span class="p">),</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">TrimRight</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">row</span><span class="p">.</span><span class="nx">email</span><span class="p">[:]),</span> <span class="s">&#34;\x00&#34;</span><span class="p">))</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">serializeRow</span><span class="p">(</span><span class="nx">source</span> <span class="o">*</span><span class="nx">Row</span><span class="p">,</span> <span class="nx">destination</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nb">copy</span><span class="p">(</span><span class="nx">destination</span><span class="p">[</span><span class="nx">ID_OFFSET</span><span class="p">:],</span> <span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nx">ID_SIZE</span><span class="p">]</span><span class="kt">byte</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">source</span><span class="p">.</span><span class="nx">id</span><span class="p">)))[:])</span>
+	<span class="nb">copy</span><span class="p">(</span><span class="nx">destination</span><span class="p">[</span><span class="nx">USERNAME_OFFSET</span><span class="p">:],</span> <span class="nx">source</span><span class="p">.</span><span class="nx">username</span><span class="p">[:])</span>
+	<span class="nb">copy</span><span class="p">(</span><span class="nx">destination</span><span class="p">[</span><span class="nx">EMAIL_OFFSET</span><span class="p">:],</span> <span class="nx">source</span><span class="p">.</span><span class="nx">email</span><span class="p">[:])</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">deserializeRow</span><span class="p">(</span><span class="nx">source</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">destination</span> <span class="o">*</span><span class="nx">Row</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">destination</span><span class="p">.</span><span class="nx">id</span> <span class="p">=</span> <span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="kt">uint32</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">source</span><span class="p">[</span><span class="nx">ID_OFFSET</span><span class="p">]))</span>
+	<span class="nb">copy</span><span class="p">(</span><span class="nx">destination</span><span class="p">.</span><span class="nx">username</span><span class="p">[:],</span> <span class="nx">source</span><span class="p">[</span><span class="nx">USERNAME_OFFSET</span><span class="p">:</span><span class="nx">USERNAME_OFFSET</span><span class="o">+</span><span class="nx">USERNAME_SIZE</span><span class="p">])</span>
+	<span class="nb">copy</span><span class="p">(</span><span class="nx">destination</span><span class="p">.</span><span class="nx">email</span><span class="p">[:],</span> <span class="nx">source</span><span class="p">[</span><span class="nx">EMAIL_OFFSET</span><span class="p">:</span><span class="nx">EMAIL_OFFSET</span><span class="o">+</span><span class="nx">EMAIL_SIZE</span><span class="p">])</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">rowSlot</span><span class="p">(</span><span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">,</span> <span class="nx">rowNum</span> <span class="kt">uint32</span><span class="p">)</span> <span class="p">[]</span><span class="kt">byte</span> <span class="p">{</span>
+	<span class="nx">pageNum</span> <span class="o">:=</span> <span class="nx">rowNum</span> <span class="o">/</span> <span class="nx">ROWS_PER_PAGE</span>
+	<span class="nx">page</span> <span class="o">:=</span> <span class="nx">table</span><span class="p">.</span><span class="nx">pages</span><span class="p">[</span><span class="nx">pageNum</span><span class="p">]</span>
+	<span class="k">if</span> <span class="nx">page</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">page</span> <span class="p">=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">PAGE_SIZE</span><span class="p">)</span>
+		<span class="nx">table</span><span class="p">.</span><span class="nx">pages</span><span class="p">[</span><span class="nx">pageNum</span><span class="p">]</span> <span class="p">=</span> <span class="nx">page</span>
+	<span class="p">}</span>
+	<span class="nx">rowOffset</span> <span class="o">:=</span> <span class="nx">rowNum</span> <span class="o">%</span> <span class="nx">ROWS_PER_PAGE</span>
+	<span class="nx">byteOffset</span> <span class="o">:=</span> <span class="nx">rowOffset</span> <span class="o">*</span> <span class="nx">ROW_SIZE</span>
+	<span class="k">return</span> <span class="nx">page</span><span class="p">[</span><span class="nx">byteOffset</span> <span class="p">:</span> <span class="nx">byteOffset</span><span class="o">+</span><span class="nx">ROW_SIZE</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">printPrompt</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;db &gt; &#34;</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">readInput</span><span class="p">(</span><span class="nx">reader</span> <span class="o">*</span><span class="nx">bufio</span><span class="p">.</span><span class="nx">Reader</span><span class="p">,</span> <span class="nx">inputBuffer</span> <span class="o">*</span><span class="nx">InputBuffer</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c1">// chatGPT init error, need to debug
+</span><span class="c1"></span>	<span class="c1">//reader := bufio.NewReader(os.Stdin)
+</span><span class="c1"></span>	<span class="nx">input</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">reader</span><span class="p">.</span><span class="nf">ReadString</span><span class="p">(</span><span class="sc">&#39;\n&#39;</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Error reading input: &#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">())</span>
+		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="c1">// Remove newline character
+</span><span class="c1"></span>	<span class="nx">input</span> <span class="p">=</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">TrimSpace</span><span class="p">(</span><span class="nx">input</span><span class="p">)</span>
+
+	<span class="nx">inputBuffer</span><span class="p">.</span><span class="nx">buffer</span> <span class="p">=</span> <span class="p">[]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">input</span><span class="p">)</span>
+	<span class="nx">inputBuffer</span><span class="p">.</span><span class="nx">inputLength</span> <span class="p">=</span> <span class="nb">len</span><span class="p">(</span><span class="nx">inputBuffer</span><span class="p">.</span><span class="nx">buffer</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">closeInputBuffer</span><span class="p">(</span><span class="nx">inputBuffer</span> <span class="o">*</span><span class="nx">InputBuffer</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c1">// Go has automatic garbage collection, so no explicit freeing is needed
+</span><span class="c1"></span><span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">doMetaCommand</span><span class="p">(</span><span class="nx">inputBuffer</span> <span class="o">*</span><span class="nx">InputBuffer</span><span class="p">,</span> <span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">)</span> <span class="nx">MetaCommandResult</span> <span class="p">{</span>
+	<span class="k">switch</span> <span class="nb">string</span><span class="p">(</span><span class="nx">inputBuffer</span><span class="p">.</span><span class="nx">buffer</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">case</span> <span class="s">&#34;.exit&#34;</span><span class="p">:</span>
+		<span class="nf">closeInputBuffer</span><span class="p">(</span><span class="nx">inputBuffer</span><span class="p">)</span>
+		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+	<span class="k">default</span><span class="p">:</span>
+		<span class="k">return</span> <span class="nx">META_COMMAND_UNRECOGNIZED_COMMAND</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="nx">META_COMMAND_SUCCESS</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">prepareInsert</span><span class="p">(</span><span class="nx">inputBuffer</span> <span class="o">*</span><span class="nx">InputBuffer</span><span class="p">,</span> <span class="nx">statement</span> <span class="o">*</span><span class="nx">Statement</span><span class="p">)</span> <span class="nx">PrepareResult</span> <span class="p">{</span>
+	<span class="nx">statement</span><span class="p">.</span><span class="nx">stmtType</span> <span class="p">=</span> <span class="nx">STATEMENT_INSERT</span>
+
+	<span class="nx">tokens</span> <span class="o">:=</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">Fields</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">inputBuffer</span><span class="p">.</span><span class="nx">buffer</span><span class="p">))</span>
+
+	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">tokens</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">4</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">PREPARE_SYNTAX_ERROR</span>
+	<span class="p">}</span>
+
+	<span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">tokens</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">||</span> <span class="nx">id</span> <span class="p">&lt;</span> <span class="mi">0</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">PREPARE_NEGATIVE_ID</span>
+	<span class="p">}</span>
+
+	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">tokens</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="p">&gt;</span> <span class="nx">COLUMN_USERNAME_SIZE</span> <span class="o">||</span> <span class="nb">len</span><span class="p">(</span><span class="nx">tokens</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="p">&gt;</span> <span class="nx">COLUMN_EMAIL_SIZE</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">PREPARE_STRING_TOO_LONG</span>
+	<span class="p">}</span>
+
+	<span class="nx">statement</span><span class="p">.</span><span class="nx">rowToInsert</span><span class="p">.</span><span class="nx">id</span> <span class="p">=</span> <span class="nb">uint32</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span>
+	<span class="nb">copy</span><span class="p">(</span><span class="nx">statement</span><span class="p">.</span><span class="nx">rowToInsert</span><span class="p">.</span><span class="nx">username</span><span class="p">[:],</span> <span class="nx">tokens</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+	<span class="nb">copy</span><span class="p">(</span><span class="nx">statement</span><span class="p">.</span><span class="nx">rowToInsert</span><span class="p">.</span><span class="nx">email</span><span class="p">[:],</span> <span class="nx">tokens</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+
+	<span class="k">return</span> <span class="nx">PREPARE_SUCCESS</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">prepareStatement</span><span class="p">(</span><span class="nx">inputBuffer</span> <span class="o">*</span><span class="nx">InputBuffer</span><span class="p">,</span> <span class="nx">statement</span> <span class="o">*</span><span class="nx">Statement</span><span class="p">)</span> <span class="nx">PrepareResult</span> <span class="p">{</span>
+	<span class="nx">tokens</span> <span class="o">:=</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">Fields</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">inputBuffer</span><span class="p">.</span><span class="nx">buffer</span><span class="p">))</span>
+
+	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">tokens</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">PREPARE_SUCCESS</span>
+	<span class="p">}</span>
+
+	<span class="k">switch</span> <span class="nx">tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">{</span>
+	<span class="k">case</span> <span class="s">&#34;insert&#34;</span><span class="p">:</span>
+		<span class="k">return</span> <span class="nf">prepareInsert</span><span class="p">(</span><span class="nx">inputBuffer</span><span class="p">,</span> <span class="nx">statement</span><span class="p">)</span>
+	<span class="k">case</span> <span class="s">&#34;select&#34;</span><span class="p">:</span>
+		<span class="nx">statement</span><span class="p">.</span><span class="nx">stmtType</span> <span class="p">=</span> <span class="nx">STATEMENT_SELECT</span>
+		<span class="k">return</span> <span class="nx">PREPARE_SUCCESS</span>
+	<span class="k">default</span><span class="p">:</span>
+		<span class="k">return</span> <span class="nx">PREPARE_UNRECOGNIZED_STATEMENT</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">executeInsert</span><span class="p">(</span><span class="nx">statement</span> <span class="o">*</span><span class="nx">Statement</span><span class="p">,</span> <span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">)</span> <span class="nx">ExecuteResult</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="nx">table</span><span class="p">.</span><span class="nx">numRows</span> <span class="o">&gt;=</span> <span class="nx">TABLE_MAX_ROWS</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">EXECUTE_TABLE_FULL</span>
+	<span class="p">}</span>
+
+	<span class="nx">rowToInsert</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">statement</span><span class="p">.</span><span class="nx">rowToInsert</span>
+
+	<span class="nf">serializeRow</span><span class="p">(</span><span class="nx">rowToInsert</span><span class="p">,</span> <span class="nf">rowSlot</span><span class="p">(</span><span class="nx">table</span><span class="p">,</span> <span class="nx">table</span><span class="p">.</span><span class="nx">numRows</span><span class="p">))</span>
+	<span class="nx">table</span><span class="p">.</span><span class="nx">numRows</span><span class="o">++</span>
+
+	<span class="k">return</span> <span class="nx">EXECUTE_SUCCESS</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">executeSelect</span><span class="p">(</span><span class="nx">statement</span> <span class="o">*</span><span class="nx">Statement</span><span class="p">,</span> <span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">)</span> <span class="nx">ExecuteResult</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">row</span> <span class="nx">Row</span>
+	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="nb">uint32</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">table</span><span class="p">.</span><span class="nx">numRows</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="nf">deserializeRow</span><span class="p">(</span><span class="nf">rowSlot</span><span class="p">(</span><span class="nx">table</span><span class="p">,</span> <span class="nx">i</span><span class="p">),</span> <span class="o">&amp;</span><span class="nx">row</span><span class="p">)</span>
+		<span class="nf">printRow</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">row</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="nx">EXECUTE_SUCCESS</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">executeStatement</span><span class="p">(</span><span class="nx">statement</span> <span class="o">*</span><span class="nx">Statement</span><span class="p">,</span> <span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">)</span> <span class="nx">ExecuteResult</span> <span class="p">{</span>
+	<span class="k">switch</span> <span class="nx">statement</span><span class="p">.</span><span class="nx">stmtType</span> <span class="p">{</span>
+	<span class="k">case</span> <span class="nx">STATEMENT_INSERT</span><span class="p">:</span>
+		<span class="k">return</span> <span class="nf">executeInsert</span><span class="p">(</span><span class="nx">statement</span><span class="p">,</span> <span class="nx">table</span><span class="p">)</span>
+	<span class="k">case</span> <span class="nx">STATEMENT_SELECT</span><span class="p">:</span>
+		<span class="k">return</span> <span class="nf">executeSelect</span><span class="p">(</span><span class="nx">statement</span><span class="p">,</span> <span class="nx">table</span><span class="p">)</span>
+	<span class="k">default</span><span class="p">:</span>
+		<span class="k">return</span> <span class="nx">EXECUTE_SUCCESS</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">table</span> <span class="o">:=</span> <span class="nf">newTable</span><span class="p">()</span>
+	<span class="nx">inputBuffer</span> <span class="o">:=</span> <span class="nf">newInputBuffer</span><span class="p">()</span>
+	<span class="nx">reader</span> <span class="o">:=</span> <span class="nx">bufio</span><span class="p">.</span><span class="nf">NewReader</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdin</span><span class="p">)</span>
+
+	<span class="k">for</span> <span class="p">{</span>
+		<span class="nf">printPrompt</span><span class="p">()</span>
+		<span class="nf">readInput</span><span class="p">(</span><span class="nx">reader</span><span class="p">,</span> <span class="nx">inputBuffer</span><span class="p">)</span>
+
+		<span class="k">if</span> <span class="nx">inputBuffer</span><span class="p">.</span><span class="nx">buffer</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="sc">&#39;.&#39;</span> <span class="p">{</span>
+			<span class="k">switch</span> <span class="nf">doMetaCommand</span><span class="p">(</span><span class="nx">inputBuffer</span><span class="p">,</span> <span class="nx">table</span><span class="p">)</span> <span class="p">{</span>
+			<span class="k">case</span> <span class="nx">META_COMMAND_SUCCESS</span><span class="p">:</span>
+				<span class="k">continue</span>
+			<span class="k">case</span> <span class="nx">META_COMMAND_UNRECOGNIZED_COMMAND</span><span class="p">:</span>
+				<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Unrecognized command &#39;%s&#39;\n&#34;</span><span class="p">,</span> <span class="nx">inputBuffer</span><span class="p">.</span><span class="nx">buffer</span><span class="p">)</span>
+				<span class="k">continue</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+
+		<span class="kd">var</span> <span class="nx">statement</span> <span class="nx">Statement</span>
+		<span class="k">switch</span> <span class="nf">prepareStatement</span><span class="p">(</span><span class="nx">inputBuffer</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">statement</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">case</span> <span class="nx">PREPARE_SUCCESS</span><span class="p">:</span>
+			<span class="k">break</span>
+		<span class="k">case</span> <span class="nx">PREPARE_NEGATIVE_ID</span><span class="p">:</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;ID must be positive.&#34;</span><span class="p">)</span>
+			<span class="k">continue</span>
+		<span class="k">case</span> <span class="nx">PREPARE_STRING_TOO_LONG</span><span class="p">:</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;String is too long.&#34;</span><span class="p">)</span>
+			<span class="k">continue</span>
+		<span class="k">case</span> <span class="nx">PREPARE_SYNTAX_ERROR</span><span class="p">:</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Syntax error. Could not parse statement.&#34;</span><span class="p">)</span>
+			<span class="k">continue</span>
+		<span class="k">case</span> <span class="nx">PREPARE_UNRECOGNIZED_STATEMENT</span><span class="p">:</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Unrecognized keyword at start of &#39;%s&#39;.\n&#34;</span><span class="p">,</span> <span class="nx">inputBuffer</span><span class="p">.</span><span class="nx">buffer</span><span class="p">)</span>
+			<span class="k">continue</span>
+		<span class="p">}</span>
+
+		<span class="k">switch</span> <span class="nf">executeStatement</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">statement</span><span class="p">,</span> <span class="nx">table</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">case</span> <span class="nx">EXECUTE_SUCCESS</span><span class="p">:</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Executed.&#34;</span><span class="p">)</span>
+			<span class="k">break</span>
+		<span class="k">case</span> <span class="nx">EXECUTE_TABLE_FULL</span><span class="p">:</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Error: Table full.&#34;</span><span class="p">)</span>
+			<span class="k">break</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><p>使用python重写测试：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">subprocess</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 
-<span class="k">def</span> <span class="nf">run_script</span><span class="p">(</span><span class="n">commands</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">run_script</span><span class="p">(</span><span class="n">commands</span><span class="p">,</span><span class="n">bin_file</span><span class="o">=</span><span class="s2">&#34;./db&#34;</span><span class="p">,</span><span class="n">db_file</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">):</span>
     <span class="n">raw_output</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">with</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="s2">&#34;./db&#34;</span><span class="p">,</span> <span class="n">stdin</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">process</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="n">bin_file</span><span class="p">,</span> <span class="n">db_file</span><span class="p">],</span> <span class="n">stdin</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">process</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
             <span class="n">process</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">command</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">process</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -840,6 +1122,7 @@ db &gt; .exit
         <span class="s2">&#34;Executed.&#34;</span><span class="p">,</span>
         <span class="s2">&#34;db &gt; &#34;</span>
     <span class="p">]</span>
+    <span class="c1">#print(f&#34;result: {result}&#34;)</span>
     <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="n">expected_result</span><span class="p">,</span> <span class="s2">&#34;Test failed&#34;</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span><span class="si">}</span><span class="s2"> passed&#34;</span><span class="p">)</span>
 
@@ -882,8 +1165,503 @@ db &gt; .exit
 <span class="c1"># Run the test</span>
 <span class="n">test_allows_inserting_strings_that_are_maximum_length</span><span class="p">()</span>
 
+
+<span class="c1"># 测试如果字符串太长，则会打印错误消息。</span>
+<span class="k">def</span> <span class="nf">test_prints_error_message_if_strings_are_too_long</span><span class="p">():</span>
+    <span class="n">long_username</span> <span class="o">=</span> <span class="s2">&#34;a&#34;</span> <span class="o">*</span> <span class="mi">33</span>
+    <span class="n">long_email</span> <span class="o">=</span> <span class="s2">&#34;a&#34;</span> <span class="o">*</span> <span class="mi">256</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="sa">f</span><span class="s2">&#34;insert 1 </span><span class="si">{</span><span class="n">long_username</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">long_email</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;select&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;.exit&#34;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&#34;db &gt; String is too long.&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;db &gt; Executed.&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;db &gt; &#34;</span>
+    <span class="p">]</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="n">expected_result</span><span class="p">,</span> <span class="s2">&#34;Test failed&#34;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span><span class="si">}</span><span class="s2"> passed&#34;</span><span class="p">)</span>
+
+<span class="c1"># Run the test</span>
+<span class="n">test_prints_error_message_if_strings_are_too_long</span><span class="p">()</span>
+
+<span class="c1"># 当尝试插入带有负 ID 的行时打印错误信息</span>
+<span class="k">def</span> <span class="nf">test_negative_id_error_message</span><span class="p">():</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&#34;insert -1 cstack foo@bar.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;select&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;.exit&#34;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
+    <span class="n">expected_output</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&#34;db &gt; ID must be positive.&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;db &gt; Executed.&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;db &gt; &#34;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="n">expected_output</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&#34;Expected: </span><span class="si">{</span><span class="n">expected_output</span><span class="si">}</span><span class="s2">, but got: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&#34;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span><span class="si">}</span><span class="s2"> passed&#34;</span><span class="p">)</span>
+
+<span class="n">test_negative_id_error_message</span><span class="p">()</span>
+
 <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;all tests passed.&#34;</span><span class="p">)</span>
-</code></pre></div><p>待续。。。</p>
+</code></pre></div><h2 id="第五部分---持久化到磁盘">第五部分 - 持久化到磁盘</h2>
+<p>测试用例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span><span class="nn">os</span>
+
+<span class="c1"># 测试数据库关闭后，数据是否在数据库中</span>
+<span class="k">def</span> <span class="nf">test_keeps_data_after_closing_connection</span><span class="p">(</span><span class="n">db_file</span><span class="p">):</span>
+    <span class="n">result1</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">([</span>
+        <span class="s2">&#34;insert 1 user1 person1@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;.exit&#34;</span><span class="p">,</span>
+    <span class="p">],</span><span class="n">db_file</span><span class="o">=</span><span class="n">db_file</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result1</span> <span class="o">==</span> <span class="p">[</span>
+        <span class="s2">&#34;db &gt; Executed.&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;db &gt; &#34;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">result2</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">([</span>
+        <span class="s2">&#34;select&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;.exit&#34;</span><span class="p">,</span>
+    <span class="p">],</span><span class="n">db_file</span><span class="o">=</span><span class="n">db_file</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;result2: </span><span class="si">{</span><span class="n">result2</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result2</span> <span class="o">==</span> <span class="p">[</span>
+        <span class="s2">&#34;db &gt; (1, user1, person1@example.com)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;Executed.&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;db &gt; &#34;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span><span class="si">}</span><span class="s2"> passed&#34;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;need db file path&#34;</span><span class="p">)</span>
+    <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">db_file</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">db_file</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span>
+
+<span class="n">test_keeps_data_after_closing_connection</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&#34;all tests passed.&#34;</span><span class="p">)</span>
+</code></pre></div><p>持久化 golang版本：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;bufio&#34;</span>
+	<span class="s">&#34;fmt&#34;</span>
+	<span class="s">&#34;io&#34;</span>
+	<span class="s">&#34;os&#34;</span>
+	<span class="s">&#34;strconv&#34;</span>
+	<span class="s">&#34;strings&#34;</span>
+	<span class="s">&#34;unsafe&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">const</span> <span class="p">(</span>
+	<span class="nx">COLUMN_USERNAME_SIZE</span> <span class="p">=</span> <span class="mi">32</span>
+	<span class="nx">COLUMN_EMAIL_SIZE</span>    <span class="p">=</span> <span class="mi">255</span>
+	<span class="nx">ID_SIZE</span>              <span class="p">=</span> <span class="mi">4</span>
+	<span class="nx">USERNAME_SIZE</span>        <span class="p">=</span> <span class="nx">COLUMN_USERNAME_SIZE</span> <span class="o">+</span> <span class="mi">1</span>
+	<span class="nx">EMAIL_SIZE</span>           <span class="p">=</span> <span class="nx">COLUMN_EMAIL_SIZE</span> <span class="o">+</span> <span class="mi">1</span>
+	<span class="nx">ID_OFFSET</span>            <span class="p">=</span> <span class="mi">0</span>
+	<span class="nx">USERNAME_OFFSET</span>      <span class="p">=</span> <span class="nx">ID_OFFSET</span> <span class="o">+</span> <span class="nx">ID_SIZE</span>
+	<span class="nx">EMAIL_OFFSET</span>         <span class="p">=</span> <span class="nx">USERNAME_OFFSET</span> <span class="o">+</span> <span class="nx">USERNAME_SIZE</span>
+	<span class="nx">ROW_SIZE</span>             <span class="p">=</span> <span class="nx">ID_SIZE</span> <span class="o">+</span> <span class="nx">USERNAME_SIZE</span> <span class="o">+</span> <span class="nx">EMAIL_SIZE</span>
+	<span class="nx">PAGE_SIZE</span>            <span class="p">=</span> <span class="mi">4096</span>
+	<span class="nx">TABLE_MAX_PAGES</span>      <span class="p">=</span> <span class="mi">100</span>
+	<span class="nx">ROWS_PER_PAGE</span>        <span class="p">=</span> <span class="nx">PAGE_SIZE</span> <span class="o">/</span> <span class="nx">ROW_SIZE</span>
+	<span class="nx">TABLE_MAX_ROWS</span>       <span class="p">=</span> <span class="nx">ROWS_PER_PAGE</span> <span class="o">*</span> <span class="nx">TABLE_MAX_PAGES</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">InputBuffer</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">buffer</span>       <span class="kt">string</span>
+	<span class="nx">bufferLength</span> <span class="kt">int</span>
+	<span class="nx">inputLength</span>  <span class="kt">int</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">MetaCommandResult</span> <span class="kt">int</span>
+
+<span class="kd">const</span> <span class="p">(</span>
+	<span class="nx">META_COMMAND_SUCCESS</span> <span class="nx">MetaCommandResult</span> <span class="p">=</span> <span class="kc">iota</span>
+	<span class="nx">META_COMMAND_UNRECOGNIZED_COMMAND</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">PrepareResult</span> <span class="kt">int</span>
+
+<span class="kd">const</span> <span class="p">(</span>
+	<span class="nx">PREPARE_SUCCESS</span> <span class="nx">PrepareResult</span> <span class="p">=</span> <span class="kc">iota</span>
+	<span class="nx">PREPARE_NEGATIVE_ID</span>
+	<span class="nx">PREPARE_STRING_TOO_LONG</span>
+	<span class="nx">PREPARE_SYNTAX_ERROR</span>
+	<span class="nx">PREPARE_UNRECOGNIZED_STATEMENT</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">StatementType</span> <span class="kt">int</span>
+
+<span class="kd">const</span> <span class="p">(</span>
+	<span class="nx">STATEMENT_INSERT</span> <span class="nx">StatementType</span> <span class="p">=</span> <span class="kc">iota</span>
+	<span class="nx">STATEMENT_SELECT</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">Row</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">id</span>       <span class="kt">uint32</span>
+	<span class="nx">username</span> <span class="p">[</span><span class="nx">COLUMN_USERNAME_SIZE</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="kt">byte</span>
+	<span class="nx">email</span>    <span class="p">[</span><span class="nx">COLUMN_EMAIL_SIZE</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="kt">byte</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">Statement</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">typ</span>         <span class="nx">StatementType</span>
+	<span class="nx">rowToInsert</span> <span class="nx">Row</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">Pager</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">fileDescriptor</span> <span class="o">*</span><span class="nx">os</span><span class="p">.</span><span class="nx">File</span>
+	<span class="nx">fileLength</span>     <span class="kt">uint32</span>
+	<span class="nx">pages</span>          <span class="p">[</span><span class="nx">TABLE_MAX_PAGES</span><span class="p">][]</span><span class="kt">byte</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">Table</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">numRows</span> <span class="kt">uint32</span>
+	<span class="nx">pager</span>   <span class="o">*</span><span class="nx">Pager</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">ExecuteResult</span> <span class="kt">int</span>
+
+<span class="kd">const</span> <span class="p">(</span>
+	<span class="nx">EXECUTE_SUCCESS</span> <span class="nx">ExecuteResult</span> <span class="p">=</span> <span class="kc">iota</span>
+	<span class="nx">EXECUTE_TABLE_FULL</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">newInputBuffer</span><span class="p">()</span> <span class="o">*</span><span class="nx">InputBuffer</span> <span class="p">{</span>
+	<span class="nx">buffer</span> <span class="o">:=</span> <span class="s">&#34;&#34;</span>
+	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">InputBuffer</span><span class="p">{</span>
+		<span class="nx">buffer</span><span class="p">:</span>       <span class="nx">buffer</span><span class="p">,</span>
+		<span class="nx">bufferLength</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+		<span class="nx">inputLength</span><span class="p">:</span>  <span class="mi">0</span><span class="p">,</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">printRow</span><span class="p">(</span><span class="nx">row</span> <span class="o">*</span><span class="nx">Row</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c1">//fmt.Printf(&#34;(%d, %s, %s)\n&#34;, row.id, row.username, row.email)
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;(%d, %s, %s)\n&#34;</span><span class="p">,</span> <span class="nx">row</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">TrimRight</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">row</span><span class="p">.</span><span class="nx">username</span><span class="p">[:]),</span> <span class="s">&#34;\x00&#34;</span><span class="p">),</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">TrimRight</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">row</span><span class="p">.</span><span class="nx">email</span><span class="p">[:]),</span> <span class="s">&#34;\x00&#34;</span><span class="p">))</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">serializeRow</span><span class="p">(</span><span class="nx">source</span> <span class="o">*</span><span class="nx">Row</span><span class="p">,</span> <span class="nx">destination</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nb">copy</span><span class="p">(</span><span class="nx">destination</span><span class="p">[</span><span class="nx">ID_OFFSET</span><span class="p">:],</span> <span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nx">ID_SIZE</span><span class="p">]</span><span class="kt">byte</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">source</span><span class="p">.</span><span class="nx">id</span><span class="p">)))[:])</span>
+	<span class="nb">copy</span><span class="p">(</span><span class="nx">destination</span><span class="p">[</span><span class="nx">USERNAME_OFFSET</span><span class="p">:],</span> <span class="nx">source</span><span class="p">.</span><span class="nx">username</span><span class="p">[:])</span>
+	<span class="nb">copy</span><span class="p">(</span><span class="nx">destination</span><span class="p">[</span><span class="nx">EMAIL_OFFSET</span><span class="p">:],</span> <span class="nx">source</span><span class="p">.</span><span class="nx">email</span><span class="p">[:])</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">deserializeRow</span><span class="p">(</span><span class="nx">source</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">destination</span> <span class="o">*</span><span class="nx">Row</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">destination</span><span class="p">.</span><span class="nx">id</span> <span class="p">=</span> <span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="kt">uint32</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">source</span><span class="p">[</span><span class="nx">ID_OFFSET</span><span class="p">]))</span>
+	<span class="nb">copy</span><span class="p">(</span><span class="nx">destination</span><span class="p">.</span><span class="nx">username</span><span class="p">[:],</span> <span class="nx">source</span><span class="p">[</span><span class="nx">USERNAME_OFFSET</span><span class="p">:</span><span class="nx">USERNAME_OFFSET</span><span class="o">+</span><span class="nx">USERNAME_SIZE</span><span class="p">])</span>
+	<span class="nb">copy</span><span class="p">(</span><span class="nx">destination</span><span class="p">.</span><span class="nx">email</span><span class="p">[:],</span> <span class="nx">source</span><span class="p">[</span><span class="nx">EMAIL_OFFSET</span><span class="p">:</span><span class="nx">EMAIL_OFFSET</span><span class="o">+</span><span class="nx">EMAIL_SIZE</span><span class="p">])</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">pager</span> <span class="o">*</span><span class="nx">Pager</span><span class="p">,</span> <span class="nx">pageNum</span> <span class="kt">uint32</span><span class="p">)</span> <span class="p">[]</span><span class="kt">byte</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="nx">pageNum</span> <span class="p">&gt;</span> <span class="nx">TABLE_MAX_PAGES</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Tried to fetch page number out of bounds. %d &gt; %d\n&#34;</span><span class="p">,</span> <span class="nx">pageNum</span><span class="p">,</span> <span class="nx">TABLE_MAX_PAGES</span><span class="p">)</span>
+		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="k">if</span> <span class="nx">pager</span><span class="p">.</span><span class="nx">pages</span><span class="p">[</span><span class="nx">pageNum</span><span class="p">]</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">page</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">PAGE_SIZE</span><span class="p">)</span>
+		<span class="nx">numPages</span> <span class="o">:=</span> <span class="nx">pager</span><span class="p">.</span><span class="nx">fileLength</span> <span class="o">/</span> <span class="nx">PAGE_SIZE</span>
+
+		<span class="k">if</span> <span class="nx">pager</span><span class="p">.</span><span class="nx">fileLength</span><span class="o">%</span><span class="nx">PAGE_SIZE</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+			<span class="nx">numPages</span><span class="o">++</span>
+		<span class="p">}</span>
+
+		<span class="k">if</span> <span class="nx">pageNum</span> <span class="o">&lt;=</span> <span class="nx">numPages</span> <span class="p">{</span>
+			<span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">pager</span><span class="p">.</span><span class="nx">fileDescriptor</span><span class="p">.</span><span class="nf">Seek</span><span class="p">(</span><span class="nb">int64</span><span class="p">(</span><span class="nx">pageNum</span><span class="o">*</span><span class="nx">PAGE_SIZE</span><span class="p">),</span> <span class="nx">os</span><span class="p">.</span><span class="nx">SEEK_SET</span><span class="p">)</span>
+			<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+				<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Error seeking: %v\n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+				<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+			<span class="p">}</span>
+
+			<span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">pager</span><span class="p">.</span><span class="nx">fileDescriptor</span><span class="p">.</span><span class="nf">Read</span><span class="p">(</span><span class="nx">page</span><span class="p">)</span>
+			<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">&amp;&amp;</span> <span class="nx">err</span> <span class="o">!=</span> <span class="nx">io</span><span class="p">.</span><span class="nx">EOF</span> <span class="p">{</span>
+				<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Error reading file: %v\n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+				<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+
+		<span class="nx">pager</span><span class="p">.</span><span class="nx">pages</span><span class="p">[</span><span class="nx">pageNum</span><span class="p">]</span> <span class="p">=</span> <span class="nx">page</span>
+	<span class="p">}</span>
+
+	<span class="k">return</span> <span class="nx">pager</span><span class="p">.</span><span class="nx">pages</span><span class="p">[</span><span class="nx">pageNum</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">rowSlot</span><span class="p">(</span><span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">,</span> <span class="nx">rowNum</span> <span class="kt">uint32</span><span class="p">)</span> <span class="p">[]</span><span class="kt">byte</span> <span class="p">{</span>
+	<span class="nx">pageNum</span> <span class="o">:=</span> <span class="nx">rowNum</span> <span class="o">/</span> <span class="nx">ROWS_PER_PAGE</span>
+	<span class="nx">page</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">pageNum</span><span class="p">)</span>
+	<span class="nx">rowOffset</span> <span class="o">:=</span> <span class="nx">rowNum</span> <span class="o">%</span> <span class="nx">ROWS_PER_PAGE</span>
+	<span class="nx">byteOffset</span> <span class="o">:=</span> <span class="nx">rowOffset</span> <span class="o">*</span> <span class="nx">ROW_SIZE</span>
+	<span class="k">return</span> <span class="nx">page</span><span class="p">[</span><span class="nx">byteOffset</span> <span class="p">:</span> <span class="nx">byteOffset</span><span class="o">+</span><span class="nx">ROW_SIZE</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">pagerOpen</span><span class="p">(</span><span class="nx">filename</span> <span class="kt">string</span><span class="p">)</span> <span class="o">*</span><span class="nx">Pager</span> <span class="p">{</span>
+	<span class="nx">fileDescriptor</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">OpenFile</span><span class="p">(</span><span class="nx">filename</span><span class="p">,</span> <span class="nx">os</span><span class="p">.</span><span class="nx">O_RDWR</span><span class="p">|</span><span class="nx">os</span><span class="p">.</span><span class="nx">O_CREATE</span><span class="p">,</span> <span class="mo">0644</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Unable to open file: %v\n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="nx">fileLength</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">fileDescriptor</span><span class="p">.</span><span class="nf">Seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nx">os</span><span class="p">.</span><span class="nx">SEEK_END</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Error seeking: %v\n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="nx">pager</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">Pager</span><span class="p">{</span>
+		<span class="nx">fileDescriptor</span><span class="p">:</span> <span class="nx">fileDescriptor</span><span class="p">,</span>
+		<span class="nx">fileLength</span><span class="p">:</span>     <span class="nb">uint32</span><span class="p">(</span><span class="nx">fileLength</span><span class="p">),</span>
+	<span class="p">}</span>
+
+	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">TABLE_MAX_PAGES</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="nx">pager</span><span class="p">.</span><span class="nx">pages</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="kc">nil</span>
+	<span class="p">}</span>
+
+	<span class="k">return</span> <span class="nx">pager</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">dbOpen</span><span class="p">(</span><span class="nx">filename</span> <span class="kt">string</span><span class="p">)</span> <span class="o">*</span><span class="nx">Table</span> <span class="p">{</span>
+	<span class="nx">pager</span> <span class="o">:=</span> <span class="nf">pagerOpen</span><span class="p">(</span><span class="nx">filename</span><span class="p">)</span>
+	<span class="nx">numRows</span> <span class="o">:=</span> <span class="nx">pager</span><span class="p">.</span><span class="nx">fileLength</span> <span class="o">/</span> <span class="nx">ROW_SIZE</span>
+
+	<span class="nx">table</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">Table</span><span class="p">{</span>
+		<span class="nx">numRows</span><span class="p">:</span> <span class="nx">numRows</span><span class="p">,</span>
+		<span class="nx">pager</span><span class="p">:</span>   <span class="nx">pager</span><span class="p">,</span>
+	<span class="p">}</span>
+
+	<span class="k">return</span> <span class="nx">table</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">pagerFlush</span><span class="p">(</span><span class="nx">pager</span> <span class="o">*</span><span class="nx">Pager</span><span class="p">,</span> <span class="nx">pageNum</span> <span class="kt">uint32</span><span class="p">,</span> <span class="nx">size</span> <span class="kt">uint32</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="nx">pager</span><span class="p">.</span><span class="nx">pages</span><span class="p">[</span><span class="nx">pageNum</span><span class="p">]</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Tried to flush null page\n&#34;</span><span class="p">)</span>
+		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="nx">offset</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">pager</span><span class="p">.</span><span class="nx">fileDescriptor</span><span class="p">.</span><span class="nf">Seek</span><span class="p">(</span><span class="nb">int64</span><span class="p">(</span><span class="nx">pageNum</span><span class="o">*</span><span class="nx">PAGE_SIZE</span><span class="p">),</span> <span class="nx">os</span><span class="p">.</span><span class="nx">SEEK_SET</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Error seeking: %v\n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="k">if</span> <span class="nx">offset</span> <span class="o">!=</span> <span class="nb">int64</span><span class="p">(</span><span class="nx">pageNum</span><span class="o">*</span><span class="nx">PAGE_SIZE</span><span class="p">)</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Seek offset does not match page start\n&#34;</span><span class="p">)</span>
+		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">pager</span><span class="p">.</span><span class="nx">fileDescriptor</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="nx">pager</span><span class="p">.</span><span class="nx">pages</span><span class="p">[</span><span class="nx">pageNum</span><span class="p">][:</span><span class="nx">size</span><span class="p">])</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Error writing: %v\n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">dbClose</span><span class="p">(</span><span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">pager</span> <span class="o">:=</span> <span class="nx">table</span><span class="p">.</span><span class="nx">pager</span>
+	<span class="nx">numFullPages</span> <span class="o">:=</span> <span class="nx">table</span><span class="p">.</span><span class="nx">numRows</span> <span class="o">/</span> <span class="nx">ROWS_PER_PAGE</span>
+
+	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="nb">uint32</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">numFullPages</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="nx">pager</span><span class="p">.</span><span class="nx">pages</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+			<span class="k">continue</span>
+		<span class="p">}</span>
+		<span class="nf">pagerFlush</span><span class="p">(</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">PAGE_SIZE</span><span class="p">)</span>
+		<span class="nx">pager</span><span class="p">.</span><span class="nx">pages</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="kc">nil</span>
+	<span class="p">}</span>
+
+	<span class="nx">numAdditionalRows</span> <span class="o">:=</span> <span class="nx">table</span><span class="p">.</span><span class="nx">numRows</span> <span class="o">%</span> <span class="nx">ROWS_PER_PAGE</span>
+	<span class="k">if</span> <span class="nx">numAdditionalRows</span> <span class="p">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+		<span class="nx">pageNum</span> <span class="o">:=</span> <span class="nx">numFullPages</span>
+		<span class="k">if</span> <span class="nx">pager</span><span class="p">.</span><span class="nx">pages</span><span class="p">[</span><span class="nx">pageNum</span><span class="p">]</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+			<span class="nf">pagerFlush</span><span class="p">(</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">pageNum</span><span class="p">,</span> <span class="nx">numAdditionalRows</span><span class="o">*</span><span class="nx">ROW_SIZE</span><span class="p">)</span>
+			<span class="nx">pager</span><span class="p">.</span><span class="nx">pages</span><span class="p">[</span><span class="nx">pageNum</span><span class="p">]</span> <span class="p">=</span> <span class="kc">nil</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+
+	<span class="nx">err</span> <span class="o">:=</span> <span class="nx">pager</span><span class="p">.</span><span class="nx">fileDescriptor</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Error closing db file: %v\n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">TABLE_MAX_PAGES</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="nx">page</span> <span class="o">:=</span> <span class="nx">pager</span><span class="p">.</span><span class="nx">pages</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span>
+		<span class="k">if</span> <span class="nx">page</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+			<span class="nx">pager</span><span class="p">.</span><span class="nx">pages</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="kc">nil</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+
+	<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">printPrompt</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;db &gt; &#34;</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">readInput</span><span class="p">(</span><span class="nx">reader</span> <span class="o">*</span><span class="nx">bufio</span><span class="p">.</span><span class="nx">Reader</span><span class="p">,</span> <span class="nx">inputBuffer</span> <span class="o">*</span><span class="nx">InputBuffer</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c1">// chatGPT init error, need to debug
+</span><span class="c1"></span>	<span class="c1">//reader := bufio.NewReader(os.Stdin)
+</span><span class="c1"></span>	<span class="nx">buffer</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">reader</span><span class="p">.</span><span class="nf">ReadString</span><span class="p">(</span><span class="sc">&#39;\n&#39;</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Error reading input: &#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">())</span>
+		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="c1">// Ignore newline character
+</span><span class="c1"></span>	<span class="nx">buffer</span> <span class="p">=</span> <span class="nx">buffer</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="nx">buffer</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+	<span class="nx">inputBuffer</span><span class="p">.</span><span class="nx">inputLength</span> <span class="p">=</span> <span class="nb">len</span><span class="p">(</span><span class="nx">buffer</span><span class="p">)</span>
+	<span class="nx">inputBuffer</span><span class="p">.</span><span class="nx">buffer</span> <span class="p">=</span> <span class="nx">buffer</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">closeInputBuffer</span><span class="p">(</span><span class="nx">inputBuffer</span> <span class="o">*</span><span class="nx">InputBuffer</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">inputBuffer</span><span class="p">.</span><span class="nx">buffer</span> <span class="p">=</span> <span class="s">&#34;&#34;</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">doMetaCommand</span><span class="p">(</span><span class="nx">inputBuffer</span> <span class="o">*</span><span class="nx">InputBuffer</span><span class="p">,</span> <span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">)</span> <span class="nx">MetaCommandResult</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="nx">inputBuffer</span><span class="p">.</span><span class="nx">buffer</span> <span class="o">==</span> <span class="s">&#34;.exit&#34;</span> <span class="p">{</span>
+		<span class="nf">closeInputBuffer</span><span class="p">(</span><span class="nx">inputBuffer</span><span class="p">)</span>
+		<span class="nf">dbClose</span><span class="p">(</span><span class="nx">table</span><span class="p">)</span>
+		<span class="k">return</span> <span class="nx">META_COMMAND_SUCCESS</span>
+	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">META_COMMAND_UNRECOGNIZED_COMMAND</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">prepareInsert</span><span class="p">(</span><span class="nx">inputBuffer</span> <span class="o">*</span><span class="nx">InputBuffer</span><span class="p">,</span> <span class="nx">statement</span> <span class="o">*</span><span class="nx">Statement</span><span class="p">)</span> <span class="nx">PrepareResult</span> <span class="p">{</span>
+	<span class="nx">statement</span><span class="p">.</span><span class="nx">typ</span> <span class="p">=</span> <span class="nx">STATEMENT_INSERT</span>
+
+	<span class="nx">tokens</span> <span class="o">:=</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">Fields</span><span class="p">(</span><span class="nx">inputBuffer</span><span class="p">.</span><span class="nx">buffer</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">tokens</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">4</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">PREPARE_SYNTAX_ERROR</span>
+	<span class="p">}</span>
+
+	<span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">tokens</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">PREPARE_NEGATIVE_ID</span>
+	<span class="p">}</span>
+
+	<span class="k">if</span> <span class="nx">id</span> <span class="p">&lt;</span> <span class="mi">0</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">PREPARE_NEGATIVE_ID</span>
+	<span class="p">}</span>
+
+	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">tokens</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="p">&gt;</span> <span class="nx">COLUMN_USERNAME_SIZE</span> <span class="o">||</span> <span class="nb">len</span><span class="p">(</span><span class="nx">tokens</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="p">&gt;</span> <span class="nx">COLUMN_EMAIL_SIZE</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">PREPARE_STRING_TOO_LONG</span>
+	<span class="p">}</span>
+
+	<span class="nx">statement</span><span class="p">.</span><span class="nx">rowToInsert</span><span class="p">.</span><span class="nx">id</span> <span class="p">=</span> <span class="nb">uint32</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span>
+	<span class="nb">copy</span><span class="p">(</span><span class="nx">statement</span><span class="p">.</span><span class="nx">rowToInsert</span><span class="p">.</span><span class="nx">username</span><span class="p">[:],</span> <span class="nx">tokens</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+	<span class="nb">copy</span><span class="p">(</span><span class="nx">statement</span><span class="p">.</span><span class="nx">rowToInsert</span><span class="p">.</span><span class="nx">email</span><span class="p">[:],</span> <span class="nx">tokens</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+
+	<span class="k">return</span> <span class="nx">PREPARE_SUCCESS</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">prepareStatement</span><span class="p">(</span><span class="nx">inputBuffer</span> <span class="o">*</span><span class="nx">InputBuffer</span><span class="p">,</span> <span class="nx">statement</span> <span class="o">*</span><span class="nx">Statement</span><span class="p">)</span> <span class="nx">PrepareResult</span> <span class="p">{</span>
+	<span class="nx">tokens</span> <span class="o">:=</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">Fields</span><span class="p">(</span><span class="nx">inputBuffer</span><span class="p">.</span><span class="nx">buffer</span><span class="p">)</span>
+
+	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">tokens</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">PREPARE_UNRECOGNIZED_STATEMENT</span>
+	<span class="p">}</span>
+
+	<span class="k">switch</span> <span class="nx">tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">{</span>
+	<span class="k">case</span> <span class="s">&#34;insert&#34;</span><span class="p">:</span>
+		<span class="k">return</span> <span class="nf">prepareInsert</span><span class="p">(</span><span class="nx">inputBuffer</span><span class="p">,</span> <span class="nx">statement</span><span class="p">)</span>
+	<span class="k">case</span> <span class="s">&#34;select&#34;</span><span class="p">:</span>
+		<span class="nx">statement</span><span class="p">.</span><span class="nx">typ</span> <span class="p">=</span> <span class="nx">STATEMENT_SELECT</span>
+		<span class="k">return</span> <span class="nx">PREPARE_SUCCESS</span>
+	<span class="k">default</span><span class="p">:</span>
+		<span class="k">return</span> <span class="nx">PREPARE_UNRECOGNIZED_STATEMENT</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">executeInsert</span><span class="p">(</span><span class="nx">statement</span> <span class="o">*</span><span class="nx">Statement</span><span class="p">,</span> <span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">)</span> <span class="nx">ExecuteResult</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="nx">table</span><span class="p">.</span><span class="nx">numRows</span> <span class="o">&gt;=</span> <span class="nx">TABLE_MAX_ROWS</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">EXECUTE_TABLE_FULL</span>
+	<span class="p">}</span>
+
+	<span class="nx">rowToInsert</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">statement</span><span class="p">.</span><span class="nx">rowToInsert</span>
+
+	<span class="nf">serializeRow</span><span class="p">(</span><span class="nx">rowToInsert</span><span class="p">,</span> <span class="nf">rowSlot</span><span class="p">(</span><span class="nx">table</span><span class="p">,</span> <span class="nx">table</span><span class="p">.</span><span class="nx">numRows</span><span class="p">))</span>
+	<span class="nx">table</span><span class="p">.</span><span class="nx">numRows</span><span class="o">++</span>
+
+	<span class="k">return</span> <span class="nx">EXECUTE_SUCCESS</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">executeSelect</span><span class="p">(</span><span class="nx">statement</span> <span class="o">*</span><span class="nx">Statement</span><span class="p">,</span> <span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">)</span> <span class="nx">ExecuteResult</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">row</span> <span class="nx">Row</span>
+	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="nb">uint32</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">table</span><span class="p">.</span><span class="nx">numRows</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="nf">deserializeRow</span><span class="p">(</span><span class="nf">rowSlot</span><span class="p">(</span><span class="nx">table</span><span class="p">,</span> <span class="nx">i</span><span class="p">),</span> <span class="o">&amp;</span><span class="nx">row</span><span class="p">)</span>
+		<span class="nf">printRow</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">row</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="nx">EXECUTE_SUCCESS</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">executeStatement</span><span class="p">(</span><span class="nx">statement</span> <span class="o">*</span><span class="nx">Statement</span><span class="p">,</span> <span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">)</span> <span class="nx">ExecuteResult</span> <span class="p">{</span>
+	<span class="k">switch</span> <span class="nx">statement</span><span class="p">.</span><span class="nx">typ</span> <span class="p">{</span>
+	<span class="k">case</span> <span class="nx">STATEMENT_INSERT</span><span class="p">:</span>
+		<span class="k">return</span> <span class="nf">executeInsert</span><span class="p">(</span><span class="nx">statement</span><span class="p">,</span> <span class="nx">table</span><span class="p">)</span>
+	<span class="k">case</span> <span class="nx">STATEMENT_SELECT</span><span class="p">:</span>
+		<span class="k">return</span> <span class="nf">executeSelect</span><span class="p">(</span><span class="nx">statement</span><span class="p">,</span> <span class="nx">table</span><span class="p">)</span>
+	<span class="k">default</span><span class="p">:</span>
+		<span class="k">return</span> <span class="nx">EXECUTE_SUCCESS</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">)</span> <span class="p">&lt;</span> <span class="mi">2</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Must supply a database filename.&#34;</span><span class="p">)</span>
+		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="nx">filename</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+	<span class="nx">table</span> <span class="o">:=</span> <span class="nf">dbOpen</span><span class="p">(</span><span class="nx">filename</span><span class="p">)</span>
+
+	<span class="nx">inputBuffer</span> <span class="o">:=</span> <span class="nf">newInputBuffer</span><span class="p">()</span>
+	<span class="nx">reader</span> <span class="o">:=</span> <span class="nx">bufio</span><span class="p">.</span><span class="nf">NewReader</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdin</span><span class="p">)</span>
+	<span class="k">for</span> <span class="p">{</span>
+		<span class="nf">printPrompt</span><span class="p">()</span>
+		<span class="nf">readInput</span><span class="p">(</span><span class="nx">reader</span><span class="p">,</span> <span class="nx">inputBuffer</span><span class="p">)</span>
+
+		<span class="k">if</span> <span class="nx">inputBuffer</span><span class="p">.</span><span class="nx">buffer</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="sc">&#39;.&#39;</span> <span class="p">{</span>
+			<span class="k">switch</span> <span class="nf">doMetaCommand</span><span class="p">(</span><span class="nx">inputBuffer</span><span class="p">,</span> <span class="nx">table</span><span class="p">)</span> <span class="p">{</span>
+			<span class="k">case</span> <span class="nx">META_COMMAND_SUCCESS</span><span class="p">:</span>
+				<span class="k">continue</span>
+			<span class="k">case</span> <span class="nx">META_COMMAND_UNRECOGNIZED_COMMAND</span><span class="p">:</span>
+				<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Unrecognized command &#39;%s&#39;\n&#34;</span><span class="p">,</span> <span class="nx">inputBuffer</span><span class="p">.</span><span class="nx">buffer</span><span class="p">)</span>
+				<span class="k">continue</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+
+		<span class="kd">var</span> <span class="nx">statement</span> <span class="nx">Statement</span>
+		<span class="k">switch</span> <span class="nf">prepareStatement</span><span class="p">(</span><span class="nx">inputBuffer</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">statement</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">case</span> <span class="nx">PREPARE_SUCCESS</span><span class="p">:</span>
+			<span class="k">break</span>
+		<span class="k">case</span> <span class="nx">PREPARE_NEGATIVE_ID</span><span class="p">:</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;ID must be positive.&#34;</span><span class="p">)</span>
+			<span class="k">continue</span>
+		<span class="k">case</span> <span class="nx">PREPARE_STRING_TOO_LONG</span><span class="p">:</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;String is too long.&#34;</span><span class="p">)</span>
+			<span class="k">continue</span>
+		<span class="k">case</span> <span class="nx">PREPARE_SYNTAX_ERROR</span><span class="p">:</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Syntax error. Could not parse statement.&#34;</span><span class="p">)</span>
+			<span class="k">continue</span>
+		<span class="k">case</span> <span class="nx">PREPARE_UNRECOGNIZED_STATEMENT</span><span class="p">:</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Unrecognized keyword at start of &#39;%s&#39;.\n&#34;</span><span class="p">,</span> <span class="nx">inputBuffer</span><span class="p">.</span><span class="nx">buffer</span><span class="p">)</span>
+			<span class="k">continue</span>
+		<span class="p">}</span>
+
+		<span class="k">switch</span> <span class="nf">executeStatement</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">statement</span><span class="p">,</span> <span class="nx">table</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">case</span> <span class="nx">EXECUTE_SUCCESS</span><span class="p">:</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Executed.&#34;</span><span class="p">)</span>
+		<span class="k">case</span> <span class="nx">EXECUTE_TABLE_FULL</span><span class="p">:</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Error: Table full.&#34;</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div>
     </div>
 
     

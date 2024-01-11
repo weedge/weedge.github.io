@@ -29,8 +29,7 @@
 数据库如何工作？  数据以什么格式保存？（在内存和磁盘上） 它什么时候从内存移动到磁盘？ 为什么一张表只能有一个主键？ 回滚事务如何进行？ 索引是如何格式化的？ 全表扫描何时以及如何发生？ 准备好的语句以什么格式保存？  简而言之，数据库是如何工作的？
 为了理解，我正在用 C 从头开始构建sqlite的克隆，并且我将记录我的过程。
  “我无法创造的东西，我就不明白。What I cannot create, I do not understand” ——理查德·费曼
- 
-" />
+ " />
 
   <meta name="keywords" content="工作, 技术, 生活" />
 
@@ -114,7 +113,7 @@
 
 "><meta itemprop="datePublished" content="2024-01-09T11:26:23+08:00" />
 <meta itemprop="dateModified" content="2024-01-09T11:26:23+08:00" />
-<meta itemprop="wordCount" content="32285">
+<meta itemprop="wordCount" content="32283">
 <meta itemprop="keywords" content="db," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="[译]构建一个简单的数据库"/>
 <meta name="twitter:description" content="用 C 从头开始编写 SQLite 克隆；
@@ -395,7 +394,7 @@
     <li><a href="#第二部分---世界上最简单的sql编译器和虚拟机">第二部分 - 世界上最简单的SQL编译器和虚拟机</a></li>
     <li><a href="#第三部分---内存中追加方式单表数据库">第三部分 - 内存中、追加方式、单表数据库</a></li>
     <li><a href="#第四部分---我们的第一个测试bug">第四部分 - 我们的第一个测试（Bug）</a></li>
-    <li><a href="#第五部分---持久性到磁盘">第五部分 - 持久性到磁盘</a>
+    <li><a href="#第五部分---持久化到磁盘">第五部分 - 持久化到磁盘</a>
       <ul>
         <li><a href="#结论">结论</a></li>
         <li><a href="#完整的变更">完整的变更</a></li>
@@ -467,7 +466,7 @@
 <blockquote>
 <p>“我无法创造的东西，我就不明白。<em>What I cannot create, I do not understand</em>” ——<a href="https://en.m.wikiquote.org/wiki/Richard_Feynman">理查德·费曼</a></p>
 </blockquote>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/arch2.gif"><img src="https://cstack.github.io/db_tutorial/assets/images/arch2.gif" alt="sqlite 架构（https://www.sqlite.org/arch.html）"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/arch2.gif" alt="sqlite 架构（https://www.sqlite.org/arch.html）"></p>
 <h2 id="第一部分---简介和设置repl">第一部分 - 简介和设置REPL</h2>
 <p>作为一名网页开发者，我每天都在工作中使用关系数据库，但它们对我来说就像一个黑匣子。我有一些问题：</p>
 <ul>
@@ -483,7 +482,7 @@
 <p>为了弄清楚这些问题，我正在从零开始编写一个数据库。它的模型是基于SQLite的，因为它设计得很小，比MySQL或PostgreSQL少了一些特性，所以我更有希望能理解它。整个数据库存储在单个文件中！</p>
 <h2 id="sqlite">Sqlite</h2>
 <p>在他们的网站上有很多关于sqlite内部的<a href="https://www.sqlite.org/arch.html">文档</a>，而且我也有一本<a href="https://play.google.com/store/books/details?id=9Z6IQQnX1JEC">《SQLite数据库系统：设计与实现》</a>的副本(看是否可以撸一遍，仅翻译，看sqlite具体版本源码了解细节)。</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/arch1.gif"> <img src="https://cstack.github.io/db_tutorial/assets/images/arch1.gif" alt="sqlite architecture (https://www.sqlite.org/zipvfs/doc/trunk/www/howitworks.wiki)"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/arch1.gif" alt="sqlite"></p>
 <p>sqlite 架构 (<a href="https://www.sqlite.org/zipvfs/doc/trunk/www/howitworks.wiki">https://www.sqlite.org/zipvfs/doc/trunk/www/howitworks.wiki</a>)</p>
 <p>一个查询需要通过一系列组件来检索或修改数据。<strong>前端</strong>包括：</p>
 <ul>
@@ -696,7 +695,7 @@ db &gt; .exit
 </code></pre></div><h2 id="第二部分---世界上最简单的sql编译器和虚拟机">第二部分 - 世界上最简单的SQL编译器和虚拟机</h2>
 <p>我们正在制作一个 SQLite 的克隆版本。SQLite 的“前端”是一个 SQL 编译器，它解析字符串并输出称为字节码的内部表示形式。</p>
 <p>这个字节码被传递给虚拟机，然后由虚拟机执行。</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/arch2.gif"> <img src="https://cstack.github.io/db_tutorial/assets/images/arch2.gif" alt="SQLite Architecture (https://www.sqlite.org/arch.html)"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/arch2.gif" alt="SQLite Architecture"></p>
 <p>将任务分成两个步骤有几个优点：</p>
 <ul>
 <li>减少了每个部分的复杂性（例如，虚拟机不需要担心语法错误）</li>
@@ -1745,7 +1744,7 @@ Finished in 0.02284 seconds (files took 0.116 seconds to load)
 <span class="o">+</span>  <span class="k">end</span>
 <span class="o">+</span><span class="k">end</span>
 
-</code></pre></div><h2 id="第五部分---持久性到磁盘">第五部分 - 持久性到磁盘</h2>
+</code></pre></div><h2 id="第五部分---持久化到磁盘">第五部分 - 持久化到磁盘</h2>
 <blockquote>
 <p>“世界上没有什么可以取代坚持。Nothing in the world can take the place of persistence.” - <a href="https://en.wikiquote.org/wiki/Calvin_Coolidge">卡尔文·柯立芝</a></p>
 </blockquote>
@@ -1777,7 +1776,7 @@ Finished in 0.02284 seconds (files took 0.116 seconds to load)
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="gi">+typedef struct {
 </span><span class="gi">+  int file_descriptor;
 </span><span class="gi">+  uint32_t file_length;
-</span><span class="gi">+  void* pages[TABLE_MAX_PAGES];
+</span><span class="gi">+  void* pages[TABLE_MAX_PAGES];gfvccddddddd 
 </span><span class="gi">+} Pager;
 </span><span class="gi">+
 </span><span class="gi"></span> typedef struct {
@@ -1987,19 +1986,18 @@ db &gt; .exit
 </code></pre></div><p>为了更有趣，让我们查看一下 <code>mydb.db</code>，看看我们的数据是如何存储的。我会使用 vim 作为十六进制编辑器来查看文件的内存布局：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">vim mydb.db
 :%!xxd
-</code></pre></div><p><a href="https://cstack.github.io/db_tutorial/assets/images/file-format.png"><img src="https://cstack.github.io/db_tutorial/assets/images/file-format.png" alt="Current File Format"></a><a href="https://cstack.github.io/db_tutorial/assets/images/file-format.png"><img src="https://cstack.github.io/db_tutorial/assets/images/file-format.png" alt="当前文件格式"></a></p>
+</code></pre></div><p><img src="https://cstack.github.io/db_tutorial/assets/images/file-format.png" alt="当前文件格式"></p>
 <p>前四个字节是第一行的 ID（4 个字节因为我们存储了一个 <code>uint32_t</code>）。它以小端字节序存储，因此最低有效字节排在前面（01），后面是高位字节（00 00 00）。我们使用 <code>memcpy()</code> 将字节从 <code>Row</code> 结构体复制到页面缓存，这意味着结构体在内存中按照小端字节序排列。这是我编译程序时所用机器的特性。如果我们想在我的机器上写一个数据库文件，然后在大端序的机器上读取它，我们就需要更改我们的 <code>serialize_row()</code> 和 <code>deserialize_row()</code> 方法，始终以相同的顺序存储和读取字节。</p>
 <p>接下来的 33 个字节以空字符结尾存储了用户名。显然，“cstack” 的 ASCII 十六进制是 <code>63 73 74 61 63 6b</code>，后跟一个空字符（<code>00</code>）。其余的 33 个字节未被使用。</p>
 <p>接下来的 256 个字节以同样的方式存储了邮箱。在终止空字符后面，我们可以看到一些随机的垃圾值。这很可能是由于我们 <code>Row</code> 结构体中未初始化的内存。我们将整个 256 字节的邮箱缓冲区复制到文件中，包括字符串结束后的任何字节。当我们分配该结构体时，内存中存在的任何值都会保留下来。但由于我们使用了终止空字符，它对行为没有影响。</p>
 <p><strong>注意</strong>：如果我们想确保所有字节都被初始化，可以在 <code>serialize_row</code> 中将 <code>username</code> 和 <code>email</code> 字段的复制改为 <code>strncpy</code>，如下所示：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">cCopy code
- void serialize_row(Row* source, void* destination) {
-     memcpy(destination + ID_OFFSET, &amp;(source-&gt;id), ID_SIZE);
--    memcpy(destination + USERNAME_OFFSET, &amp;(source-&gt;username), USERNAME_SIZE);
--    memcpy(destination + EMAIL_OFFSET, &amp;(source-&gt;email), EMAIL_SIZE);
-+    strncpy(destination + USERNAME_OFFSET, source-&gt;username, USERNAME_SIZE);
-+    strncpy(destination + EMAIL_OFFSET, source-&gt;email, EMAIL_SIZE);
- }
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="nf">serialize_row</span><span class="p">(</span><span class="n">Row</span><span class="o">*</span> <span class="n">source</span><span class="p">,</span> <span class="kt">void</span><span class="o">*</span> <span class="n">destination</span><span class="p">)</span> <span class="p">{</span>
+     <span class="n">memcpy</span><span class="p">(</span><span class="n">destination</span> <span class="o">+</span> <span class="n">ID_OFFSET</span><span class="p">,</span> <span class="o">&amp;</span><span class="p">(</span><span class="n">source</span><span class="o">-&gt;</span><span class="n">id</span><span class="p">),</span> <span class="n">ID_SIZE</span><span class="p">);</span>
+<span class="o">-</span>    <span class="n">memcpy</span><span class="p">(</span><span class="n">destination</span> <span class="o">+</span> <span class="n">USERNAME_OFFSET</span><span class="p">,</span> <span class="o">&amp;</span><span class="p">(</span><span class="n">source</span><span class="o">-&gt;</span><span class="n">username</span><span class="p">),</span> <span class="n">USERNAME_SIZE</span><span class="p">);</span>
+<span class="o">-</span>    <span class="n">memcpy</span><span class="p">(</span><span class="n">destination</span> <span class="o">+</span> <span class="n">EMAIL_OFFSET</span><span class="p">,</span> <span class="o">&amp;</span><span class="p">(</span><span class="n">source</span><span class="o">-&gt;</span><span class="n">email</span><span class="p">),</span> <span class="n">EMAIL_SIZE</span><span class="p">);</span>
+<span class="o">+</span>    <span class="n">strncpy</span><span class="p">(</span><span class="n">destination</span> <span class="o">+</span> <span class="n">USERNAME_OFFSET</span><span class="p">,</span> <span class="n">source</span><span class="o">-&gt;</span><span class="n">username</span><span class="p">,</span> <span class="n">USERNAME_SIZE</span><span class="p">);</span>
+<span class="o">+</span>    <span class="n">strncpy</span><span class="p">(</span><span class="n">destination</span> <span class="o">+</span> <span class="n">EMAIL_OFFSET</span><span class="p">,</span> <span class="n">source</span><span class="o">-&gt;</span><span class="n">email</span><span class="p">,</span> <span class="n">EMAIL_SIZE</span><span class="p">);</span>
+ <span class="p">}</span>
 </code></pre></div><h3 id="结论">结论</h3>
 <p>好了！我们实现了持久性。这不是最理想的。例如，如果你在没有输入 <code>.exit</code> 的情况下终止程序，你会丢失更改。此外，我们将所有页面写回磁盘，即使这些页面自从从磁盘读取以来没有发生变化。这些是我们可以稍后解决的问题。</p>
 <p>下次我们将介绍游标，这应该会更容易地实现 B 树。</p>
@@ -2454,7 +2452,7 @@ db &gt; .exit
 <li>遍历一系列值很快（不像哈希映射）</li>
 </ul>
 <p>B-Tree与二叉树不同（“B”可能代表发明者的名字，但也可能代表“平衡”）。这是一个示例B-Tree：</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/B-tree.png"><img src="https://cstack.github.io/db_tutorial/assets/images/B-tree.png" alt="示例B-Tree"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/B-tree.png" alt="示例B-Tree"></p>
 <p>与二叉树不同，B-Tree中的每个节点可以有超过2个孩子。每个节点最多可以有m个孩子，其中m称为树的“阶”。为了保持树基本平衡，我们还说节点必须至少有m/2个孩子（向上取整）。</p>
 <p>例外情况：</p>
 <ul>
@@ -2555,19 +2553,19 @@ db &gt; .exit
 <li>每个内部节点至少有1个键</li>
 </ul>
 <p>空的B-Tree只有一个节点：根节点。根节点开始作为一个带有零个键/值对的叶节点：</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/btree1.png"><img src="https://cstack.github.io/db_tutorial/assets/images/btree1.png" alt="空的btree"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/btree1.png" alt="空的btree"></p>
 <p>如果我们插入一对键/值，它们将按排序顺序存储在叶节点中。</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/btree2.png"><img src="https://cstack.github.io/db_tutorial/assets/images/btree2.png" alt="单节点btree"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/btree2.png" alt="单节点btree"></p>
 <p>假设叶节点的容量为两个键/值对。当我们插入另一个时，我们必须分裂叶节点并将一半的键/值对放入每个节点。这两个节点都成为新的内部节点的子节点，这个内部节点现在将成为根节点。</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/btree3.png"><img src="https://cstack.github.io/db_tutorial/assets/images/btree3.png" alt="两级btree"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/btree3.png" alt="两级btree"></p>
 <p>内部节点有1个键和2个指向子节点的指针。如果我们要查找小于或等于5的键，我们查找左侧子节点。如果我们要查找大于5的键，我们查找右侧子节点。</p>
 <p>现在让我们插入键“2”。首先，我们查找如果它存在时它会在哪个叶节点，然后我们到达左侧叶节点。节点已满，所以我们分裂叶节点并在父节点中创建新条目。</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/btree4.png"><img src="https://cstack.github.io/db_tutorial/assets/images/btree4.png" alt="四节点btree"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/btree4.png" alt="四节点btree"></p>
 <p>让我们继续添加键。18和21。我们到达必须再次分裂的点，但在父节点中没有足够的空间来放置另一个键/指针对。</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/btree5.png"><img src="https://cstack.github.io/db_tutorial/assets/images/btree5.png" alt="内部节点没有空间"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/btree5.png" alt="内部节点没有空间"></p>
 <p>解决方案是将根节点分裂为两个内部节点，</p>
 <p>然后创建新的根节点作为它们的父节点。</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/btree6.png"><img src="https://cstack.github.io/db_tutorial/assets/images/btree6.png" alt="三级btree"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/btree6.png" alt="三级btree"></p>
 <p>树的深度仅在我们分裂根节点时增加。每个叶节点具有相同的深度和接近相同数量的键/值对，因此树保持平衡并快速搜索。</p>
 <p>在我们实现这种数据结构之前，每个节点将对应一个页面。根节点将存在于页面0中。子指针将简单地是包含子节点的页面号。</p>
 <p>下次，我们开始实现btree！</p>
@@ -2658,7 +2656,7 @@ db &gt; .exit
 <span class="o">+</span><span class="k">const</span> <span class="kt">uint32_t</span> <span class="n">LEAF_NODE_MAX_CELLS</span> <span class="o">=</span>
 <span class="o">+</span>    <span class="n">LEAF_NODE_SPACE_FOR_CELLS</span> <span class="o">/</span> <span class="n">LEAF_NODE_CELL_SIZE</span><span class="p">;</span>
 </code></pre></div><p>根据这些常量，当前叶节点的布局如下：</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/leaf-node-format.png"><img src="https://cstack.github.io/db_tutorial/assets/images/leaf-node-format.png" alt="我们的叶节点格式"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/leaf-node-format.png" alt="我们的叶节点格式"></p>
 <p>在头部每个布尔值使用一个完整的字节有些浪费空间，但这样可以更轻松地编写访问这些值的代码。</p>
 <p>还要注意，末尾有一些空白空间。我们在头部之后存储尽可能多的单元，但剩余的空间无法容纳整个单元。我们将其留空以避免在节点之间分割单元。</p>
 <h3 id="访问叶节点字段">访问叶节点字段</h3>
@@ -2831,9 +2829,9 @@ db &gt; .exit
 </code></pre></div><p>希望这些更改能够帮助你理解和更新代码以支持B-Tree格式的数据库。</p>
 <h3 id="向叶节点插入数据">向叶节点插入数据</h3>
 <p>在本文中，我们只实现了足够实现单节点树的内容。回顾上一篇文章，树从一个空的叶节点开始：</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/btree1.png"><img src="https://cstack.github.io/db_tutorial/assets/images/btree1.png" alt="empty btree"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/btree1.png" alt="empty btree"></p>
 <p>可以添加键/值对，直到叶节点已满：</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/btree2.png"><img src="https://cstack.github.io/db_tutorial/assets/images/btree2.png" alt="one-node btree"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/btree2.png" alt="one-node btree"></p>
 <p>当我们首次打开数据库时，数据库文件将为空，因此我们将页面 0 初始化为空的叶节点（根节点）：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"> <span class="n">Table</span><span class="o">*</span> <span class="nf">db_open</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">filename</span><span class="p">)</span> <span class="p">{</span>
    <span class="n">Pager</span><span class="o">*</span> <span class="n">pager</span> <span class="o">=</span> <span class="n">pager_open</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
@@ -3503,9 +3501,9 @@ db &gt; .exit
 <h2 id="第十部分---分裂叶子节点">第十部分 - 分裂叶子节点</h2>
 <p>我们的 B-Tree 只有一个节点，看起来并不像一棵树。为了解决这个问题，我们需要一些代码来将叶子节点拆分，并创建一个内部节点作为两个叶子节点的父节点。</p>
 <p>基本上，本文的目标是从这个状态：</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/btree2.png"><img src="https://cstack.github.io/db_tutorial/assets/images/btree2.png" alt="one-node btree"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/btree2.png" alt="one-node btree"></p>
 <p>变成这个状态：</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/btree3.png"><img src="https://cstack.github.io/db_tutorial/assets/images/btree3.png" alt="two-level btree"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/btree3.png" alt="two-level btree"></p>
 <p>首先，让我们删除对满叶子节点的错误处理：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"> <span class="kt">void</span> <span class="nf">leaf_node_insert</span><span class="p">(</span><span class="n">Cursor</span><span class="o">*</span> <span class="n">cursor</span><span class="p">,</span> <span class="kt">uint32_t</span> <span class="n">key</span><span class="p">,</span> <span class="n">Row</span><span class="o">*</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span>
    <span class="kt">void</span><span class="o">*</span> <span class="n">node</span> <span class="o">=</span> <span class="n">get_page</span><span class="p">(</span><span class="n">cursor</span><span class="o">-&gt;</span><span class="n">table</span><span class="o">-&gt;</span><span class="n">pager</span><span class="p">,</span> <span class="n">cursor</span><span class="o">-&gt;</span><span class="n">page_num</span><span class="p">);</span>
@@ -3647,7 +3645,7 @@ db &gt; .exit
 <span class="o">+</span><span class="k">const</span> <span class="kt">uint32_t</span> <span class="n">INTERNAL_NODE_CELL_SIZE</span> <span class="o">=</span>
 <span class="o">+</span>    <span class="n">INTERNAL_NODE_CHILD_SIZE</span> <span class="o">+</span> <span class="n">INTERNAL_NODE_KEY_SIZE</span><span class="p">;</span>
 </code></pre></div><p>基于这些常量，这里是内部节点布局的样子：</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/internal-node-format.png"><img src="https://cstack.github.io/db_tutorial/assets/images/internal-node-format.png" alt="Our internal node format"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/internal-node-format.png" alt="Our internal node format"></p>
 <p>请注意我们的巨大分支因子。因为每个子节点/键对都非常小，所以每个内部节点可以容纳 510 个键和 511 个子节点指针。这意味着我们永远不必遍历许多层树来查找给定的键！</p>
 <table>
 <thead>
@@ -3907,7 +3905,7 @@ db &gt; .exit
   <span class="k">return</span> <span class="n">internal_node_find</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">root_page_num</span><span class="p">,</span> <span class="n">key</span><span class="p">);</span>
 <span class="p">}</span>
 </code></pre></div><p>这个函数将执行二分搜索，以找到应包含给定键的子节点。记住，每个子指针右侧的键是该子节点包含的最大键。</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/btree6.png"><img src="https://cstack.github.io/db_tutorial/assets/images/btree6.png" alt="three-level btree"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/btree6.png" alt="three-level btree"></p>
 <p>因此，我们的二分搜索比较要找到的键和子节点指针右侧的键：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="n">Cursor</span><span class="o">*</span> <span class="nf">internal_node_find</span><span class="p">(</span><span class="n">Table</span><span class="o">*</span> <span class="n">table</span><span class="p">,</span> <span class="kt">uint32_t</span> <span class="n">page_num</span><span class="p">,</span> <span class="kt">uint32_t</span> <span class="n">key</span><span class="p">)</span> <span class="p">{</span>
   <span class="kt">void</span><span class="o">*</span> <span class="n">node</span> <span class="o">=</span> <span class="n">get_page</span><span class="p">(</span><span class="n">table</span><span class="o">-&gt;</span><span class="n">pager</span><span class="p">,</span> <span class="n">page_num</span><span class="p">);</span>
@@ -4041,7 +4039,7 @@ db &gt; .exit
 </span><span class="w"></span><span class="n">Executed</span><span class="p">.</span><span class="w">
 </span><span class="w"></span><span class="n">db</span><span class="w"> </span><span class="o">&gt;</span><span class="w">
 </span></code></pre></div><p>有 15 条目，我们的 B 树包含一个内部节点和两个叶子节点，大致如下：</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/btree3.png"><img src="https://cstack.github.io/db_tutorial/assets/images/btree3.png" alt="我们的 B 树结构"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/btree3.png" alt="我们的 B 树结构"></p>
 <p>为了扫描整个表，我们需要在到达第一个叶子节点的末尾后跳转到第二个叶子节点。为此，我们将在叶子节点头部添加一个新的字段，称为 “next_leaf”，它将保存右侧叶子节点的页面号。最右侧的叶子节点的 <code>next_leaf</code> 值将为 0，表示没有兄弟节点（页面 0 通常保留给表的根节点）。</p>
 <p>更新叶子节点头部格式以包括新的字段：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"> <span class="k">const</span> <span class="kt">uint32_t</span> <span class="n">LEAF_NODE_NUM_CELLS_SIZE</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">);</span>
@@ -4141,7 +4139,7 @@ db &gt; .exit
        <span class="n">memcpy</span><span class="p">(</span><span class="n">destination</span><span class="p">,</span> <span class="n">leaf_node_cell</span><span class="p">(</span><span class="n">old_node</span><span class="p">,</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="n">LEAF_NODE_CELL_SIZE</span><span class="p">);</span>
      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
 </code></pre></div><p>请记住，叶子节点中的每个单元格首先是一个键，然后是一个值：</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/leaf-node-format.png"><img src="https://cstack.github.io/db_tutorial/assets/images/leaf-node-format.png" alt="原始叶子节点格式"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/leaf-node-format.png" alt="原始叶子节点格式"></p>
 <p>我们将新行（值）写入了单元格的开头，而其中应该放置键。这意味着用户名的一部分进入了 id 的部分（因此 id 很大）。</p>
 <p>修复了这个 bug 之后，我们最终按预期打印了整个表：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="n">db</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="k">select</span><span class="w">
@@ -4166,7 +4164,7 @@ db &gt; .exit
 <p>下次再见。</p>
 <h2 id="第十三部分---分裂叶子节点后更新父节点">第十三部分 - 分裂叶子节点后更新父节点</h2>
 <p>在我们史诗般的 B 树实现旅程中的下一步，我们将处理分裂叶子节点后修复父节点。我将使用以下示例作为参考：</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/updating-internal-node.png"><img src="https://cstack.github.io/db_tutorial/assets/images/updating-internal-node.png" alt="更新内部节点示例"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/updating-internal-node.png" alt="更新内部节点示例"></p>
 <p>在这个示例中，我们将键“3”添加到树中。这导致左叶子节点分裂。在分裂后，我们进行以下操作来修复树：</p>
 <ol>
 <li>将父节点中的第一个键更新为左子节点中的最大键（“3”）</li>
@@ -4402,7 +4400,7 @@ db &gt; .exit
 <p>好的，又迈出了一步，朝着一个完全可操作的 B 树实现迈进。下一步应该是拆分内部节点。在那之前！</p>
 <h2 id="第十四部分---拆分内部节点">第十四部分 - 拆分内部节点</h2>
 <p>我们旅程的下一段将是拆分无法容纳新键的内部节点。考虑下面的例子：</p>
-<p><a href="https://cstack.github.io/db_tutorial/assets/images/splitting-internal-node.png"><img src="https://cstack.github.io/db_tutorial/assets/images/splitting-internal-node.png" alt="拆分内部节点的示例"></a></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/splitting-internal-node.png" alt="拆分内部节点的示例"></p>
 <p>在这个例子中，我们向树中添加键“11”。这将导致我们的根节点拆分。在拆分内部节点时，为了保持一切的正常运作，我们需要做一些事情：</p>
 <ol>
 <li>创建一个兄弟节点来存储原始节点的(n-1)/2个键</li>
