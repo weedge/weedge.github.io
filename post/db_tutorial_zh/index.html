@@ -113,7 +113,7 @@
 
 "><meta itemprop="datePublished" content="2024-01-09T11:26:23+08:00" />
 <meta itemprop="dateModified" content="2024-01-09T11:26:23+08:00" />
-<meta itemprop="wordCount" content="32283">
+<meta itemprop="wordCount" content="32157">
 <meta itemprop="keywords" content="db," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="[译]构建一个简单的数据库"/>
 <meta name="twitter:description" content="用 C 从头开始编写 SQLite 克隆；
@@ -2857,7 +2857,7 @@ db &gt; .exit
 <span class="o">+</span>  <span class="kt">uint32_t</span> <span class="n">num_cells</span> <span class="o">=</span> <span class="o">*</span><span class="n">leaf_node_num_cells</span><span class="p">(</span><span class="n">node</span><span class="p">);</span>
 <span class="o">+</span>  <span class="k">if</span> <span class="p">(</span><span class="n">num_cells</span> <span class="o">&gt;=</span> <span class="n">LEAF_NODE_MAX_CELLS</span><span class="p">)</span> <span class="p">{</span>
 <span class="o">+</span>    <span class="c1">// 节点已满
-</span><span class="c1"></span><span class="o">+</span>    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;需要实现叶节点的分裂。</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span><span class="c1"></span><span class="o">+</span>    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Need to implement splitting a leaf node.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
 <span class="o">+</span>    <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
 <span class="o">+</span>  <span class="p">}</span>
 <span class="o">+</span>
@@ -3393,7 +3393,7 @@ db &gt; .exit
 <span class="o">+</span>  <span class="k">if</span> <span class="p">(</span><span class="n">get_node_type</span><span class="p">(</span><span class="n">root_node</span><span class="p">)</span> <span class="o">==</span> <span class="n">NODE_LEAF</span><span class="p">)</span> <span class="p">{</span>
 <span class="o">+</span>    <span class="k">return</span> <span class="n">leaf_node_find</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">root_page_num</span><span class="p">,</span> <span class="n">key</span><span class="p">);</span>
 <span class="o">+</span>  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-<span class="o">+</span>    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;需要实现搜索内部节点</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+<span class="o">+</span>    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Need to implement searching an internal node</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
 <span class="o">+</span>    <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
 <span class="o">+</span>  <span class="p">}</span>
 <span class="o">+</span><span class="p">}</span>
@@ -3460,10 +3460,10 @@ db &gt; .exit
          <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Executed.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
          <span class="k">break</span><span class="p">;</span>
 <span class="o">+</span>      <span class="k">case</span> <span class="p">(</span><span class="n">EXECUTE_DUPLICATE_KEY</span><span class="p">)</span><span class="o">:</span>
-<span class="o">+</span>        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;错误：重复键。</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+<span class="o">+</span>        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Error: Duplicate key.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
 <span class="o">+</span>        <span class="k">break</span><span class="p">;</span>
        <span class="k">case</span> <span class="p">(</span><span class="n">EXECUTE_TABLE_FULL</span><span class="p">)</span><span class="o">:</span>
-         <span class="n">printf</span><span class="p">(</span><span class="s">&#34;错误：表已满。</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+         <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Error: Table full.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
          <span class="k">break</span><span class="p">;</span>
 </code></pre></div><p>通过这些更改，我们的测试可以更改为检查是否按排序顺序排列：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c">       <span class="s">&#34;db &gt; Executed.&#34;</span><span class="p">,</span>
@@ -3479,11 +3479,9 @@ db &gt; .exit
      <span class="p">])</span>
    <span class="n">end</span>
 </code></pre></div><p>我们还可以添加一个新的测试以检查重复键：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="o">+</span>  <span class="n">it</span> <span class="err">&#39;如果有重复的</span><span class="n">ID</span><span class="err">，则打印错误消息&#39;</span> <span class="k">do</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="o">+</span>  <span class="n">it</span> <span class="err">&#39;</span><span class="n">prints</span> <span class="n">an</span> <span class="n">error</span> <span class="n">message</span> <span class="k">if</span> <span class="n">there</span> <span class="n">is</span> <span class="n">a</span> <span class="n">duplicate</span> <span class="n">id</span><span class="err">&#39;</span> <span class="k">do</span>
 <span class="o">+</span>    <span class="n">script</span> <span class="o">=</span> <span class="p">[</span>
-<span class="o">+</span>      <span class="s">&#34;</span>
-
-<span class="n">insert</span> <span class="mi">1</span> <span class="n">user1</span> <span class="n">person1</span><span class="err">@</span><span class="n">example</span><span class="p">.</span><span class="n">com</span><span class="s">&#34;,</span>
+<span class="o">+</span>      <span class="s">&#34;insert 1 user1 person1@example.com&#34;</span><span class="p">,</span>
 <span class="o">+</span>      <span class="s">&#34;insert 1 user1 person1@example.com&#34;</span><span class="p">,</span>
 <span class="o">+</span>      <span class="s">&#34;select&#34;</span><span class="p">,</span>
 <span class="o">+</span>      <span class="s">&#34;.exit&#34;</span><span class="p">,</span>
@@ -3491,7 +3489,7 @@ db &gt; .exit
 <span class="o">+</span>    <span class="n">result</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
 <span class="o">+</span>    <span class="n">expect</span><span class="p">(</span><span class="n">result</span><span class="p">).</span><span class="n">to</span> <span class="n">match_array</span><span class="p">([</span>
 <span class="o">+</span>      <span class="s">&#34;db &gt; Executed.&#34;</span><span class="p">,</span>
-<span class="o">+</span>      <span class="s">&#34;db &gt; 错误：重复键。&#34;</span><span class="p">,</span>
+<span class="o">+</span>      <span class="s">&#34;db &gt; Error: Duplicate key.&#34;</span><span class="p">,</span>
 <span class="o">+</span>      <span class="s">&#34;db &gt; (1, user1, person1@example.com)&#34;</span><span class="p">,</span>
 <span class="o">+</span>      <span class="s">&#34;Executed.&#34;</span><span class="p">,</span>
 <span class="o">+</span>      <span class="s">&#34;db &gt; &#34;</span><span class="p">,</span>
