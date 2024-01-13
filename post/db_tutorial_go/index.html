@@ -24,7 +24,7 @@
 
 <meta name="author" content="weedge" />
   <meta name="description" content="上篇文章使用chatGPT翻译了db_tutorial 文章，文中使用的是c语言开发； 这篇文章使用chatGPT根据db_tutorial中的c源码，使用golang进行重写, 测试的ruby代码使用python进行重写；同理其他语言也适用。
-注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，也许精细利己主义会利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下。
+注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，也许精细利己主义会利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下(特别是指针操作)。
 " />
 <meta name="keywords" content="db, golang" />
 
@@ -65,7 +65,7 @@
 
 <meta property="og:title" content="构建一个简单的数据库[golang版]" />
 <meta property="og:description" content="上篇文章使用chatGPT翻译了db_tutorial 文章，文中使用的是c语言开发； 这篇文章使用chatGPT根据db_tutorial中的c源码，使用golang进行重写, 测试的ruby代码使用python进行重写；同理其他语言也适用。
-注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，也许精细利己主义会利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下。" />
+注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，也许精细利己主义会利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下(特别是指针操作)。" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://weedge.github.io/post/db_tutorial_go/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2024-01-10T10:58:28+08:00" />
@@ -73,13 +73,13 @@
 
 <meta itemprop="name" content="构建一个简单的数据库[golang版]">
 <meta itemprop="description" content="上篇文章使用chatGPT翻译了db_tutorial 文章，文中使用的是c语言开发； 这篇文章使用chatGPT根据db_tutorial中的c源码，使用golang进行重写, 测试的ruby代码使用python进行重写；同理其他语言也适用。
-注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，也许精细利己主义会利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下。"><meta itemprop="datePublished" content="2024-01-10T10:58:28+08:00" />
+注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，也许精细利己主义会利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下(特别是指针操作)。"><meta itemprop="datePublished" content="2024-01-10T10:58:28+08:00" />
 <meta itemprop="dateModified" content="2024-01-10T10:58:28+08:00" />
-<meta itemprop="wordCount" content="8047">
+<meta itemprop="wordCount" content="8107">
 <meta itemprop="keywords" content="db,golang," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="构建一个简单的数据库[golang版]"/>
 <meta name="twitter:description" content="上篇文章使用chatGPT翻译了db_tutorial 文章，文中使用的是c语言开发； 这篇文章使用chatGPT根据db_tutorial中的c源码，使用golang进行重写, 测试的ruby代码使用python进行重写；同理其他语言也适用。
-注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，也许精细利己主义会利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下。"/>
+注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，也许精细利己主义会利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下(特别是指针操作)。"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -350,7 +350,7 @@
     
     <div class="post-content">
       <p>上篇文章使用chatGPT翻译了<a href="https://cstack.github.io/db_tutorial/">db_tutorial</a> 文章，文中使用的是c语言开发； 这篇文章使用chatGPT根据db_tutorial中的c源码，使用golang进行重写, 测试的ruby代码使用python进行重写；同理其他语言也适用。</p>
-<p>注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，也许精细利己主义会利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下。</p>
+<p>注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，也许精细利己主义会利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下(特别是指针操作)。</p>
 <h2 id="第一部分---简介和设置repl">第一部分 - 简介和设置REPL</h2>
 <p>制作一个简单的 REPL(Read-Eval-Print Loop) golang 版本</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
@@ -2370,7 +2370,8 @@ db &gt; .exit
 <span class="p">}</span>
 
 <span class="kd">func</span> <span class="nf">leafNodeKey</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">cellNum</span> <span class="kt">uint32</span><span class="p">)</span> <span class="o">*</span><span class="kt">uint32</span> <span class="p">{</span>
-	<span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="kt">uint32</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">node</span><span class="p">[</span><span class="nx">LEAF_NODE_KEY_OFFSET</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="nx">cellNum</span><span class="o">*</span><span class="nx">LEAF_NODE_CELL_SIZE</span><span class="p">)]))</span>
+	<span class="nx">offset</span> <span class="o">:=</span> <span class="nx">LEAF_NODE_HEADER_SIZE</span> <span class="o">+</span> <span class="nx">cellNum</span><span class="o">*</span><span class="nx">LEAF_NODE_CELL_SIZE</span>
+	<span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="kt">uint32</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">node</span><span class="p">[</span><span class="nx">offset</span><span class="p">]))</span>
 <span class="p">}</span>
 
 <span class="kd">func</span> <span class="nf">leafNodeValue</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">cellNum</span> <span class="kt">uint32</span><span class="p">)</span> <span class="p">[]</span><span class="kt">byte</span> <span class="p">{</span>
@@ -2792,6 +2793,7 @@ db &gt; .exit
 		<span class="p">}</span>
 	<span class="p">}</span>
 <span class="p">}</span>
+
 </code></pre></div><h2 id="第九部分---二分搜索和重复键">第九部分 - 二分搜索和重复键</h2>
 <p>golang实现</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
@@ -2943,7 +2945,8 @@ db &gt; .exit
 <span class="p">}</span>
 
 <span class="kd">func</span> <span class="nf">leafNodeKey</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">cellNum</span> <span class="kt">uint32</span><span class="p">)</span> <span class="o">*</span><span class="kt">uint32</span> <span class="p">{</span>
-	<span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="kt">uint32</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">node</span><span class="p">[</span><span class="nx">LEAF_NODE_KEY_OFFSET</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="nx">cellNum</span><span class="o">*</span><span class="nx">LEAF_NODE_CELL_SIZE</span><span class="p">)]))</span>
+	<span class="nx">offset</span> <span class="o">:=</span> <span class="nx">LEAF_NODE_HEADER_SIZE</span> <span class="o">+</span> <span class="nx">cellNum</span><span class="o">*</span><span class="nx">LEAF_NODE_CELL_SIZE</span>
+	<span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="kt">uint32</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">node</span><span class="p">[</span><span class="nx">offset</span><span class="p">]))</span>
 <span class="p">}</span>
 
 <span class="kd">func</span> <span class="nf">leafNodeValue</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">cellNum</span> <span class="kt">uint32</span><span class="p">)</span> <span class="p">[]</span><span class="kt">byte</span> <span class="p">{</span>
@@ -3006,10 +3009,12 @@ db &gt; .exit
 	<span class="p">}</span>
 
 	<span class="k">if</span> <span class="nx">pager</span><span class="p">.</span><span class="nx">pages</span><span class="p">[</span><span class="nx">pageNum</span><span class="p">]</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">page</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">PAGE_SIZE</span><span class="p">)</span>
+		<span class="c1">// Cache miss. Allocate memory and load from file.
+</span><span class="c1"></span>		<span class="nx">page</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">PAGE_SIZE</span><span class="p">)</span>
 		<span class="nx">numPages</span> <span class="o">:=</span> <span class="nx">pager</span><span class="p">.</span><span class="nx">fileLength</span> <span class="o">/</span> <span class="nx">PAGE_SIZE</span>
 
-		<span class="k">if</span> <span class="nx">pager</span><span class="p">.</span><span class="nx">fileLength</span><span class="o">%</span><span class="nx">PAGE_SIZE</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+		<span class="c1">// We might save a partial page at the end of the file
+</span><span class="c1"></span>		<span class="k">if</span> <span class="nx">pager</span><span class="p">.</span><span class="nx">fileLength</span><span class="o">%</span><span class="nx">PAGE_SIZE</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
 			<span class="nx">numPages</span><span class="o">++</span>
 		<span class="p">}</span>
 
@@ -3080,8 +3085,9 @@ db &gt; .exit
 <span class="kd">func</span> <span class="nf">tableFind</span><span class="p">(</span><span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">,</span> <span class="nx">key</span> <span class="kt">uint32</span><span class="p">)</span> <span class="o">*</span><span class="nx">Cursor</span> <span class="p">{</span>
 	<span class="nx">rootPageNum</span> <span class="o">:=</span> <span class="nx">table</span><span class="p">.</span><span class="nx">rootPageNum</span>
 	<span class="nx">rootNode</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">rootPageNum</span><span class="p">)</span>
+	<span class="nx">nodeType</span> <span class="o">:=</span> <span class="nf">getNodeType</span><span class="p">(</span><span class="nx">rootNode</span><span class="p">)</span>
 
-	<span class="k">if</span> <span class="nf">getNodeType</span><span class="p">(</span><span class="nx">rootNode</span><span class="p">)</span> <span class="o">==</span> <span class="nx">NODE_LEAF</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="nx">nodeType</span> <span class="o">==</span> <span class="nx">NODE_LEAF</span> <span class="p">{</span>
 		<span class="k">return</span> <span class="nf">leafNodeFind</span><span class="p">(</span><span class="nx">table</span><span class="p">,</span> <span class="nx">rootPageNum</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span>
 	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
 		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Need to implement searching an internal node&#34;</span><span class="p">)</span>
@@ -3412,8 +3418,10 @@ db &gt; .exit
 <span class="p">}</span>
 
 </code></pre></div><h2 id="第十部分---分裂叶子节点">第十部分 - 分裂叶子节点</h2>
-<h2 id="第十一部分---递归搜索-b-树">第十一部分 - 递归搜索 B 树</h2>
-<h2 id="第十二部分---扫描多级-b-树">第十二部分 - 扫描多级 B 树</h2>
+<p>golang实现</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"></code></pre></div><h2 id="第十一部分---递归搜索-b-树">第十一部分 - 递归搜索 B 树</h2>
+<p>golang实现</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-golang" data-lang="golang"></code></pre></div><h2 id="第十二部分---扫描多级-b-树">第十二部分 - 扫描多级 B 树</h2>
 <h2 id="第十三部分---分裂叶子节点后更新父节点">第十三部分 - 分裂叶子节点后更新父节点</h2>
 <h2 id="第十四部分---拆分内部节点">第十四部分 - 拆分内部节点</h2>
     </div>
