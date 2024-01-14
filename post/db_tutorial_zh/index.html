@@ -113,7 +113,7 @@
 
 "><meta itemprop="datePublished" content="2024-01-09T11:26:23+08:00" />
 <meta itemprop="dateModified" content="2024-01-09T11:26:23+08:00" />
-<meta itemprop="wordCount" content="32157">
+<meta itemprop="wordCount" content="32247">
 <meta itemprop="keywords" content="db," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="[译]构建一个简单的数据库"/>
 <meta name="twitter:description" content="用 C 从头开始编写 SQLite 克隆；
@@ -438,7 +438,7 @@
         <li><a href="#测试">测试</a></li>
       </ul>
     </li>
-    <li><a href="#第十二部分---扫描多级-b-树">第十二部分 - 扫描多级 B 树</a></li>
+    <li><a href="#第十二部分---扫描多层-b-树">第十二部分 - 扫描多层 B 树</a></li>
     <li><a href="#第十三部分---分裂叶子节点后更新父节点">第十三部分 - 分裂叶子节点后更新父节点</a></li>
     <li><a href="#第十四部分---拆分内部节点">第十四部分 - 拆分内部节点</a></li>
   </ul>
@@ -3966,8 +3966,8 @@ db &gt; .exit
 +    ])
    end
 </code></pre></div><p>看起来这是我们接下来要做的事情！</p>
-<h2 id="第十二部分---扫描多级-b-树">第十二部分 - 扫描多级 B 树</h2>
-<p>我们现在支持构建多级 B 树，但在此过程中我们破坏了 <code>select</code> 语句。下面是一个测试案例，插入了 15 行然后尝试打印它们。</p>
+<h2 id="第十二部分---扫描多层-b-树">第十二部分 - 扫描多层 B 树</h2>
+<p>我们现在支持构建多层 B 树，但在此过程中我们破坏了 <code>select</code> 语句。下面是一个测试案例，插入了 15 行然后尝试打印它们。</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="gi">+  it &#39;prints all rows in a multi-level tree&#39; do
 </span><span class="gi">+    script = []
 </span><span class="gi">+    (1..15).each do |i|
@@ -4062,8 +4062,7 @@ db &gt; .exit
    <span class="o">*</span><span class="n">leaf_node_num_cells</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 <span class="o">+</span>  <span class="o">*</span><span class="n">leaf_node_next_leaf</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>  <span class="c1">// 0 表示无兄弟节点
 </span><span class="c1"></span> <span class="p">}</span>
-</code></pre></div><p>每当我们拆分叶子节点时，更新兄弟节点指针。旧叶子节点的兄弟节点变成新的叶子节点，新叶子节点的兄弟节点变成</p>
-<p>旧叶子节点的兄弟节点。</p>
+</code></pre></div><p>每当我们拆分叶子节点时，更新兄弟节点指针。旧叶子节点的兄弟节点变成新的叶子节点，新叶子节点的兄弟节点变成旧叶子节点的兄弟节点。</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="err">@@</span> <span class="o">-</span><span class="mi">659</span><span class="p">,</span><span class="mi">6</span> <span class="o">+</span><span class="mi">671</span><span class="p">,</span><span class="mi">8</span> <span class="err">@@</span> <span class="kt">void</span> <span class="n">leaf_node_split_and_insert</span><span class="p">(</span><span class="n">Cursor</span><span class="o">*</span> <span class="n">cursor</span><span class="p">,</span> <span class="kt">uint32_t</span> <span class="n">key</span><span class="p">,</span> <span class="n">Row</span><span class="o">*</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span>
    <span class="kt">uint32_t</span> <span class="n">new_page_num</span> <span class="o">=</span> <span class="n">get_unused_page_num</span><span class="p">(</span><span class="n">cursor</span><span class="o">-&gt;</span><span class="n">table</span><span class="o">-&gt;</span><span class="n">pager</span><span class="p">);</span>
    <span class="kt">void</span><span class="o">*</span> <span class="n">new_node</span> <span class="o">=</span> <span class="n">get_page</span><span class="p">(</span><span class="n">cursor</span><span class="o">-&gt;</span><span class="n">table</span><span class="o">-&gt;</span><span class="n">pager</span><span class="p">,</span> <span class="n">new_page_num</span><span class="p">);</span>
@@ -4261,8 +4260,7 @@ db &gt; .exit
 <span class="o">+</span>    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;Need to implement splitting internal node</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
 <span class="o">+</span>    <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
 <span class="o">+</span>  <span class="p">}</span>
-</code></pre></div><p>新单元格（子节点/键对）应该插入的索引取决于新子节点中的最大键。在我们查看的示例中，`child_max_key</p>
-<p><code> 将为 5，</code>index` 将为 1。</p>
+</code></pre></div><p>新单元格（子节点/键对）应该插入的索引取决于新子节点中的最大键。在我们查看的示例中，<code>child_max_key</code> 将为 5，<code>index</code> 将为 1。</p>
 <p>如果内部节点没有足够的空间容纳另一个单元格，则抛出错误。稍后我们将实现这一点。</p>
 <p>现在让我们看看函数的其余部分：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="o">+</span>
@@ -4491,10 +4489,8 @@ db &gt; .exit
 </span><span class="gi">+    }
 </span><span class="gi">+    return right_child;
 </span><span class="gi"></span>   } else {
-<span class="gd">-    return internal_node_cell(node, child
-</span><span class="gd"></span>
-_num);
-<span class="gi">+    uint32_t* child = internal_node_cell(node, child_num);
+<span class="gd">-    return internal_node_cell(node, child_num);
+</span><span class="gd"></span><span class="gi">+    uint32_t* child = internal_node_cell(node, child_num);
 </span><span class="gi">+    if (*child == INVALID_PAGE_NUM) {
 </span><span class="gi">+      printf(&#34;Tried to access child %d of node, but was invalid page\n&#34;, child_num);
 </span><span class="gi">+      exit(EXIT_FAILURE);
@@ -4528,7 +4524,7 @@ _num);
 </span><span class="gd"></span>       break;
    }
  }
-</code></pre></div><p>现在，让我们来看看头条新闻<code>internal_node_split_and_insert</code>。我们首先提供完整的代码，然后按步骤分解它。</p>
+</code></pre></div><p>现在是关于 <code>internal_node_split_and_insert</code> 的主要部分。我们首先提供完整的内容，然后逐步分解说明。</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="gi">+void internal_node_split_and_insert(Table* table, uint32_t parent_page_num,
 </span><span class="gi">+                          uint32_t child_page_num) {
 </span><span class="gi">+  uint32_t old_page_num = parent_page_num;
@@ -4541,17 +4537,14 @@ _num);
 </span><span class="gi">+  uint32_t new_page_num = get_unused_page_num(table-&gt;pager);
 </span><span class="gi">+
 </span><span class="gi">+  /*
-</span><span class="gi">+  Declaring a flag before updating pointers which
-</span><span class="gi">+  records whether this operation involves splitting the root -
-</span><span class="gi">+  if it does, we will insert our newly created node during
-</span><span class="gi">+  the step where the table&#39;s new root is created. If it does
-</span><span class="gi">+  not, we have to insert the newly created node into its parent
-</span><span class="gi">+  after the old node&#39;s keys have been transferred over. We are not
-</span><span class="gi">+  able to do this if the newly created node&#39;s parent is not a newly
-</span><span class="gi">+  initialized root node, because in that case its parent may have existing
-</span><span class="gi">+  keys aside from our old node which we are splitting. If that is true, we
-</span><span class="gi">+  need to find a place for our newly created node in its parent, and we
-</span><span class="gi">+  cannot insert it at the correct index if it does not yet have any keys
+</span><span class="gi">+  在更新指针之前声明一个标志，
+</span><span class="gi">+  记录此操作是否涉及分割根节点 -
+</span><span class="gi">+  如果是的话，我们将在创建表的新根时插入我们新创建的节点。
+</span><span class="gi">+  如果不是，我们必须在旧节点的键已转移后将新创建的节点插入其父节点。
+</span><span class="gi">+  如果新创建的节点的父节点不是新初始化的根节点，我们无法这样做，
+</span><span class="gi">+  因为在这种情况下，其父节点可能有除我们正在分割的旧节点之外的现有键。
+</span><span class="gi">+  如果是这样，我们需要在其父节点中为新创建的节点找到一个位置，
+</span><span class="gi">+  如果它还没有任何键，则无法在正确的索引处插入它
 </span><span class="gi">+  */
 </span><span class="gi">+  uint32_t splitting_root = is_node_root(old_node);
 </span><span class="gi">+
@@ -4561,9 +4554,8 @@ _num);
 </span><span class="gi">+    create_new_root(table, new_page_num);
 </span><span class="gi">+    parent = get_page(table-&gt;pager,table-&gt;root_page_num);
 </span><span class="gi">+    /*
-</span><span class="gi">+    If we are splitting the root, we need to update old_node to point
-</span><span class="gi">+    to the new root&#39;s left child, new_page_num will already point to
-</span><span class="gi">+    the new root&#39;s right child
+</span><span class="gi">+    如果我们正在分割根节点，我们需要将 old_node 更新为指向新根的左子节点，
+</span><span class="gi">+    new_page_num 已经指向新根的右子节点
 </span><span class="gi">+    */
 </span><span class="gi">+    old_page_num = *internal_node_child(parent,0);
 </span><span class="gi">+    old_node = get_page(table-&gt;pager, old_page_num);
@@ -4579,13 +4571,13 @@ _num);
 </span><span class="gi">+  void* cur = get_page(table-&gt;pager, cur_page_num);
 </span><span class="gi">+
 </span><span class="gi">+  /*
-</span><span class="gi">+  First put right child into new node and set right child of old node to invalid page number
+</span><span class="gi">+  首先将右子节点放入新节点，并将旧节点的右子节点设置为无效页码
 </span><span class="gi">+  */
 </span><span class="gi">+  internal_node_insert(table, new_page_num, cur_page_num);
 </span><span class="gi">+  *node_parent(cur) = new_page_num;
 </span><span class="gi">+  *internal_node_right_child(old_node) = INVALID_PAGE_NUM;
 </span><span class="gi">+  /*
-</span><span class="gi">+  For each key until you get to the middle key, move the key and the child to the new node
+</span><span class="gi">+  对于每个键，直到达到中间键，将键和子节点移动到新节点
 </span><span class="gi">+  */
 </span><span class="gi">+  for (int i = INTERNAL_NODE_MAX_CELLS - 1; i &gt; INTERNAL_NODE_MAX_CELLS / 2; i--) {
 </span><span class="gi">+    cur_page_num = *internal_node_child(old_node, i);
@@ -4598,15 +4590,15 @@ _num);
 </span><span class="gi">+  }
 </span><span class="gi">+
 </span><span class="gi">+  /*
-</span><span class="gi">+  Set child before middle key, which is now the highest key, to be node&#39;s right child,
-</span><span class="gi">+  and decrement number of keys
+</span><span class="gi">+  设置中间键之前的子节点，现在是最高的键，为节点的右子节点，
+</span><span class="gi">+  并减少键的数量
 </span><span class="gi">+  */
 </span><span class="gi">+  *internal_node_right_child(old_node) = *internal_node_child(old_node,*old_num_keys - 1);
 </span><span class="gi">+  (*old_num_keys)--;
 </span><span class="gi">+
 </span><span class="gi">+  /*
-</span><span class="gi">+  Determine which of the two nodes after the split should contain the child to be inserted,
-</span><span class="gi">+  and insert the child
+</span><span class="gi">+  确定分割后的两个节点中应包含要插入的子节点，
+</span><span class="gi">+  并插入子节点
 </span><span class="gi">+  */
 </span><span class="gi">+  uint32_t max_after_split = get_node_max_key(table-&gt;pager, old_node);
 </span><span class="gi">+
@@ -4623,8 +4615,7 @@ _num);
 </span><span class="gi">+  }
 </span><span class="gi">+}
 </span><span class="gi">+
-</span><span class="gi"></span>
-</code></pre></div><p>我们首先需要创建一个变量来存储我们要拆分的节点的页面编号（从这里开始称为旧节点）。这是必要的，因为如果旧节点恰好是表的根节点，则旧节点的页面编号将会改变。我们还需要记住节点的当前最大值，因为该值代表其在父节点中的键，在拆分发生后，需要更新该键为旧节点的新最大值。</p>
+</span></code></pre></div><p>我们首先需要创建一个变量来存储我们要拆分的节点的页面编号（从这里开始称为旧节点）。这是必要的，因为如果旧节点恰好是表的根节点，则旧节点的页面编号将会改变。我们还需要记住节点的当前最大值，因为该值代表其在父节点中的键，在拆分发生后，需要更新该键为旧节点的新最大值。</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="gi">+  uint32_t old_page_num = parent_page_num;
 </span><span class="gi">+  void* old_node = get_page(table-&gt;pager,parent_page_num);
 </span><span class="gi">+  uint32_t old_max = get_node_max_key(table-&gt;pager, old_node);
