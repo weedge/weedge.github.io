@@ -25,6 +25,8 @@
 <meta name="author" content="weedge" />
   <meta name="description" content="上篇文章使用chatGPT翻译了db_tutorial 文章，文中使用的是c语言开发； 这篇文章使用chatGPT根据db_tutorial中的c源码，使用golang进行重写, 测试的ruby代码使用python进行重写；同理其他语言也适用。
 注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，也许精细利己主义会利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下(特别是指针操作)。
+整体实现代码：https://github.com/weedge/baby-db/tree/main/golang
+主要的btree数据结构为leafNode 和 internalNode，叶子节点表数据存放在value中，id存放在key中，序列化和遍历操作需要额外偏移操作；这里仅实现简单的insert和select操作。
 " />
 <meta name="keywords" content="db, golang" />
 
@@ -65,7 +67,11 @@
 
 <meta property="og:title" content="构建一个简单的数据库[golang版]" />
 <meta property="og:description" content="上篇文章使用chatGPT翻译了db_tutorial 文章，文中使用的是c语言开发； 这篇文章使用chatGPT根据db_tutorial中的c源码，使用golang进行重写, 测试的ruby代码使用python进行重写；同理其他语言也适用。
-注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，也许精细利己主义会利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下(特别是指针操作)。" />
+注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，也许精细利己主义会利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下(特别是指针操作)。
+整体实现代码：https://github.com/weedge/baby-db/tree/main/golang
+主要的btree数据结构为leafNode 和 internalNode，叶子节点表数据存放在value中，id存放在key中，序列化和遍历操作需要额外偏移操作；这里仅实现简单的insert和select操作。
+
+" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://weedge.github.io/post/db_tutorial_go/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2024-01-10T10:58:28+08:00" />
@@ -73,13 +79,21 @@
 
 <meta itemprop="name" content="构建一个简单的数据库[golang版]">
 <meta itemprop="description" content="上篇文章使用chatGPT翻译了db_tutorial 文章，文中使用的是c语言开发； 这篇文章使用chatGPT根据db_tutorial中的c源码，使用golang进行重写, 测试的ruby代码使用python进行重写；同理其他语言也适用。
-注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，也许精细利己主义会利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下(特别是指针操作)。"><meta itemprop="datePublished" content="2024-01-10T10:58:28+08:00" />
+注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，也许精细利己主义会利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下(特别是指针操作)。
+整体实现代码：https://github.com/weedge/baby-db/tree/main/golang
+主要的btree数据结构为leafNode 和 internalNode，叶子节点表数据存放在value中，id存放在key中，序列化和遍历操作需要额外偏移操作；这里仅实现简单的insert和select操作。
+
+"><meta itemprop="datePublished" content="2024-01-10T10:58:28+08:00" />
 <meta itemprop="dateModified" content="2024-01-10T10:58:28+08:00" />
-<meta itemprop="wordCount" content="8107">
+<meta itemprop="wordCount" content="13073">
 <meta itemprop="keywords" content="db,golang," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="构建一个简单的数据库[golang版]"/>
 <meta name="twitter:description" content="上篇文章使用chatGPT翻译了db_tutorial 文章，文中使用的是c语言开发； 这篇文章使用chatGPT根据db_tutorial中的c源码，使用golang进行重写, 测试的ruby代码使用python进行重写；同理其他语言也适用。
-注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，也许精细利己主义会利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下(特别是指针操作)。"/>
+注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，也许精细利己主义会利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下(特别是指针操作)。
+整体实现代码：https://github.com/weedge/baby-db/tree/main/golang
+主要的btree数据结构为leafNode 和 internalNode，叶子节点表数据存放在value中，id存放在key中，序列化和遍历操作需要额外偏移操作；这里仅实现简单的insert和select操作。
+
+"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -351,6 +365,10 @@
     <div class="post-content">
       <p>上篇文章使用chatGPT翻译了<a href="https://cstack.github.io/db_tutorial/">db_tutorial</a> 文章，文中使用的是c语言开发； 这篇文章使用chatGPT根据db_tutorial中的c源码，使用golang进行重写, 测试的ruby代码使用python进行重写；同理其他语言也适用。</p>
 <p>注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，也许精细利己主义会利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下(特别是指针操作)。</p>
+<p>整体实现代码：https://github.com/weedge/baby-db/tree/main/golang</p>
+<p>主要的btree数据结构为leafNode 和 internalNode，叶子节点表数据存放在value中，id存放在key中，序列化和遍历操作需要额外偏移操作；这里仅实现简单的insert和select操作。</p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/leaf-node-format.png" alt="leafNode"></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/internal-node-format.png" alt="internalNode"></p>
 <h2 id="第一部分---简介和设置repl">第一部分 - 简介和设置REPL</h2>
 <p>制作一个简单的 REPL(Read-Eval-Print Loop) golang 版本</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
@@ -3418,12 +3436,1252 @@ db &gt; .exit
 <span class="p">}</span>
 
 </code></pre></div><h2 id="第十部分---分裂叶子节点">第十部分 - 分裂叶子节点</h2>
-<p>golang实现</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"></code></pre></div><h2 id="第十一部分---递归搜索-b-树">第十一部分 - 递归搜索 B 树</h2>
-<p>golang实现</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-golang" data-lang="golang"></code></pre></div><h2 id="第十二部分---扫描多层-b-树">第十二部分 - 扫描多层 B 树</h2>
-<h2 id="第十三部分---分裂叶子节点后更新父节点">第十三部分 - 分裂叶子节点后更新父节点</h2>
-<h2 id="第十四部分---拆分内部节点">第十四部分 - 拆分内部节点</h2>
+<p>测试：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span><span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">util</span> <span class="kn">import</span> <span class="n">run_script</span>
+
+<span class="c1"># 测试btree有序结构</span>
+<span class="k">def</span> <span class="nf">test_btree_order_structure</span><span class="p">(</span><span class="n">db_file</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">):</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&#34;insert 3 user3 person3@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 1 user1 person1@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 2 user2 person2@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;.btree&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;.exit&#34;</span>
+    <span class="p">]</span>
+    
+    <span class="n">result</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">(</span><span class="n">script</span><span class="p">,</span><span class="n">db_file</span><span class="o">=</span><span class="n">db_file</span><span class="p">)</span>
+
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&#34;db &gt; Executed.&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;db &gt; Executed.&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;db &gt; Executed.&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;db &gt; Tree:&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;- leaf (size 3)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;  - 1&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;  - 2&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;  - 3&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;db &gt; &#34;</span>
+    <span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;result: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="n">expected_result</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span><span class="si">}</span><span class="s2"> passed&#34;</span><span class="p">)</span>
+
+<span class="c1"># 测试打印3个叶子节点的btree</span>
+<span class="k">def</span> <span class="nf">test_print_structure_of_3_leaf_node_btree</span><span class="p">(</span><span class="n">db_file</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">):</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&#34;insert </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> user</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> person</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">@example.com&#34;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">)]</span>
+    <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&#34;.btree&#34;</span><span class="p">)</span>
+    <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&#34;insert 15 user15 person15@example.com&#34;</span><span class="p">)</span>
+    <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&#34;.exit&#34;</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">(</span><span class="n">script</span><span class="p">,</span><span class="n">db_file</span><span class="o">=</span><span class="n">db_file</span><span class="p">,</span><span class="n">is_remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&#34;db &gt; Tree:&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;- internal (size 1)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;  - leaf (size 7)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 1&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 2&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 3&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 4&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 5&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 6&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 7&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;  - key 7&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;  - leaf (size 7)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 8&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 9&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 10&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 11&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 12&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 13&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 14&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;db &gt; Need to implement searching an internal node&#34;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;result: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="p">[</span><span class="mi">14</span><span class="p">:]</span> <span class="o">==</span> <span class="n">expected_result</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span><span class="si">}</span><span class="s2"> passed&#34;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;need db file path&#34;</span><span class="p">)</span>
+    <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">db_file</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">db_file</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">db_file</span><span class="si">}</span><span class="s2"> exists, remove it first&#34;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span>
+
+<span class="n">test_btree_order_structure</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span>
+<span class="n">test_print_structure_of_3_leaf_node_btree</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&#34;all tests passed.&#34;</span><span class="p">)</span>
+</code></pre></div><p><code>diff golang/9.go golang/10.go</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="mi">62</span><span class="nx">a63</span><span class="p">,</span><span class="mi">84</span>
+<span class="p">&gt;</span> <span class="cm">/*
+</span><span class="cm">&gt;  * Leaf Node Split
+</span><span class="cm">&gt;  */</span>
+<span class="p">&gt;</span> <span class="kd">const</span> <span class="nx">LEAF_NODE_RIGHT_SPLIT_COUNT</span> <span class="p">=</span> <span class="p">(</span><span class="nx">LEAF_NODE_MAX_CELLS</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+<span class="p">&gt;</span> <span class="kd">const</span> <span class="nx">LEAF_NODE_LEFT_SPLIT_COUNT</span> <span class="p">=</span> <span class="nx">LEAF_NODE_MAX_CELLS</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="nx">LEAF_NODE_RIGHT_SPLIT_COUNT</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="cm">/*
+</span><span class="cm">&gt;  * Internal Node Header Layout
+</span><span class="cm">&gt;  */</span>
+<span class="p">&gt;</span> <span class="kd">const</span> <span class="nx">INTERNAL_NODE_NUM_KEYS_SIZE</span> <span class="p">=</span> <span class="mi">4</span>
+<span class="p">&gt;</span> <span class="kd">const</span> <span class="nx">INTERNAL_NODE_NUM_KEYS_OFFSET</span> <span class="p">=</span> <span class="nx">COMMON_NODE_HEADER_SIZE</span>
+<span class="p">&gt;</span> <span class="kd">const</span> <span class="nx">INTERNAL_NODE_RIGHT_CHILD_SIZE</span> <span class="p">=</span> <span class="mi">4</span>
+<span class="p">&gt;</span> <span class="kd">const</span> <span class="nx">INTERNAL_NODE_RIGHT_CHILD_OFFSET</span> <span class="p">=</span> <span class="nx">INTERNAL_NODE_NUM_KEYS_OFFSET</span> <span class="o">+</span> <span class="nx">INTERNAL_NODE_NUM_KEYS_SIZE</span>
+<span class="p">&gt;</span> <span class="kd">const</span> <span class="nx">INTERNAL_NODE_HEADER_SIZE</span> <span class="p">=</span> <span class="nx">COMMON_NODE_HEADER_SIZE</span> <span class="o">+</span> <span class="nx">INTERNAL_NODE_NUM_KEYS_SIZE</span> <span class="o">+</span> <span class="nx">INTERNAL_NODE_RIGHT_CHILD_SIZE</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="cm">/*
+</span><span class="cm">&gt;  * Internal Node Body Layout
+</span><span class="cm">&gt;  */</span>
+<span class="p">&gt;</span> <span class="kd">const</span> <span class="nx">INTERNAL_NODE_KEY_SIZE</span> <span class="p">=</span> <span class="mi">4</span>
+<span class="p">&gt;</span> <span class="kd">const</span> <span class="nx">INTERNAL_NODE_CHILD_SIZE</span> <span class="p">=</span> <span class="mi">4</span>
+<span class="p">&gt;</span> <span class="kd">const</span> <span class="nx">INTERNAL_NODE_CELL_SIZE</span> <span class="p">=</span> <span class="nx">INTERNAL_NODE_CHILD_SIZE</span> <span class="o">+</span> <span class="nx">INTERNAL_NODE_KEY_SIZE</span>
+<span class="p">&gt;</span> 
+<span class="mi">168</span><span class="p">,</span><span class="mi">173</span><span class="nx">c190</span><span class="p">,</span><span class="mi">192</span>
+<span class="p">&lt;</span> <span class="kd">func</span> <span class="nf">printLeafNode</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&lt;</span>       <span class="nx">numCells</span> <span class="o">:=</span> <span class="o">*</span><span class="nf">leafNodeNumCells</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+<span class="p">&lt;</span>       <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;leaf (size %d)\n&#34;</span><span class="p">,</span> <span class="nx">numCells</span><span class="p">)</span>
+<span class="p">&lt;</span>       <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="nb">uint32</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">numCells</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+<span class="p">&lt;</span>               <span class="nx">key</span> <span class="o">:=</span> <span class="o">*</span><span class="nf">leafNodeKey</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span>
+<span class="p">&lt;</span>               <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;  - %d : %d\n&#34;</span><span class="p">,</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span>
+<span class="o">---</span>
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">indent</span><span class="p">(</span><span class="nx">level</span> <span class="kt">uint32</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="nb">uint32</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">level</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="nx">fmt</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;  &#34;</span><span class="p">)</span>
+<span class="mi">199</span><span class="nx">a219</span><span class="p">,</span><span class="mi">239</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">isNodeRoot</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="nx">value</span> <span class="o">:=</span> <span class="nx">node</span><span class="p">[</span><span class="nx">IS_ROOT_OFFSET</span><span class="p">]</span>
+<span class="p">&gt;</span>       <span class="k">return</span> <span class="nx">value</span> <span class="o">!=</span> <span class="mi">0</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">setNodeRoot</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">isRoot</span> <span class="kt">bool</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="k">if</span> <span class="nx">isRoot</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="nx">node</span><span class="p">[</span><span class="nx">IS_ROOT_OFFSET</span><span class="p">]</span> <span class="p">=</span> <span class="mi">1</span>
+<span class="p">&gt;</span>       <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="nx">node</span><span class="p">[</span><span class="nx">IS_ROOT_OFFSET</span><span class="p">]</span> <span class="p">=</span> <span class="mi">0</span>
+<span class="p">&gt;</span>       <span class="p">}</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">internalNodeNumKeys</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="o">*</span><span class="kt">uint32</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="kt">uint32</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">node</span><span class="p">[</span><span class="nx">INTERNAL_NODE_NUM_KEYS_OFFSET</span><span class="p">]))</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">internalNodeRightChild</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="o">*</span><span class="kt">uint32</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="kt">uint32</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">node</span><span class="p">[</span><span class="nx">INTERNAL_NODE_RIGHT_CHILD_OFFSET</span><span class="p">]))</span>
+<span class="mi">201</span><span class="nx">a242</span><span class="p">,</span><span class="mi">246</span>
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">internalNodeCell</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">cellNum</span> <span class="kt">uint32</span><span class="p">)</span> <span class="o">*</span><span class="kt">uint32</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="nx">offset</span> <span class="o">:=</span> <span class="nx">INTERNAL_NODE_HEADER_SIZE</span> <span class="o">+</span> <span class="nx">cellNum</span><span class="o">*</span><span class="nx">INTERNAL_NODE_CELL_SIZE</span>
+<span class="p">&gt;</span>       <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="kt">uint32</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">node</span><span class="p">[</span><span class="nx">offset</span><span class="p">]))</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="mi">203</span><span class="nx">a249</span>
+<span class="p">&gt;</span>       <span class="nf">setNodeRoot</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="kc">false</span><span class="p">)</span>
+<span class="mi">206</span><span class="nx">a253</span><span class="p">,</span><span class="mi">258</span>
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">initializeInternalNode</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="nf">setNodeType</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">NODE_INTERNAL</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nf">setNodeRoot</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="kc">false</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">internalNodeNumKeys</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span> <span class="p">=</span> <span class="mi">0</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="mi">243</span><span class="nx">a296</span><span class="p">,</span><span class="mi">341</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">internalNodeChild</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">childNum</span> <span class="kt">uint32</span><span class="p">)</span> <span class="o">*</span><span class="kt">uint32</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="nx">numKeys</span> <span class="o">:=</span> <span class="o">*</span><span class="nf">internalNodeNumKeys</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="k">if</span> <span class="nx">childNum</span> <span class="p">&gt;</span> <span class="nx">numKeys</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Tried to access childNum %d &gt; numKeys %d\n&#34;</span><span class="p">,</span> <span class="nx">childNum</span><span class="p">,</span> <span class="nx">numKeys</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="p">}</span>
+<span class="p">&gt;</span>       <span class="k">if</span> <span class="nx">childNum</span> <span class="o">==</span> <span class="nx">numKeys</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="k">return</span> <span class="nf">internalNodeRightChild</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="p">}</span>
+<span class="p">&gt;</span>       <span class="k">return</span> <span class="nf">internalNodeCell</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">childNum</span><span class="p">)</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">internalNodeKey</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">keyNum</span> <span class="kt">uint32</span><span class="p">)</span> <span class="o">*</span><span class="kt">uint32</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="nx">offset</span> <span class="o">:=</span> <span class="nx">INTERNAL_NODE_HEADER_SIZE</span> <span class="o">+</span> <span class="nx">keyNum</span><span class="o">*</span><span class="nx">INTERNAL_NODE_CELL_SIZE</span> <span class="o">+</span> <span class="nx">INTERNAL_NODE_CHILD_SIZE</span>
+<span class="p">&gt;</span>       <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="kt">uint32</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">node</span><span class="p">[</span><span class="nx">offset</span><span class="p">]))</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">printTree</span><span class="p">(</span><span class="nx">pager</span> <span class="o">*</span><span class="nx">Pager</span><span class="p">,</span> <span class="nx">pageNum</span><span class="p">,</span> <span class="nx">indentationLevel</span> <span class="kt">uint32</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="nx">node</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">pageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">numKeys</span><span class="p">,</span> <span class="nx">child</span> <span class="o">:=</span> <span class="nb">uint32</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="nb">uint32</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="k">switch</span> <span class="nf">getNodeType</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="k">case</span> <span class="nx">NODE_LEAF</span><span class="p">:</span>
+<span class="p">&gt;</span>               <span class="nx">numKeys</span> <span class="p">=</span> <span class="o">*</span><span class="nf">leafNodeNumCells</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="nf">indent</span><span class="p">(</span><span class="nx">indentationLevel</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;- leaf (size %d)\n&#34;</span><span class="p">,</span> <span class="nx">numKeys</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="nb">uint32</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">numKeys</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+<span class="p">&gt;</span>                       <span class="nf">indent</span><span class="p">(</span><span class="nx">indentationLevel</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">&gt;</span>                       <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;- %d\n&#34;</span><span class="p">,</span> <span class="o">*</span><span class="nf">leafNodeKey</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">i</span><span class="p">))</span>
+<span class="p">&gt;</span>               <span class="p">}</span>
+<span class="p">&gt;</span>       <span class="k">case</span> <span class="nx">NODE_INTERNAL</span><span class="p">:</span>
+<span class="p">&gt;</span>               <span class="nx">numKeys</span> <span class="p">=</span> <span class="o">*</span><span class="nf">internalNodeNumKeys</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="nf">indent</span><span class="p">(</span><span class="nx">indentationLevel</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;- internal (size %d)\n&#34;</span><span class="p">,</span> <span class="nx">numKeys</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="nb">uint32</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">numKeys</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+<span class="p">&gt;</span>                       <span class="nx">child</span> <span class="p">=</span> <span class="o">*</span><span class="nf">internalNodeChild</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span>
+<span class="p">&gt;</span>                       <span class="nf">printTree</span><span class="p">(</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">child</span><span class="p">,</span> <span class="nx">indentationLevel</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>                       <span class="nf">indent</span><span class="p">(</span><span class="nx">indentationLevel</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">&gt;</span>                       <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;- key %d\n&#34;</span><span class="p">,</span> <span class="o">*</span><span class="nf">internalNodeKey</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">i</span><span class="p">))</span>
+<span class="p">&gt;</span>               <span class="p">}</span>
+<span class="p">&gt;</span>               <span class="nx">child</span> <span class="p">=</span> <span class="o">*</span><span class="nf">internalNodeRightChild</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="nf">printTree</span><span class="p">(</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">child</span><span class="p">,</span> <span class="nx">indentationLevel</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="p">}</span>
+<span class="mi">358</span><span class="nx">a457</span>
+<span class="p">&gt;</span>               <span class="nf">setNodeRoot</span><span class="p">(</span><span class="nx">rootNode</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span>
+<span class="mi">445</span><span class="nx">c544</span>
+<span class="p">&lt;</span>               <span class="nf">printLeafNode</span><span class="p">(</span><span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="o">---</span>
+<span class="p">&gt;</span>               <span class="nf">printTree</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="mi">499</span><span class="nx">a599</span><span class="p">,</span><span class="mi">616</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="kt">uint32</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="k">switch</span> <span class="nf">getNodeType</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="k">case</span> <span class="nx">NODE_INTERNAL</span><span class="p">:</span>
+<span class="p">&gt;</span>               <span class="nx">numKeys</span> <span class="o">:=</span> <span class="o">*</span><span class="nf">internalNodeNumKeys</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="k">return</span> <span class="o">*</span><span class="nf">internalNodeKey</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">numKeys</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="k">case</span> <span class="nx">NODE_LEAF</span><span class="p">:</span>
+<span class="p">&gt;</span>               <span class="nx">numCells</span> <span class="o">:=</span> <span class="o">*</span><span class="nf">leafNodeNumCells</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="k">return</span> <span class="o">*</span><span class="nf">leafNodeKey</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">numCells</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="k">default</span><span class="p">:</span>
+<span class="p">&gt;</span>               <span class="c1">// Handle other node types if needed
+</span><span class="c1"></span><span class="p">&gt;</span>               <span class="k">return</span> <span class="mi">0</span> <span class="c1">// or appropriate default value
+</span><span class="c1"></span><span class="p">&gt;</span>       <span class="p">}</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">getUnusedPageNum</span><span class="p">(</span><span class="nx">pager</span> <span class="o">*</span><span class="nx">Pager</span><span class="p">)</span> <span class="kt">uint32</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="k">return</span> <span class="nx">pager</span><span class="p">.</span><span class="nx">numPages</span>
+<span class="mi">501</span><span class="nx">a619</span><span class="p">,</span><span class="mi">683</span>
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">createNewRoot</span><span class="p">(</span><span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">,</span> <span class="nx">rightChildPageNum</span> <span class="kt">uint32</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="nx">root</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">table</span><span class="p">.</span><span class="nx">rootPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="c1">//rightChild := getPage(table.pager, rightChildPageNum)
+</span><span class="c1"></span><span class="p">&gt;</span>       <span class="nx">leftChildPageNum</span> <span class="o">:=</span> <span class="nf">getUnusedPageNum</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">leftChild</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">leftChildPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="c1">// Left child gets data copied from the old root
+</span><span class="c1"></span><span class="p">&gt;</span>       <span class="nb">copy</span><span class="p">(</span><span class="nx">leftChild</span><span class="p">,</span> <span class="nx">root</span><span class="p">[:])</span>
+<span class="p">&gt;</span>       <span class="nf">setNodeRoot</span><span class="p">(</span><span class="nx">leftChild</span><span class="p">,</span> <span class="kc">false</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="c1">// Root becomes a new internal node with one key and two children
+</span><span class="c1"></span><span class="p">&gt;</span>       <span class="nf">initializeInternalNode</span><span class="p">(</span><span class="nx">root</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nf">setNodeRoot</span><span class="p">(</span><span class="nx">root</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">internalNodeNumKeys</span><span class="p">(</span><span class="nx">root</span><span class="p">)</span> <span class="p">=</span> <span class="mi">1</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">internalNodeChild</span><span class="p">(</span><span class="nx">root</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">=</span> <span class="nx">leftChildPageNum</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="nx">leftChildMaxKey</span> <span class="o">:=</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">leftChild</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">internalNodeKey</span><span class="p">(</span><span class="nx">root</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">=</span> <span class="nx">leftChildMaxKey</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">internalNodeRightChild</span><span class="p">(</span><span class="nx">root</span><span class="p">)</span> <span class="p">=</span> <span class="nx">rightChildPageNum</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="c1">// 创建一个新节点并将一半单元格移动过去。
+</span><span class="c1"></span><span class="p">&gt;</span> <span class="c1">// 在两个节点中的一个中插入新值。
+</span><span class="c1"></span><span class="p">&gt;</span> <span class="c1">// 更新父节点或创建一个新的父节点。
+</span><span class="c1"></span><span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">leafNodeSplitAndInsert</span><span class="p">(</span><span class="nx">cursor</span> <span class="o">*</span><span class="nx">Cursor</span><span class="p">,</span> <span class="nx">key</span> <span class="kt">uint32</span><span class="p">,</span> <span class="nx">value</span> <span class="o">*</span><span class="nx">Row</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="nx">oldNode</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">cursor</span><span class="p">.</span><span class="nx">pageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">newPageNum</span> <span class="o">:=</span> <span class="nf">getUnusedPageNum</span><span class="p">(</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">newNode</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">newPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nf">initializeLeafNode</span><span class="p">(</span><span class="nx">newNode</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="cm">/*
+</span><span class="cm">&gt;         所有现有键以及新键应该均匀分布
+</span><span class="cm">&gt;         在旧（左）和新（右）节点之间。
+</span><span class="cm">&gt;         从右侧开始，将每个键移动到正确的位置。
+</span><span class="cm">&gt;       */</span>
+<span class="p">&gt;</span>       <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="nx">LEAF_NODE_MAX_CELLS</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span><span class="o">--</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="kd">var</span> <span class="nx">destinationNode</span> <span class="p">[]</span><span class="kt">byte</span>
+<span class="p">&gt;</span>               <span class="k">if</span> <span class="nx">i</span> <span class="o">&gt;=</span> <span class="nx">LEAF_NODE_LEFT_SPLIT_COUNT</span> <span class="p">{</span>
+<span class="p">&gt;</span>                       <span class="nx">destinationNode</span> <span class="p">=</span> <span class="nx">newNode</span>
+<span class="p">&gt;</span>               <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+<span class="p">&gt;</span>                       <span class="nx">destinationNode</span> <span class="p">=</span> <span class="nx">oldNode</span>
+<span class="p">&gt;</span>               <span class="p">}</span>
+<span class="p">&gt;</span>               <span class="nx">indexWithinNode</span> <span class="o">:=</span> <span class="nx">i</span> <span class="o">%</span> <span class="nx">LEAF_NODE_LEFT_SPLIT_COUNT</span>
+<span class="p">&gt;</span>               <span class="nx">destination</span> <span class="o">:=</span> <span class="nf">leafNodeCell</span><span class="p">(</span><span class="nx">destinationNode</span><span class="p">,</span> <span class="nb">uint32</span><span class="p">(</span><span class="nx">indexWithinNode</span><span class="p">))</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>               <span class="k">if</span> <span class="nx">i</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">cellNum</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&gt;</span>                       <span class="nf">serializeRow</span><span class="p">(</span><span class="nx">value</span><span class="p">,</span> <span class="nx">destination</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="nx">i</span> <span class="p">&gt;</span> <span class="nb">int</span><span class="p">(</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">cellNum</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&gt;</span>                       <span class="nb">copy</span><span class="p">(</span><span class="nx">destination</span><span class="p">,</span> <span class="nf">leafNodeCell</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">,</span> <span class="nb">uint32</span><span class="p">(</span><span class="nx">i</span><span class="o">-</span><span class="mi">1</span><span class="p">))[:</span><span class="nx">LEAF_NODE_CELL_SIZE</span><span class="p">])</span>
+<span class="p">&gt;</span>               <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+<span class="p">&gt;</span>                       <span class="nb">copy</span><span class="p">(</span><span class="nx">destination</span><span class="p">,</span> <span class="nf">leafNodeCell</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">,</span> <span class="nb">uint32</span><span class="p">(</span><span class="nx">i</span><span class="p">))[:</span><span class="nx">LEAF_NODE_CELL_SIZE</span><span class="p">])</span>
+<span class="p">&gt;</span>               <span class="p">}</span>
+<span class="p">&gt;</span>       <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="cm">/* 在两个叶子节点上更新单元格计数 */</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">leafNodeNumCells</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">)</span> <span class="p">=</span> <span class="nx">LEAF_NODE_LEFT_SPLIT_COUNT</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">leafNodeNumCells</span><span class="p">(</span><span class="nx">newNode</span><span class="p">)</span> <span class="p">=</span> <span class="nx">LEAF_NODE_RIGHT_SPLIT_COUNT</span>
+<span class="p">&gt;</span>       <span class="k">if</span> <span class="nf">isNodeRoot</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="nf">createNewRoot</span><span class="p">(</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">table</span><span class="p">,</span> <span class="nx">newPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Need to implement updating parent after split&#34;</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="p">}</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="mi">507</span><span class="p">,</span><span class="mi">509</span><span class="nx">c689</span><span class="p">,</span><span class="mi">690</span>
+<span class="p">&lt;</span>               <span class="c1">// Node full
+</span><span class="c1"></span><span class="p">&lt;</span>               <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Need to implement splitting a leaf node.&#34;</span><span class="p">)</span>
+<span class="p">&lt;</span>               <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="o">---</span>
+<span class="p">&gt;</span>               <span class="nf">leafNodeSplitAndInsert</span><span class="p">(</span><span class="nx">cursor</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">value</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="k">return</span>
+<span class="mi">527</span><span class="p">,</span><span class="mi">529</span><span class="nx">d707</span>
+<span class="p">&lt;</span>       <span class="k">if</span> <span class="nx">numCells</span> <span class="o">&gt;=</span> <span class="nx">LEAF_NODE_MAX_CELLS</span> <span class="p">{</span>
+<span class="p">&lt;</span>               <span class="k">return</span> <span class="nx">EXECUTE_TABLE_FULL</span>
+<span class="p">&lt;</span>       <span class="p">}</span>
+</code></pre></div><h2 id="第十一部分---递归搜索-b-树">第十一部分 - 递归搜索 B 树</h2>
+<p>测试：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span><span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">util</span> <span class="kn">import</span> <span class="n">run_script</span>
+
+<span class="c1"># 测试打印3个叶子节点的btree</span>
+<span class="k">def</span> <span class="nf">test_print_structure_of_3_leaf_node_btree</span><span class="p">(</span><span class="n">db_file</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">):</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&#34;insert </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> user</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> person</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">@example.com&#34;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">)]</span>
+    <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&#34;.btree&#34;</span><span class="p">)</span>
+    <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&#34;insert 15 user15 person15@example.com&#34;</span><span class="p">)</span>
+    <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&#34;.exit&#34;</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">(</span><span class="n">script</span><span class="p">,</span><span class="n">db_file</span><span class="o">=</span><span class="n">db_file</span><span class="p">)</span>
+
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&#34;db &gt; Tree:&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;- internal (size 1)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;  - leaf (size 7)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 1&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 2&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 3&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 4&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 5&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 6&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 7&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;  - key 7&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;  - leaf (size 7)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 8&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 9&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 10&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 11&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 12&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 13&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 14&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;db &gt; Executed.&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;db &gt; &#34;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;result: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="p">[</span><span class="mi">14</span><span class="p">:]</span> <span class="o">==</span> <span class="n">expected_result</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span><span class="si">}</span><span class="s2"> passed&#34;</span><span class="p">)</span>
+
+<span class="c1"># 数据库现在可以容纳1400行，因为我们将最大页面数设置为100，并且一页可以容纳14行。</span>
+<span class="c1"># 测试表已满的情况</span>
+<span class="k">def</span> <span class="nf">test_prints_error_message_when_table_is_full</span><span class="p">(</span><span class="n">db_file</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">):</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&#34;insert </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> user</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> person</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">@example.com&#34;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1402</span><span class="p">)]</span>
+    <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&#34;.exit&#34;</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">(</span><span class="n">script</span><span class="p">,</span><span class="n">db_file</span><span class="o">=</span><span class="n">db_file</span><span class="p">,</span><span class="n">is_remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&#34;db &gt; Executed.&#34;</span><span class="p">,</span> 
+        <span class="s2">&#34;db &gt; Need to implement updating parent after split&#34;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;result: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">==</span> <span class="n">expected_result</span><span class="p">,</span> <span class="s2">&#34;Test failed&#34;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span><span class="si">}</span><span class="s2"> passed&#34;</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;need db file path&#34;</span><span class="p">)</span>
+    <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">db_file</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">db_file</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">db_file</span><span class="si">}</span><span class="s2"> exists, remove it first&#34;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span>
+
+<span class="n">test_print_structure_of_3_leaf_node_btree</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span>
+<span class="n">test_prints_error_message_when_table_is_full</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&#34;all tests passed.&#34;</span><span class="p">)</span>
+</code></pre></div><p><code>diff golang/10.go golang/11.go</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="mi">383</span><span class="nx">a384</span><span class="p">,</span><span class="mi">391</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">internalNodeFind</span><span class="p">(</span><span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">,</span> <span class="nx">pageNum</span><span class="p">,</span> <span class="nx">key</span> <span class="kt">uint32</span><span class="p">)</span> <span class="o">*</span><span class="nx">Cursor</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="nx">node</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">pageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">numKeys</span> <span class="o">:=</span> <span class="o">*</span><span class="nf">internalNodeNumKeys</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="c1">// Binary search to find index of child to search
+</span><span class="c1"></span><span class="p">&gt;</span>       <span class="nx">minIndex</span> <span class="o">:=</span> <span class="nb">uint32</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">maxIndex</span> <span class="o">:=</span> <span class="nx">numKeys</span> <span class="c1">// there is one more child than key
+</span><span class="c1"></span><span class="mi">384</span><span class="nx">a393</span><span class="p">,</span><span class="mi">416</span>
+<span class="p">&gt;</span>       <span class="k">for</span> <span class="nx">minIndex</span> <span class="o">!=</span> <span class="nx">maxIndex</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="nx">index</span> <span class="o">:=</span> <span class="p">(</span><span class="nx">minIndex</span> <span class="o">+</span> <span class="nx">maxIndex</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+<span class="p">&gt;</span>               <span class="nx">keyToRight</span> <span class="o">:=</span> <span class="o">*</span><span class="nf">internalNodeKey</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">index</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="k">if</span> <span class="nx">keyToRight</span> <span class="o">&gt;=</span> <span class="nx">key</span> <span class="p">{</span>
+<span class="p">&gt;</span>                       <span class="nx">maxIndex</span> <span class="p">=</span> <span class="nx">index</span>
+<span class="p">&gt;</span>               <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+<span class="p">&gt;</span>                       <span class="nx">minIndex</span> <span class="p">=</span> <span class="nx">index</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="p">&gt;</span>               <span class="p">}</span>
+<span class="p">&gt;</span>       <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="nx">childNum</span> <span class="o">:=</span> <span class="o">*</span><span class="nf">internalNodeChild</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">minIndex</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">child</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">childNum</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="k">switch</span> <span class="nf">getNodeType</span><span class="p">(</span><span class="nx">child</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="k">case</span> <span class="nx">NODE_LEAF</span><span class="p">:</span>
+<span class="p">&gt;</span>               <span class="k">return</span> <span class="nf">leafNodeFind</span><span class="p">(</span><span class="nx">table</span><span class="p">,</span> <span class="nx">childNum</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="k">case</span> <span class="nx">NODE_INTERNAL</span><span class="p">:</span>
+<span class="p">&gt;</span>               <span class="k">return</span> <span class="nf">internalNodeFind</span><span class="p">(</span><span class="nx">table</span><span class="p">,</span> <span class="nx">childNum</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="k">default</span><span class="p">:</span>
+<span class="p">&gt;</span>               <span class="c1">// Handle other node types if needed
+</span><span class="c1"></span><span class="p">&gt;</span>               <span class="k">return</span> <span class="kc">nil</span>
+<span class="p">&gt;</span>       <span class="p">}</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="mi">393</span><span class="p">,</span><span class="mi">394</span><span class="nx">c425</span>
+<span class="p">&lt;</span>               <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Need to implement searching an internal node&#34;</span><span class="p">)</span>
+<span class="p">&lt;</span>               <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="o">---</span>
+<span class="p">&gt;</span>               <span class="k">return</span> <span class="nf">internalNodeFind</span><span class="p">(</span><span class="nx">table</span><span class="p">,</span> <span class="nx">rootPageNum</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span>
+</code></pre></div><h2 id="第十二部分---扫描多层-b-树">第十二部分 - 扫描多层 B 树</h2>
+<p>测试：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span><span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">util</span> <span class="kn">import</span> <span class="n">run_script</span>
+
+<span class="k">def</span> <span class="nf">test_prints_all_rows_in_multi_level_tree</span><span class="p">(</span><span class="n">db_file</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">):</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">16</span><span class="p">):</span>
+        <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;insert </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> user</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> person</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">@example.com&#34;</span><span class="p">)</span>
+    <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&#34;select&#34;</span><span class="p">)</span>
+    <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&#34;.exit&#34;</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">(</span><span class="n">script</span><span class="p">,</span><span class="n">db_file</span><span class="o">=</span><span class="n">db_file</span><span class="p">)</span>
+
+    <span class="n">expected_output</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&#34;db &gt; (1, user1, person1@example.com)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;(2, user2, person2@example.com)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;(3, user3, person3@example.com)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;(4, user4, person4@example.com)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;(5, user5, person5@example.com)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;(6, user6, person6@example.com)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;(7, user7, person7@example.com)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;(8, user8, person8@example.com)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;(9, user9, person9@example.com)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;(10, user10, person10@example.com)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;(11, user11, person11@example.com)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;(12, user12, person12@example.com)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;(13, user13, person13@example.com)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;(14, user14, person14@example.com)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;(15, user15, person15@example.com)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;Executed.&#34;</span><span class="p">,</span> <span class="s2">&#34;db &gt; &#34;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;result: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="p">[</span><span class="mi">15</span><span class="p">:]</span> <span class="o">==</span> <span class="n">expected_output</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span><span class="si">}</span><span class="s2"> passed&#34;</span><span class="p">)</span>
+
+<span class="c1"># 测试打印常量</span>
+<span class="k">def</span> <span class="nf">test_print_constants</span><span class="p">(</span><span class="n">db_file</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">):</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&#34;.constants&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;.exit&#34;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">(</span><span class="n">script</span><span class="p">,</span><span class="n">db_file</span><span class="o">=</span><span class="n">db_file</span><span class="p">)</span>
+
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&#34;db &gt; Constants:&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;ROW_SIZE: 293&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;COMMON_NODE_HEADER_SIZE: 6&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;LEAF_NODE_HEADER_SIZE: 14&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;LEAF_NODE_CELL_SIZE: 297&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;LEAF_NODE_SPACE_FOR_CELLS: 4082&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;LEAF_NODE_MAX_CELLS: 13&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;db &gt; &#34;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="n">expected_result</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span><span class="si">}</span><span class="s2"> passed&#34;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;need db file path&#34;</span><span class="p">)</span>
+    <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">db_file</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">db_file</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">db_file</span><span class="si">}</span><span class="s2"> exists, remove it first&#34;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span>
+
+<span class="n">test_prints_all_rows_in_multi_level_tree</span><span class="p">(</span><span class="n">db_file</span><span class="o">=</span><span class="n">db_file</span><span class="p">)</span>
+<span class="n">test_print_constants</span><span class="p">(</span><span class="n">db_file</span><span class="o">=</span><span class="n">db_file</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&#34;all tests passed.&#34;</span><span class="p">)</span>
+</code></pre></div><p><code>diff golang/11.go golang/12.go</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="mi">49</span><span class="nx">c49</span><span class="p">,</span><span class="mi">51</span>
+<span class="p">&lt;</span>       <span class="nx">LEAF_NODE_HEADER_SIZE</span>      <span class="p">=</span> <span class="nx">COMMON_NODE_HEADER_SIZE</span> <span class="o">+</span> <span class="nx">LEAF_NODE_NUM_CELLS_SIZE</span>
+<span class="o">---</span>
+<span class="p">&gt;</span>       <span class="nx">LEAF_NODE_NEXT_LEAF_SIZE</span>   <span class="p">=</span> <span class="mi">4</span>
+<span class="p">&gt;</span>       <span class="nx">LEAF_NODE_NEXT_LEAF_OFFSET</span> <span class="p">=</span> <span class="nx">LEAF_NODE_NUM_CELLS_OFFSET</span> <span class="o">+</span> <span class="nx">LEAF_NODE_NUM_CELLS_SIZE</span>
+<span class="p">&gt;</span>       <span class="nx">LEAF_NODE_HEADER_SIZE</span>      <span class="p">=</span> <span class="nx">COMMON_NODE_HEADER_SIZE</span> <span class="o">+</span> <span class="nx">LEAF_NODE_NUM_CELLS_SIZE</span> <span class="o">+</span> <span class="nx">LEAF_NODE_NEXT_LEAF_SIZE</span>
+<span class="mi">178</span><span class="nx">a181</span><span class="p">,</span><span class="mi">184</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">leafNodeNextLeaf</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="o">*</span><span class="kt">uint32</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="kt">uint32</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">node</span><span class="p">[</span><span class="nx">LEAF_NODE_NEXT_LEAF_OFFSET</span><span class="p">]))</span>
+<span class="mi">250</span><span class="nx">a257</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">leafNodeNextLeaf</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span> <span class="p">=</span> <span class="mi">0</span> <span class="c1">// 0 表示无兄弟节点
+</span><span class="c1"></span><span class="mi">341</span><span class="p">,</span><span class="mi">349</span><span class="nx">d347</span>
+<span class="p">&lt;</span>       <span class="p">}</span>
+<span class="p">&lt;</span> <span class="p">}</span>
+<span class="p">&lt;</span> 
+<span class="p">&lt;</span> <span class="kd">func</span> <span class="nf">tableStart</span><span class="p">(</span><span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">)</span> <span class="o">*</span><span class="nx">Cursor</span> <span class="p">{</span>
+<span class="p">&lt;</span>       <span class="nx">cursor</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">Cursor</span><span class="p">{</span>
+<span class="p">&lt;</span>               <span class="nx">table</span><span class="p">:</span>      <span class="nx">table</span><span class="p">,</span>
+<span class="p">&lt;</span>               <span class="nx">pageNum</span><span class="p">:</span>    <span class="nx">table</span><span class="p">.</span><span class="nx">rootPageNum</span><span class="p">,</span>
+<span class="p">&lt;</span>               <span class="nx">cellNum</span><span class="p">:</span>    <span class="mi">0</span><span class="p">,</span>
+<span class="p">&lt;</span>               <span class="nx">endOfTable</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+<span class="mi">351</span><span class="p">,</span><span class="mi">356</span><span class="nx">d348</span>
+<span class="p">&lt;</span> 
+<span class="p">&lt;</span>       <span class="nx">rootNode</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">table</span><span class="p">.</span><span class="nx">rootPageNum</span><span class="p">)</span>
+<span class="p">&lt;</span>       <span class="nx">numCells</span> <span class="o">:=</span> <span class="o">*</span><span class="nf">leafNodeNumCells</span><span class="p">(</span><span class="nx">rootNode</span><span class="p">)</span>
+<span class="p">&lt;</span>       <span class="nx">cursor</span><span class="p">.</span><span class="nx">endOfTable</span> <span class="p">=</span> <span class="p">(</span><span class="nx">numCells</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">&lt;</span> 
+<span class="p">&lt;</span>       <span class="k">return</span> <span class="nx">cursor</span>
+<span class="mi">441</span><span class="nx">c433</span><span class="p">,</span><span class="mi">441</span>
+<span class="p">&lt;</span>               <span class="nx">cursor</span><span class="p">.</span><span class="nx">endOfTable</span> <span class="p">=</span> <span class="kc">true</span>
+<span class="o">---</span>
+<span class="p">&gt;</span>               <span class="cm">/* 前进到下一个叶子节点 */</span>
+<span class="p">&gt;</span>               <span class="nx">nextPageNum</span> <span class="o">:=</span> <span class="o">*</span><span class="nf">leafNodeNextLeaf</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="k">if</span> <span class="nx">nextPageNum</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+<span class="p">&gt;</span>                       <span class="cm">/* 这是最右边的叶子节点 */</span>
+<span class="p">&gt;</span>                       <span class="nx">cursor</span><span class="p">.</span><span class="nx">endOfTable</span> <span class="p">=</span> <span class="kc">true</span>
+<span class="p">&gt;</span>               <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+<span class="p">&gt;</span>                       <span class="nx">cursor</span><span class="p">.</span><span class="nx">pageNum</span> <span class="p">=</span> <span class="nx">nextPageNum</span>
+<span class="p">&gt;</span>                       <span class="nx">cursor</span><span class="p">.</span><span class="nx">cellNum</span> <span class="p">=</span> <span class="mi">0</span>
+<span class="p">&gt;</span>               <span class="p">}</span>
+<span class="mi">678</span><span class="nx">a679</span><span class="p">,</span><span class="mi">680</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">leafNodeNextLeaf</span><span class="p">(</span><span class="nx">newNode</span><span class="p">)</span> <span class="p">=</span> <span class="o">*</span><span class="nf">leafNodeNextLeaf</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">leafNodeNextLeaf</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">)</span> <span class="p">=</span> <span class="nx">newPageNum</span>
+<span class="mi">696</span><span class="nx">c698</span><span class="p">,</span><span class="mi">699</span>
+<span class="p">&lt;</span>                       <span class="nf">serializeRow</span><span class="p">(</span><span class="nx">value</span><span class="p">,</span> <span class="nx">destination</span><span class="p">)</span>
+<span class="o">---</span>
+<span class="p">&gt;</span>                       <span class="nf">serializeRow</span><span class="p">(</span><span class="nx">value</span><span class="p">,</span> <span class="nf">leafNodeValue</span><span class="p">(</span><span class="nx">destinationNode</span><span class="p">,</span> <span class="nb">uint32</span><span class="p">(</span><span class="nx">indexWithinNode</span><span class="p">)))</span>
+<span class="p">&gt;</span>                       <span class="o">*</span><span class="nf">leafNodeKey</span><span class="p">(</span><span class="nx">destinationNode</span><span class="p">,</span> <span class="nb">uint32</span><span class="p">(</span><span class="nx">indexWithinNode</span><span class="p">))</span> <span class="p">=</span> <span class="nx">key</span>
+<span class="mi">754</span><span class="nx">a758</span><span class="p">,</span><span class="mi">766</span>
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">tableStart</span><span class="p">(</span><span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">)</span> <span class="o">*</span><span class="nx">Cursor</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="nx">cursor</span> <span class="o">:=</span> <span class="nf">tableFind</span><span class="p">(</span><span class="nx">table</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">node</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">cursor</span><span class="p">.</span><span class="nx">pageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">numCells</span> <span class="o">:=</span> <span class="o">*</span><span class="nf">leafNodeNumCells</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">cursor</span><span class="p">.</span><span class="nx">endOfTable</span> <span class="p">=</span> <span class="nx">numCells</span> <span class="o">==</span> <span class="mi">0</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="k">return</span> <span class="nx">cursor</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+</code></pre></div><h2 id="第十三部分---分裂叶子节点后更新父节点">第十三部分 - 分裂叶子节点后更新父节点</h2>
+<p>测试：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span><span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">util</span> <span class="kn">import</span> <span class="n">run_script</span>
+
+<span class="c1"># 数据库现在可以容纳1400行，因为我们将最大页面数设置为100，并且一页可以容纳14行。</span>
+<span class="c1"># 测试表已满的情况</span>
+<span class="k">def</span> <span class="nf">test_prints_error_message_when_table_is_full</span><span class="p">(</span><span class="n">db_file</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">):</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&#34;insert </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> user</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> person</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">@example.com&#34;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1402</span><span class="p">)]</span>
+    <span class="n">script</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&#34;.exit&#34;</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">(</span><span class="n">script</span><span class="p">,</span><span class="n">db_file</span><span class="o">=</span><span class="n">db_file</span><span class="p">,</span><span class="n">is_remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">expected_result</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&#34;db &gt; Executed.&#34;</span><span class="p">,</span> 
+        <span class="s2">&#34;db &gt; Need to implement splitting internal node&#34;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;result: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">==</span> <span class="n">expected_result</span><span class="p">,</span> <span class="s2">&#34;Test failed&#34;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span><span class="si">}</span><span class="s2"> passed&#34;</span><span class="p">)</span>
+
+<span class="c1"># 测试4个叶子节点的B+树的结构</span>
+<span class="k">def</span> <span class="nf">test_prints_structure_of_4_leaf_node_btree</span><span class="p">(</span><span class="n">db_file</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">):</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&#34;insert 18 user18 person18@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 7 user7 person7@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 10 user10 person10@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 29 user29 person29@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 23 user23 person23@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 4 user4 person4@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 14 user14 person14@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 30 user30 person30@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 15 user15 person15@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 26 user26 person26@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 22 user22 person22@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 19 user19 person19@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 2 user2 person2@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 1 user1 person1@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 21 user21 person21@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 11 user11 person11@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 6 user6 person6@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 20 user20 person20@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 5 user5 person5@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 8 user8 person8@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 9 user9 person9@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 3 user3 person3@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 12 user12 person12@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 27 user27 person27@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 17 user17 person17@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 16 user16 person16@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 13 user13 person13@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 24 user24 person24@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 25 user25 person25@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 28 user28 person28@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;.btree&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;.exit&#34;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">(</span><span class="n">script</span><span class="p">,</span><span class="n">db_file</span><span class="o">=</span><span class="n">db_file</span><span class="p">)</span>
+
+    <span class="n">expected_output</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&#34;db &gt; Tree:&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;- internal (size 3)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;  - leaf (size 7)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 1&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 2&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 3&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 4&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 5&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 6&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 7&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;  - key 7&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;  - leaf (size 8)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 8&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 9&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 10&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 11&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 12&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 13&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 14&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 15&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;  - key 15&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;  - leaf (size 7)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 16&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 17&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 18&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 19&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 20&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 21&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 22&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;  - key 22&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;  - leaf (size 8)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 23&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 24&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 25&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 26&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 27&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 28&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 29&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - 30&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;db &gt; &#34;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;result: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="p">[</span><span class="mi">30</span><span class="p">:]</span> <span class="o">==</span> <span class="n">expected_output</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span><span class="si">}</span><span class="s2"> passed&#34;</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;need db file path&#34;</span><span class="p">)</span>
+    <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">db_file</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">db_file</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">db_file</span><span class="si">}</span><span class="s2"> exists, remove it first&#34;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span>
+
+<span class="n">test_prints_error_message_when_table_is_full</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span>
+<span class="n">test_prints_structure_of_4_leaf_node_btree</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&#34;all tests passed.&#34;</span><span class="p">)</span>
+</code></pre></div><p><code>diff golang/12.go golang/13.go</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="mi">85</span><span class="nx">a86</span>
+<span class="p">&gt;</span> <span class="kd">const</span> <span class="nx">INTERNAL_NODE_MAX_CELLS</span> <span class="p">=</span> <span class="mi">3</span>
+<span class="mi">184</span><span class="nx">a186</span><span class="p">,</span><span class="mi">189</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">nodeParent</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="o">*</span><span class="kt">uint32</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="kt">uint32</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">node</span><span class="p">[</span><span class="nx">PARENT_POINTER_OFFSET</span><span class="p">]))</span>
+<span class="mi">319</span><span class="nx">a325</span><span class="p">,</span><span class="mi">399</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="c1">// 返回应包含给定键的子节点的索引。
+</span><span class="c1"></span><span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">internalNodeFindChild</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">key</span> <span class="kt">uint32</span><span class="p">)</span> <span class="kt">uint32</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="nx">numKeys</span> <span class="o">:=</span> <span class="o">*</span><span class="nf">internalNodeNumKeys</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="c1">// Binary search
+</span><span class="c1"></span><span class="p">&gt;</span>       <span class="nx">minIndex</span> <span class="o">:=</span> <span class="nb">uint32</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">maxIndex</span> <span class="o">:=</span> <span class="nx">numKeys</span> <span class="c1">// there is one more child than key
+</span><span class="c1"></span><span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="k">for</span> <span class="nx">minIndex</span> <span class="o">!=</span> <span class="nx">maxIndex</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="nx">index</span> <span class="o">:=</span> <span class="p">(</span><span class="nx">minIndex</span> <span class="o">+</span> <span class="nx">maxIndex</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+<span class="p">&gt;</span>               <span class="nx">keyToRight</span> <span class="o">:=</span> <span class="o">*</span><span class="nf">internalNodeKey</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">index</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>               <span class="k">if</span> <span class="nx">keyToRight</span> <span class="o">&gt;=</span> <span class="nx">key</span> <span class="p">{</span>
+<span class="p">&gt;</span>                       <span class="nx">maxIndex</span> <span class="p">=</span> <span class="nx">index</span>
+<span class="p">&gt;</span>               <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+<span class="p">&gt;</span>                       <span class="nx">minIndex</span> <span class="p">=</span> <span class="nx">index</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="p">&gt;</span>               <span class="p">}</span>
+<span class="p">&gt;</span>       <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="k">return</span> <span class="nx">minIndex</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">updateInternalNodeKey</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">oldKey</span><span class="p">,</span> <span class="nx">newKey</span> <span class="kt">uint32</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="nx">oldChildIndex</span> <span class="o">:=</span> <span class="nf">internalNodeFindChild</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">oldKey</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">internalNodeKey</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">oldChildIndex</span><span class="p">)</span> <span class="p">=</span> <span class="nx">newKey</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="kt">uint32</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="k">switch</span> <span class="nf">getNodeType</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="k">case</span> <span class="nx">NODE_INTERNAL</span><span class="p">:</span>
+<span class="p">&gt;</span>               <span class="k">return</span> <span class="o">*</span><span class="nf">internalNodeKey</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="o">*</span><span class="nf">internalNodeNumKeys</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="k">case</span> <span class="nx">NODE_LEAF</span><span class="p">:</span>
+<span class="p">&gt;</span>               <span class="k">return</span> <span class="o">*</span><span class="nf">leafNodeKey</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="o">*</span><span class="nf">leafNodeNumCells</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="k">default</span><span class="p">:</span>
+<span class="p">&gt;</span>               <span class="c1">// Handle other node types if needed
+</span><span class="c1"></span><span class="p">&gt;</span>               <span class="k">return</span> <span class="mi">0</span> <span class="c1">// or appropriate default value
+</span><span class="c1"></span><span class="p">&gt;</span>       <span class="p">}</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">internalNodeInsert</span><span class="p">(</span><span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">,</span> <span class="nx">parentPageNum</span><span class="p">,</span> <span class="nx">childPageNum</span> <span class="kt">uint32</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="nx">parent</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">parentPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">child</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">childPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">childMaxKey</span> <span class="o">:=</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">child</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">index</span> <span class="o">:=</span> <span class="nf">internalNodeFindChild</span><span class="p">(</span><span class="nx">parent</span><span class="p">,</span> <span class="nx">childMaxKey</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="nx">originalNumKeys</span> <span class="o">:=</span> <span class="o">*</span><span class="nf">internalNodeNumKeys</span><span class="p">(</span><span class="nx">parent</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">internalNodeNumKeys</span><span class="p">(</span><span class="nx">parent</span><span class="p">)</span> <span class="p">=</span> <span class="nx">originalNumKeys</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="k">if</span> <span class="nx">originalNumKeys</span> <span class="o">&gt;=</span> <span class="nx">INTERNAL_NODE_MAX_CELLS</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Need to implement splitting internal node&#34;</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="nx">rightChildPageNum</span> <span class="o">:=</span> <span class="o">*</span><span class="nf">internalNodeRightChild</span><span class="p">(</span><span class="nx">parent</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">rightChild</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">rightChildPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="k">if</span> <span class="nx">childMaxKey</span> <span class="p">&gt;</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">rightChild</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="c1">// Replace right child
+</span><span class="c1"></span><span class="p">&gt;</span>               <span class="o">*</span><span class="nf">internalNodeChild</span><span class="p">(</span><span class="nx">parent</span><span class="p">,</span> <span class="nx">originalNumKeys</span><span class="p">)</span> <span class="p">=</span> <span class="nx">rightChildPageNum</span>
+<span class="p">&gt;</span>               <span class="o">*</span><span class="nf">internalNodeKey</span><span class="p">(</span><span class="nx">parent</span><span class="p">,</span> <span class="nx">originalNumKeys</span><span class="p">)</span> <span class="p">=</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">rightChild</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="o">*</span><span class="nf">internalNodeRightChild</span><span class="p">(</span><span class="nx">parent</span><span class="p">)</span> <span class="p">=</span> <span class="nx">childPageNum</span>
+<span class="p">&gt;</span>       <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="c1">// Make space for the new cell
+</span><span class="c1"></span><span class="p">&gt;</span>               <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="nx">originalNumKeys</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&gt;</span> <span class="nx">index</span><span class="p">;</span> <span class="nx">i</span><span class="o">--</span> <span class="p">{</span>
+<span class="p">&gt;</span>                       <span class="c1">//destination := internalNodeCell(parent, i)
+</span><span class="c1"></span><span class="p">&gt;</span>                       <span class="c1">//source := internalNodeCell(parent, i-1)
+</span><span class="c1"></span><span class="p">&gt;</span>                       <span class="c1">// c: memcpy(destination, source, INTERNAL_NODE_CELL_SIZE);
+</span><span class="c1"></span><span class="p">&gt;</span>                       <span class="c1">//copy(destination, source)
+</span><span class="c1"></span><span class="p">&gt;</span>                       <span class="o">*</span><span class="nf">internalNodeCell</span><span class="p">(</span><span class="nx">parent</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span> <span class="p">=</span> <span class="o">*</span><span class="nf">internalNodeCell</span><span class="p">(</span><span class="nx">parent</span><span class="p">,</span> <span class="nx">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="p">}</span>
+<span class="p">&gt;</span>               <span class="o">*</span><span class="nf">internalNodeChild</span><span class="p">(</span><span class="nx">parent</span><span class="p">,</span> <span class="nx">index</span><span class="p">)</span> <span class="p">=</span> <span class="nx">childPageNum</span>
+<span class="p">&gt;</span>               <span class="o">*</span><span class="nf">internalNodeKey</span><span class="p">(</span><span class="nx">parent</span><span class="p">,</span> <span class="nx">index</span><span class="p">)</span> <span class="p">=</span> <span class="nx">childMaxKey</span>
+<span class="p">&gt;</span>       <span class="p">}</span>
+<span class="mi">632</span><span class="p">,</span><span class="mi">645</span><span class="nx">d711</span>
+<span class="p">&lt;</span> <span class="kd">func</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="kt">uint32</span> <span class="p">{</span>
+<span class="p">&lt;</span>       <span class="k">switch</span> <span class="nf">getNodeType</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&lt;</span>       <span class="k">case</span> <span class="nx">NODE_INTERNAL</span><span class="p">:</span>
+<span class="p">&lt;</span>               <span class="nx">numKeys</span> <span class="o">:=</span> <span class="o">*</span><span class="nf">internalNodeNumKeys</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+<span class="p">&lt;</span>               <span class="k">return</span> <span class="o">*</span><span class="nf">internalNodeKey</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">numKeys</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">&lt;</span>       <span class="k">case</span> <span class="nx">NODE_LEAF</span><span class="p">:</span>
+<span class="p">&lt;</span>               <span class="nx">numCells</span> <span class="o">:=</span> <span class="o">*</span><span class="nf">leafNodeNumCells</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+<span class="p">&lt;</span>               <span class="k">return</span> <span class="o">*</span><span class="nf">leafNodeKey</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">numCells</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">&lt;</span>       <span class="k">default</span><span class="p">:</span>
+<span class="p">&lt;</span>               <span class="c1">// Handle other node types if needed
+</span><span class="c1"></span><span class="p">&lt;</span>               <span class="k">return</span> <span class="mi">0</span> <span class="c1">// or appropriate default value
+</span><span class="c1"></span><span class="p">&lt;</span>       <span class="p">}</span>
+<span class="p">&lt;</span> <span class="p">}</span>
+<span class="p">&lt;</span> 
+<span class="mi">652</span><span class="nx">c718</span>
+<span class="p">&lt;</span>       <span class="c1">//rightChild := getPage(table.pager, rightChildPageNum)
+</span><span class="c1"></span><span class="o">---</span>
+<span class="p">&gt;</span>       <span class="nx">rightChild</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">rightChildPageNum</span><span class="p">)</span>
+<span class="mi">668</span><span class="nx">a735</span><span class="p">,</span><span class="mi">736</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">nodeParent</span><span class="p">(</span><span class="nx">leftChild</span><span class="p">)</span> <span class="p">=</span> <span class="nx">table</span><span class="p">.</span><span class="nx">rootPageNum</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">nodeParent</span><span class="p">(</span><span class="nx">rightChild</span><span class="p">)</span> <span class="p">=</span> <span class="nx">table</span><span class="p">.</span><span class="nx">rootPageNum</span>
+<span class="mi">675</span><span class="nx">a744</span>
+<span class="p">&gt;</span>       <span class="nx">oldMax</span> <span class="o">:=</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">)</span>
+<span class="mi">678</span><span class="nx">a748</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">nodeParent</span><span class="p">(</span><span class="nx">newNode</span><span class="p">)</span> <span class="p">=</span> <span class="o">*</span><span class="nf">nodeParent</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">)</span>
+<span class="mi">713</span><span class="p">,</span><span class="mi">714</span><span class="nx">c783</span><span class="p">,</span><span class="mi">788</span>
+<span class="p">&lt;</span>               <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Need to implement updating parent after split&#34;</span><span class="p">)</span>
+<span class="p">&lt;</span>               <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="o">---</span>
+<span class="p">&gt;</span>               <span class="nx">parentPageNum</span> <span class="o">:=</span> <span class="o">*</span><span class="nf">nodeParent</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="nx">newMax</span> <span class="o">:=</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="nx">parent</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">parentPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>               <span class="nf">updateInternalNodeKey</span><span class="p">(</span><span class="nx">parent</span><span class="p">,</span> <span class="nx">oldMax</span><span class="p">,</span> <span class="nx">newMax</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="nf">internalNodeInsert</span><span class="p">(</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">table</span><span class="p">,</span> <span class="nx">parentPageNum</span><span class="p">,</span> <span class="nx">newPageNum</span><span class="p">)</span>
+</code></pre></div><h2 id="第十四部分---拆分内部节点">第十四部分 - 拆分内部节点</h2>
+<p>测试:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span><span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">util</span> <span class="kn">import</span> <span class="n">run_script</span>
+
+<span class="c1"># 测试7个叶子节点的B+树的结构</span>
+<span class="k">def</span> <span class="nf">test_prints_structure_of_7_leaf_node_btree</span><span class="p">(</span><span class="n">db_file</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="p">):</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&#34;insert 58 user58 person58@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 56 user56 person56@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 8 user8 person8@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 54 user54 person54@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 77 user77 person77@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 7 user7 person7@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 25 user25 person25@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 71 user71 person71@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 13 user13 person13@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 22 user22 person22@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 53 user53 person53@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 51 user51 person51@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 59 user59 person59@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 32 user32 person32@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 36 user36 person36@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 79 user79 person79@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 10 user10 person10@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 33 user33 person33@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 20 user20 person20@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 4 user4 person4@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 35 user35 person35@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 76 user76 person76@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 49 user49 person49@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 24 user24 person24@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 70 user70 person70@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 48 user48 person48@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 39 user39 person39@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 15 user15 person15@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 47 user47 person47@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 30 user30 person30@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 86 user86 person86@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 31 user31 person31@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 68 user68 person68@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 37 user37 person37@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 66 user66 person66@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 63 user63 person63@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 40 user40 person40@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 78 user78 person78@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 19 user19 person19@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 46 user46 person46@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 14 user14 person14@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 81 user81 person81@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 72 user72 person72@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 6 user6 person6@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 50 user50 person50@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 85 user85 person85@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 67 user67 person67@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 2 user2 person2@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 55 user55 person55@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 69 user69 person69@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 5 user5 person5@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 65 user65 person65@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 52 user52 person52@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 1 user1 person1@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 29 user29 person29@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 9 user9 person9@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 43 user43 person43@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 75 user75 person75@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 21 user21 person21@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 82 user82 person82@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 12 user12 person12@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 18 user18 person18@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 60 user60 person60@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;insert 44 user44 person44@example.com&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;.btree&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;.exit&#34;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">run_script</span><span class="p">(</span><span class="n">script</span><span class="p">,</span><span class="n">db_file</span><span class="o">=</span><span class="n">db_file</span><span class="p">)</span>
+
+    <span class="n">expected_output</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&#34;db &gt; Tree:&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;- internal (size 1)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;  - internal (size 2)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - leaf (size 7)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 1&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 2&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 4&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 5&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 6&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 7&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 8&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - key 8&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - leaf (size 11)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 9&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 10&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 12&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 13&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 14&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 15&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 18&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 19&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 20&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 21&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 22&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - key 22&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - leaf (size 8)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 24&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 25&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 29&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 30&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 31&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 32&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 33&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 35&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;  - key 35&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;  - internal (size 3)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - leaf (size 12)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 36&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 37&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 39&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 40&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 43&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 44&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 46&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 47&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 48&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 49&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 50&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 51&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - key 51&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - leaf (size 11)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 52&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 53&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 54&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 55&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 56&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 58&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 59&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 60&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 63&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 65&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 66&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - key 66&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - leaf (size 7)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 67&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 68&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 69&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 70&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 71&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 72&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 75&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - key 75&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;    - leaf (size 8)&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 76&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 77&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 78&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 79&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 81&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 82&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 85&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;      - 86&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;db &gt; &#34;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="c1">#print(f&#34;result: {result}&#34;)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;result[64:]: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="mi">64</span><span class="p">:]</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="p">[</span><span class="mi">64</span><span class="p">:]</span> <span class="o">==</span> <span class="n">expected_output</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span><span class="si">}</span><span class="s2"> passed&#34;</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;need db file path&#34;</span><span class="p">)</span>
+    <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">db_file</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">db_file</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">db_file</span><span class="si">}</span><span class="s2"> exists, remove it first&#34;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span>
+
+<span class="n">test_prints_structure_of_7_leaf_node_btree</span><span class="p">(</span><span class="n">db_file</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&#34;all tests passed.&#34;</span><span class="p">)</span>
+</code></pre></div><p><code>diff golang/13.go golang/14.go</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="mi">6</span><span class="nx">a7</span>
+<span class="p">&gt;</span>       <span class="s">&#34;math&#34;</span>
+<span class="mi">85</span><span class="nx">a87</span><span class="p">,</span><span class="mi">88</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="cm">/* 为了测试，保持较小 */</span>
+<span class="mi">86</span><span class="nx">a90</span><span class="p">,</span><span class="mi">91</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="kd">const</span> <span class="nx">INVALID_PAGE_NUM</span> <span class="p">=</span> <span class="nx">math</span><span class="p">.</span><span class="nx">MaxUint32</span>
+<span class="mi">268</span><span class="nx">a274</span><span class="p">,</span><span class="mi">277</span>
+<span class="p">&gt;</span>       <span class="cm">/*
+</span><span class="cm">&gt;         由于根页码是0，因此在初始化内部节点时，如果不将其右子节点初始化为无效的页码，可能会导致右子节点为0，这将使该节点成为根节点的父节点。
+</span><span class="cm">&gt;       */</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">internalNodeRightChild</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span> <span class="p">=</span> <span class="nx">INVALID_PAGE_NUM</span>
+<span class="mi">317</span><span class="nx">c326</span><span class="p">,</span><span class="mi">331</span>
+<span class="p">&lt;</span>               <span class="k">return</span> <span class="nf">internalNodeRightChild</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+<span class="o">---</span>
+<span class="p">&gt;</span>               <span class="nx">rightChild</span> <span class="o">:=</span> <span class="nf">internalNodeRightChild</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="k">if</span> <span class="o">*</span><span class="nx">rightChild</span> <span class="o">==</span> <span class="nx">INVALID_PAGE_NUM</span> <span class="p">{</span>
+<span class="p">&gt;</span>                       <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Tried to access right child of node, but was invalid page\n&#34;</span><span class="p">)</span>
+<span class="p">&gt;</span>                       <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="p">}</span>
+<span class="p">&gt;</span>               <span class="k">return</span> <span class="nx">rightChild</span>
+<span class="mi">319</span><span class="nx">c333</span><span class="p">,</span><span class="mi">338</span>
+<span class="p">&lt;</span>       <span class="k">return</span> <span class="nf">internalNodeCell</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">childNum</span><span class="p">)</span>
+<span class="o">---</span>
+<span class="p">&gt;</span>       <span class="nx">child</span> <span class="o">:=</span> <span class="nf">internalNodeCell</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">childNum</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="k">if</span> <span class="o">*</span><span class="nx">child</span> <span class="o">==</span> <span class="nx">INVALID_PAGE_NUM</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Tried to access child %d of node, but was invalid page\n&#34;</span><span class="p">,</span> <span class="nx">childNum</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="p">}</span>
+<span class="p">&gt;</span>       <span class="k">return</span> <span class="nx">child</span>
+<span class="mi">354</span><span class="p">,</span><span class="mi">358</span><span class="nx">c373</span><span class="p">,</span><span class="mi">374</span>
+<span class="p">&lt;</span> <span class="kd">func</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="kt">uint32</span> <span class="p">{</span>
+<span class="p">&lt;</span>       <span class="k">switch</span> <span class="nf">getNodeType</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&lt;</span>       <span class="k">case</span> <span class="nx">NODE_INTERNAL</span><span class="p">:</span>
+<span class="p">&lt;</span>               <span class="k">return</span> <span class="o">*</span><span class="nf">internalNodeKey</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="o">*</span><span class="nf">internalNodeNumKeys</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">&lt;</span>       <span class="k">case</span> <span class="nx">NODE_LEAF</span><span class="p">:</span>
+<span class="o">---</span>
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">pager</span> <span class="o">*</span><span class="nx">Pager</span><span class="p">,</span> <span class="nx">node</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="kt">uint32</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="k">if</span> <span class="nf">getNodeType</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span> <span class="o">==</span> <span class="nx">NODE_LEAF</span> <span class="p">{</span>
+<span class="mi">360</span><span class="p">,</span><span class="mi">362</span><span class="nx">c376</span><span class="p">,</span><span class="mi">407</span>
+<span class="p">&lt;</span>       <span class="k">default</span><span class="p">:</span>
+<span class="p">&lt;</span>               <span class="c1">// Handle other node types if needed
+</span><span class="c1"></span><span class="p">&lt;</span>               <span class="k">return</span> <span class="mi">0</span> <span class="c1">// or appropriate default value
+</span><span class="c1"></span><span class="o">---</span>
+<span class="p">&gt;</span>       <span class="p">}</span>
+<span class="p">&gt;</span>       <span class="nx">rightChild</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">pager</span><span class="p">,</span> <span class="o">*</span><span class="nf">internalNodeRightChild</span><span class="p">(</span><span class="nx">node</span><span class="p">))</span>
+<span class="p">&gt;</span>       <span class="k">return</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">rightChild</span><span class="p">)</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span> <span class="c1">// 处理根节点的拆分。
+</span><span class="c1"></span><span class="p">&gt;</span> <span class="c1">// 将旧根复制到新页，成为左子节点。
+</span><span class="c1"></span><span class="p">&gt;</span> <span class="c1">// 重新初始化根页以包含新根节点。
+</span><span class="c1"></span><span class="p">&gt;</span> <span class="c1">// 新根节点指向两个子节点。
+</span><span class="c1"></span><span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">createNewRoot</span><span class="p">(</span><span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">,</span> <span class="nx">rightChildPageNum</span> <span class="kt">uint32</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="nx">root</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">table</span><span class="p">.</span><span class="nx">rootPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">rightChild</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">rightChildPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">leftChildPageNum</span> <span class="o">:=</span> <span class="nf">getUnusedPageNum</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">leftChild</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">leftChildPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="k">if</span> <span class="nf">getNodeType</span><span class="p">(</span><span class="nx">root</span><span class="p">)</span> <span class="o">==</span> <span class="nx">NODE_INTERNAL</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="nf">initializeInternalNode</span><span class="p">(</span><span class="nx">rightChild</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="nf">initializeInternalNode</span><span class="p">(</span><span class="nx">leftChild</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="c1">// Left child has data copied from the old root
+</span><span class="c1"></span><span class="p">&gt;</span>       <span class="nb">copy</span><span class="p">(</span><span class="nx">leftChild</span><span class="p">,</span> <span class="nx">root</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nf">setNodeRoot</span><span class="p">(</span><span class="nx">leftChild</span><span class="p">,</span> <span class="kc">false</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="k">if</span> <span class="nf">getNodeType</span><span class="p">(</span><span class="nx">leftChild</span><span class="p">)</span> <span class="o">==</span> <span class="nx">NODE_INTERNAL</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="kd">var</span> <span class="nx">child</span> <span class="p">[]</span><span class="kt">byte</span>
+<span class="p">&gt;</span>               <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="nb">uint32</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="o">*</span><span class="nf">internalNodeNumKeys</span><span class="p">(</span><span class="nx">leftChild</span><span class="p">);</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+<span class="p">&gt;</span>                       <span class="nx">child</span> <span class="p">=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="o">*</span><span class="nf">internalNodeChild</span><span class="p">(</span><span class="nx">leftChild</span><span class="p">,</span> <span class="nx">i</span><span class="p">))</span>
+<span class="p">&gt;</span>                       <span class="o">*</span><span class="nf">nodeParent</span><span class="p">(</span><span class="nx">child</span><span class="p">)</span> <span class="p">=</span> <span class="nx">leftChildPageNum</span>
+<span class="p">&gt;</span>               <span class="p">}</span>
+<span class="p">&gt;</span>               <span class="nx">child</span> <span class="p">=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="o">*</span><span class="nf">internalNodeRightChild</span><span class="p">(</span><span class="nx">leftChild</span><span class="p">))</span>
+<span class="p">&gt;</span>               <span class="o">*</span><span class="nf">nodeParent</span><span class="p">(</span><span class="nx">child</span><span class="p">)</span> <span class="p">=</span> <span class="nx">leftChildPageNum</span>
+<span class="mi">363</span><span class="nx">a409</span><span class="p">,</span><span class="mi">420</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="c1">// Root becomes a new internal node with one key and two children
+</span><span class="c1"></span><span class="p">&gt;</span>       <span class="nf">initializeInternalNode</span><span class="p">(</span><span class="nx">root</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nf">setNodeRoot</span><span class="p">(</span><span class="nx">root</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">internalNodeNumKeys</span><span class="p">(</span><span class="nx">root</span><span class="p">)</span> <span class="p">=</span> <span class="mi">1</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">internalNodeChild</span><span class="p">(</span><span class="nx">root</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">=</span> <span class="nx">leftChildPageNum</span>
+<span class="p">&gt;</span>       <span class="nx">leftChildMaxKey</span> <span class="o">:=</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">leftChild</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">internalNodeKey</span><span class="p">(</span><span class="nx">root</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">=</span> <span class="nx">leftChildMaxKey</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">internalNodeRightChild</span><span class="p">(</span><span class="nx">root</span><span class="p">)</span> <span class="p">=</span> <span class="nx">rightChildPageNum</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">nodeParent</span><span class="p">(</span><span class="nx">leftChild</span><span class="p">)</span> <span class="p">=</span> <span class="nx">table</span><span class="p">.</span><span class="nx">rootPageNum</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">nodeParent</span><span class="p">(</span><span class="nx">rightChild</span><span class="p">)</span> <span class="p">=</span> <span class="nx">table</span><span class="p">.</span><span class="nx">rootPageNum</span>
+<span class="mi">365</span><span class="nx">a423</span>
+<span class="p">&gt;</span> <span class="c1">// 向父节点添加一个新的子节点/键对，对应于子节点
+</span><span class="c1"></span><span class="mi">369</span><span class="nx">c427</span>
+<span class="p">&lt;</span>       <span class="nx">childMaxKey</span> <span class="o">:=</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">child</span><span class="p">)</span>
+<span class="o">---</span>
+<span class="p">&gt;</span>       <span class="nx">childMaxKey</span> <span class="o">:=</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">child</span><span class="p">)</span>
+<span class="mi">373</span><span class="p">,</span><span class="mi">374</span><span class="nx">d430</span>
+<span class="p">&lt;</span>       <span class="o">*</span><span class="nf">internalNodeNumKeys</span><span class="p">(</span><span class="nx">parent</span><span class="p">)</span> <span class="p">=</span> <span class="nx">originalNumKeys</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="p">&lt;</span> 
+<span class="mi">376</span><span class="p">,</span><span class="mi">377</span><span class="nx">c432</span><span class="p">,</span><span class="mi">433</span>
+<span class="p">&lt;</span>               <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Need to implement splitting internal node&#34;</span><span class="p">)</span>
+<span class="p">&lt;</span>               <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="o">---</span>
+<span class="p">&gt;</span>               <span class="nf">internalNodeSplitAndInsert</span><span class="p">(</span><span class="nx">table</span><span class="p">,</span> <span class="nx">parentPageNum</span><span class="p">,</span> <span class="nx">childPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="k">return</span>
+<span class="mi">380</span><span class="nx">a437</span><span class="p">,</span><span class="mi">442</span>
+<span class="p">&gt;</span>       <span class="c1">// 具有右子节点为INVALID_PAGE_NUM的内部节点为空
+</span><span class="c1"></span><span class="p">&gt;</span>       <span class="k">if</span> <span class="nx">rightChildPageNum</span> <span class="o">==</span> <span class="nx">INVALID_PAGE_NUM</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="o">*</span><span class="nf">internalNodeRightChild</span><span class="p">(</span><span class="nx">parent</span><span class="p">)</span> <span class="p">=</span> <span class="nx">childPageNum</span>
+<span class="p">&gt;</span>               <span class="k">return</span>
+<span class="p">&gt;</span>       <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="mi">381</span><span class="nx">a444</span><span class="p">,</span><span class="mi">450</span>
+<span class="p">&gt;</span>       <span class="cm">/*
+</span><span class="cm">&gt;         如果我们已经达到节点的最大单元格数，就不能在分裂之前递增。
+</span><span class="cm">&gt;         在没有插入新的键/子节点对的情况下递增，并立即调用
+</span><span class="cm">&gt;         `internal_node_split_and_insert` 会导致在 `(max_cells + 1)`
+</span><span class="cm">&gt;         处创建一个新的键，其值未初始化。
+</span><span class="cm">&gt;       */</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">internalNodeNumKeys</span><span class="p">(</span><span class="nx">parent</span><span class="p">)</span> <span class="p">=</span> <span class="nx">originalNumKeys</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="mi">383</span><span class="nx">c452</span>
+<span class="p">&lt;</span>       <span class="k">if</span> <span class="nx">childMaxKey</span> <span class="p">&gt;</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">rightChild</span><span class="p">)</span> <span class="p">{</span>
+<span class="o">---</span>
+<span class="p">&gt;</span>       <span class="k">if</span> <span class="nx">childMaxKey</span> <span class="p">&gt;</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">rightChild</span><span class="p">)</span> <span class="p">{</span>
+<span class="mi">386</span><span class="nx">c455</span>
+<span class="p">&lt;</span>               <span class="o">*</span><span class="nf">internalNodeKey</span><span class="p">(</span><span class="nx">parent</span><span class="p">,</span> <span class="nx">originalNumKeys</span><span class="p">)</span> <span class="p">=</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">rightChild</span><span class="p">)</span>
+<span class="o">---</span>
+<span class="p">&gt;</span>               <span class="o">*</span><span class="nf">internalNodeKey</span><span class="p">(</span><span class="nx">parent</span><span class="p">,</span> <span class="nx">originalNumKeys</span><span class="p">)</span> <span class="p">=</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">rightChild</span><span class="p">)</span>
+<span class="mi">391</span><span class="p">,</span><span class="mi">392</span><span class="nx">c460</span><span class="p">,</span><span class="mi">461</span>
+<span class="p">&lt;</span>                       <span class="c1">//destination := internalNodeCell(parent, i)
+</span><span class="c1"></span><span class="p">&lt;</span>                       <span class="c1">//source := internalNodeCell(parent, i-1)
+</span><span class="c1"></span><span class="o">---</span>
+<span class="p">&gt;</span>                       <span class="nx">destination</span> <span class="o">:=</span> <span class="nf">internalNodeCell</span><span class="p">(</span><span class="nx">parent</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span>
+<span class="p">&gt;</span>                       <span class="nx">source</span> <span class="o">:=</span> <span class="nf">internalNodeCell</span><span class="p">(</span><span class="nx">parent</span><span class="p">,</span> <span class="nx">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="mi">394</span><span class="p">,</span><span class="mi">395</span><span class="nx">c463</span><span class="p">,</span><span class="mi">464</span>
+<span class="p">&lt;</span>                       <span class="c1">//copy(destination, source)
+</span><span class="c1"></span><span class="p">&lt;</span>                       <span class="o">*</span><span class="nf">internalNodeCell</span><span class="p">(</span><span class="nx">parent</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span> <span class="p">=</span> <span class="o">*</span><span class="nf">internalNodeCell</span><span class="p">(</span><span class="nx">parent</span><span class="p">,</span> <span class="nx">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="o">---</span>
+<span class="p">&gt;</span>                       <span class="nb">copy</span><span class="p">((</span><span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nx">INTERNAL_NODE_CELL_SIZE</span><span class="p">]</span><span class="kt">byte</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="nx">destination</span><span class="p">)))[:],</span> <span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nx">INTERNAL_NODE_CELL_SIZE</span><span class="p">]</span><span class="kt">byte</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="nx">source</span><span class="p">)))[:])</span>
+<span class="p">&gt;</span>                       <span class="c1">//*internalNodeCell(parent, i) = *internalNodeCell(parent, i-1)
+</span><span class="c1"></span><span class="mi">400</span><span class="nx">a470</span><span class="p">,</span><span class="mi">473</span>
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">internalNodeSplitAndInsert</span><span class="p">(</span><span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">,</span> <span class="nx">parentPageNum</span><span class="p">,</span> <span class="nx">childPageNum</span> <span class="kt">uint32</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&gt;</span>       <span class="nx">oldPageNum</span> <span class="o">:=</span> <span class="nx">parentPageNum</span>
+<span class="p">&gt;</span>       <span class="nx">oldNode</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">parentPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">oldMax</span> <span class="o">:=</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">oldNode</span><span class="p">)</span>
+<span class="mi">401</span><span class="nx">a475</span><span class="p">,</span><span class="mi">543</span>
+<span class="p">&gt;</span>       <span class="nx">child</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">childPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">childMax</span> <span class="o">:=</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">child</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="nx">newPageNum</span> <span class="o">:=</span> <span class="nf">getUnusedPageNum</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="c1">// Flag to indicate if we are splitting the root node
+</span><span class="c1"></span><span class="p">&gt;</span>       <span class="c1">// 这个简短的注释是chatGPT总结后加上的...
+</span><span class="c1"></span><span class="p">&gt;</span>       <span class="nx">splittingRoot</span> <span class="o">:=</span> <span class="nf">isNodeRoot</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="kd">var</span> <span class="nx">parent</span><span class="p">,</span> <span class="nx">newNode</span> <span class="p">[]</span><span class="kt">byte</span>
+<span class="p">&gt;</span>       <span class="k">if</span> <span class="nx">splittingRoot</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="nf">createNewRoot</span><span class="p">(</span><span class="nx">table</span><span class="p">,</span> <span class="nx">newPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="nx">parent</span> <span class="p">=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">table</span><span class="p">.</span><span class="nx">rootPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="c1">// If splitting root, update oldNode to point to the left child of the new root
+</span><span class="c1"></span><span class="p">&gt;</span>               <span class="nx">oldPageNum</span> <span class="p">=</span> <span class="o">*</span><span class="nf">internalNodeChild</span><span class="p">(</span><span class="nx">parent</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="nx">oldNode</span> <span class="p">=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">oldPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="nx">parent</span> <span class="p">=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="o">*</span><span class="nf">nodeParent</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">))</span>
+<span class="p">&gt;</span>               <span class="nx">newNode</span> <span class="p">=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">newPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="nf">initializeInternalNode</span><span class="p">(</span><span class="nx">newNode</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="nx">oldNumKeys</span> <span class="o">:=</span> <span class="nf">internalNodeNumKeys</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="nx">curPageNum</span> <span class="o">:=</span> <span class="o">*</span><span class="nf">internalNodeRightChild</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">cur</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">curPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="c1">// Move the right child into the new node and set the right child of old node to INVALID_PAGE_NUM
+</span><span class="c1"></span><span class="p">&gt;</span>       <span class="nf">internalNodeInsert</span><span class="p">(</span><span class="nx">table</span><span class="p">,</span> <span class="nx">newPageNum</span><span class="p">,</span> <span class="nx">curPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">nodeParent</span><span class="p">(</span><span class="nx">cur</span><span class="p">)</span> <span class="p">=</span> <span class="nx">newPageNum</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">internalNodeRightChild</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">)</span> <span class="p">=</span> <span class="nx">INVALID_PAGE_NUM</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="c1">// Move keys and child nodes to the new node until the middle key
+</span><span class="c1"></span><span class="p">&gt;</span>       <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="nx">INTERNAL_NODE_MAX_CELLS</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&gt;</span> <span class="nx">INTERNAL_NODE_MAX_CELLS</span><span class="o">/</span><span class="mi">2</span><span class="p">;</span> <span class="nx">i</span><span class="o">--</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="nx">curPageNum</span> <span class="p">=</span> <span class="o">*</span><span class="nf">internalNodeChild</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">,</span> <span class="nb">uint32</span><span class="p">(</span><span class="nx">i</span><span class="p">))</span>
+<span class="p">&gt;</span>               <span class="nx">cur</span> <span class="p">=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">curPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>               <span class="nf">internalNodeInsert</span><span class="p">(</span><span class="nx">table</span><span class="p">,</span> <span class="nx">newPageNum</span><span class="p">,</span> <span class="nx">curPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="o">*</span><span class="nf">nodeParent</span><span class="p">(</span><span class="nx">cur</span><span class="p">)</span> <span class="p">=</span> <span class="nx">newPageNum</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>               <span class="p">(</span><span class="o">*</span><span class="nx">oldNumKeys</span><span class="p">)</span><span class="o">--</span>
+<span class="p">&gt;</span>       <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="c1">// Set the right child of old node to the highest key before the middle key and decrement the number of keys
+</span><span class="c1"></span><span class="p">&gt;</span>       <span class="o">*</span><span class="nf">internalNodeRightChild</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">)</span> <span class="p">=</span> <span class="o">*</span><span class="nf">internalNodeChild</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">,</span> <span class="o">*</span><span class="nx">oldNumKeys</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="p">(</span><span class="o">*</span><span class="nx">oldNumKeys</span><span class="p">)</span><span class="o">--</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="c1">// Determine which of the split nodes should contain the child to be inserted
+</span><span class="c1"></span><span class="p">&gt;</span>       <span class="nx">maxAfterSplit</span> <span class="o">:=</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">oldNode</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="nx">destinationPageNum</span> <span class="o">:=</span> <span class="nx">newPageNum</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="k">if</span> <span class="nx">childMax</span> <span class="p">&lt;</span> <span class="nx">maxAfterSplit</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="nx">destinationPageNum</span> <span class="p">=</span> <span class="nx">oldPageNum</span>
+<span class="p">&gt;</span>       <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="c1">// Insert the child node into the appropriate split node
+</span><span class="c1"></span><span class="p">&gt;</span>       <span class="nf">internalNodeInsert</span><span class="p">(</span><span class="nx">table</span><span class="p">,</span> <span class="nx">destinationPageNum</span><span class="p">,</span> <span class="nx">childPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="o">*</span><span class="nf">nodeParent</span><span class="p">(</span><span class="nx">child</span><span class="p">)</span> <span class="p">=</span> <span class="nx">destinationPageNum</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="c1">// Update the parent node&#39;s key to reflect the new highest key in the old node
+</span><span class="c1"></span><span class="p">&gt;</span>       <span class="nf">updateInternalNodeKey</span><span class="p">(</span><span class="nx">parent</span><span class="p">,</span> <span class="nx">oldMax</span><span class="p">,</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">oldNode</span><span class="p">))</span>
+<span class="p">&gt;</span> 
+<span class="p">&gt;</span>       <span class="c1">// If not splitting the root, insert the new node into its parent
+</span><span class="c1"></span><span class="p">&gt;</span>       <span class="k">if</span> <span class="p">!</span><span class="nx">splittingRoot</span> <span class="p">{</span>
+<span class="p">&gt;</span>               <span class="nf">internalNodeInsert</span><span class="p">(</span><span class="nx">table</span><span class="p">,</span> <span class="o">*</span><span class="nf">nodeParent</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">),</span> <span class="nx">newPageNum</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="o">*</span><span class="nf">nodeParent</span><span class="p">(</span><span class="nx">newNode</span><span class="p">)</span> <span class="p">=</span> <span class="o">*</span><span class="nf">nodeParent</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">)</span>
+<span class="p">&gt;</span>       <span class="p">}</span>
+<span class="p">&gt;</span> <span class="p">}</span>
+<span class="p">&gt;</span> 
+<span class="mi">419</span><span class="p">,</span><span class="mi">421</span><span class="nx">c561</span><span class="p">,</span><span class="mi">564</span>
+<span class="p">&lt;</span>               <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="nb">uint32</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">numKeys</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+<span class="p">&lt;</span>                       <span class="nx">child</span> <span class="p">=</span> <span class="o">*</span><span class="nf">internalNodeChild</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span>
+<span class="p">&lt;</span>                       <span class="nf">printTree</span><span class="p">(</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">child</span><span class="p">,</span> <span class="nx">indentationLevel</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="o">---</span>
+<span class="p">&gt;</span>               <span class="k">if</span> <span class="nx">numKeys</span> <span class="p">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+<span class="p">&gt;</span>                       <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="nb">uint32</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">numKeys</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+<span class="p">&gt;</span>                               <span class="nx">child</span> <span class="p">=</span> <span class="o">*</span><span class="nf">internalNodeChild</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span>
+<span class="p">&gt;</span>                               <span class="nf">printTree</span><span class="p">(</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">child</span><span class="p">,</span> <span class="nx">indentationLevel</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="mi">423</span><span class="p">,</span><span class="mi">424</span><span class="nx">c566</span><span class="p">,</span><span class="mi">570</span>
+<span class="p">&lt;</span>                       <span class="nf">indent</span><span class="p">(</span><span class="nx">indentationLevel</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">&lt;</span>                       <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;- key %d\n&#34;</span><span class="p">,</span> <span class="o">*</span><span class="nf">internalNodeKey</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">i</span><span class="p">))</span>
+<span class="o">---</span>
+<span class="p">&gt;</span>                               <span class="nf">indent</span><span class="p">(</span><span class="nx">indentationLevel</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">&gt;</span>                               <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;- key %d\n&#34;</span><span class="p">,</span> <span class="o">*</span><span class="nf">internalNodeKey</span><span class="p">(</span><span class="nx">node</span><span class="p">,</span> <span class="nx">i</span><span class="p">))</span>
+<span class="p">&gt;</span>                       <span class="p">}</span>
+<span class="p">&gt;</span>                       <span class="nx">child</span> <span class="p">=</span> <span class="o">*</span><span class="nf">internalNodeRightChild</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+<span class="p">&gt;</span>                       <span class="nf">printTree</span><span class="p">(</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">child</span><span class="p">,</span> <span class="nx">indentationLevel</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="mi">426</span><span class="p">,</span><span class="mi">427</span><span class="nx">d571</span>
+<span class="p">&lt;</span>               <span class="nx">child</span> <span class="p">=</span> <span class="o">*</span><span class="nf">internalNodeRightChild</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+<span class="p">&lt;</span>               <span class="nf">printTree</span><span class="p">(</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">child</span><span class="p">,</span> <span class="nx">indentationLevel</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="mi">629</span><span class="nx">c773</span>
+<span class="p">&lt;</span> <span class="kd">func</span> <span class="nf">readInput</span><span class="p">(</span><span class="nx">reader</span> <span class="o">*</span><span class="nx">bufio</span><span class="p">.</span><span class="nx">Reader</span><span class="p">,</span> <span class="nx">inputBuffer</span> <span class="o">*</span><span class="nx">InputBuffer</span><span class="p">)</span> <span class="p">{</span>
+<span class="o">---</span>
+<span class="p">&gt;</span> <span class="kd">func</span> <span class="nf">readInput</span><span class="p">(</span><span class="nx">reader</span> <span class="o">*</span><span class="nx">bufio</span><span class="p">.</span><span class="nx">Reader</span><span class="p">,</span> <span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">,</span> <span class="nx">inputBuffer</span> <span class="o">*</span><span class="nx">InputBuffer</span><span class="p">)</span> <span class="p">{</span>
+<span class="mi">633</span><span class="nx">a778</span><span class="p">,</span><span class="mi">781</span>
+<span class="p">&gt;</span>               <span class="nf">dbClose</span><span class="p">(</span><span class="nx">table</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="nx">io</span><span class="p">.</span><span class="nx">EOF</span> <span class="p">{</span>
+<span class="p">&gt;</span>                       <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="p">}</span>
+<span class="mi">716</span><span class="p">,</span><span class="mi">738</span><span class="nx">d863</span>
+<span class="p">&lt;</span> <span class="kd">func</span> <span class="nf">createNewRoot</span><span class="p">(</span><span class="nx">table</span> <span class="o">*</span><span class="nx">Table</span><span class="p">,</span> <span class="nx">rightChildPageNum</span> <span class="kt">uint32</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">&lt;</span>       <span class="nx">root</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">table</span><span class="p">.</span><span class="nx">rootPageNum</span><span class="p">)</span>
+<span class="p">&lt;</span>       <span class="nx">rightChild</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">rightChildPageNum</span><span class="p">)</span>
+<span class="p">&lt;</span>       <span class="nx">leftChildPageNum</span> <span class="o">:=</span> <span class="nf">getUnusedPageNum</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">)</span>
+<span class="p">&lt;</span>       <span class="nx">leftChild</span> <span class="o">:=</span> <span class="nf">getPage</span><span class="p">(</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">leftChildPageNum</span><span class="p">)</span>
+<span class="p">&lt;</span> 
+<span class="p">&lt;</span>       <span class="c1">// Left child gets data copied from the old root
+</span><span class="c1"></span><span class="p">&lt;</span>       <span class="nb">copy</span><span class="p">(</span><span class="nx">leftChild</span><span class="p">,</span> <span class="nx">root</span><span class="p">[:])</span>
+<span class="p">&lt;</span>       <span class="nf">setNodeRoot</span><span class="p">(</span><span class="nx">leftChild</span><span class="p">,</span> <span class="kc">false</span><span class="p">)</span>
+<span class="p">&lt;</span> 
+<span class="p">&lt;</span>       <span class="c1">// Root becomes a new internal node with one key and two children
+</span><span class="c1"></span><span class="p">&lt;</span>       <span class="nf">initializeInternalNode</span><span class="p">(</span><span class="nx">root</span><span class="p">)</span>
+<span class="p">&lt;</span>       <span class="nf">setNodeRoot</span><span class="p">(</span><span class="nx">root</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span>
+<span class="p">&lt;</span>       <span class="o">*</span><span class="nf">internalNodeNumKeys</span><span class="p">(</span><span class="nx">root</span><span class="p">)</span> <span class="p">=</span> <span class="mi">1</span>
+<span class="p">&lt;</span>       <span class="o">*</span><span class="nf">internalNodeChild</span><span class="p">(</span><span class="nx">root</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">=</span> <span class="nx">leftChildPageNum</span>
+<span class="p">&lt;</span> 
+<span class="p">&lt;</span>       <span class="nx">leftChildMaxKey</span> <span class="o">:=</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">leftChild</span><span class="p">)</span>
+<span class="p">&lt;</span>       <span class="o">*</span><span class="nf">internalNodeKey</span><span class="p">(</span><span class="nx">root</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">=</span> <span class="nx">leftChildMaxKey</span>
+<span class="p">&lt;</span>       <span class="o">*</span><span class="nf">internalNodeRightChild</span><span class="p">(</span><span class="nx">root</span><span class="p">)</span> <span class="p">=</span> <span class="nx">rightChildPageNum</span>
+<span class="p">&lt;</span>       <span class="o">*</span><span class="nf">nodeParent</span><span class="p">(</span><span class="nx">leftChild</span><span class="p">)</span> <span class="p">=</span> <span class="nx">table</span><span class="p">.</span><span class="nx">rootPageNum</span>
+<span class="p">&lt;</span>       <span class="o">*</span><span class="nf">nodeParent</span><span class="p">(</span><span class="nx">rightChild</span><span class="p">)</span> <span class="p">=</span> <span class="nx">table</span><span class="p">.</span><span class="nx">rootPageNum</span>
+<span class="p">&lt;</span> <span class="p">}</span>
+<span class="p">&lt;</span> 
+<span class="mi">744</span><span class="nx">c869</span>
+<span class="p">&lt;</span>       <span class="nx">oldMax</span> <span class="o">:=</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">)</span>
+<span class="o">---</span>
+<span class="p">&gt;</span>       <span class="nx">oldMax</span> <span class="o">:=</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">oldNode</span><span class="p">)</span>
+<span class="mi">784</span><span class="nx">c909</span>
+<span class="p">&lt;</span>               <span class="nx">newMax</span> <span class="o">:=</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">oldNode</span><span class="p">)</span>
+<span class="o">---</span>
+<span class="p">&gt;</span>               <span class="nx">newMax</span> <span class="o">:=</span> <span class="nf">getNodeMaxKey</span><span class="p">(</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">table</span><span class="p">.</span><span class="nx">pager</span><span class="p">,</span> <span class="nx">oldNode</span><span class="p">)</span>
+<span class="mi">843</span><span class="nx">a969</span>
+<span class="p">&gt;</span>       <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span>
+<span class="mi">847</span><span class="nx">a974</span>
+<span class="p">&gt;</span>               <span class="nx">i</span><span class="o">++</span>
+<span class="mi">848</span><span class="nx">a976</span>
+<span class="p">&gt;</span>       <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;total_rows: %d\n&#34;</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span>
+<span class="mi">876</span><span class="nx">c1004</span><span class="p">,</span><span class="mi">1007</span>
+<span class="p">&lt;</span>               <span class="nf">readInput</span><span class="p">(</span><span class="nx">reader</span><span class="p">,</span> <span class="nx">inputBuffer</span><span class="p">)</span>
+<span class="o">---</span>
+<span class="p">&gt;</span>               <span class="nf">readInput</span><span class="p">(</span><span class="nx">reader</span><span class="p">,</span> <span class="nx">table</span><span class="p">,</span> <span class="nx">inputBuffer</span><span class="p">)</span>
+<span class="p">&gt;</span>               <span class="k">if</span> <span class="nx">inputBuffer</span><span class="p">.</span><span class="nx">inputLength</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+<span class="p">&gt;</span>                       <span class="k">continue</span>
+<span class="p">&gt;</span>               <span class="p">}</span>
+</code></pre></div>
     </div>
 
     
