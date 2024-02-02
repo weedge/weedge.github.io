@@ -6,7 +6,27 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 10 Jan 2024 10:58:28 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 02 Feb 2024 00:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>逝去的奶奶</title>
+      <link>https://weedge.github.io/post/nainai/</link>
+      <pubDate>Fri, 02 Feb 2024 00:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/nainai/</guid>
+      <description>&lt;iframe frameborder=&#34;no&#34; border=&#34;0&#34; marginwidth=&#34;0&#34; marginheight=&#34;0&#34; width=330 height=86 src=&#34;//music.163.com/outchain/player?type=2&amp;id=32574246&amp;auto=1&amp;height=66&#34;&gt;&lt;/iframe&gt;
+
+
+
+&lt;blockquote&gt;
+&lt;p&gt;天上的每一颗星 都是爱过我们的人&lt;/p&gt;
+&lt;p&gt;听说，地上少个人，天上多颗星，每一颗闪烁的星星都在跟地上的亲人说话。&lt;/p&gt;
+&lt;p&gt;但愿，今夜有星。&lt;/p&gt;
+&lt;p&gt;但愿，星星会闪。&lt;/p&gt;
+&lt;p&gt;&amp;ndash; 人生大事&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;简单踏实就好，奶奶经常给说的话，一直记着。【step by step, 懂得珍惜】&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>构建一个简单的数据库[golang版]</title>
       <link>https://weedge.github.io/post/db_tutorial_go/</link>
@@ -79,7 +99,7 @@
       <guid>https://weedge.github.io/post/llm/a-very-gentle-introduction-to-large-language-models-without-the-hype/</guid>
       <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/a-very-gentle-introduction-to-large-language-models-without-the-hype/transformers.svg&#34; alt=&#34;原始的 Transformer 模型结构&#34;&gt;&lt;/p&gt;
 &lt;h2 id=&#34;简介&#34;&gt;简介&lt;/h2&gt;
-&lt;p&gt;本文旨在让没有计算机科学背景的人深入了解 ChatGPT 和类似的 AI 系统（GPT-3、GPT-4、Bing Chat、Bard 等）的工作原理。ChatGPT 是一个聊天机器人——一种构建的对话式人工智能——但建立在&lt;em&gt;大型语言模型&lt;/em&gt;之上。这些绝对是文字，我们将把它们全部分解。在此过程中，我们将讨论它们背后的核心概念。本文不需要任何技术或数学背景。我们将大量使用隐喻来说明这些概念。我们将讨论为什么核心概念以它们的方式工作，以及我们可以期望或不期望像 ChatGPT 这样的大型语言模型做什么。&lt;/p&gt;
+&lt;p&gt;本文旨在让没有计算机科学背景的人深入了解 ChatGPT 和类似的 AI 系统（GPT-3、GPT-4、Bing Chat、Bard 等）的工作原理。ChatGPT 是一个聊天机器人——一种构建的对话式人工智能——但建立在&lt;em&gt;大型语言模型&lt;/em&gt;之上。我们将把它们全部分解。在此过程中，我们将讨论它们背后的核心概念。本文不需要任何技术或数学背景。我们将大量使用隐喻来说明这些概念。我们将讨论为什么核心概念以它们的方式工作，以及我们可以期望或不期望像 ChatGPT 这样的大型语言模型做什么。&lt;/p&gt;
 &lt;p&gt;这就是我们要做的事情。我们将温和地介绍一些与大型语言模型和 ChatGPT 相关的术语，不使用任何行话。如果我必须使用行话，我会不使用行话来分解它。我们将从“什么是人工智能”开始，然后逐步提高。我会尽可能地使用一些反复出现的隐喻。我将讨论这些技术的影响，即我们应该期望它们做什么或不应该期望它们做什么。let&amp;rsquo;s go~!&lt;/p&gt;
 &lt;p&gt;注：主要是结合论文「&lt;a href=&#34;https://arxiv.org/pdf/1706.03762.pdf&#34;&gt;Attention Is All You Need&lt;/a&gt;」理解Transformer。&lt;a href=&#34;https://www.youtube.com/watch?v=nzqlFIcCSWQ&#34;&gt;Transformer论文逐段精读&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;附：&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/transformer.ipynb&#34;&gt;Transformer学习笔记&lt;/a&gt; | &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/AnnotatedTransformer.ipynb&#34;&gt;Annotated Transformer&lt;/a&gt;&lt;/p&gt;
@@ -309,15 +329,6 @@
 &lt;blockquote&gt;
 &lt;p&gt;在机器学习中，向量也称为&lt;strong&gt;对象&lt;/strong&gt;或&lt;strong&gt;点&lt;/strong&gt;。&lt;/p&gt;
 &lt;/blockquote&gt;</description>
-    </item>
-    
-    <item>
-      <title>译：FANN：200行Rust实现的向量搜索</title>
-      <link>https://weedge.github.io/post/oneday/vector-search-in-200-lines-of-rust/</link>
-      <pubDate>Wed, 20 Sep 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/oneday/vector-search-in-200-lines-of-rust/</guid>
-      <description>&lt;p&gt;由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。&lt;a href=&#34;https://github.com/fennel-ai/fann&#34;&gt;所有代码都可以在此 Github 存储库&lt;/a&gt;中找到。我们这里使用的方法基于流行库Spotify &lt;a href=&#34;https://github.com/spotify/annoy&#34;&gt;annoy&lt;/a&gt;中使用的一系列称为“&lt;a href=&#34;https://en.wikipedia.org/wiki/Locality-sensitive_hashing&#34;&gt;局部敏感散列(Locality-sensitive_hashing)&lt;/a&gt;”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。&lt;/p&gt;</description>
     </item>
     
   </channel>
