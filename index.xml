@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 02 Feb 2024 00:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Fri, 01 Mar 2024 01:16:30 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -49,6 +49,77 @@
 &lt;li&gt;“&lt;strong&gt;万物之始，大道至简，衍化至繁&lt;/strong&gt;” – 老子《道德经》&lt;/li&gt;
 &lt;/ol&gt;
 </description>
+      
+    </item>
+    
+    <item>
+      <title>Performance Analysis and Tuning on Modern CPU 中文翻译</title>
+      <link>https://weedge.github.io/post/book/performance-analysis-and-tuning-on-modern-cpu-cn/</link>
+      <pubDate>Fri, 01 Mar 2024 01:16:30 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/book/performance-analysis-and-tuning-on-modern-cpu-cn/</guid>
+      
+        <description>&lt;h1 id=&#34;heading&#34;&gt;📚&lt;/h1&gt;
+&lt;p&gt;这是一本名为Performance Analysis and Tuning on Modern CPU书籍的&lt;a href=&#34;https://github.com/dendibakh/perf-book&#34;&gt;源文件存储库&lt;/a&gt;的中文翻译，原版由 Denis Bakhvalov 等人编写。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;原版电子书：https://book.easyperf.net/perf_book&lt;/li&gt;
+&lt;li&gt;中文翻译(第一版)：https://book.douban.com/subject/36243215/&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;原作者第二版正在进行中！&lt;/strong&gt; 计划的更改在谷歌&lt;a href=&#34;https://docs.google.com/document/d/1tr2qRDe72VSBYypIANYjJLM_zCdPB6S9m4LmXsQb0vQ/edit?usp=sharing&#34;&gt;文档&lt;/a&gt;中进行了概述。计划中的新目录在 &lt;a href=&#34;https://github.com/dendibakh/perf-book/blob/main/new_toc.md&#34;&gt;new_toc.md&lt;/a&gt; 中。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;目的&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;虽然已经有翻译的书籍;但是想follow更新,借助 『chatGPT』/『gemini/moonshot(kimi)』 翻译成中文，(加速学习节奏，掌握，并举一反三)&lt;/li&gt;
+&lt;li&gt;英文源书是开源的，翻译成中文工作也持续更新，也是开源的，可以作为学习资料, 在线阅读可编辑，希望一起参与改进。&lt;/li&gt;
+&lt;li&gt;对每章节的内容通过 『chatGPT』/『gemini/moonshot(kimi)』 进行归纳总结，结巩固知识点，并对课后练习进行回答,并验证答案。&lt;/li&gt;
+&lt;li&gt;最后整体勘误，定搞。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;[!TIP]&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;授之以鱼不如授之以渔, 使用AI赋能。&lt;/li&gt;
+&lt;li&gt;性能优化分析数据可以借助『chatGPT』分析。&lt;/li&gt;
+&lt;li&gt;『chatGPT』和『moonshot(kimi)』 翻译效果差不多(相同的prompt,调用openai接口知识蒸馏?)，但是当问文中的规划练习和代码练习时，『moonshot(kimi)』不能理解问题，不过长文本上传根据章节翻译和归纳总结不错，毕竟不用翻墙就可以使用。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;在线阅读地址&lt;/strong&gt;: &lt;a href=&#34;https://weedge.github.io/perf-book-cn/zh/&#34;&gt;https://weedge.github.io/perf-book-cn/zh/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;中文版PDF(推荐)&lt;/strong&gt;: &lt;a href=&#34;https://raw.githubusercontent.com/weedge/perf-book-cn/main/perf-book-cn.pdf&#34;&gt;https://raw.githubusercontent.com/weedge/perf-book-cn/main/perf-book-cn.pdf&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;学习资料&#34;&gt;学习资料&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/dendibakh/perf-ninja&#34;&gt;https://github.com/dendibakh/perf-ninja&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=2tzdkC6IDbo&amp;amp;list=PLRWO2AL1QAV6bJAU2kgB4xfodGID43Y5d&#34;&gt;https://www.youtube.com/watch?v=2tzdkC6IDbo&amp;amp;list=PLRWO2AL1QAV6bJAU2kgB4xfodGID43Y5d&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;[!TIP]&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;文章中的&lt;code&gt;pandoc markdown&lt;/code&gt;标签gitbook未能识别，暂未找到pandoc插件, 不影响整体阅读. (pandoc工具主要是用来生成离线PDF电子书, gitbook适合在线阅读)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://pandoc.org/MANUAL.html&#34;&gt;pandoc&lt;/a&gt; 通过bibtex生成引用样式: &lt;a href=&#34;https://github.com/citation-style-language/styles&#34;&gt;citation-style-language(CSL)-styles&lt;/a&gt;, 可从 &lt;a href=&#34;https://www.zotero.org/styles&#34;&gt;Zotero Style 官网&lt;/a&gt; 挑选需要样式下载&lt;/li&gt;
+&lt;li&gt;翻译的&lt;a href=&#34;https://github.com/dendibakh/perf-book&#34;&gt;源文件存储库&lt;/a&gt;对应的commit: &lt;a href=&#34;https://github.com/dendibakh/perf-book/commit/5ddfadc9c292b7dbac4d868e7a25b9a6ea3648c8&#34;&gt;5ddfadc&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;通过&lt;code&gt;pandoc&lt;/code&gt;生成latex源文件，具体设置见：&lt;a href=&#34;https://github.com/weedge/perf-book/blob/feat/cn/export_book_zh.py&#34;&gt;https://github.com/weedge/perf-book/blob/feat/cn/export_book_zh.py&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;[!NOTE]&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;在写代码时或多或少会知道一些代码层次(比如c++)的优化，但可能不知道为啥是这样的，这本书结合cpu讲解了相关原理(比如&lt;code&gt;unlikely&lt;/code&gt;,&lt;code&gt;likely&lt;/code&gt;)。&lt;/li&gt;
+&lt;li&gt;木桶效应，通过监控测量分析，寻找性能短板在哪，结合场景对症下药(理解工作原理)&lt;/li&gt;
+&lt;li&gt;了解现代cpu微体系架构(本文中提到的 Intel GoldenCove 架构白皮书&lt;a href=&#34;./zh/chapters//References.md#IntelOptimizationManual&#34;&gt;@IntelOptimizationManual&lt;/a&gt;), 以小见大, 设计思路借鉴到业务系统中(虽然有些详细信息未公开)&lt;/li&gt;
+&lt;li&gt;AMD处理器 &lt;a href=&#34;./zh/chapters/References.md#AMDProgrammingManual&#34;&gt;@AMDProgrammingManual&lt;/a&gt; ; ARM Neoverse V1处理器 &lt;a href=&#34;./zh/chapters/References.md#ARMNeoverseV1&#34;&gt;@ARMNeoverseV1&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;书中一些case介绍了优化工具的使用和性能分析&lt;/li&gt;
+&lt;li&gt;阅读本书不需要详细了解每个性能分析工具的使用(比如常用的&lt;code&gt;perf&lt;/code&gt;)，主要是针对cpu特性,memory的性能分析；只要记住有这个工具干啥用的，当遇到性能分析场景时，可以再次查阅该工具的使用方法即可；主要是结合工具去实践总结方法论。&lt;/li&gt;
+&lt;li&gt;本书是针对现代CPU的性能分析和优化；前提条件是应用程序已经消除所有主要性能问题；如果想更深层次优化(比如底层存储系统, 流量请求最终汇聚点系统,核心系统等)，可以使用 CPU 性能监控功能来分析和进一步调整应用程序。仅当所有高级性能问题都已修复后，才建议使用硬件功能进行低级微调。在设计不良的算法系统上进行cpu分析调优只是时间上的浪费。&lt;/li&gt;
+&lt;li&gt;底层硬件的持续性能分析(CP)在IaaS/PaaS云服务企业中常见。&lt;/li&gt;
+&lt;li&gt;延伸阅读：&lt;a href=&#34;https://www.brendangregg.com/systems-performance-2nd-edition-book.html&#34;&gt;brendangregg-systems-performance&lt;/a&gt; | &lt;a href=&#34;https://www.brendangregg.com/bpf-performance-tools-book.html&#34;&gt;brendangregg-bpf-performance&lt;/a&gt; 必备性能分析工具书(函方法论实践)&lt;/li&gt;
+&lt;li&gt;利用人工智能和 LLM 启发架构来处理性能分析样本，分析
+函数之间关系，最终高精度地找出直接影响整体吞吐量和延迟的函数和库。&lt;a href=&#34;https://raven.io/&#34;&gt;Raven.io&lt;/a&gt;提供这种功能的一家公司&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;./zh/chapters/8-Optimizing-Memory-Accesses/8-0_Source_Code_Tuning_For_CPU_cn.md&#34;&gt;源代码优化章节&lt;/a&gt;重点掌握&lt;/li&gt;
+&lt;li&gt;编译链接层面静态分析，通过优化报告(比如: GCC的&lt;a href=&#34;https://gcc.gnu.org/onlinedocs/gcc/Developer-Options.html#index-fopt-info&#34;&gt;&lt;code&gt;-fopt-info&lt;/code&gt;&lt;/a&gt;;clang使用&lt;a href=&#34;https://llvm.org/docs/Vectorizers.html#diagnostics&#34;&gt;&lt;code&gt;-Rpass*&lt;/code&gt;&lt;/a&gt;)来获取优化建议(需要实践测试)&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;PGO&lt;/strong&gt; [@sec:secPGO] 练习: &lt;a href=&#34;https://github.com/dendibakh/perf-ninja/blob/main/labs/misc/pgo/README.md&#34;&gt;https://github.com/dendibakh/perf-ninja/blob/main/labs/misc/pgo/README.md&lt;/a&gt; (PGO 主要用于具有大型代码库的项目，比如：数据库，分布式文件系统); 特地场景，谨慎分析配置引导优化(可组合)。&lt;/li&gt;
+&lt;li&gt;充分考虑到时间局部性和空间局部性对性能的影响&lt;/li&gt;
+&lt;li&gt;尽量做扩展阅读，比如作者的博客文章，相关引用(比如：&lt;a href=&#34;./zh/chapters/References.md#fogOptimizeCpp&#34;&gt;@fogOptimizeCpp&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;对于cpu性能优化，有些已在编译器层面进行了优化，比如机器代码布局&lt;/li&gt;
+&lt;li&gt;关注&lt;a href=&#34;./zh/chapters/12-Other-Tuning-Areas/12-4_Low-Latency-Tuning-Techniques_cn.md&#34;&gt;低延迟系统的性能优化&lt;/a&gt; (比如HFT系统中的这个快速演讲：&lt;a href=&#34;https://www.youtube.com/watch?v=XzRxikGgaHI&#34;&gt;CppCon 2018: Jonathan Keinan “Cache Warming: Warm Up The Code”&lt;/a&gt;; 这些关键路径代码值钱)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/blockquote&gt;</description>
       
     </item>
     
@@ -11954,139 +12025,6 @@ make_strings_column    0.5ms
 &lt;p&gt;&lt;strong&gt;附操作学习笔记&lt;/strong&gt;:&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_vector_indexes.ipynb&#34;&gt;&lt;strong&gt;faiss_vector_indexes.ipynb&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_composite_indexes.ipynb&#34;&gt;&lt;strong&gt;faiss_composite_indexes.ipynb&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>译：相似性搜索，第 2 部分：乘积量化</title>
-      <link>https://weedge.github.io/post/oneday/similarity-search/2.product-quantization/</link>
-      <pubDate>Mon, 25 Sep 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/oneday/similarity-search/2.product-quantization/</guid>
-      
-        <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/product-quantization/0.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;学习有效压缩大数据的强大技术&lt;/strong&gt;&lt;/p&gt;
-&lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
-&lt;p&gt;在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。&lt;/p&gt;
-&lt;p&gt;在本系列文章的&lt;a href=&#34;https://weedge.github.io/post/oneday/similarity-search/1.knn-inverted-file-index/&#34;&gt;第一部分&lt;/a&gt;中，我们研究了用于执行相似性搜索的 kNN 和倒排文件索引结构。正如我们所知，kNN 是最直接的方法，而倒排文件索引则在其之上发挥作用，建议在速度加速和准确性之间进行权衡。然而，这两种方法都不使用数据压缩技术，这可能会导致内存问题，特别是在数据集较大且 RAM 有限的情况下。在本文中，我们将尝试通过研究另一种称为“&lt;strong&gt;乘积量化(Product Quantization)&lt;/strong&gt;”的方法来解决此问题。&lt;/p&gt;
-&lt;h1 id=&#34;定义&#34;&gt;定义&lt;/h1&gt;
-&lt;p&gt;&lt;strong&gt;乘积量化&lt;/strong&gt;是将每个数据集向量转换为短的内存高效表示形式（称为&lt;strong&gt;PQ code&lt;/strong&gt;）的过程。不是完全保留所有向量，而是存储它们的短表示。同时，乘积量化是一种有损压缩方法，预测精度较低，但在实践中，该算法效果很好。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;一般来说，量化是将无限值映射到离散值的过程。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h1 id=&#34;训练training&#34;&gt;训练(Training)&lt;/h1&gt;
-&lt;p&gt;首先，该算法将每个向量分为几个相等的部分——&lt;strong&gt;子向量&lt;/strong&gt;。所有数据集向量的各个部分形成独立的&lt;strong&gt;子空间&lt;/strong&gt;并单独处理。然后对每个向量子空间执行聚类算法。通过这样做，在每个子空间中创建了几个质心。每个子向量都用它所属的质心的 ID 进行编码。此外，所有质心的坐标都会被存储以供以后使用。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;子空间质心也称为&lt;strong&gt;量化向量(quantized vectors)&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;在乘积量化中，簇ID通常被称为&lt;strong&gt;再现值(reproduction value)&lt;/strong&gt;。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;Note: 在下图中，矩形表示包含多个值的向量，而正方形表示单个数字。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/product-quantization/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​											&lt;em&gt;使用量化进行编码&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;因此，如果一个原始向量被分为&lt;em&gt;n&lt;/em&gt;个部分，那么它可以由&lt;em&gt;n&lt;/em&gt;个数字——每个子向量各自质心的 ID 来编码。通常，为了更有效地使用内存，创建的质心&lt;em&gt;k&lt;/em&gt;的数量通常选择为 2 的幂。这样，存储编码向量所需的内存为n * log(k)位。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;子空间内所有质心的集合称为&lt;strong&gt;码本&lt;/strong&gt;。对所有子空间运行 n 个聚类算法会产生 n 个独立的码本。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h2 id=&#34;压缩示例compression-example&#34;&gt;压缩示例(Compression example)&lt;/h2&gt;
-&lt;p&gt;想象一下，存储浮点数（32 位）的大小为 1024 的原始向量被分为&lt;em&gt;n = 8&lt;/em&gt;个子向量，其中每个子向量由&lt;em&gt;k = 256&lt;/em&gt;个簇之一进行编码。因此，对单个簇的 ID 进行编码需要&lt;em&gt;log(256) = 8&lt;/em&gt;位。让我们比较两种情况下向量表示的内存大小：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;原始向量：1024 * 32 位 = 4096 字节。&lt;/li&gt;
-&lt;li&gt;编码向量：8 * 8 位 = 8 字节。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;最终压缩512倍！这就是产品量化的真正力量。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/product-quantization/2.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​					&lt;em&gt;量化示例(向量中的数字显示它存储了多少个数字)&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;以下是一些重要的注意事项：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;该算法可以在一个向量子集上进行训练（例如，以创建聚类）并用于另一个向量子集：训练完算法后，将传递另一个向量数据集，其中通过使用每个子空间已构造的质心对新向量进行编码。&lt;/li&gt;
-&lt;li&gt;通常，选择 k-means 作为聚类算法。它的优点之一是簇的数量&lt;em&gt;k&lt;/em&gt;是一个超参数，可以根据内存使用需求手动定义。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h1 id=&#34;推理查询inference&#34;&gt;推理查询(Inference)&lt;/h1&gt;
-&lt;p&gt;为了更好地理解，让我们首先看一下几种简单的方法并找出它们的缺点。这也将帮助我们了解为什么它们不应该被正常使用。&lt;/p&gt;
-&lt;h2 id=&#34;朴素方法naive-approaches&#34;&gt;朴素方法(Naive approaches)&lt;/h2&gt;
-&lt;p&gt;第一种简单方法包括通过连接每个向量相应的质心来解压缩所有向量。之后，可以计算从查询向量到所有数据集向量的&lt;em&gt;L2&lt;/em&gt;距离（或其他度量）。显然，这种方法是可行的，但是非常耗时，因为要对高维解压向量进行暴力搜索和距离计算。&lt;/p&gt;
-&lt;p&gt;另一种可能的方式是将查询向量分割成子向量，并基于其PQ码计算从每个查询子向量到数据库向量的相应量化向量的距离之和。因此，再次使用暴力搜索技术，并且这里的距离计算仍然需要原始向量维数的线性时间，如前一情况所示。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/product-quantization/3.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​						&lt;em&gt;使用朴素方法计算近似距离（该示例以欧氏距离作为度量）&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;另一种可能的方法是将查询向量编码成PQ码。然后直接利用该 PQ 代码来计算到所有其他 PQ 代码的距离。然后，具有最短距离的相应 PQ 代码的数据集向量被视为查询的最近邻居。这种方法比前两种方法更快，因为距离始终是在低维 PQ 代码之间计算的。然而，PQ码由簇ID组成，没有太多语义，可以被视为明确用作实数变量的分类变量。显然，这是一种不好的做法，并且这种方法可能会导致预测质量较差。&lt;/p&gt;
-&lt;h2 id=&#34;优化方法&#34;&gt;优化方法&lt;/h2&gt;
-&lt;p&gt;查询向量被划分为子向量。对于每个子向量，计算到相应子空间的所有质心的距离。最终，该信息存储在表&lt;em&gt;d&lt;/em&gt;中。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/product-quantization/4.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​							&lt;em&gt;获取存储部分查询子向量到质心距离的表 d&lt;/em&gt;&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;计算出的子向量到质心的距离通常称为&lt;strong&gt;部分距离(partial distances)&lt;/strong&gt;。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;通过使用这个子向量到质心距离表&lt;em&gt;d&lt;/em&gt;，可以通过其 PQ 代码轻松获得从查询到任何数据库向量的近似距离：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;对于数据库向量的每个子向量，找到最近的质心&lt;em&gt;j&lt;/em&gt;（通过使用 PQ 代码的映射值）以及从该质心到查询子向量&lt;em&gt;i&lt;/em&gt;的部分距离&lt;em&gt;d[i][j]&lt;/em&gt;（通过使用计算的矩阵&lt;em&gt;d&lt;/em&gt;）被获取。&lt;/li&gt;
-&lt;li&gt;所有部分距离均被平方并求和。通过对该值求平方根，即可获得近似的欧氏距离。如果还想了解如何获得其他度量的近似结果，见&lt;a href=&#34;http://weedge.github.io/post/oneday/similarity-search/2.product-quantization/#%E5%85%B6%E4%BB%96%E8%B7%9D%E7%A6%BB%E5%BA%A6%E9%87%8F%E7%9A%84%E8%BF%91%E4%BC%BC%E5%80%BCapproximation-of-other-distance-metrics&#34;&gt;&lt;em&gt;其他距离度量的近似值&lt;/em&gt;&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/product-quantization/5.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​						&lt;em&gt;使用 PQ 代码和距离表计算从查询到数据库向量的距离&lt;/em&gt;&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;使用此方法计算近似距离假设：部分距离&lt;strong&gt;d&lt;/strong&gt;非常接近查询和数据库子向量之间的实际距离&lt;strong&gt;a 。&lt;/strong&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;然而，这个条件可能不被满足，特别是当数据库子向量与其质心之间的距离*c很大时。*在这种情况下，计算会导致精度降低。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/product-quantization/6.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;左边的例子展示了当实际距离非常接近部分距离（c 很小）时的近似情况。在右侧，我们可以观察到一个糟糕的场景，因为部分距离比实际距离长得多（c很大）。&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;在获得所有数据库行的近似距离后，我们搜索具有最小值的向量。这些向量将是查询的最近邻。&lt;/p&gt;
-&lt;h2 id=&#34;其他距离度量的近似值approximation-of-other-distance-metrics&#34;&gt;其他距离度量的近似值（Approximation of other distance metrics）&lt;/h2&gt;
-&lt;p&gt;到目前为止，我们已经了解了如何使用部分距离来近似欧氏距离。让我们也将这一规则推广到其他度量方式。&lt;/p&gt;
-&lt;p&gt;想象一下我们想要计算一对向量之间的距离度量。如果我们知道度量的公式，我们可以直接应用它来得到结果。但有时我们可以通过以下方式分部分完成：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;两个向量都分为&lt;em&gt;n&lt;/em&gt;个子向量。&lt;/li&gt;
-&lt;li&gt;对于每对相应的子向量，计算距离度量。&lt;/li&gt;
-&lt;li&gt;然后将计算出的&lt;em&gt;n 个&lt;/em&gt;度量组合起来，生成原始向量之间的实际距离。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/product-quantization/7.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;该图显示了计算度量的两种方法。在左侧，度量公式直接应用于两个向量。在右侧，计算每对相应子向量的部分距离。然后使用聚合函数 h、g 和 f 将它们组合起来。&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;欧几里德距离是可以按部分计算度量的。根据上图，我们可以选择聚合函数为&lt;em&gt;h(z) = z²&lt;/em&gt;、&lt;em&gt;g(z₀, z₁, …, zₙ) = sum(z₀, z₁, …, zₙ)&lt;em&gt;和&lt;/em&gt;f(z) = √z&lt;/em&gt;。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/product-quantization/8.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​								&lt;em&gt;欧氏距离可以分部分计算&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;内积(IP-Inner product )是此类度量的另一个示例，具有聚合函数&lt;em&gt;h(z) = z、g(z₀, z₁, …, zₙ) = sum(z₀, z₁, …, zₙ) 和 f(z) = z&lt;/em&gt;。&lt;/p&gt;
-&lt;p&gt;在乘积量化的背景下，这是一个非常重要的属性，因为在推理查询过程中，算法按部分计算距离。这意味着使用不具有此属性的度量进行乘积量化会出现更多问题。余弦距离是此类度量的一个示例。&lt;/p&gt;
-&lt;p&gt;如果仍然需要使用没有此属性的度量，则需要应用额外的启发式方法来聚合具有一定误差的部分距离。&lt;/p&gt;
-&lt;h2 id=&#34;性能performance&#34;&gt;性能(Performance)&lt;/h2&gt;
-&lt;p&gt;乘积量化的主要优点是对存储为短 PQ 代码的数据库向量进行大规模压缩。对于某些应用来说，这样的压缩率甚至可能高于95%！然而，除了PQ码之外，还需要存储包含每个子空间的量化向量的大小为&lt;em&gt;k x n&lt;/em&gt;的矩阵&lt;em&gt;d&lt;/em&gt; 。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;乘积量化是一种有损压缩方法，因此压缩率越高，预测精度就越有可能下降。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;构建有效表示的系统需要训练多种聚类算法。除此之外，在推理查询过程中，需要以暴力方式计算&lt;em&gt;k * n&lt;/em&gt;个部分距离，并对每个数据库向量求和，这可能需要一些时间。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/product-quantization/9.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​											&lt;em&gt;产品量化性能&lt;/em&gt;&lt;/p&gt;
-&lt;h1 id=&#34;faiss-实现&#34;&gt;FAISS 实现&lt;/h1&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss&#34;&gt;&lt;strong&gt;Faiss&lt;/strong&gt;&lt;/a&gt;（Facebook AI Search Comparison）是一个用 C++ 编写, binding Python使用的faiss库, 提供c api 库方便FFI交互，用于优化相似性搜索。该库提供了不同类型的索引，这些索引是用于有效存储数据和执行查询的数据结构。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;根据&lt;a href=&#34;https://faiss.ai/&#34;&gt;Faiss 文档&lt;/a&gt;中的信息，我们将了解如何利用乘积量化。&lt;/p&gt;
-&lt;p&gt;乘积量化在&lt;em&gt;IndexPQ&lt;/em&gt;类中实现。为了初始化，我们需要为其提供 3 个参数：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;d&lt;/strong&gt;：数据的维度数。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;M&lt;/strong&gt; ：每个向量的分割数（与上面使用的&lt;em&gt;n&lt;/em&gt;参数相同）。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;nbits&lt;/strong&gt;：编码单个簇 ID 所需的位数。这意味着单个子空间中的总簇数将等于&lt;em&gt;k = 2^nbits&lt;/em&gt;。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;对于相等的子空间维度分裂，参数&lt;em&gt;d&lt;/em&gt;必须能被&lt;em&gt;M&lt;/em&gt;整除。&lt;/p&gt;
-&lt;p&gt;存储单个向量所需的总字节数等于：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/product-quantization/10.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;正如我们在上面的公式中看到的，为了更有效地使用内存，M * nbits 的值应该能被&lt;em&gt;8&lt;/em&gt;整除。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/product-quantization/11.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​												&lt;em&gt;IndexPQ 的 Faiss 实现&lt;/em&gt;&lt;/p&gt;
-&lt;h1 id=&#34;结论&#34;&gt;结论&lt;/h1&gt;
-&lt;p&gt;我们研究了信息检索系统中非常流行的算法，该算法可以有效地压缩大量数据。它的主要缺点是推理查询速度慢。尽管如此，该算法仍广泛应用于现代大数据应用中，特别是与其他相似性搜索技术结合使用。&lt;/p&gt;
-&lt;p&gt;在本系列文章的第一部分中，我们描述了倒排文件索引的工作流程。事实上，我们可以将这两种算法合并成一种更高效的算法，从而兼具两者的优点！这正是我们在本系列的下一部分中要做的事情。&lt;/p&gt;
-&lt;h2 id=&#34;reference&#34;&gt;Reference&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://inria.hal.science/inria-00514462v2/document&#34;&gt;paper: &lt;strong&gt;Product quantization for nearest neighbour search&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://faiss.ai/&#34;&gt;Faiss document&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss&#34;&gt;Faiss repository&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss/wiki&#34;&gt;&lt;strong&gt;Faiss wiki&lt;/strong&gt;&lt;/a&gt; &lt;a href=&#34;https://github.com/facebookresearch/faiss/wiki/Faiss-indexes&#34;&gt;Summary of Faiss indexes&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.pinecone.io/learn/series/faiss/product-quantization/&#34;&gt;https://www.pinecone.io/learn/series/faiss/product-quantization/&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;原文地址： &lt;a href=&#34;https://towardsdatascience.com/similarity-search-product-quantization-b2a1a6397701&#34;&gt;https://towardsdatascience.com/similarity-search-product-quantization-b2a1a6397701&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;附操作学习笔记&lt;/strong&gt;:&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_product_quantization.ipynb&#34;&gt;&lt;strong&gt;faiss_product_quantization.ipynb&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;</description>
       
     </item>
     

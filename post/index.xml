@@ -6,7 +6,39 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 02 Feb 2024 00:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 01 Mar 2024 01:16:30 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Performance Analysis and Tuning on Modern CPU 中文翻译</title>
+      <link>https://weedge.github.io/post/book/performance-analysis-and-tuning-on-modern-cpu-cn/</link>
+      <pubDate>Fri, 01 Mar 2024 01:16:30 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/book/performance-analysis-and-tuning-on-modern-cpu-cn/</guid>
+      <description>&lt;h1 id=&#34;heading&#34;&gt;📚&lt;/h1&gt;
+&lt;p&gt;这是一本名为Performance Analysis and Tuning on Modern CPU书籍的&lt;a href=&#34;https://github.com/dendibakh/perf-book&#34;&gt;源文件存储库&lt;/a&gt;的中文翻译，原版由 Denis Bakhvalov 等人编写。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;原版电子书：https://book.easyperf.net/perf_book&lt;/li&gt;
+&lt;li&gt;中文翻译(第一版)：https://book.douban.com/subject/36243215/&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;原作者第二版正在进行中！&lt;/strong&gt; 计划的更改在谷歌&lt;a href=&#34;https://docs.google.com/document/d/1tr2qRDe72VSBYypIANYjJLM_zCdPB6S9m4LmXsQb0vQ/edit?usp=sharing&#34;&gt;文档&lt;/a&gt;中进行了概述。计划中的新目录在 &lt;a href=&#34;https://github.com/dendibakh/perf-book/blob/main/new_toc.md&#34;&gt;new_toc.md&lt;/a&gt; 中。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;目的&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;虽然已经有翻译的书籍;但是想follow更新,借助 『chatGPT』/『gemini/moonshot(kimi)』 翻译成中文，(加速学习节奏，掌握，并举一反三)&lt;/li&gt;
+&lt;li&gt;英文源书是开源的，翻译成中文工作也持续更新，也是开源的，可以作为学习资料, 在线阅读可编辑，希望一起参与改进。&lt;/li&gt;
+&lt;li&gt;对每章节的内容通过 『chatGPT』/『gemini/moonshot(kimi)』 进行归纳总结，结巩固知识点，并对课后练习进行回答,并验证答案。&lt;/li&gt;
+&lt;li&gt;最后整体勘误，定搞。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;[!TIP]&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;授之以鱼不如授之以渔, 使用AI赋能。&lt;/li&gt;
+&lt;li&gt;性能优化分析数据可以借助『chatGPT』分析。&lt;/li&gt;
+&lt;li&gt;『chatGPT』和『moonshot(kimi)』 翻译效果差不多(相同的prompt,调用openai接口知识蒸馏?)，但是当问文中的规划练习和代码练习时，『moonshot(kimi)』不能理解问题，不过长文本上传根据章节翻译和归纳总结不错，毕竟不用翻墙就可以使用。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;在线阅读地址&lt;/strong&gt;: &lt;a href=&#34;https://weedge.github.io/perf-book-cn/zh/&#34;&gt;https://weedge.github.io/perf-book-cn/zh/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;中文版PDF(推荐)&lt;/strong&gt;: &lt;a href=&#34;https://raw.githubusercontent.com/weedge/perf-book-cn/main/perf-book-cn.pdf&#34;&gt;https://raw.githubusercontent.com/weedge/perf-book-cn/main/perf-book-cn.pdf&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>逝去的奶奶</title>
       <link>https://weedge.github.io/post/nainai/</link>
@@ -313,22 +345,6 @@
 &lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
 &lt;p&gt;在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。&lt;/p&gt;
 &lt;p&gt;在本系列文章的&lt;a href=&#34;https://weedge.github.io/post/oneday/similarity-search/1.knn-inverted-file-index/&#34;&gt;第一部分&lt;/a&gt;中，我们研究了用于执行相似性搜索的 kNN 和倒排文件索引结构。正如我们所知，kNN 是最直接的方法，而倒排文件索引则在其之上发挥作用，建议在速度加速和准确性之间进行权衡。然而，这两种方法都不使用数据压缩技术，这可能会导致内存问题，特别是在数据集较大且 RAM 有限的情况下。在本文中，我们将尝试通过研究另一种称为“&lt;strong&gt;乘积量化(Product Quantization)&lt;/strong&gt;”的方法来解决此问题。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>译：相似性搜索，第 1 部分：kNN 和倒排文件索引</title>
-      <link>https://weedge.github.io/post/oneday/similarity-search/1.knn-inverted-file-index/</link>
-      <pubDate>Sun, 24 Sep 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/oneday/similarity-search/1.knn-inverted-file-index/</guid>
-      <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/knn-inverted-file-index/0.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;相似性搜索&lt;/strong&gt;(similarity-search)是给定一个查询，目标是在所有数据库文档中找到与其最相似的文档。本章介绍 kNN 的相似性搜索及其使用倒排文件的加速。&lt;/p&gt;
-&lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
-&lt;p&gt;在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。通常，文档或项目以文本或图像的形式表示。然而，机器学习算法不能直接处理原始文本或图像，这就是为什么文档和项目通常被预处理并存储为数字向量的原因。&lt;/p&gt;
-&lt;p&gt;有时向量的每个分量都可以存储语义。在这种情况下，这些表示也称为&lt;strong&gt;嵌入&lt;/strong&gt;。这样的嵌入可以有数百个维度，数量可以达到数百万个！由于数量如此庞大，任何信息检索系统都必须能够快速检测相关文档。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;在机器学习中，向量也称为&lt;strong&gt;对象&lt;/strong&gt;或&lt;strong&gt;点&lt;/strong&gt;。&lt;/p&gt;
-&lt;/blockquote&gt;</description>
     </item>
     
   </channel>

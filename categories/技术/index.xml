@@ -6,7 +6,39 @@
     <description>Recent content in 技术 on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 10 Jan 2024 10:58:28 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 01 Mar 2024 01:16:30 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Performance Analysis and Tuning on Modern CPU 中文翻译</title>
+      <link>https://weedge.github.io/post/book/performance-analysis-and-tuning-on-modern-cpu-cn/</link>
+      <pubDate>Fri, 01 Mar 2024 01:16:30 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/book/performance-analysis-and-tuning-on-modern-cpu-cn/</guid>
+      <description>&lt;h1 id=&#34;heading&#34;&gt;📚&lt;/h1&gt;
+&lt;p&gt;这是一本名为Performance Analysis and Tuning on Modern CPU书籍的&lt;a href=&#34;https://github.com/dendibakh/perf-book&#34;&gt;源文件存储库&lt;/a&gt;的中文翻译，原版由 Denis Bakhvalov 等人编写。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;原版电子书：https://book.easyperf.net/perf_book&lt;/li&gt;
+&lt;li&gt;中文翻译(第一版)：https://book.douban.com/subject/36243215/&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;原作者第二版正在进行中！&lt;/strong&gt; 计划的更改在谷歌&lt;a href=&#34;https://docs.google.com/document/d/1tr2qRDe72VSBYypIANYjJLM_zCdPB6S9m4LmXsQb0vQ/edit?usp=sharing&#34;&gt;文档&lt;/a&gt;中进行了概述。计划中的新目录在 &lt;a href=&#34;https://github.com/dendibakh/perf-book/blob/main/new_toc.md&#34;&gt;new_toc.md&lt;/a&gt; 中。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;目的&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;虽然已经有翻译的书籍;但是想follow更新,借助 『chatGPT』/『gemini/moonshot(kimi)』 翻译成中文，(加速学习节奏，掌握，并举一反三)&lt;/li&gt;
+&lt;li&gt;英文源书是开源的，翻译成中文工作也持续更新，也是开源的，可以作为学习资料, 在线阅读可编辑，希望一起参与改进。&lt;/li&gt;
+&lt;li&gt;对每章节的内容通过 『chatGPT』/『gemini/moonshot(kimi)』 进行归纳总结，结巩固知识点，并对课后练习进行回答,并验证答案。&lt;/li&gt;
+&lt;li&gt;最后整体勘误，定搞。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;[!TIP]&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;授之以鱼不如授之以渔, 使用AI赋能。&lt;/li&gt;
+&lt;li&gt;性能优化分析数据可以借助『chatGPT』分析。&lt;/li&gt;
+&lt;li&gt;『chatGPT』和『moonshot(kimi)』 翻译效果差不多(相同的prompt,调用openai接口知识蒸馏?)，但是当问文中的规划练习和代码练习时，『moonshot(kimi)』不能理解问题，不过长文本上传根据章节翻译和归纳总结不错，毕竟不用翻墙就可以使用。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;在线阅读地址&lt;/strong&gt;: &lt;a href=&#34;https://weedge.github.io/perf-book-cn/zh/&#34;&gt;https://weedge.github.io/perf-book-cn/zh/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;中文版PDF(推荐)&lt;/strong&gt;: &lt;a href=&#34;https://raw.githubusercontent.com/weedge/perf-book-cn/main/perf-book-cn.pdf&#34;&gt;https://raw.githubusercontent.com/weedge/perf-book-cn/main/perf-book-cn.pdf&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>构建一个简单的数据库[golang版]</title>
       <link>https://weedge.github.io/post/db_tutorial_go/</link>
@@ -309,15 +341,6 @@
 &lt;blockquote&gt;
 &lt;p&gt;在机器学习中，向量也称为&lt;strong&gt;对象&lt;/strong&gt;或&lt;strong&gt;点&lt;/strong&gt;。&lt;/p&gt;
 &lt;/blockquote&gt;</description>
-    </item>
-    
-    <item>
-      <title>译：FANN：200行Rust实现的向量搜索</title>
-      <link>https://weedge.github.io/post/oneday/vector-search-in-200-lines-of-rust/</link>
-      <pubDate>Wed, 20 Sep 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/oneday/vector-search-in-200-lines-of-rust/</guid>
-      <description>&lt;p&gt;由于 AI/ML 采用的快速进展，向量数据库无处不在。虽然它们支持复杂的人工智能/机器学习应用，但向量搜索本身从概念上来说并不难。在这篇文章中，我们将描述向量数据库如何工作，并用不到 200 行 Rust 代码构建一个简单的向量搜索库。&lt;a href=&#34;https://github.com/fennel-ai/fann&#34;&gt;所有代码都可以在此 Github 存储库&lt;/a&gt;中找到。我们这里使用的方法基于流行库Spotify &lt;a href=&#34;https://github.com/spotify/annoy&#34;&gt;annoy&lt;/a&gt;中使用的一系列称为“&lt;a href=&#34;https://en.wikipedia.org/wiki/Locality-sensitive_hashing&#34;&gt;局部敏感散列(Locality-sensitive_hashing)&lt;/a&gt;”的算法。本文的目标不是介绍新的算法库，而是描述向量搜索如何使用真实的代码片段工作。首先了解下什么是向量搜索。&lt;/p&gt;</description>
     </item>
     
   </channel>
