@@ -81,7 +81,7 @@
 &lt;li&gt;『chatGPT』和『moonshot(kimi)』 翻译效果差不多(相同的prompt,调用openai接口知识蒸馏?)，但是当问文中的规划练习和代码练习时，『moonshot(kimi)』不能理解问题，不过长文本上传根据章节翻译和归纳总结不错，毕竟不用翻墙就可以使用。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;&lt;strong&gt;在线阅读地址&lt;/strong&gt;: &lt;a href=&#34;https://weedge.github.io/perf-book-cn/zh/&#34;&gt;https://weedge.github.io/perf-book-cn/zh/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;在线阅读地址&lt;/strong&gt;: &lt;a href=&#34;&#34;&gt;https://weedge.github.io/perf-book-cn/zh/&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;中文版PDF(推荐)&lt;/strong&gt;: &lt;a href=&#34;https://raw.githubusercontent.com/weedge/perf-book-cn/main/perf-book-cn.pdf&#34;&gt;https://raw.githubusercontent.com/weedge/perf-book-cn/main/perf-book-cn.pdf&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&#34;学习资料&#34;&gt;学习资料&lt;/h2&gt;
 &lt;ol&gt;
@@ -102,8 +102,8 @@
 &lt;ol&gt;
 &lt;li&gt;在写代码时或多或少会知道一些代码层次(比如c++)的优化，但可能不知道为啥是这样的，这本书结合cpu讲解了相关原理(比如&lt;code&gt;unlikely&lt;/code&gt;,&lt;code&gt;likely&lt;/code&gt;)。&lt;/li&gt;
 &lt;li&gt;木桶效应，通过监控测量分析，寻找性能短板在哪，结合场景对症下药(理解工作原理)&lt;/li&gt;
-&lt;li&gt;了解现代cpu微体系架构(本文中提到的 Intel GoldenCove 架构白皮书&lt;a href=&#34;./zh/chapters//References.md#IntelOptimizationManual&#34;&gt;@IntelOptimizationManual&lt;/a&gt;), 以小见大, 设计思路借鉴到业务系统中(虽然有些详细信息未公开)&lt;/li&gt;
-&lt;li&gt;AMD处理器 &lt;a href=&#34;./zh/chapters/References.md#AMDProgrammingManual&#34;&gt;@AMDProgrammingManual&lt;/a&gt; ; ARM Neoverse V1处理器 &lt;a href=&#34;./zh/chapters/References.md#ARMNeoverseV1&#34;&gt;@ARMNeoverseV1&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;了解现代cpu微体系架构(本文中提到的 Intel GoldenCove 架构白皮书&lt;a href=&#34;https://github.com/weedge/perf-book-cn/tree/main/zh/chapters//References.md#IntelOptimizationManual&#34;&gt;@IntelOptimizationManual&lt;/a&gt;), 以小见大, 设计思路借鉴到业务系统中(虽然有些详细信息未公开)&lt;/li&gt;
+&lt;li&gt;AMD处理器 &lt;a href=&#34;https://github.com/weedge/perf-book-cn/tree/main/zh/chapters/References.md#AMDProgrammingManual&#34;&gt;@AMDProgrammingManual&lt;/a&gt; ; ARM Neoverse V1处理器 &lt;a href=&#34;https://github.com/weedge/perf-book-cn/tree/main/zh/chapters/References.md#ARMNeoverseV1&#34;&gt;@ARMNeoverseV1&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;书中一些case介绍了优化工具的使用和性能分析&lt;/li&gt;
 &lt;li&gt;阅读本书不需要详细了解每个性能分析工具的使用(比如常用的&lt;code&gt;perf&lt;/code&gt;)，主要是针对cpu特性,memory的性能分析；只要记住有这个工具干啥用的，当遇到性能分析场景时，可以再次查阅该工具的使用方法即可；主要是结合工具去实践总结方法论。&lt;/li&gt;
 &lt;li&gt;本书是针对现代CPU的性能分析和优化；前提条件是应用程序已经消除所有主要性能问题；如果想更深层次优化(比如底层存储系统, 流量请求最终汇聚点系统,核心系统等)，可以使用 CPU 性能监控功能来分析和进一步调整应用程序。仅当所有高级性能问题都已修复后，才建议使用硬件功能进行低级微调。在设计不良的算法系统上进行cpu分析调优只是时间上的浪费。&lt;/li&gt;
@@ -111,13 +111,13 @@
 &lt;li&gt;延伸阅读：&lt;a href=&#34;https://www.brendangregg.com/systems-performance-2nd-edition-book.html&#34;&gt;brendangregg-systems-performance&lt;/a&gt; | &lt;a href=&#34;https://www.brendangregg.com/bpf-performance-tools-book.html&#34;&gt;brendangregg-bpf-performance&lt;/a&gt; 必备性能分析工具书(函方法论实践)&lt;/li&gt;
 &lt;li&gt;利用人工智能和 LLM 启发架构来处理性能分析样本，分析
 函数之间关系，最终高精度地找出直接影响整体吞吐量和延迟的函数和库。&lt;a href=&#34;https://raven.io/&#34;&gt;Raven.io&lt;/a&gt;提供这种功能的一家公司&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;./zh/chapters/8-Optimizing-Memory-Accesses/8-0_Source_Code_Tuning_For_CPU_cn.md&#34;&gt;源代码优化章节&lt;/a&gt;重点掌握&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/perf-book-cn/tree/main/zh/chapters/8-Optimizing-Memory-Accesses/8-0_Source_Code_Tuning_For_CPU_cn.md&#34;&gt;源代码优化章节&lt;/a&gt;重点掌握&lt;/li&gt;
 &lt;li&gt;编译链接层面静态分析，通过优化报告(比如: GCC的&lt;a href=&#34;https://gcc.gnu.org/onlinedocs/gcc/Developer-Options.html#index-fopt-info&#34;&gt;&lt;code&gt;-fopt-info&lt;/code&gt;&lt;/a&gt;;clang使用&lt;a href=&#34;https://llvm.org/docs/Vectorizers.html#diagnostics&#34;&gt;&lt;code&gt;-Rpass*&lt;/code&gt;&lt;/a&gt;)来获取优化建议(需要实践测试)&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;PGO&lt;/strong&gt; [@sec:secPGO] 练习: &lt;a href=&#34;https://github.com/dendibakh/perf-ninja/blob/main/labs/misc/pgo/README.md&#34;&gt;https://github.com/dendibakh/perf-ninja/blob/main/labs/misc/pgo/README.md&lt;/a&gt; (PGO 主要用于具有大型代码库的项目，比如：数据库，分布式文件系统); 特地场景，谨慎分析配置引导优化(可组合)。&lt;/li&gt;
 &lt;li&gt;充分考虑到时间局部性和空间局部性对性能的影响&lt;/li&gt;
-&lt;li&gt;尽量做扩展阅读，比如作者的博客文章，相关引用(比如：&lt;a href=&#34;./zh/chapters/References.md#fogOptimizeCpp&#34;&gt;@fogOptimizeCpp&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;尽量做扩展阅读，比如作者的博客文章，相关引用(比如：&lt;a href=&#34;https://github.com/weedge/perf-book-cn/tree/main/zh/chapters/References.md#fogOptimizeCpp&#34;&gt;@fogOptimizeCpp&lt;/a&gt;)&lt;/li&gt;
 &lt;li&gt;对于cpu性能优化，有些已在编译器层面进行了优化，比如机器代码布局&lt;/li&gt;
-&lt;li&gt;关注&lt;a href=&#34;./zh/chapters/12-Other-Tuning-Areas/12-4_Low-Latency-Tuning-Techniques_cn.md&#34;&gt;低延迟系统的性能优化&lt;/a&gt; (比如HFT系统中的这个快速演讲：&lt;a href=&#34;https://www.youtube.com/watch?v=XzRxikGgaHI&#34;&gt;CppCon 2018: Jonathan Keinan “Cache Warming: Warm Up The Code”&lt;/a&gt;; 这些关键路径代码值钱)&lt;/li&gt;
+&lt;li&gt;关注&lt;a href=&#34;https://github.com/weedge/perf-book-cn/tree/main/zh/chapters/12-Other-Tuning-Areas/12-4_Low-Latency-Tuning-Techniques_cn.md&#34;&gt;低延迟系统的性能优化&lt;/a&gt; (比如HFT系统中的这个快速演讲：&lt;a href=&#34;https://www.youtube.com/watch?v=XzRxikGgaHI&#34;&gt;CppCon 2018: Jonathan Keinan “Cache Warming: Warm Up The Code”&lt;/a&gt;; 这些关键路径代码值钱)&lt;/li&gt;
 &lt;/ol&gt;
 &lt;/blockquote&gt;</description>
       
