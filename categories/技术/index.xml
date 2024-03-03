@@ -6,7 +6,29 @@
     <description>Recent content in 技术 on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 01 Mar 2024 01:16:30 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 03 Mar 2024 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>译：内存分析</title>
+      <link>https://weedge.github.io/post/cpu/memory_profiling/</link>
+      <pubDate>Sun, 03 Mar 2024 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/cpu/memory_profiling/</guid>
+      <description>&lt;h3 id=&#34;内存分析简介&#34;&gt;内存分析简介&lt;/h3&gt;
+&lt;p&gt;在这个系列的&lt;a href=&#34;https://easyperf.net/blog/2024/02/12/Memory-Profiling-Part1&#34;&gt;原文博客文章&lt;/a&gt;中，你将学习如何收集有关程序与内存交互的高层次信息。这个过程通常被称为&lt;em&gt;内存分析&lt;/em&gt;。内存分析帮助你理解应用程序随时间变化的内存使用情况，并帮助你构建程序行为的正确心理模型。以下是它可以回答的一些问题：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;程序的总内存消耗是多少，以及它随时间如何变化？&lt;/li&gt;
+&lt;li&gt;程序何时何地进行堆分配？&lt;/li&gt;
+&lt;li&gt;哪些代码位置分配了最大量的内存？&lt;/li&gt;
+&lt;li&gt;程序每秒访问多少内存？&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;当开发者谈论内存消耗时，他们通常指的是堆使用情况。实际上，堆是大多数应用程序中最大的内存消费者，因为它容纳了所有动态分配的对象。但堆并不是唯一的内存消费者。为了完整性，让我们提及其他内存消费者：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;栈：应用程序中帧栈使用的内存。应用程序中的每个线程都有自己的栈内存空间。通常，栈的大小只有几MB，如果超出限制，应用程序将崩溃。总的栈内存消耗与系统中运行的线程数量成正比。&lt;/li&gt;
+&lt;li&gt;代码：用于存储应用程序及其库的代码（指令）的内存。在大多数情况下，它对内存消耗的贡献不大，但也有例外。例如，Clang C++编译器和Chrome浏览器拥有庞大的代码库，它们的二进制文件中有数十MB的代码段。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;接下来，我们将介绍&lt;em&gt;内存使用&lt;/em&gt;和&lt;em&gt;内存足迹&lt;/em&gt;这两个术语，并看看如何对它们进行分析。&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>Performance Analysis and Tuning on Modern CPU 中文翻译</title>
       <link>https://weedge.github.io/post/book/performance-analysis-and-tuning-on-modern-cpu-cn/</link>
@@ -32,10 +54,10 @@
 &lt;ul&gt;
 &lt;li&gt;授之以鱼不如授之以渔, 使用AI赋能。&lt;/li&gt;
 &lt;li&gt;性能优化分析数据可以借助『chatGPT』分析。&lt;/li&gt;
-&lt;li&gt;『chatGPT』和『moonshot(kimi)』 翻译效果差不多(相同的prompt,调用openai接口知识蒸馏?)，但是当问文中的规划练习和代码练习时，『moonshot(kimi)』不能理解问题，不过长文本上传根据章节翻译和归纳总结不错，毕竟不用翻墙就可以使用。&lt;/li&gt;
+&lt;li&gt;『chatGPT』和『moonshot(kimi)』 翻译效果差不多(相同的prompt)，但是当问文中的规划练习和代码练习时，『moonshot(kimi)』不能理解问题，不过长文本上传根据章节翻译和归纳总结不错，毕竟不用翻墙就可以使用。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;&lt;strong&gt;在线阅读地址&lt;/strong&gt;: &lt;a href=&#34;&#34;&gt;https://weedge.github.io/perf-book-cn/zh/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;在线阅读地址&lt;/strong&gt;: &lt;a href=&#34;https://weedge.github.io/perf-book-cn/zh/&#34;&gt;https://weedge.github.io/perf-book-cn/zh/&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;中文版PDF(推荐)&lt;/strong&gt;: &lt;a href=&#34;https://raw.githubusercontent.com/weedge/perf-book-cn/main/perf-book-cn.pdf&#34;&gt;https://raw.githubusercontent.com/weedge/perf-book-cn/main/perf-book-cn.pdf&lt;/a&gt;&lt;/p&gt;</description>
     </item>
     
@@ -325,22 +347,6 @@
 &lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
 &lt;p&gt;在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。&lt;/p&gt;
 &lt;p&gt;在本系列文章的&lt;a href=&#34;https://weedge.github.io/post/oneday/similarity-search/1.knn-inverted-file-index/&#34;&gt;第一部分&lt;/a&gt;中，我们研究了用于执行相似性搜索的 kNN 和倒排文件索引结构。正如我们所知，kNN 是最直接的方法，而倒排文件索引则在其之上发挥作用，建议在速度加速和准确性之间进行权衡。然而，这两种方法都不使用数据压缩技术，这可能会导致内存问题，特别是在数据集较大且 RAM 有限的情况下。在本文中，我们将尝试通过研究另一种称为“&lt;strong&gt;乘积量化(Product Quantization)&lt;/strong&gt;”的方法来解决此问题。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>译：相似性搜索，第 1 部分：kNN 和倒排文件索引</title>
-      <link>https://weedge.github.io/post/oneday/similarity-search/1.knn-inverted-file-index/</link>
-      <pubDate>Sun, 24 Sep 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/oneday/similarity-search/1.knn-inverted-file-index/</guid>
-      <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/knn-inverted-file-index/0.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;相似性搜索&lt;/strong&gt;(similarity-search)是给定一个查询，目标是在所有数据库文档中找到与其最相似的文档。本章介绍 kNN 的相似性搜索及其使用倒排文件的加速。&lt;/p&gt;
-&lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
-&lt;p&gt;在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。通常，文档或项目以文本或图像的形式表示。然而，机器学习算法不能直接处理原始文本或图像，这就是为什么文档和项目通常被预处理并存储为数字向量的原因。&lt;/p&gt;
-&lt;p&gt;有时向量的每个分量都可以存储语义。在这种情况下，这些表示也称为&lt;strong&gt;嵌入&lt;/strong&gt;。这样的嵌入可以有数百个维度，数量可以达到数百万个！由于数量如此庞大，任何信息检索系统都必须能够快速检测相关文档。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;在机器学习中，向量也称为&lt;strong&gt;对象&lt;/strong&gt;或&lt;strong&gt;点&lt;/strong&gt;。&lt;/p&gt;
-&lt;/blockquote&gt;</description>
     </item>
     
   </channel>

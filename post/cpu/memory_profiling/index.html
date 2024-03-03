@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="zh-cn" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>译：内存分析 - 时间飘过</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="weedge" />
+  <meta name="description" content="内存分析简介 在这个系列的原文博客文章中，你将学习如何收集有关程序与内存交互的高层次信息。这个过程通常被称为内存分析。内存分析帮助你理解应用程序随时间变化的内存使用情况，并帮助你构建程序行为的正确心理模型。以下是它可以回答的一些问题：
+ 程序的总内存消耗是多少，以及它随时间如何变化？ 程序何时何地进行堆分配？ 哪些代码位置分配了最大量的内存？ 程序每秒访问多少内存？  当开发者谈论内存消耗时，他们通常指的是堆使用情况。实际上，堆是大多数应用程序中最大的内存消费者，因为它容纳了所有动态分配的对象。但堆并不是唯一的内存消费者。为了完整性，让我们提及其他内存消费者：
+ 栈：应用程序中帧栈使用的内存。应用程序中的每个线程都有自己的栈内存空间。通常，栈的大小只有几MB，如果超出限制，应用程序将崩溃。总的栈内存消耗与系统中运行的线程数量成正比。 代码：用于存储应用程序及其库的代码（指令）的内存。在大多数情况下，它对内存消耗的贡献不大，但也有例外。例如，Clang C&#43;&#43;编译器和Chrome浏览器拥有庞大的代码库，它们的二进制文件中有数十MB的代码段。  接下来，我们将介绍内存使用和内存足迹这两个术语，并看看如何对它们进行分析。
+" />
+
+  <meta name="keywords" content="工作, 技术, 生活" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.91.0" />
+
+
+<link rel="canonical" href="https://weedge.github.io/post/cpu/memory_profiling/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css" integrity="sha256-&#43;ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
+
+<meta property="og:title" content="译：内存分析" />
+<meta property="og:description" content="内存分析简介
+在这个系列的原文博客文章中，你将学习如何收集有关程序与内存交互的高层次信息。这个过程通常被称为内存分析。内存分析帮助你理解应用程序随时间变化的内存使用情况，并帮助你构建程序行为的正确心理模型。以下是它可以回答的一些问题：
+
+程序的总内存消耗是多少，以及它随时间如何变化？
+程序何时何地进行堆分配？
+哪些代码位置分配了最大量的内存？
+程序每秒访问多少内存？
+
+当开发者谈论内存消耗时，他们通常指的是堆使用情况。实际上，堆是大多数应用程序中最大的内存消费者，因为它容纳了所有动态分配的对象。但堆并不是唯一的内存消费者。为了完整性，让我们提及其他内存消费者：
+
+栈：应用程序中帧栈使用的内存。应用程序中的每个线程都有自己的栈内存空间。通常，栈的大小只有几MB，如果超出限制，应用程序将崩溃。总的栈内存消耗与系统中运行的线程数量成正比。
+代码：用于存储应用程序及其库的代码（指令）的内存。在大多数情况下，它对内存消耗的贡献不大，但也有例外。例如，Clang C&#43;&#43;编译器和Chrome浏览器拥有庞大的代码库，它们的二进制文件中有数十MB的代码段。
+
+接下来，我们将介绍内存使用和内存足迹这两个术语，并看看如何对它们进行分析。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/cpu/memory_profiling/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2024-03-03T10:26:23+08:00" />
+<meta property="article:modified_time" content="2024-03-03T10:26:23+08:00" />
+
+<meta itemprop="name" content="译：内存分析">
+<meta itemprop="description" content="内存分析简介
+在这个系列的原文博客文章中，你将学习如何收集有关程序与内存交互的高层次信息。这个过程通常被称为内存分析。内存分析帮助你理解应用程序随时间变化的内存使用情况，并帮助你构建程序行为的正确心理模型。以下是它可以回答的一些问题：
+
+程序的总内存消耗是多少，以及它随时间如何变化？
+程序何时何地进行堆分配？
+哪些代码位置分配了最大量的内存？
+程序每秒访问多少内存？
+
+当开发者谈论内存消耗时，他们通常指的是堆使用情况。实际上，堆是大多数应用程序中最大的内存消费者，因为它容纳了所有动态分配的对象。但堆并不是唯一的内存消费者。为了完整性，让我们提及其他内存消费者：
+
+栈：应用程序中帧栈使用的内存。应用程序中的每个线程都有自己的栈内存空间。通常，栈的大小只有几MB，如果超出限制，应用程序将崩溃。总的栈内存消耗与系统中运行的线程数量成正比。
+代码：用于存储应用程序及其库的代码（指令）的内存。在大多数情况下，它对内存消耗的贡献不大，但也有例外。例如，Clang C&#43;&#43;编译器和Chrome浏览器拥有庞大的代码库，它们的二进制文件中有数十MB的代码段。
+
+接下来，我们将介绍内存使用和内存足迹这两个术语，并看看如何对它们进行分析。"><meta itemprop="datePublished" content="2024-03-03T10:26:23+08:00" />
+<meta itemprop="dateModified" content="2024-03-03T10:26:23+08:00" />
+<meta itemprop="wordCount" content="9993">
+<meta itemprop="keywords" content="memory profiling," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="译：内存分析"/>
+<meta name="twitter:description" content="内存分析简介
+在这个系列的原文博客文章中，你将学习如何收集有关程序与内存交互的高层次信息。这个过程通常被称为内存分析。内存分析帮助你理解应用程序随时间变化的内存使用情况，并帮助你构建程序行为的正确心理模型。以下是它可以回答的一些问题：
+
+程序的总内存消耗是多少，以及它随时间如何变化？
+程序何时何地进行堆分配？
+哪些代码位置分配了最大量的内存？
+程序每秒访问多少内存？
+
+当开发者谈论内存消耗时，他们通常指的是堆使用情况。实际上，堆是大多数应用程序中最大的内存消费者，因为它容纳了所有动态分配的对象。但堆并不是唯一的内存消费者。为了完整性，让我们提及其他内存消费者：
+
+栈：应用程序中帧栈使用的内存。应用程序中的每个线程都有自己的栈内存空间。通常，栈的大小只有几MB，如果超出限制，应用程序将崩溃。总的栈内存消耗与系统中运行的线程数量成正比。
+代码：用于存储应用程序及其库的代码（指令）的内存。在大多数情况下，它对内存消耗的贡献不大，但也有例外。例如，Clang C&#43;&#43;编译器和Chrome浏览器拥有庞大的代码库，它们的二进制文件中有数十MB的代码段。
+
+接下来，我们将介绍内存使用和内存足迹这两个术语，并看看如何对它们进行分析。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">时间飘过</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/perf-book-cn/zh/" rel="noopener" target="_blank">
+              《现代CPU性能分析与优化》
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      时间飘过
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/perf-book-cn/zh/" rel="noopener" target="_blank">
+              《现代CPU性能分析与优化》
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">译：内存分析</h1>
+      
+      <div class="post-meta">
+        <time datetime="2024-03-03" class="post-time">
+          2024-03-03
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/performance-analysis/"> performance analysis </a>
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#内存分析简介">内存分析简介</a></li>
+        <li><a href="#内存使用和足迹">内存使用和足迹</a></li>
+        <li><a href="#案例研究stockfish的内存使用">案例研究：Stockfish的内存使用</a></li>
+        <li><a href="#使用sde分析内存足迹">使用SDE分析内存足迹</a></li>
+        <li><a href="#案例研究四个工作负载的内存足迹">案例研究：四个工作负载的内存足迹</a></li>
+        <li><a href="#数据局部性和重用距离">数据局部性和重用距离</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <h3 id="内存分析简介">内存分析简介</h3>
+<p>在这个系列的<a href="https://easyperf.net/blog/2024/02/12/Memory-Profiling-Part1">原文博客文章</a>中，你将学习如何收集有关程序与内存交互的高层次信息。这个过程通常被称为<em>内存分析</em>。内存分析帮助你理解应用程序随时间变化的内存使用情况，并帮助你构建程序行为的正确心理模型。以下是它可以回答的一些问题：</p>
+<ul>
+<li>程序的总内存消耗是多少，以及它随时间如何变化？</li>
+<li>程序何时何地进行堆分配？</li>
+<li>哪些代码位置分配了最大量的内存？</li>
+<li>程序每秒访问多少内存？</li>
+</ul>
+<p>当开发者谈论内存消耗时，他们通常指的是堆使用情况。实际上，堆是大多数应用程序中最大的内存消费者，因为它容纳了所有动态分配的对象。但堆并不是唯一的内存消费者。为了完整性，让我们提及其他内存消费者：</p>
+<ul>
+<li>栈：应用程序中帧栈使用的内存。应用程序中的每个线程都有自己的栈内存空间。通常，栈的大小只有几MB，如果超出限制，应用程序将崩溃。总的栈内存消耗与系统中运行的线程数量成正比。</li>
+<li>代码：用于存储应用程序及其库的代码（指令）的内存。在大多数情况下，它对内存消耗的贡献不大，但也有例外。例如，Clang C++编译器和Chrome浏览器拥有庞大的代码库，它们的二进制文件中有数十MB的代码段。</li>
+</ul>
+<p>接下来，我们将介绍<em>内存使用</em>和<em>内存足迹</em>这两个术语，并看看如何对它们进行分析。</p>
+<h3 id="内存使用和足迹">内存使用和足迹</h3>
+<p>内存使用通常由虚拟内存大小（VSZ）和常驻集大小（RSS）来描述。VSZ包括进程可以访问的所有内存，例如栈、堆、用于编码可执行文件指令的内存，以及来自链接的共享库的指令，包括被交换到磁盘的内存。另一方面，RSS衡量分配给进程并实际驻留在RAM中的内存量。因此，RSS不包括被交换出去的内存或进程从未触及过的内存。此外，RSS不包括未加载到内存中的共享库的内存。</p>
+<p>考虑一个例子。进程<code>A</code>有200K的栈和堆分配，其中100K驻留在主内存中，其余的被交换出去或未被使用。它有一个500K的二进制文件，其中只有400K被触及。进程<code>A</code>链接了2500K的共享库，并且只有1000K加载到了主内存中。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">VSZ: 200K + 500K + 2500K = 3200K
+RSS: 100K + 400K + 1000K = 1500K
+</code></pre></div><p>图1展示了一个假设程序的内存使用和足迹的可视化示例。这里的意图不是检查特定程序的统计数据，而是为分析内存分析建立框架。在后面的章节中，我们将检查一些允许我们收集此类信息的工具。</p>
+<p>首先看看内存使用（上面的两行）。正如我们所预期的，RSS总是小于或等于VSZ。从图表中看，我们可以发现程序的四个阶段。阶段1是程序的启动阶段，在这个阶段它分配内存。阶段2是算法开始使用这些内存，注意内存使用保持恒定。在阶段3，程序释放了部分内存，然后分配了略高量的内存。阶段4比阶段2更加混乱，有许多对象被分配和释放。注意，VSZ的峰值并不一定伴随着RSS的相应峰值。这可能发生在内存被对象预留但从未使用的情况下。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><a href="https://easyperf.net/img/posts/MemoryProfiling/MemoryUsageAndFootprint.png"><img src="https://easyperf.net/img/posts/MemoryProfiling/MemoryUsageAndFootprint.png" alt="img"></a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>图1. 内存使用和足迹的示例（假设场景）</em></td>
+</tr>
+</tbody>
+</table>
+<p>现在让我们转向<em>内存足迹</em>。它定义了进程在一段时间内触摸的内存量，例如每秒MB。在我们的假设场景中，可视化在图1中，我们每100毫秒（每秒10次）绘制一次内存使用量。实线跟踪每个100毫秒间隔期间访问的字节数。这里，我们不计算某个内存位置被访问了多少次。也就是说，如果一个内存位置在100毫秒间隔内被加载了两次，我们只计算一次触摸的内存。同样，我们不能聚合时间间隔。例如，我们知道在阶段2，程序每100毫秒大约触摸10MB的内存。然而，我们不能聚合十个连续的100毫秒间隔，并说内存足迹是每秒100MB，因为同一个内存位置可能在相邻的100毫秒时间间隔内被加载。只有在程序在每个1秒间隔内从不重复内存访问时，这才会是真的。</p>
+<p>虚线跟踪自程序开始以来访问的独特数据大小。这里，我们计算在每个100毫秒间隔期间从未被程序触摸过的字节数。在程序生命周期的前一秒，大多数访问都是独特的，正如我们所预期的。在第二阶段，算法开始使用分配的缓冲区。在1.3秒到1.8秒的时间间隔内，程序访问了缓冲区中的大多数位置，例如，这是算法中循环的第一次迭代。这就是为什么我们从1.3秒到1.8秒看到新看到的内存位置有一个大峰值，但在那之后我们看不到很多独特的访问。从2秒的时间戳到5秒，算法主要利用已经看到的内存缓冲区，并没有访问任何新数据。然而，阶段4的行为与阶段2不同。首先，在阶段4，算法比阶段2更消耗内存，因为总内存足迹（实线）大约是每100毫秒15MB。其次，算法以相对较大的爆发访问新数据（虚线）。这样的爆发可能与分配新内存区域、在其上工作，然后释放它们有关。</p>
+<p>我们将在接下来的两个案例研究中展示如何获得这样的图表，但现在，你可能会想知道这些数据如何使用。嗯，首先，如果我们在每个间隔期间访问的独特字节（点线）总和，我们将得到程序的总内存足迹。此外，通过查看图表，你可以观察阶段并将其与正在运行的代码相关联。问问自己：“它是否符合你的预期，或者工作负载正在做一些狡猾的事情？”你可能会在内存足迹中遇到意外的峰值。我们将在这系列文章中讨论的内存分析技术并不一定像常规热点分析那样指向问题所在，但它们确实帮助你更好地理解工作负载的行为。在许多情况下，内存分析帮助识别问题或作为在常规分析期间得出的结论的额外数据点。</p>
+<p>在某些情况下，内存足迹帮助我们估计对内存子系统的压力。例如，如果内存足迹很小，比如每秒1MB，并且RSS适合L3缓存的大小，我们可能会怀疑内存子系统的压力很低；记住，现代处理器的可用内存带宽是以GB/s计算的，并且接近1TB/s。另一方面，当内存足迹相当大，例如每秒10GB，并且RSS远大于L3缓存的大小时，那么工作负载可能会对内存子系统造成显著压力。</p>
+<h3 id="案例研究stockfish的内存使用">案例研究：Stockfish的内存使用</h3>
+<p>现在，让我们看看如何分析一个真实世界应用程序的内存使用情况。我们将使用由KDE开发的Linux堆内存分析器<a href="https://github.com/KDE/heaptrack">heaptrack</a>。Ubuntu用户可以通过<code>apt install heaptrack heaptrack-gui</code>非常容易地安装它。Heaptrack可以找到代码中发生最大和最频繁分配的位置，以及其他许多事情。在Windows上，你可以使用<a href="https://github.com/milostosic/MTuner">Mtuner</a>，它具有与Heaptrack相似的功能。</p>
+<p>作为一个例子，我们采用了Stockfish内置的基准测试。我们使用Clang 15编译器和<code>-O3 -mavx2</code>选项编译了它。我们使用以下命令收集了在Intel Alderlake i7-1260P处理器上运行的单线程Stockfish内置基准测试的Heaptrack内存分析：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">$ heaptrack ./stockfish bench 128 1 24 default depth
+</code></pre></div><p>图2向我们展示了Stockfish内存分析的总结视图。我们可以从中学到一些有趣的事实：</p>
+<ul>
+<li>总分配次数为10614次。</li>
+<li>几乎一半的分配是临时的，即直接跟随其释放的分配。</li>
+<li>峰值堆内存消耗为204MB。</li>
+<li><code>Stockfish::std_aligned_alloc</code>负责分配堆空间的最大部分（182MB）。但它并不在最频繁分配位置的列表中（中间表格），所以它可能是一次性分配并在程序结束前一直存在。</li>
+<li>几乎所有分配调用的一半来自<code>operator new</code>，这些都是临时分配。我们能否消除临时分配？</li>
+<li>对于这个案例研究，泄漏内存不是一个问题。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><a href="https://easyperf.net/img/posts/MemoryProfiling/StockfishSummary.png"><img src="https://easyperf.net/img/posts/MemoryProfiling/StockfishSummary.png" alt="img"></a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>图2. 使用Heaptrack的Stockfish内存分析，总结视图。</em></td>
+</tr>
+</tbody>
+</table>
+<p>注意，图像顶部有许多标签页；接下来，我们将探索其中的一些。图3显示了Stockfish内置基准测试的内存使用情况。在整个程序运行过程中，内存使用量保持在200MB不变。总消耗的内存被分成几个部分，例如图像上的区域1和2。每个部分对应一个特定的分配。有趣的是，并不是我们之前认为的通过<code>Stockfish::std_aligned_alloc</code>进行的单个大的182MB分配。相反，有两个：区域1的134.2MB和区域2的48.4MB。尽管这两个分配一直持续到基准测试的最后。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><a href="https://easyperf.net/img/posts/MemoryProfiling/Stockfish_consumed.png"><img src="https://easyperf.net/img/posts/MemoryProfiling/Stockfish_consumed.png" alt="img"></a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>图3. 使用Heaptrack的Stockfish内存分析，内存使用随时间保持恒定。</em></td>
+</tr>
+</tbody>
+</table>
+<p>这是否意味着在启动阶段之后没有内存分配？让我们找出答案。图4显示了随时间累积的分配数量。与消耗内存图表（图3）类似，分配是根据归因于每个函数的累积内存分配数量进行切片的。我们可以看到，新的分配不仅来自一个地方，而是来自许多地方。最频繁的分配是通过<code>operator new</code>完成的，对应于图像上的区域1。</p>
+<p>注意，程序的整个生命周期中，新分配以稳定的速度进行。然而，正如我们刚刚看到的，内存消耗没有变化；这怎么可能呢？嗯，如果我们释放之前分配的缓冲区并分配相同大小的新缓冲区（也称为<em>临时分配</em>），这是可能的。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><a href="https://easyperf.net/img/posts/MemoryProfiling/Stockfish_allocations.png"><img src="https://easyperf.net/img/posts/MemoryProfiling/Stockfish_allocations.png" alt="img"></a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>图4. 使用Heaptrack的Stockfish内存分析，分配数量在增长。</em></td>
+</tr>
+</tbody>
+</table>
+<p>由于分配数量在增长，但总消耗内存没有变化，我们正在处理的是临时分配。让我们找出它们在代码中的来源。通过图5中的火焰图，我们可以很容易地做到这一点。总共有4800个临时分配，其中90.8%来自<code>operator new</code>。得益于火焰图，我们知道导致4360个临时分配的整个调用栈。有趣的是，这些临时分配是由<code>std::stable_sort</code>发起的，它分配了一个临时缓冲区来进行排序。消除这些临时分配的一种方法是使用就地稳定排序算法。然而，这样做我们观察到性能下降了8%，所以我们放弃了这个改变。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><a href="https://easyperf.net/img/posts/MemoryProfiling/Stockfish_flamegraph.png"><img src="https://easyperf.net/img/posts/MemoryProfiling/Stockfish_flamegraph.png" alt="img"></a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>图5. 使用Heaptrack的Stockfish内存分析，临时分配火焰图。</em></td>
+</tr>
+</tbody>
+</table>
+<p>与临时分配类似，你也可以找到导致程序中最大分配的路径。在顶部的下拉菜单中，你需要选择“消耗(Consumed)”火焰图。我们鼓励读者探索其他标签页。</p>
+<h3 id="使用sde分析内存足迹">使用SDE分析内存足迹</h3>
+<p>现在让我们看看如何估计内存足迹。在第三部分，我们将通过测量一个简单程序的内存足迹来热身。在第四部分，我们将检查四个生产工作负载的内存足迹。</p>
+<p>考虑下面左侧列出的简单的朴素矩阵乘法代码。该代码将两个4Kx4K的方阵<code>a</code>和<code>b</code>相乘，并将结果写入4Kx4K的方阵<code>c</code>。回想一下，为了计算结果矩阵<code>c</code>的一个元素，我们需要计算矩阵<code>a</code>中对应行和矩阵<code>b</code>中对应列的点积；这就是最内层循环<code>k</code>所做的。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">constexpr int N = 1024*4;                      // 4K
+std::array&lt;std::array&lt;float, N&gt;, N&gt; a, b, c;   // 4K x 4K matrices
+// init a, b, c
+for (int i = 0; i &lt; N; i++) {               for (int i = 0; i &lt; N; i++) { 
+  for (int j = 0; j &lt; N; j++) {        =&gt;     for (int k = 0; k &lt; N; k++) {
+    for (int k = 0; k &lt; N; k++)        =&gt;       for (int j = 0; j &lt; N; j++) {
+      c[i][j] += a[i][k] * b[k][j];               c[i][j] += a[i][k] * b[k][j];
+    }                                           }
+  }                                           }
+}                                           }
+</code></pre></div><p>为了展示内存足迹的减少，我们应用了一个简单的循环交换变换，交换了<code>j</code>和<code>k</code>的循环（标记为<code>=&gt;</code>的行）。一旦我们测量了内存足迹并在两个版本之间进行比较，就很容易看到差异。内存访问模式变化的可视化结果如图6所示。我们从逐个计算矩阵<code>c</code>的每个元素转变为计算部分结果，同时在所有三个矩阵中保持行主遍历。</p>
+<p>在原始代码（左侧）中，矩阵<code>b</code>以列主方式访问，这不利于缓存。观察图片，注意在内层循环的前N次迭代后触摸的内存区域。我们计算<code>a</code>中第0行和<code>b</code>中第0列的点积，并将结果保存在矩阵<code>c</code>的第一个元素中。在内层循环的下一个N次迭代期间，我们访问<code>a</code>中的相同第0行和<code>b</code>中的第1列，以在矩阵<code>c</code>中获得第二个结果。</p>
+<p>在右侧转换后的代码中，内层循环仅访问矩阵<code>a</code>中的单个元素。我们将它与<code>b</code>中相应行的所有元素相乘，并将乘积累加到<code>c</code>的相应行中。因此，内层循环的前N次迭代计算<code>a</code>中元素0和<code>b</code>中第0行的乘积，并将部分结果累积到<code>c</code>的第0行中。接下来的N次迭代将<code>a</code>中的元素1和<code>b</code>中的第1行相乘，并再次将部分结果累积到<code>c</code>的第0行中。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><a href="https://easyperf.net/img/posts/MemoryProfiling/MemoryFootprint.png"><img src="https://easyperf.net/img/posts/MemoryProfiling/MemoryFootprint.png" alt="img"></a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>图6. 内层循环的前N次和2N次迭代后触摸的内存访问模式和缓存行（<em>图片未按比例</em>）。</em></td>
+</tr>
+</tbody>
+</table>
+<p>让我们用Intel <a href="https://www.intel.com/content/www/us/en/developer/articles/tool/software-development-emulator.html">SDE</a>，即x86平台的软件开发仿真器工具来确认这一点。SDE建立在动态二进制插桩机制之上，这使得它能够拦截每一条指令。这带来了巨大的成本。对于我们运行的实验，常见的是100倍的减速。</p>
+<p>为了防止编译器干扰我们的实验，我们禁用了向量化和展开优化，以便每个版本只有一个热循环，恰好包含7条汇编指令。我们使用这个来统一比较内存足迹间隔。我们不是使用时间间隔，而是使用以机器指令为单位的间隔。我们用来收集SDE内存足迹的命令行，以及其输出的一部分，如下所示。注意我们使用了<code>-fp_icount 28K</code>选项，这表示测量每28K条指令间隔的内存足迹。这个值特别选择是因为它与“before”和“after”情况下内层循环的一次迭代相匹配：<code>4K内层循环迭代 * 7条指令 = 28K</code>。</p>
+<p>默认情况下，SDE以缓存行（64字节）为单位测量足迹，但它也可以以内存页（x86上的4KB）为单位进行测量。我们将输出合并并并排放置。此外，从输出中删除了一些不相关的列。第一列<code>PERIOD</code>标记了新的28K指令间隔的开始。每个期间之间的差异是28K条指令。<code>LOAD</code>列告诉我们有多少缓存行被加载指令访问。回想一下之前的讨论，同一个缓存行被访问两次只计算一次。类似地，<code>STORE</code>列告诉我们有多少缓存行被存储。<code>CODE</code>列计算在该期间执行的包含指令的缓存行。最后，<code>NEW</code>计算在期间被触摸的之前未被程序看到的缓存行。</p>
+<p>在我们继续之前的重要说明：SDE报告的内存足迹不等于利用的内存带宽。这是因为它没有考虑内存操作是从缓存还是内存中服务的。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">$ sde64 -footprint -fp_icount 28K -- ./matrix_multiply.exe
+
+============================= CACHE LINES =============================
+PERIOD    LOAD  STORE  CODE  NEW   |   PERIOD    LOAD  STORE  CODE  NEW
+-----------------------------------------------------------------------
+...                                    ...
+2982388   4351    1     2   4345   |   2982404   258    256    2    511
+3011063   4351    1     2      0   |   3011081   258    256    2    256
+3039738   4351    1     2      0   |   3039758   258    256    2    256
+3068413   4351    1     2      0   |   3068435   258    256    2    256
+3097088   4351    1     2      0   |   3097112   258    256    2    256
+3125763   4351    1     2      0   |   3125789   258    256    2    256
+3154438   4351    1     2      0   |   3154466   257    256    2    255
+3183120   4352    1     2      0   |   3183150   257    256    2    256
+3211802   4352    1     2      0   |   3211834   257    256    2    256
+3240484   4352    1     2      0   |   3240518   257    256    2    256
+3269166   4352    1     2      0   |   3269202   257    256    2    256
+3297848   4352    1     2      0   |   3297886   257    256    2    256
+3326530   4352    1     2      0   |   3326570   257    256    2    256
+3355212   4352    1     2      0   |   3355254   257    256    2    256
+3383894   4352    1     2      0   |   3383938   257    256    2    256
+3412576   4352    1     2      0   |   3412622   257    256    2    256
+3441258   4352    1     2   4097   |   3441306   257    256    2    257
+3469940   4352    1     2      0   |   3469990   257    256    2    256
+3498622   4352    1     2      0   |   3498674   257    256    2    256
+...
+</code></pre></div><p>让我们讨论一下上面输出中的数字。看看从指令<code>2982388</code>开始的时间段（左侧）。这个时间段对应原始Matmul程序中内层循环的前4096次迭代。SDE报告称在这个时间段内，算法加载了4351个缓存行。我们来做一下数学计算，看看我们是否能得到相同的数字。原始的内层循环访问矩阵<code>a</code>的第0行。记住<code>float</code>类型的大小是4字节，缓存行的大小是64字节。所以，对于矩阵<code>a</code>，算法加载了<code>(4096 * 4字节) / 64字节 = 256</code>个缓存行。对于矩阵<code>b</code>，算法访问第0列。每个元素都位于自己的缓存行上，所以对于矩阵<code>b</code>它加载了4096个缓存行。对于矩阵<code>c</code>，我们将所有乘积累积到一个单独的元素中，所以有1个缓存行被<em>存储</em>在矩阵<code>c</code>中。我们计算出加载了<code>4096 + 256 = 4352</code>个缓存行，存储了1个缓存行。一个缓存行的差异可能与SDE开始计算28K指令间隔不是在第一个内层循环迭代的确切开始有关。我们看到在这个时间段内有两条包含指令的缓存行（<code>CODE</code>）被访问。内层循环的七条指令位于一个缓存行中，但28K间隔也可能捕获到中间循环，使其总共成为两个缓存行。最后，由于我们访问的所有数据之前都未被看到，所以所有的缓存行都是<code>NEW</code>。</p>
+<p>现在让我们切换到下一个28K指令的时间段（<code>3011063</code>），它对应原始Matmul程序中内层循环的第二组4096次迭代。我们有与前一个时间段相同的<code>LOAD</code>、<code>STORE</code>和<code>CODE</code>缓存行数量，这是预期的。然而，没有新的<code>NEW</code>缓存行被触摸。让我们理解为什么会这样。再次查看图6。内层循环的第二组4096次迭代再次访问矩阵<code>a</code>的第0行。但它也访问矩阵<code>b</code>的第1列，这是新的，但这些元素位于与第0列相同的缓存行集上，所以我们已经在前一个28K时间段内触摸了它们。这种模式在接下来的14个时间段内重复。每个缓存行包含<code>64字节 / 4字节（float的大小）= 16</code>个元素，这解释了模式：我们每16次迭代在矩阵<code>b</code>中获取一组新的缓存行。最后一个剩下的问题是为什么我们在内层循环的前16次迭代后有4097个<code>NEW</code>行。答案很简单：算法不断访问矩阵<code>a</code>的第0行，所以所有这些新的缓存行都来自矩阵<code>b</code>。</p>
+<p>对于转换后的版本，内存足迹看起来更加一致，除了第一个时间段之外，所有时间段的数字都非常相似。在第一个时间段，我们在矩阵<code>a</code>中访问了1个缓存行；<code>(4096 * 4字节) / 64字节 = 256</code>个缓存行在<code>b</code>中；<code>(4096 * 4字节) / 64字节 = 256</code>个缓存行被存储到<code>c</code>中，总共513行。再次，结果的差异与SDE开始计算28K指令间隔不是在第一个内层循环迭代的确切开始有关。在第二个时间段（<code>3011081</code>），我们访问了矩阵<code>a</code>中的相同缓存行，从矩阵<code>b</code>中访问了一组新的256个缓存行，以及从矩阵<code>c</code>中访问了相同的缓存行集。只有来自矩阵<code>b</code>的行之前未被看到，这就是为什么第二个时间段有<code>NEW</code> 256个缓存行。以指令<code>3441306</code>开始的时间段有257个<code>NEW</code>行被访问。一个额外的缓存行来自于访问矩阵<code>a</code>中的元素<code>a[0][17]</code>，因为它之前未被访问过。</p>
+<p>在我们探索的两种情况下，我们通过SDE输出确认了我们对算法的理解。但请注意，仅凭SDE足迹工具的输出，你无法判断算法是否对缓存友好。在我们的案例中，我们简单地查看了代码并相当容易地解释了数字。但如果没有知道算法在做什么，就无法做出正确的判断。这是为什么。现代x86处理器的L1缓存只能容纳大约1000个缓存行。当你看到一个算法访问，比如说，每1M条指令500行时，可能会诱人地得出结论，代码必须是对缓存友好的，因为500行可以轻松地适应L1缓存。但我们对这些访问的性质一无所知。如果这些访问是随机的，那么这样的代码远非“友好”。SDE足迹工具的输出仅仅告诉我们访问了多少内存，但我们不知道这些访问是否命中了缓存。</p>
+<h3 id="案例研究四个工作负载的内存足迹">案例研究：四个工作负载的内存足迹</h3>
+<p>在这个案例研究中，我们将使用Intel SDE工具来分析四个生产工作负载的内存足迹：Blender光线追踪、Stockfish国际象棋引擎、Clang++编译和AI_bench PSPNet分割。我们希望这项研究能给你一个直觉，让你知道在真实世界的应用中可能会看到什么。在第三部分，我们收集了每28K条指令间隔的内存足迹，这对于运行数千亿条指令的应用程序来说太小了。因此，我们将测量每十亿条指令的足迹。</p>
+<p>图7展示了四个选定工作负载的内存足迹。你可以看到它们都有非常不同的行为。Clang编译在开始时内存活动非常高，有时每10亿条指令会飙升到100MB，但之后它减少到大约每10亿条指令15MB。图表上的任何峰值都可能引起Clang开发者的关注：它们是预期的吗？它们是否与某些内存密集型的优化过程有关？访问的内存位置可以被压缩吗？</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><a href="https://easyperf.net/img/posts/MemoryProfiling/MemFootCaseStudyFourBench.png"><img src="https://easyperf.net/img/posts/MemoryProfiling/MemFootCaseStudyFourBench.png" alt="img"></a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>图7. 四个工作负载的内存足迹案例研究。MEM - 在1B指令间隔期间访问的总内存。NEW - 之前未被看到的访问内存。</em></td>
+</tr>
+</tbody>
+</table>
+<p>Blender基准测试非常稳定；我们可以清楚地看到每个渲染帧的开始和结束。这使我们能够专注于单个帧，而不必看整个1000多个帧。Stockfish基准测试要混乱得多，可能是因为国际象棋引擎处理不同的位置，这些位置需要不同数量的资源。最后，AI_bench的内存足迹非常有趣，因为我们可以发现重复的模式。在初始启动之后，有五到六个从<code>40B</code>到<code>95B</code>的正弦波，然后是三个以锐利峰值结束的区域，达到200MB，然后又是三个每10亿条指令大约在25MB的区域。所有这些都可能是可以用来优化应用程序的可操作信息。</p>
+<p>关于指令作为时间的衡量可能仍然有一些混淆，所以让我们来解决这个问题。如果你知道工作负载的IPC（每个时钟周期的指令数）和处理器运行的频率，你可以大致将时间线从指令转换为秒。例如，在IPC=1和处理器频率为4GHz的情况下，10亿条指令运行250毫秒，在IPC=2时，10亿条指令运行125毫秒，以此类推。这样，你可以将内存足迹图表的X轴从指令转换为秒。但请记住，只有在工作负载具有稳定的IPC且CPU频率在工作负载运行期间不改变时，它才会准确。</p>
+<h3 id="数据局部性和重用距离">数据局部性和重用距离</h3>
+<p>正如您从前面的案例研究中看到的，使用现代内存分析工具可以提取大量信息。然而，还存在一些限制，我们接下来将讨论。</p>
+<p>考虑图7（第四部分）中显示的内存足迹图表。这样的图表告诉我们在10亿条指令期间访问了多少字节。然而，查看这些图表中的任何一个，我们都无法知道在10亿条指令期间，某个内存位置是被访问了一次、两次还是一百次。每次记录的内存访问只是为间隔期间的总内存足迹做出贡献，并且每个间隔只计算一次。知道每个字节在间隔期间被触摸了多少次，会给我们一些关于程序内存访问模式的直觉。例如，我们可以估计热点内存区域的大小，并查看它是否适合L3缓存。</p>
+<p>然而，即使这些信息也不足以完全评估内存访问的时间局部性。想象一种情况，我们在10亿条指令的间隔期间，所有内存位置都被访问了两次。这是好还是坏？嗯，我们不知道，因为重要的是第一次（使用）和第二次访问（重用）之间的距离。如果距离很小，例如，小于L1缓存可以保持的缓存行数（今天大约是1000），那么数据很可能会被有效地重用。否则，所需的缓存行可能已经在这期间被驱逐了。</p>
+<p>此外，到目前为止我们讨论的任何内存分析方法都没有给我们提供程序空间局部性的洞察。内存使用和内存足迹只告诉我们访问了多少内存，但我们不知道这些访问是顺序的、跨步的还是完全随机的。我们需要更好的方法。</p>
+<p>应用程序的时间和空间局部性主题已经研究了很长时间，不幸的是，截至2024年初，还没有可用的生产质量工具可以提供这样的信息。衡量程序数据局部性的中心指标是<em>重用距离</em>，它是在两次连续访问特定内存位置之间访问的独特内存位置的数量。重用距离显示了在典型的最近最少使用（LRU）缓存中内存访问缓存命中的可能性。如果内存访问的重用距离大于缓存大小，那么后续的访问（重用）很可能会导致缓存未命中。</p>
+<p>由于现代处理器中的内存访问单位是缓存行，我们定义了两个额外的术语：<em>时间重用</em>发生在使用和重用访问完全相同的地址时，<em>空间重用</em>发生在使用和重用访问位于同一缓存行的不同地址时。考虑图8中显示的一系列内存访问：<code>a1,b1,e1,b2,c1,d1,a2</code>，其中位置<code>a</code>、<code>b</code>和<code>c</code>占据缓存行<code>N</code>，位置<code>d</code>和<code>e</code>位于后续的缓存行<code>N+1</code>。在这个例子中，访问<code>a2</code>的时间重用距离是四，因为在两次连续访问<code>a</code>之间有四个独特的位置被访问，即<code>b</code>、<code>c</code>、<code>d</code>和<code>e</code>。访问<code>d1</code>不是时间重用，然而，它是空间重用，因为我们之前访问了位置<code>e</code>，它与<code>d</code>位于同一缓存行。访问<code>d1</code>的空间重用距离是二。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><a href="https://easyperf.net/img/posts/MemoryProfiling/ReuseDistances.png"><img src="https://easyperf.net/img/posts/MemoryProfiling/ReuseDistances.png" alt="img"></a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>图8. 时间和空间重用的示例。</em></td>
+</tr>
+</tbody>
+</table>
+<p>图9提供了一个假设程序的重用距离直方图示例。它的X轴以<code>log2</code> bin为群集，每个bin乘以1000进行缩放。Y轴提供了发生率，即我们观察到某个特定重用距离的频率。理想情况下，我们希望看到所有的访问都在第一个bin [0;1000]中，无论是时间还是空间重用。例如，对于顺序访问大型数组，我们会看到一个大的时间重用距离（不好），但一个小的空间重用距离（好）。对于一个多次遍历1000个元素的二叉树（适合L1缓存）的程序，我们会看到一个相对较小的时间重用距离（好），但一个大的空间重用距离（不好）。对大型缓冲区的随机访问代表了时间和空间局部性都不好。一般来说，如果内存访问具有小的时间或空间重用距离，那么它很可能会命中CPU缓存。因此，如果一个访问具有大的时间和大的空间重用距离，那么它很可能会错过CPU缓存。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><a href="https://easyperf.net/img/posts/MemoryProfiling/ReuseDistanceHisto.png"><img src="https://easyperf.net/img/posts/MemoryProfiling/ReuseDistanceHisto.png" alt="img"></a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>图9. 重用距离直方图的示例。X轴是重用距离，Y轴是发生率。</em></td>
+</tr>
+</tbody>
+</table>
+<p>多年来开发了一些试图分析程序的时间和空间局部性的工具。以下是三个最新的工具及其简短描述和当前状态：</p>
+<ul>
+<li><strong>loca</strong>，一个使用PIN二进制插桩工具实现的重用距离分析工具。它可以为整个程序打印重用距离直方图，但不能为个别加载提供类似的分解。由于它使用动态二进制插桩，它会产生巨大的运行时（约50倍）和内存（约40倍）开销，这使得该工具在实际应用中不实用。该工具不再维护，并且需要对源代码进行一些修改才能在新平台上工作。<a href="https://github.com/dcompiler/loca">Github仓库</a>, <a href="https://doi.org/10.1145/2451116.2451153">[LocaPaper]</a></li>
+<li><strong>RDX</strong>，利用硬件性能计数器采样与硬件调试寄存器相结合来产生重用距离直方图。与<code>loca</code>相比，它在保持90%准确性的同时，产生了一个数量级更小的开销。该工具不再维护，并且几乎没有关于如何使用该工具的文档。<a href="https://ieeexplore.ieee.org/document/8675243">[RDXpaper]</a></li>
+<li><strong>ReuseTracker</strong>，基于<code>RDX</code>构建，但它通过考虑缓存一致性和缓存行失效效应来扩展它。使用这个工具，我们能够在一个小程序上产生有意义的结果，然而，它还不是生产质量，并且不容易使用。<a href="https://github.com/ParCoreLab/ReuseTracker">Github仓库</a>, <a href="https://doi.org/10.1145/3484199">[ReuseTrackerPaper]</a></li>
+</ul>
+<p>聚合程序中所有内存访问的重用距离在某些情况下可能有用，但未来的分析工具也应该能够为个别加载提供重用距离直方图。幸运的是，并不是每个加载/存储汇编指令都需要彻底分析。性能工程师应该首先使用传统的抽样方法找到一个有问题的加载或存储指令。之后，他/她应该能够请求该特定操作的时间和空间重用距离直方图。也许，这应该是一个单独的收集，因为它可能涉及相对较大的开销。</p>
+<p>时间和空间局部性分析提供了可以用来指导性能优化的独特见解。然而，仔细的实现并不简单，一旦我们开始考虑各种缓存一致性效应，可能会变得棘手。此外，大的开销可能会成为将此功能集成到生产分析器中的障碍。</p>
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2024-03-03
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/memory-profiling/">memory profiling</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/book/performance-analysis-and-tuning-on-modern-cpu-cn/">
+            <span class="next-text nav-default">Performance Analysis and Tuning on Modern CPU 中文翻译</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/post/cpu/memory_profiling/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:weege007@gmail.com" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/weedge" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://weibo.com/weedge" rel="me noopener" class="iconfont"
+      title="weibo"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M385.714286 733.714286q12-19.428571 6.285714-39.428571t-25.714286-28.571429q-19.428571-8-41.714286-0.571429t-34.285714 26.285714q-12.571429 19.428571-7.428571 39.142857t24.571429 28.857143 42.571429 1.428571 35.714286-27.142857zm53.714286-69.142857q4.571429-7.428571 2-15.142857t-10-10.571429q-8-2.857143-16.285714 2.857143t-12.285714 10.571429q-9.714286 17.714286 7.428571 25.714286 8 2.857143 16.571429 2.857143t12.571429-10.571429zm99.428571 61.142857q-25.714286 58.285714-90.285714 85.714286t-128 6.857143q-61.142857-19.428571-84.285714-72.285714t3.714286-107.142857q26.857143-53.142857 86.571429-79.428571t120.285714-10.857143q63.428571 16.571429 90.571429 68.285714t1.428571 108.857143zm178.285714-91.428571q-5.142857-54.857143-50.857143-97.142857t-119.142857-62.285714-156.857143-12q-127.428571 13.142857-211.142857 80.857143t-75.714286 151.142857q5.142857 54.857143 50.857143 97.142857t119.142857 62.285714 156.857143 12q127.428571-13.142857 211.142857-80.857143t75.714286-151.142857zm176 2.285714q0 38.857143-21.142857 79.714286t-62.285714 78.285714-96.285714 67.142857-129.142857 47.428571-154.571429 17.714286-157.142857-19.142857-137.428571-53.142857-98-86.285714-37.142857-114q0-65.714286 39.714286-140t112.857143-147.428571q96.571429-96.571429 195.142857-134.857143t140.857143 4q37.142857 36.571429 11.428571 119.428571-2.285714 8-0.571429 11.428571t5.714286 4 8.285714 2.857143 7.714286-2l3.428571-1.142857q79.428571-33.714286 140.571429-33.714286t87.428571 34.857143q25.714286 36 0 101.714286-1.142857 7.428571-2.571429 11.428571t2.571429 7.142857 6.857143 4.285714 9.714286 3.428571q32.571429 10.285714 58.857143 26.857143t45.714286 46.571429 19.428571 66.571429zm-42.285714-356.571429q24 26.857143 31.142857 62t-3.714286 67.142857q-4.571429 13.142857-16.857143 19.428571t-25.428571 2.285714q-13.142857-4.571429-19.428571-16.857143t-2.285714-25.428571q11.428571-36-13.714286-63.428571t-61.142857-20q-13.714286 2.857143-25.714286-4.571429t-14.285714-21.142857q-2.857143-13.714286 4.571429-25.428571t21.142857-14.571429q34.285714-7.428571 68 3.142857t57.714286 37.428571zm103.428571-93.142857q49.714286 54.857143 64.285714 127.142857t-7.714286 138q-5.142857 15.428571-19.428571 22.857143t-29.714286 2.285714-22.857143-19.428571-2.857143-29.714286q16-46.857143 5.714286-98.285714t-45.714286-90.285714q-35.428571-39.428571-84.571429-54.571429t-98.857143-4.857143q-16 3.428571-29.714286-5.428571t-17.142857-24.857143 5.428571-29.428571 24.857143-16.857143q70.285714-14.857143 139.428571 6.571429t118.857143 76.857143z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://weedge.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2013 -
+    2024
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        weedge
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//weedge.disqus.com/count.js" async></script>
+
+
+
+
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
+
+
+</body>
+</html>

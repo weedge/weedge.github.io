@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>memory profiling on 时间飘过</title>
+    <link>https://weedge.github.io/tags/memory-profiling/</link>
+    <description>Recent content in memory profiling on 时间飘过</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sun, 03 Mar 2024 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/memory-profiling/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>译：内存分析</title>
+      <link>https://weedge.github.io/post/cpu/memory_profiling/</link>
+      <pubDate>Sun, 03 Mar 2024 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/cpu/memory_profiling/</guid>
+      <description>&lt;h3 id=&#34;内存分析简介&#34;&gt;内存分析简介&lt;/h3&gt;
+&lt;p&gt;在这个系列的&lt;a href=&#34;https://easyperf.net/blog/2024/02/12/Memory-Profiling-Part1&#34;&gt;原文博客文章&lt;/a&gt;中，你将学习如何收集有关程序与内存交互的高层次信息。这个过程通常被称为&lt;em&gt;内存分析&lt;/em&gt;。内存分析帮助你理解应用程序随时间变化的内存使用情况，并帮助你构建程序行为的正确心理模型。以下是它可以回答的一些问题：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;程序的总内存消耗是多少，以及它随时间如何变化？&lt;/li&gt;
+&lt;li&gt;程序何时何地进行堆分配？&lt;/li&gt;
+&lt;li&gt;哪些代码位置分配了最大量的内存？&lt;/li&gt;
+&lt;li&gt;程序每秒访问多少内存？&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;当开发者谈论内存消耗时，他们通常指的是堆使用情况。实际上，堆是大多数应用程序中最大的内存消费者，因为它容纳了所有动态分配的对象。但堆并不是唯一的内存消费者。为了完整性，让我们提及其他内存消费者：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;栈：应用程序中帧栈使用的内存。应用程序中的每个线程都有自己的栈内存空间。通常，栈的大小只有几MB，如果超出限制，应用程序将崩溃。总的栈内存消耗与系统中运行的线程数量成正比。&lt;/li&gt;
+&lt;li&gt;代码：用于存储应用程序及其库的代码（指令）的内存。在大多数情况下，它对内存消耗的贡献不大，但也有例外。例如，Clang C++编译器和Chrome浏览器拥有庞大的代码库，它们的二进制文件中有数十MB的代码段。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;接下来，我们将介绍&lt;em&gt;内存使用&lt;/em&gt;和&lt;em&gt;内存足迹&lt;/em&gt;这两个术语，并看看如何对它们进行分析。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -342,6 +342,54 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/cpu/memory_profiling/">译：内存分析</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2024-03-03" class="post-time">
+        2024-03-03
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/performance-analysis/"> performance analysis </a>
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <h3 id="内存分析简介">内存分析简介</h3>
+<p>在这个系列的<a href="https://easyperf.net/blog/2024/02/12/Memory-Profiling-Part1">原文博客文章</a>中，你将学习如何收集有关程序与内存交互的高层次信息。这个过程通常被称为<em>内存分析</em>。内存分析帮助你理解应用程序随时间变化的内存使用情况，并帮助你构建程序行为的正确心理模型。以下是它可以回答的一些问题：</p>
+<ul>
+<li>程序的总内存消耗是多少，以及它随时间如何变化？</li>
+<li>程序何时何地进行堆分配？</li>
+<li>哪些代码位置分配了最大量的内存？</li>
+<li>程序每秒访问多少内存？</li>
+</ul>
+<p>当开发者谈论内存消耗时，他们通常指的是堆使用情况。实际上，堆是大多数应用程序中最大的内存消费者，因为它容纳了所有动态分配的对象。但堆并不是唯一的内存消费者。为了完整性，让我们提及其他内存消费者：</p>
+<ul>
+<li>栈：应用程序中帧栈使用的内存。应用程序中的每个线程都有自己的栈内存空间。通常，栈的大小只有几MB，如果超出限制，应用程序将崩溃。总的栈内存消耗与系统中运行的线程数量成正比。</li>
+<li>代码：用于存储应用程序及其库的代码（指令）的内存。在大多数情况下，它对内存消耗的贡献不大，但也有例外。例如，Clang C++编译器和Chrome浏览器拥有庞大的代码库，它们的二进制文件中有数十MB的代码段。</li>
+</ul>
+<p>接下来，我们将介绍<em>内存使用</em>和<em>内存足迹</em>这两个术语，并看看如何对它们进行分析。</p>
+    </div>
+    <div class="read-more">
+      <a href="/post/cpu/memory_profiling/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/book/performance-analysis-and-tuning-on-modern-cpu-cn/">Performance Analysis and Tuning on Modern CPU 中文翻译</a>
     </h1>
     
@@ -382,10 +430,10 @@
 <ul>
 <li>授之以鱼不如授之以渔, 使用AI赋能。</li>
 <li>性能优化分析数据可以借助『chatGPT』分析。</li>
-<li>『chatGPT』和『moonshot(kimi)』 翻译效果差不多(相同的prompt,调用openai接口知识蒸馏?)，但是当问文中的规划练习和代码练习时，『moonshot(kimi)』不能理解问题，不过长文本上传根据章节翻译和归纳总结不错，毕竟不用翻墙就可以使用。</li>
+<li>『chatGPT』和『moonshot(kimi)』 翻译效果差不多(相同的prompt)，但是当问文中的规划练习和代码练习时，『moonshot(kimi)』不能理解问题，不过长文本上传根据章节翻译和归纳总结不错，毕竟不用翻墙就可以使用。</li>
 </ul>
 </blockquote>
-<p><strong>在线阅读地址</strong>: <a href="">https://weedge.github.io/perf-book-cn/zh/</a></p>
+<p><strong>在线阅读地址</strong>: <a href="https://weedge.github.io/perf-book-cn/zh/">https://weedge.github.io/perf-book-cn/zh/</a></p>
 <p><strong>中文版PDF(推荐)</strong>: <a href="https://raw.githubusercontent.com/weedge/perf-book-cn/main/perf-book-cn.pdf">https://raw.githubusercontent.com/weedge/perf-book-cn/main/perf-book-cn.pdf</a></p>
     </div>
     <div class="read-more">
@@ -605,46 +653,6 @@
 </article>
 
   
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/llm/a-very-gentle-introduction-to-large-language-models-without-the-hype/">译：大型语言模型入门介绍</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-12-04" class="post-time">
-        2023-12-04
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/llm/a-very-gentle-introduction-to-large-language-models-without-the-hype/transformers.svg" alt="原始的 Transformer 模型结构"></p>
-<h2 id="简介">简介</h2>
-<p>本文旨在让没有计算机科学背景的人深入了解 ChatGPT 和类似的 AI 系统（GPT-3、GPT-4、Bing Chat、Bard 等）的工作原理。ChatGPT 是一个聊天机器人——一种构建的对话式人工智能——但建立在<em>大型语言模型</em>之上。我们将把它们全部分解。在此过程中，我们将讨论它们背后的核心概念。本文不需要任何技术或数学背景。我们将大量使用隐喻来说明这些概念。我们将讨论为什么核心概念以它们的方式工作，以及我们可以期望或不期望像 ChatGPT 这样的大型语言模型做什么。</p>
-<p>这就是我们要做的事情。我们将温和地介绍一些与大型语言模型和 ChatGPT 相关的术语，不使用任何行话。如果我必须使用行话，我会不使用行话来分解它。我们将从“什么是人工智能”开始，然后逐步提高。我会尽可能地使用一些反复出现的隐喻。我将讨论这些技术的影响，即我们应该期望它们做什么或不应该期望它们做什么。let&rsquo;s go~!</p>
-<p>注：主要是结合论文「<a href="https://arxiv.org/pdf/1706.03762.pdf">Attention Is All You Need</a>」理解Transformer。<a href="https://www.youtube.com/watch?v=nzqlFIcCSWQ">Transformer论文逐段精读</a></p>
-<p>附：<a href="https://github.com/weedge/doraemon-nb/blob/main/transformer.ipynb">Transformer学习笔记</a> | <a href="https://github.com/weedge/doraemon-nb/blob/main/AnnotatedTransformer.ipynb">Annotated Transformer</a></p>
-<p><a href="https://www.youtube.com/watch?v=zjkBMFhNj_g"><strong>Intro to Large Language Models</strong></a></p>
-    </div>
-    <div class="read-more">
-      <a href="/post/llm/a-very-gentle-introduction-to-large-language-models-without-the-hype/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
 </section>
 
 
@@ -708,6 +716,10 @@
       
       <li >
         <a href="/page/10/">10</a>
+      </li>
+      
+      <li >
+        <a href="/page/11/">11</a>
       </li>
       
     </ul>

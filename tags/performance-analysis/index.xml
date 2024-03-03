@@ -32,10 +32,10 @@
 &lt;ul&gt;
 &lt;li&gt;授之以鱼不如授之以渔, 使用AI赋能。&lt;/li&gt;
 &lt;li&gt;性能优化分析数据可以借助『chatGPT』分析。&lt;/li&gt;
-&lt;li&gt;『chatGPT』和『moonshot(kimi)』 翻译效果差不多(相同的prompt,调用openai接口知识蒸馏?)，但是当问文中的规划练习和代码练习时，『moonshot(kimi)』不能理解问题，不过长文本上传根据章节翻译和归纳总结不错，毕竟不用翻墙就可以使用。&lt;/li&gt;
+&lt;li&gt;『chatGPT』和『moonshot(kimi)』 翻译效果差不多(相同的prompt)，但是当问文中的规划练习和代码练习时，『moonshot(kimi)』不能理解问题，不过长文本上传根据章节翻译和归纳总结不错，毕竟不用翻墙就可以使用。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;&lt;strong&gt;在线阅读地址&lt;/strong&gt;: &lt;a href=&#34;&#34;&gt;https://weedge.github.io/perf-book-cn/zh/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;在线阅读地址&lt;/strong&gt;: &lt;a href=&#34;https://weedge.github.io/perf-book-cn/zh/&#34;&gt;https://weedge.github.io/perf-book-cn/zh/&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;中文版PDF(推荐)&lt;/strong&gt;: &lt;a href=&#34;https://raw.githubusercontent.com/weedge/perf-book-cn/main/perf-book-cn.pdf&#34;&gt;https://raw.githubusercontent.com/weedge/perf-book-cn/main/perf-book-cn.pdf&lt;/a&gt;&lt;/p&gt;</description>
     </item>
     

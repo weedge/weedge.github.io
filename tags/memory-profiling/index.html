@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>时间飘过</title>
+  <title>memory profiling · 时间飘过</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -34,8 +34,8 @@
 <meta name="generator" content="Hugo 0.91.0" />
 
 
-<link rel="canonical" href="https://weedge.github.io/" />
-<link href="/index.xml" rel="alternate" type="application/rss+xml" title="时间飘过" />
+<link rel="canonical" href="https://weedge.github.io/tags/memory-profiling/" />
+<link href="/tags/memory-profiling/index.xml" rel="alternate" type="application/rss+xml" title="时间飘过" />
 
 
 
@@ -60,14 +60,14 @@
 <link rel="stylesheet" href="/css/copy-to-clipboard.css">
 
 
-<meta property="og:title" content="时间飘过" />
+<meta property="og:title" content="memory profiling" />
 <meta property="og:description" content="记录工作和生活" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://weedge.github.io/" />
+<meta property="og:url" content="https://weedge.github.io/tags/memory-profiling/" />
 
-<meta itemprop="name" content="时间飘过">
+<meta itemprop="name" content="memory profiling">
 <meta itemprop="description" content="记录工作和生活"><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="时间飘过"/>
+<meta name="twitter:title" content="memory profiling"/>
 <meta name="twitter:description" content="记录工作和生活"/>
 
 <!--[if lte IE 9]>
@@ -331,294 +331,27 @@
       <div class="content-wrapper">
         <div id="content" class="content container">
           
-<section id="posts" class="posts">
-  
+
+<section id="archive" class="archive">
   
     
-  
-  
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/notions/go-tips/go-tips-05-strings/">Go tips-笔记: string 36-41 mistakes</a>
-    </h1>
+      <div class="archive-title tag">
+        <h2 class="archive-name">标签： memory profiling</h2>
+      </div>
     
-    <div class="post-meta">
-      <time datetime="2023-02-14" class="post-time">
-        2023-02-14
+  
+
+  
+    <div class="archive-post">
+      <time datetime="2024-03-03" class="archive-post-time">
+        2024-03-03
       </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
-          
-        </div>
-      
-      
-      
+      <span class="archive-post-title">
+        <a href="/post/cpu/memory_profiling/" class="archive-post-link">
+          译：内存分析
+        </a>
+      </span>
     </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h2 id="笔记">笔记</h2>
-<p>在 Go 中，string是一种不可变的数据结构，包含以下内容：</p>
-<ul>
-<li>指向不可变字节序列的指针，指向一个byte类型的数组</li>
-<li>此序列中的总字节数</li>
-</ul>
-<p>string在Go中的内部结构是<code>reflect.StringHeader</code>位于<code>reflect/value.go</code></p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// StringHeader is the runtime representation of a string.
-</span><span class="c1">// It cannot be used safely or portably and its representation may
-</span><span class="c1">// change in a later release.
-</span><span class="c1">// Moreover, the Data field is not sufficient to guarantee the data
-</span><span class="c1">// it references will not be garbage collected, so programs must keep
-</span><span class="c1">// a separate, correctly typed pointer to the underlying data.
-</span><span class="c1"></span><span class="kd">type</span> <span class="nx">StringHeader</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">Data</span> <span class="kt">uintptr</span>
-	<span class="nx">Len</span>  <span class="kt">int</span>
-<span class="p">}</span>
-<span class="c1">//uintptr  an unsigned integer large enough to store the uninterpreted bits of a pointer value
-</span></code></pre></div>
-    </div>
-    <div class="read-more">
-      <a href="/post/notions/go-tips/go-tips-05-strings/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/notions/go-tips/go-tips-04-control-structures/">Go tips-笔记: 控制语句 30-35 mistakes</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-02-14" class="post-time">
-        2023-02-14
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      笔记 30.忽略了元素在 for range循环中被复制 (重要) 需要注意，range循环中的值元素是一个复制的副本。因此，如果值是需要改变结构，只会更
-    </div>
-    <div class="read-more">
-      <a href="/post/notions/go-tips/go-tips-04-control-structures/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/notions/go-tips/go-tips-03-data-types/">Go tips-笔记: 数据类型 17-29 mistakes</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-02-13" class="post-time">
-        2023-02-13
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      笔记 17.与八进制文字混淆 Go 可以处理二进制、十六进制、虚数和八进制数。八进制数字以 0 开头。但是，为了提高可读性并避免未来代码阅读器可能犯的错
-    </div>
-    <div class="read-more">
-      <a href="/post/notions/go-tips/go-tips-03-data-types/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/notions/go-tips/go-tips-02-code-project-organization/">Go tips-笔记: 代码和项目组织 1-16 mistakes</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-02-13" class="post-time">
-        2023-02-13
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          <a href="https://weedge.github.io/categories/golang/"> Golang </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h2 id="引言">引言</h2>
-<p>从错误中学习效率更高，而且从错误失败的场景下学习，往往比直接交代正确性的理论知识，没有上下文的结果去 记忆巩固知识，在错误失败场景下往往印象更深刻；可以帮助更好地避免错误并做出更明智、更有意识的决定，因为现在了解了错误背后的基本原理，有种该死的，恍然大悟的感觉，拨开雨雾见月明；</p>
-<p>涵盖了可能导致各种软件错误的案例，包括数据竞争、泄漏、逻辑错误和其他缺陷。虽然准确的测试应该是尽早发现此类错误的一种方式，但有时可能会因为时间限制或复杂性等不同因素而错过案例。因此，使用Golang开发，确保避免常见错误至关重要。</p>
-<p>有些坑可能曾经踩过，通过这些mistakes产生共鸣，加深印象，同时可以继续追加一些新的坑来填充,比如系统性能调优，包括IO,  网络，数据编解码压缩，分布式系统，业务系统组织架构，逐步学习实践试错过程。学习笔记开个头。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/notions/go-tips/go-tips-02-code-project-organization/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/zb-gift/">设计-直播间赠送礼物功能</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2022-11-21" class="post-time">
-        2022-11-21
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=1933940116&auto=1&height=66"></iframe>
-
-
-
-<h2 id="背景">背景</h2>
-<p>直播线上互动，已成为当下生活的一部分，特别是受疫情影响，成为互联网的主要流量入口；研究了下各个平台直播间送礼物的功能，发现大同小异，在礼物分组，一些定制化的礼物有区分，整体交互流程大致相同，主要是直播间主播上播，用户通过礼物打赏给主播们(一个直播间可能有多名主播在互动)，礼物是通过虚拟币(**币) 换算，早期互联网用户线上互动礼物，玩家最多的应该是QQ币了，只不过以前的打赏赠送场景是在web2.0刚开始的时候，交互的大多是文字和图片，相关产品场景，虚拟空间(个人空间，博客，种菜等娱乐互动场景)；随着底层网络基建的发展，4G之后出现了大量的视频网站，用户可以录一些视频内容来互动；到后来音视频流媒体的发展，相关的在线直播间开始涌现，用户之间享受一波直播红利带来的互动，当然影响相对于前面的形式更加实时和直接；现在的5G和未来6G，以及物联网都会给直播形式带来新的互动场景,比如：虚拟会场，人机互动；其中早期培养起来的打赏送礼行为功能经常用于有主播的娱乐互动直播中，也是增值盈利的一部分；</p>
-<p>tips: 除了送礼功能，根据不同直播场景，还有语音视频连麦，电商带货商品，没有主播，节目直播/转播，会议直播，自习室，基本的点赞，计数，聊天基础服务功能；还有些抽奖功能，答题功能(教育类直播居多)，投票，红包这些功能服务可在开播时设置，是否启用；有用户基础的流量平台可能还会以竞价排名的方式推荐一波；这些功能可以作为一个可管理的插件，通过组合的方式应用于直播中，方便管理，后续可以添加新功能满足某类型直播场景。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/zb-gift/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/let-ml-go/">让ML跑起来</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2022-11-08" class="post-time">
-        2022-11-08
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h3 id="介绍">介绍</h3>
-<p>上文提到通过用户的行为数据存放在S3中，这些数据包括结构化和非结构化数据，怎么让这些数据变得有价值呢？一种是人为进行数据挖掘，对相关指标转化率进行评估；还有一种是通过这些数据来训练模型，然后将预测模型用于生产环境中进行A/B测试，选出适合的模型，这个模型需要不断更新迭代，并且自动化半自动化运行起来；</p>
-<p><img src="https://docs.aws.amazon.com/zh_cn/sagemaker/latest/dg/images/ml-concepts-10.png" alt="img"></p>
-    </div>
-    <div class="read-more">
-      <a href="/post/let-ml-go/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/user-behavior-analytics-solution/">用户行为分析方案设计</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2022-11-02" class="post-time">
-        2022-11-02
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h2 id="背景">背景</h2>
-<p>用户在手机和pc端使用客户业务产品，比如浏览网页，购买商品，查看文档，观看视频，直播，IOT场景；会产生大量的用户行为数据，主要包括：</p>
-<ol>
-<li>非结构化数据：日志(前端事件埋点日志，服务端处理事件日志)，还有些非结构化的图片，音视频数据等等，主要存放在文件存储系统中；</li>
-<li>结构化和半结构化数据： 用户操作产品写入的结构化数据存放于数据库表中，将文档型半结构化的数据放入文档数据库中；</li>
-</ol>
-<p>需要分析用户的行为数据，进行决策；分为实时流式处理和离线批处理：</p>
-<ol>
-<li>实时流处理，主要用于实时展现客户端看板，后台BI实时分析，实时风控/推荐，异常报警等场景；</li>
-<li>离线批处理，分析用户历史数据，进行推荐算法等机器学习算法模型训练使用，数据仓库中根据不同维度对数据过滤聚合，进行上卷下钻分析，比如计算DAU,WAU,MAU，转化率(购买率，注册率)分析等，通常对数据建设投入多的话， 会把用户产生的结构化非结构化的数据都存下，放在一个大的池子里待使用时进行分析，即所谓的数据湖，围湖而建挖掘数据价值；而数仓相对精细化的分析，前置建模建表分析；</li>
-</ol>
-<p>对此进行方案分析，本文将介绍一种实时离线处理分析用户行为数据方案，即能帮助企业低成本地使用海量数据，又能更快速地响应业务需求，同时借助亚马逊云科技的托管服务，能够快速实施和轻松运维。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/user-behavior-analytics-solution/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
   
 </section>
 
@@ -639,58 +372,6 @@
 
   
   
-
-  
-  
-  <nav class="pagination">
-    <ul>
-      
-      <li >
-        <a href="/">1</a>
-      </li>
-      
-      <li >
-        <a href="/page/2/">2</a>
-      </li>
-      
-      <li >
-        <a href="/page/3/">3</a>
-      </li>
-      
-      <li >
-        <a href="/page/4/">4</a>
-      </li>
-      
-      <li >
-        <a href="/page/5/">5</a>
-      </li>
-      
-      <li  class="active" >
-        <a href="/page/6/">6</a>
-      </li>
-      
-      <li >
-        <a href="/page/7/">7</a>
-      </li>
-      
-      <li >
-        <a href="/page/8/">8</a>
-      </li>
-      
-      <li >
-        <a href="/page/9/">9</a>
-      </li>
-      
-      <li >
-        <a href="/page/10/">10</a>
-      </li>
-      
-      <li >
-        <a href="/page/11/">11</a>
-      </li>
-      
-    </ul>
-  </nav>
 
   
   
