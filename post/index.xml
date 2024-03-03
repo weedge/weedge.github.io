@@ -26,7 +26,8 @@
 &lt;li&gt;栈：应用程序中帧栈使用的内存。应用程序中的每个线程都有自己的栈内存空间。通常，栈的大小只有几MB，如果超出限制，应用程序将崩溃。总的栈内存消耗与系统中运行的线程数量成正比。&lt;/li&gt;
 &lt;li&gt;代码：用于存储应用程序及其库的代码（指令）的内存。在大多数情况下，它对内存消耗的贡献不大，但也有例外。例如，Clang C++编译器和Chrome浏览器拥有庞大的代码库，它们的二进制文件中有数十MB的代码段。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;接下来，我们将介绍&lt;em&gt;内存使用&lt;/em&gt;和&lt;em&gt;内存足迹&lt;/em&gt;这两个术语，并看看如何对它们进行分析。&lt;/p&gt;</description>
+&lt;p&gt;接下来，我们将介绍&lt;em&gt;内存使用(memory usage)&lt;em&gt;和&lt;/em&gt;内存足迹(memory footprint)&lt;em&gt;或者翻译成&lt;/em&gt;内存占用&lt;/em&gt;这两个术语，并看看如何对它们进行分析。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;注：&lt;/strong&gt; 主要是通过工具分析内存使用情况，尽量利用局部性原理：时间局部性和空间局部性，提高性能。&lt;/p&gt;</description>
     </item>
     
     <item>
