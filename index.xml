@@ -358,7 +358,21 @@ PERIOD    LOAD  STORE  CODE  NEW   |   PERIOD    LOAD  STORE  CODE  NEW
 &lt;li&gt;尽量做扩展阅读，比如作者的博客文章，相关引用(比如：&lt;a href=&#34;https://github.com/weedge/perf-book-cn/tree/main/zh/chapters/References.md#fogOptimizeCpp&#34;&gt;@fogOptimizeCpp&lt;/a&gt;)&lt;/li&gt;
 &lt;li&gt;对于cpu性能优化，有些已在编译器层面进行了优化，比如机器代码布局&lt;/li&gt;
 &lt;li&gt;关注&lt;a href=&#34;https://github.com/weedge/perf-book-cn/tree/main/zh/chapters/12-Other-Tuning-Areas/12-4_Low-Latency-Tuning-Techniques_cn.md&#34;&gt;低延迟系统的性能优化&lt;/a&gt; (比如HFT系统中的这个快速演讲：&lt;a href=&#34;https://www.youtube.com/watch?v=XzRxikGgaHI&#34;&gt;CppCon 2018: Jonathan Keinan “Cache Warming: Warm Up The Code”&lt;/a&gt;; 这些关键路径代码值钱)&lt;/li&gt;
+&lt;li&gt;优化多线程应用:
+&lt;ol&gt;
+&lt;li&gt;借助可视化分析工具进行分析定位性能瓶颈(同步事件，锁，上下文切换)，书中举了一些case, Intel VTune Profiler 这个工具对于作者来说经常使用， 类似GPU性能分析工具 &lt;a href=&#34;https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html&#34;&gt;nsight-compute&lt;/a&gt; (通过&lt;a href=&#34;https://docs.nvidia.com/nsight-systems/UserGuide/index.html&#34;&gt;nsight-systems&lt;/a&gt;分析系统整体性能耗时)；&lt;/li&gt;
+&lt;li&gt;通过eBPF追踪内核中 futex 系统调用的执行（内核通过 futex 系统调用支持线程同步原语 - 互斥锁、信号量、条件变量等），从涉及的线程中收集有用的元数据&lt;/li&gt;
+&lt;li&gt;尽量避免真共享下的数据竞争问题，通过编译器集成的 sanitizers 工具来识别，比如Clang &lt;a href=&#34;https://clang.llvm.org/docs/ThreadSanitizer.html&#34;&gt;Thread sanitizer&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;避免伪共享。由于多核处理器cpu之间独立的L1/L2 cache，会出现cache line不一致的问题，为了解决这个问题，有相关协议模型，常用MESI协议，MESI 通过 这个网站模拟更直观的了解 &lt;a href=&#34;https://www.scss.tcd.ie/Jeremy.Jones/VivioJS/caches/MESIHelp.htm&#34;&gt;https://www.scss.tcd.ie/Jeremy.Jones/VivioJS/caches/MESIHelp.htm&lt;/a&gt; ；为了保证一个core上修改的cache line数据同步到其他core的cache line上，则需要MESI协议来保证，如果同一个cache line上有个两个变量sum1 和 sum2 之间虽然没有相互依赖逻辑，但是当修改sum1 或者sum2 时，需要同步同一块cache line的内容，导致 即使没有相互关系的变量在同一cache line中， 需要彼此共享同步，从而出现所说的伪共享 flase sharing。伪共享因为cache line的同步会带来一些cpu 时钟周期的性能损失。&lt;/li&gt;
+&lt;li&gt;深入了解并行编程： &lt;a href=&#34;https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/perfbook/perfbook.html&#34;&gt;Is Parallel Programming Hard, And, If So, What Can You Do About It?&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/blockquote&gt;
+&lt;hr&gt;
+&lt;blockquote&gt;
+&lt;p&gt;[!TIP]
+由于多核处理器cpu之间独立的L1/L2 cache，会出现cache line不一致的问题，为了解决这个问题，有相关协议模型，比如MESI协议来保证cache数据一致，同时由于CPU对「缓存一致性协议」进行的异步优化，对写和读分别引入了「store buffer」和「invalid queue」，很可能导致后面的指令查不到前面指令的执行结果（各个指令的执行顺序非代码执行顺序），这种现象很多时候被称作「CPU乱序执行」，为了解决乱序问题（也可以理解为可见性问题，修改完没有及时同步到其他的CPU），又引出了「内存屏障」的概念；内存屏障可以分为三种类型：写屏障，读屏障以及全能屏障（包含了读写屏障），屏障可以简单理解为：在操作数据的时候，往数据插入一条”特殊的指令”。只要遇到这条指令，那前面的操作都得「完成」。CPU当发现写屏障指令时，会把该指令「之前」存在于「store Buffer」所有写指令刷入高速缓存。就可以让CPU修改的数据马上暴露给其他CPU，达到「写操作」可见性的效果。读屏障也是类似的：CPU当发现读屏障的指令时，会把该指令「之前」存在于「invalid queue」所有的指令都处理掉。通过这种方式就可以确保当前CPU的缓存状态是准确的，达到「读操作」一定是读取最新的效果。由于不同CPU架构的缓存体系不一样、缓存一致性协议不一样、重排序的策略不一样、所提供的内存屏障指令也有差异，所以一些语言c++/java/go/rust 都有实现自己的内存模型, 比如 golang大牛Russ Cox写的内存模型系列文章 &lt;strong&gt;Memory Models&lt;/strong&gt;: &lt;a href=&#34;https://research.swtch.com/mm&#34;&gt;https://research.swtch.com/mm&lt;/a&gt; 值得深入了解&lt;/p&gt;
 &lt;/blockquote&gt;</description>
       
     </item>
