@@ -1,0 +1,552 @@
+---
+author: "weedge"
+title: "译：Manas：高性能定制搜索系统"
+date: 2023-09-14T10:26:23+08:00
+tags: [
+	"oneday",
+]
+categories: [
+	"技术",
+]
+
+---
+
+# 章节一 Manas：高性能定制搜索系统
+
+Pinterest 搜索每月处理数十亿次查询，每天返回近 40 亿个 Pin 图。去年，每月移动文本搜索量增长了 40%，视觉搜索量增长了近 60%。最近，通过在主页上推出 [Search 和 Lens](https://blog.pinterest.com/en/search-and-lens-move-front-and-center)，使它们在的应用程序中更加突出和集中，因为现在近 85% 的搜索都发生在移动设备上。
+
+为了继续扩展搜索，系统需要为每个 Pinner 在超过 1000 亿个 Pin 图中找到最相关的结果。此前，搜索系统是建立在 Lucene 之上并用 Java 编写的。但随着业务发展和引入新的发现功能，遗留系统面临着挑战，无法再支持。这就是构建 Manas 的原因，这是一个用 C++ 编写的定制全栈搜索系统，可以在提高容量的同时显着减少延迟。在这篇文章中，将概述 Manas 的架构，并了解 Pinterest 搜索的下一步发展。
+
+<!--more-->
+
+## **挑战**
+
+随着 Pinterest 上的搜索使用量快速增长，基于 [Lucene](https://github.com/apache/lucene) 的解决方案日益面临挑战，包括：
+
+- 查询量和索引大小增长如此之快，以至于需要减少服务延迟并提高容量。
+- 除了搜索之外，该系统还为 Pinterest 内的多个用例提供支持，包括 Pinner 搜索、图板搜索、相关 Pin 图、主页推送推荐等。需要灵活地定制搜索过程，这在以前是不可能的。
+- 希望将该系统应用于复杂而强大的排名模型，但 Lucene 索引格式和评分器界面不适合这些模型。
+- 还希望个性化搜索结果，这是标准 Lucene 系统无法支持的。
+- 构建 Manas 来解决这些挑战。Manas被设计为一个具有高性能、高可用性和高可扩展性的通用搜索框架。与旧系统相比，搜索后端延迟减少了一半，容量增加了30%。
+
+## 概述
+
+Manas 是一个全栈搜索索引和服务系统。服务系统由几个阶段组成：查询理解、候选检索、轻量级评分、全面评分和混合。
+
+## 索引
+
+### **索引格式**
+
+Manas索引包括倒排索引和正向索引。
+
+与普通倒排索引相同，Manas倒排索引存储term到帖子列表的映射。每个发布都会记录内部文档 ID 和有效负载。为了优化索引大小和服务延迟，实现了密集倒排列表和分割倒排列表，这是根据所有文档中关键term的分布对倒排列表进行编码的两种方法。倒排索引用于候选生成和轻量级评分。
+
+另一方面，Manas的正向索引存储了从内部文档ID到实际文档的映射。为了优化数据局部性，前向索引支持列族，类似于HFile。前向指数用于全面评分。
+
+### **Manas doc**
+
+将Manas doc定义为不同应用程序的统一模式，用于描述他们想要为每个文档索引哪些数据。在Manas文档中，可以指定匹配的term进行检索，并且可以添加文档的属性以进行过滤和轻量级评分。例如，系统在按语言属性过滤结果后只能返回英文文档。
+
+### **索引构建器**
+
+索引构建器采用一批 Manas 文档并构建索引。定义了统一的 Manas 文档架构，以便可以为不同的用例共享索引构建器。
+
+### **索引管道**
+
+![img](https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/1.png)
+
+上图说明了索引管道。
+
+1. 不同的应用程序为其语料库生成 Manas 文档。
+2. Manas 文档被划分为多个组。
+3. 索引构建器将分区中的所有 Manas 文档转换为索引段。每个索引段都是完整索引的一小部分。
+
+## 服务
+
+下图展示了Manas的搜索周期。
+
+![img](https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/2.png)
+
+当查询进入系统时会发生以下情况：
+
+1. 查询理解服务处理原始查询并生成执行计划。
+2. 语料库由服务树提供。Blender 将请求扇出到不同语料库的根，收集这些不同的结果并将它们混合。将这些混合结果存储在缓存中以进行分页。
+3. Root 是一种分散-聚集服务。它聚合叶子的结果并对它们重新排序。
+4. Leaf 首先加载由索引管道构建的索引段。它检索候选人并进行轻量级和全面评分。
+
+### 叶子服务
+
+Manas Leaf 是可扩展的，允许定制多个不同的应用程序。这是通过在索引中封装特定于应用程序的信息来实现的。可以embedding特定于应用程序的评分逻辑，以便 Manas 在对文档评分时仅执行应用程序执行的任务。
+
+服务架构设计为多层，层与层之间定义良好的接口，使得每一层都是可扩展的。Leaf节点的架构如下：
+
+![img](https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/3.png)
+
+如上所述，存储层负责加载索引并提供抽象，允许在给定标识符的情况下获取连续的大量二进制数据。这一层允许轻松地改变索引的底层存储。在存储层之上，索引层将二进制数据解码为索引，并提供读取索引的接口。倒排列表层使能够灵活地实现倒排索引。算子层定义了用于实现查询算子的接口，模型运行器定义了用于全面评分的模型接口。最后，API 层指定叶节点评估的查询格式。
+
+## 候选检索和轻量级评分
+
+### WAND
+
+除了支持普通的“AND”、“OR”和“NOT”操作之外，还在 Leaf 中构建了“Weak And”支持（[paper](https://www.semanticscholar.org/paper/Efficient-query-evaluation-using-a-two-level-Broder-Carmel/89d27fc4c5bf15762d001a39f0a74f84c89d3681))。这使能够快速跳过posting list。
+
+### Squery
+
+使用Squery 以树的形式表示结构化查询。它描述了 Leaf 如何从索引中检索候选者并对其进行轻量级评分。Leaf 理解 Squery 并在索引上执行它。
+
+![img](https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/4.png)
+
+上图是 Squery 要求 Leaf 检索纯英文文档并匹配term“cute”和“cat”或“kitten”的示例。如果文档的点击率较高，则得分较高。
+
+### 满分
+
+不同的应用程序使用不同的算法来计算最终分数。为了使 Manas 具有通用性，引入了前向索引，它是一个二进制 blob，可以是任何东西。实际上，前向索引是一个序列化的 Thrift 对象。Manas 不会解释前向索引，而是将其注入到 DSL 模型中并执行 DSL 模型来计算分数。DSL 是 Pinterest 使用的一种领域特定语言，用于定制从前向索引中提取特征，并选择机器学习模型来根据提取的特征计算分数。不同的应用程序可以创建不同的 DSL 模型并指定应注入哪个前向索引。
+
+### SSD
+
+具有相当大的前向索引以支持复杂的评分算法，总索引大小显着增加。为了支持未来更复杂的评分，将向索引添加更多信号。将所有索引加载到内存中是不可扩展的，因此 Manas 仅加载用于候选检索和轻量级评分的倒排索引，并从 SSD 和本地缓存提供正向索引。
+
+### 索引交换
+
+定期执行索引管道来构建索引。一旦新索引准备就绪，就会从 AWS 分配新实例来创建集群。将新索引部署到新创建的集群。然后 Blender 会将流量切换到新集群，旧集群将被弃用。
+
+
+
+# 章节二 Manas Realtime — 使更改能够在眨眼间被搜索到
+
+Manas 是 Pinterest 的内部搜索引擎，是一个通用信息检索平台。正如在[上一篇文章](https://medium.com/pinterest-engineering/manas-a-high-performing-customized-search-system-cf189f6ca40f)中讨论的那样，Manas 被设计为具有高性能、可用性和可扩展性的搜索框架。如今，Manas 为大多数 Pinterest 产品提供搜索功能，包括广告、搜索、Homefeed、相关 Pin 图、视觉效果和购物。
+
+搜索系统的关键指标之一是索引延迟，即更新搜索索引以反映更改所需的时间。随着不断增强系统功能并引入新的用例，即时索引新文档的能力变得更加重要。Manas已经支持增量索引，能够提供数十分钟左右的索引延迟。不幸的是，这无法满足不断增长的广告和关注源的业务需求。决定在 Manas 中构建一个新模块，以进一步将索引延迟减少到几分之一秒。
+
+在这篇博文中，描述了系统的架构及其主要挑战，并提供了有关所做的权衡的详细信息。
+
+## 挑战
+
+新要求伴随着新挑战。以下是面临的几个主要挑战。
+
+### 索引延迟
+
+小批量方法，又称近实时方法，是[Lucene](https://lucene.apache.org/)、[Vespa](https://vespa.ai/)等开源项目最流行的选择。通过这种方法，新编写的文档在调用索引提交之前不可搜索。因此，您需要在索引延迟和吞吐量之间进行权衡。不幸的是，无法利用这种方法将索引延迟减少到秒级。
+
+### 索引刷新能力
+
+实时服务的缺点之一是缺乏索引刷新敏捷性。对于批处理管道，重新运行索引作业以立即获取所有架构更改非常简单。然而，当涉及到实时服务管道时，高效的索引刷新支持变得复杂。
+
+### 针对不断变化的数据进行扩展
+
+为了避免过度配置，采用自动缩放来根据实际查询负载调整副本。如果索引是不可变的，则创建新副本相对容易：您只需将索引复制到新节点即可。所有的困难都在于处理不断变化的索引：如何确保所有副本最终都有相同的索引？
+
+### 错误恢复
+
+Manas 是一项数据密集型服务，其中每个主机可以提供高达数百 GB 的索引。Manas也是一个有状态的系统。错误的二进制文件可能会引入回滚无法修复的数据问题。需要构建一个支持容错和错误恢复的系统，以便可以从二进制错误和数据损坏中恢复。
+
+### 从静态转向实时
+
+![img](https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/5.png)
+
+简单看一下传统静态服务和实时服务的区别。如上图所示，实时服务的主要工作是将索引管道从离线转移到在线。
+
+对于静态服务，索引是通过批处理工作流程离线生成的，然后将它们复制到叶子以进行在线服务。对于批处理工作流程，由于框架开销较高，几乎不可能在几分之一秒内构建可服务的索引。对于实时服务，所有写入都在服务内动态处理，而不是使用离线工作流程。此外，实时索引管道以生成与静态索引管道相同的索引格式的方式处理写入，从而允许重用整个索引读取逻辑。考虑到这一点，让继续了解实时服务的工作原理。
+
+### 索引接口
+
+没有直接使用[RPC](https://en.wikipedia.org/wiki/Remote_procedure_call)，而是使用[**Kafka作为的高写入吞吐量流。**](https://kafka.apache.org/)叶子服务器不断拉动突变来构建增量索引。事实证明，这个决定在多个方面极大地简化了的系统：
+
+- 数据复制和写入失败由 Kafka 负责。
+- 有了回溯能力，Kafka队列也充当了[WAL](https://en.wikipedia.org/wiki/Write-ahead_logging)角色。
+- 每个分区都有严格的顺序保证，系统可以盲目应用删除，而无需担心正确性。
+
+## 架构概述
+
+由于服务逻辑可以通过共享索引格式重用，因此将重点关注索引数据流。
+
+本质上，实时Manas leaf是一个[LSM](https://en.wikipedia.org/wiki/Log-structured_merge-tree)引擎，它将随机IO写入转换为顺序IO，并为读放大和写放大应用程序提供高效服务。如下所示，整个索引过程由三个关键步骤组成。来一一讨论。
+
+![img](https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/6.png)
+
+### 实时分段构建(Realtime Segment Build)
+
+除了现有的静态段之外，还引入了实时段。如上图所示，系统中的实时段有两种类型：活动实时段和密封实时段。（**注**: 这个类似leveldb/rocksdb LSMtree, 同样是append-only write顺序IO , 不同的是kafka充当了WAL, 内部数据结构变成了正排和倒排索引结构，分段存储）
+
+- 活动实时段是唯一的可变组件，用于累积从 Kafka 拉取的突变（添加/删除）。值得指出的是，将文档添加到实时段后，在文档级提交后立即可以搜索它。
+- 一旦活动实时段达到可配置的阈值，它就会被密封(**sealed**)，变得不可变，并被放入刷新队列中。同时，创建一个新的活动实时片段以继续累积突变。
+
+在服务重启的情况下，可以通过重放来自 Kafka 的消息来重建实时片段。
+
+### 索引落盘(index flush)
+
+索引落盘是将内存中数据从实时段持久保存到紧凑索引文件中的过程。当实时段被密封时，flush落盘会自动触发，也可以使用调试命令手动触发flush落盘。
+
+索引落盘是一个有益的操作，它可以保证数据持久性，这样就不需要在重启期间从头开始重建内存中的段。此外，flush落盘还可以减少段的内存占用，并通过紧凑的不可变索引提高服务效率。
+
+### 索引压缩(Index Compaction)
+
+随着时间的推移，多个生成的小段会损害服务性能。为了克服这个问题，引入了后台压缩线程来将小段合并为更大的段。由于删除操作只是将文档标记为已删除，而不是物理删除它们，因此压缩线程还会保留这些已删除/过期的文档。
+
+在每个刷新和压缩操作之后，将生成一个由所有静态段组成的新索引清单。用作检查点的 Kafka 偏移量也会添加到每个清单中。根据检查点，服务知道重启后在哪里消费消息。
+
+## 详细设计
+
+在本节中，将更详细地介绍几个关键领域。让从最有趣的部分开始，即并发模型。
+
+### 并发模型
+
+如上所述，实时段是需要同时处理读取和写入的唯一可变组件。不幸的是，开源项目采用的近实时方法无法满足的业务需求。相反，选择了一种不同的方法，使能够在添加到索引后立即提交文档，而无需等待索引刷新。出于性能考虑，针对适合用途的数据结构采用了[无锁技术。](https://en.wikipedia.org/wiki/Non-blocking_algorithm)现在来开箱吧！
+
+#### **实时片段(Realtime Segment)**
+
+每个实时段由一个倒排索引和一个正向索引组成。倒排索引在逻辑上是term到posting list（用于检索的文档 ID 列表）的映射。同时，前向索引存储用于完整评分和数据获取的任意二进制 blob。只关注实时倒排索引部分，与正向索引相比，实时倒排索引更有趣且更具挑战性。
+
+在较高的层面上，实时段和静态段之间的主要区别是可变性。对于实时倒排索引，从term到倒排列表的映射需要是并发的。这得到了像 [**folly**](https://github.com/facebook/folly) 的并发hashmap这样的开源的良好支持。更关心的是posting list的内部表示，它可以有效地支持的并发模型。
+
+#### **仅附加向量(Append-only Vector)**
+
+通常single-writer、multiple-readers模型更高效、更容易推理。选择了与[HDFS](https://hadoop.apache.org/docs/r1.2.1/hdfs_design.html)类似的数据模型(注:CF)，具有仅附加无锁数据结构。了解reader和writer如何交互如下：
+
+![img](https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/7.png)
+
+- Writer将文档 ID 附加到向量中，然后提交大小以使其可供读者访问
+- Reader在访问数据之前,获取快照(snapshot)直至提交大小
+
+![img](https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/8.png)
+
+为了避免随着posting list的增长而产生内存复制开销，在内部将数据作为存储桶列表进行管理。当容量用完时，只需要添加一个新的存储桶，而无需触及旧的存储桶。另外，通常搜索引擎使用跳跃列表来加速跳跃操作。由于这种格式，可以很方便地支持单级跳表，这对于实时倒排索引来说已经足够了，因为它的大小通常很小。
+
+#### **文档原子性(Document Atomicity)**
+
+现在，通过仅附加向量，能够实现单个posting list的原子性。但是，文档可以包含term列表，最终可能会返回带有部分更新索引的意外文档。为了解决这个潜在问题，引入了文档级提交来保证文档原子性。在服务管道中，使用附加过滤器来确保仅返回已提交的文档。
+
+说到文档原子性，文档更新是这里值得一提的另一个场景。对于每个文档更新，特意将其转换为两个操作：添加新文档，然后从索引中删除旧文档。虽然每个操作符都是原子性的，但在一起不能保证原子性。考虑到在很短的时间窗口内返回旧版本或新版本都可以，但尽管如此，还是在服务管道中添加了重复数据删除逻辑，以便在两者都返回时过滤掉旧版本。
+
+#### **写入缩放(Writes Scaling)**
+
+自然而然出现的一个问题是，如果你的数据结构只支持单写多读并发模型，那么如果单个线程无法及时处理所有写操作怎么办？仅仅为了扩展写入吞吐量而盲目添加更多分片似乎不是一个好主意。这是一个合理的担忧，在设计中已经考虑到了这一点。
+
+![img](https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/9.png)
+
+用于数据结构的单写多读并发模型并不意味着不能使用多线程进行写操作。使用了term分片策略来支持多线程写入。如上图所示，对于给定的包含term列表的文档，每个term将始终映射到固定线程，以便所有为单写和多读定制的数据结构都可以直接重用，没有任何限制。(**注**：加快索引构建，map/reduce分而治之思考方式(分而治之算法的工作原理是将问题递归地分解为两个或多个相同或相关类型的子问题，直到这些问题变得简单到可以直接解决。然后将子问题的解决方案组合起来以给出原始问题的解决方案)，no block彼此独立可并发执行,可以结合硬件与操作系统异步io操作加速写入)
+
+### 索引刷新(Index Refresh)
+
+索引刷新能力是产品的一项关键功能，可以实现快速周转并提高开发速度。一般来说，可以使用两种方法来有效地刷新索引，分别是动态回填和从离线构建的索引恢复。
+
+#### **回填索引(Backfilling Index)**
+
+能够以合理的吞吐量回填文档。为了避免影响生产新鲜度(freshness)，需要一个单独的流来处理优先级较低的回填流量。因此，两个流中可能存在文档的两个版本，并且旧版本会覆盖新版本。为了克服这个问题，需要在实时索引管道中引入版本控制机制和冲突解决程序来决定哪个更新鲜。
+
+#### **从离线构建索引恢复(Reinstating from Offline Built Index)**
+
+有时，以给定速度回填完整数据集会非常耗时。支持的另一种更快的索引刷新方法是离线构建索引，然后通过离线构建的索引和 Kafka 流之间的同步机制从中恢复。()
+
+### 故障转移和自动缩放(Failover and Auto-scaling)
+
+有时，需要出于各种原因启动新实例，例如故障转移和自动扩展等。对于静态服务，可以很容易地使用从索引存储下载的不可变索引来启动新实例(**注**：这个类似rocksdb [bulkloading](https://github.com/facebook/rocksdb/wiki/Creating-and-Ingesting-SST-files#ingesting-sst-files) SSTable文件)。然而，对于索引不断变化的实时服务来说，它变得很复杂。如何确保新实例最终具有与其他实例相同的索引副本？
+
+![img](https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/10.png)
+
+决定使用基于领导者的复制，如上图所示。的流程如下所示：(**注**：这个和分布式存储系统中多副本replica同步操作一样，大多是通过一致性协议来保证，比如[raft](https://en.wikipedia.org/wiki/Raft_(algorithm))/[Paxos](https://en.wikipedia.org/wiki/Paxos_(computer_science)) 协议，如果follower落后，从快照中恢复数据，不同的是这里快照是放在支持S3协议云存储服务，使用kafka充当WAL从最新checkpoint开始恢复日志消息，同步完成，提供流量访问；这个看着流程容易，实现起来细节还是挺多的)
+
+1. 领导者定期dump新快照(snapshots)并将其上传到持久索引存储
+2. 新实例默认从索引存储下载最新快照
+3. 新实例根据快照索引中的检查点恢复消费来自 Kafka 的消息
+4. 新实例赶上后就开始提供流量
+
+设计中有一些要点值得指出：
+
+#### **领导人选举**
+
+Leader 的唯一职责是定期dump快照并上传索引。这意味着可以承受在短时间内（最多几个小时）没有领导者或有多个领导者的情况。因此，在选择领导者选举算法时具有一定的灵活性。为简单起见，选择使用集群维护作业来静态选择领导者，并定期检查是否有好的领导者。(**注**：因为这里场景是单写多读模式，只写leader,当leader failover时，业务可以接受一段时间检索不到最新的数据，这个不影响业务使用，但是没有了最新的召回数据)
+
+#### **快照上传**
+
+通常，新实例只是连接到领导者以下载最新的快照。在这种方法中，从新实例下载快照可能会使领导者过载，从而导致级联故障。相反，选择定期将快照上传到索引存储、交易空间和新鲜度以确保稳定性。此外，上传的快照对于错误恢复很有用，稍后将对此进行介绍。(**注**： 上传快照，主要是kafka中的数据有错误数据时，用于快速恢复(从历史快照中恢复正确的历史数据，然后从正确数据的checkpoint点开始从kafka中消费日志数据进行恢复，<u>跳过损坏的消息，使用修复好的新消息，fix操作</u>)，aws s3成本是很低的，常存放大量一段时间的冷日志数据)
+
+### 错误恢复
+
+如上所述，错误恢复是实时服务系统的另一个挑战。需要处理一些涉及数据损坏的特定场景。
+
+#### **输入数据损坏**
+
+使用 Kafka 作为输入写入流；不幸的是，这些消息是不可变的，因为生产者只能将消息附加到其中，但不能更改现有消息的内容。这意味着一旦数据损坏被引入 Kafka 消息中，它就是永久性的。借助上传的快照，能够将索引倒回到没有损坏的位置，跳过损坏的消息，然后使用修复后的新消息。
+
+#### **二进制错误导致数据损坏**
+
+尽管有一个成熟的静态集群索引验证管道，可以保证在换入新版本之前新索引和新二进制文件不会出现问题，但仍然可能会出现一些错误潜入生产环境。幸运的是，可以通过回滚二进制文件或索引来解决该问题。对于实时服务来说，回滚二进制文件无法回滚索引中的错误变得更加困难。使用的快照上传机制，能够回滚二进制文件以及回滚索引，然后重播来自 Kafka 的消息以修复索引中的错误。
+
+## 下一步是什么
+
+随着Manas接入的场景越来越多，需要不断提升系统的效率、扩展性和能力。的路线图中一些有趣的项目如下：
+
+- 共同托管静态和实时集群以简化的服务堆栈
+- 优化系统以支持大数据集
+- 构建基于通用embedding的检索来支持高级场景
+
+
+
+# 章节三 Manas HNSW Realtime：为基于embedding的实时检索提供支持
+
+在之前的[博文](https://medium.com/pinterest-engineering/manas-a-high-performing-customized-search-system-cf189f6ca40f)中，介绍了的内部搜索引擎 - Manas - 并分享了如何大规模提供基于term的搜索。自推出以来，Manas 已发展成为 Pinterest 的关键候选生成器之一，服务于许多超出其最初目的的用例。
+
+特别是，基于embedding的检索是 Pinterest 发现和推荐引擎的关键组成部分。Manas 传统上通过倒排索引上的局部敏感哈希 (LSH) 支持近似最近邻 (ANN) 搜索，倒排索引是基于term的搜索引擎的自然扩展。在发布新的最先进技术（例如分层可导航小世界图 (HNSW)[论文](https://arxiv.org/abs/1603.09320)，[开源库](https://github.com/nmslib/hnswlib)实现了metric space：L2(Euclidean Squared L2),IP(Inner product),Cosine(Cosine similarity)，一般用cosine，归一化处理；其中facebook [Faiss](https://github.com/facebookresearch/faiss)加入[量化处理(Additive-quantizers)](https://github.com/facebookresearch/faiss/wiki/Additive-quantizers))后，在 Manas 中构建了一个灵活的基于embedding的检索框架，这使能够轻松采用新的 ANN 技术。使用新框架将 HNSW 启动到批量索引集群（索引延迟从几分钟到几天不等），与 LSH 相比，可以节省大量服务成本并减少延迟。
+
+计划中的下一个里程碑是将 HNSW 启动到的实时流集群（秒级索引延迟）。实时、大规模地为 HNSW 提供服务并不是一项简单的任务，部分原因是正在开辟新的领域，而无法依赖任何开源实现。
+
+在这篇博客中，将分享为 HNSW 提供实时服务的历程——解决这个问题的方法、面临的挑战以及为生产系统所做的一些优化。
+
+## Manas Realtime
+
+该项目的本质是为 HNSW 构建实时组件并将其集成到[Manas Realtime](https://medium.com/pinterest-engineering/manas-realtime-enabling-changes-to-be-searchable-in-a-blink-of-an-eye-36acc3506843)中。为了更好地了解这些组件如何适应更大的情况，让简要了解一下 Manas Realtime 的高级架构。
+
+![img](https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/11.png)
+
+Manas Realtime本质上是一个[LSM](https://en.wikipedia.org/wiki/Log-structured_merge-tree)引擎，它将随机IO写入转换为顺序IO写入。写入不是公开写入端点，而是从 Kafka 摄取，这使能够简化系统并依赖 Kafka 作为 WAL。写入分为三种类型，以下是它们的处理方式：
+
+1. 新文档被写入内存中的实时段，最终被密封并刷新到磁盘上的静态段
+2. 使用内存中标记应用删除，并在服务期间过滤掉
+3. 更新是通过删除旧文档并添加新文档来完成的
+
+后台压缩过程有时会组合各种静态段，以减少因段过多而产生的服务开销。还依靠压缩过程通过从索引中删除文档来执行实际删除。
+
+从服务的角度来看，Manas Realtime 与 Manas Static 没有太大区别。对索引进行了抽象，以便存储层对整个检索过程是透明的。因此，随着 HNSW 已经为 Manas Static 启动，大多数服务组件已经存在。工作主要是与Manas Realtime 的LSM 索引组件集成。需要构建和优化两个核心组件，将在下面的部分中详细介绍：
+
+1. 实时 HNSW 图表
+2. HNSW 图压缩
+
+### 实时 HNSW 图表(Realtime HNSW Graph)
+
+实时段是系统中唯一可变的组件，因此该区域的优化对于确保良好的并发读写性能至关重要。
+
+HNSW 索引本质上是一个多层稀疏图。选择一个邻接列表来表示图，其中键是节点 id，值是邻居 id 列表。从基于锁的版本开始，每个节点都拥有一个锁，在更新邻居列表之前，该锁将由reader和writer持有。它很容易实现和推理。然而，由于锁争用，系统 CPU 使用率较高，别无选择，只能使用[无锁](https://en.wikipedia.org/wiki/Non-blocking_algorithm)技术。
+
+### 无锁实现(Lock-free Implementation)
+
+让来剖析一下如何以直观的方式处理写入。HNSW的思想源于著名的[跳表](https://en.wikipedia.org/wiki/Skip_list)结构。因此，HNSW 的无锁实现也类似于无锁跳表。一般来说，为了向图中添加新节点，每一层都涉及两个步骤，如下图所示。
+
+1. 在层内查找新节点的邻居并将新节点连接到选定的邻居
+2. 更新选定的邻居以连接到新节点。
+
+![img](https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/12.png)
+
+同样，在 HNSW 图中从基础层开始向上层添加新节点，以避免出现新节点被选为上层的进入点但下层实际上没有为其建立连接的情况，从而导致没有结果问题。
+
+对于删除，避免了将它们应用到图表中的成本和复杂性。相反，使用内存中的删除标记在图外处理它们，依靠过滤器在服务期间过滤掉已删除的节点。
+
+一些细节优化值得简单提及：
+
+- **单写多读**：为了简单起见，延续了使用单写多读并发模式的传统，从而使代码整洁且易于推理。
+- **预分配图**：由于实时图通常较小且大小固定，因此为图预分配内存以避免调整大小带来的复杂性。
+- **定制邻居选择算法**：使用标准邻居选择算法，更新邻居列表有三种可能：添加一个新邻居、减少邻居和替换一个邻居。当涉及到无锁实现时，通过回填最近邻居来消除“减少邻居”场景实际上大大简化了逻辑，能够使用原子操作。
+- **“原子”变量**：即使使用释放-获取顺序，c++ std::atomic 变量实际上也是昂贵的。相反，使用对齐内存来保证原子性，并使用全局原子变量作为内存屏障，使能够仅一次显式提交一个节点的所有更改。<u>一些部分更新仍然有可能泄漏到读取线程可见，从而在短时间内损害全局连接。由于观察没有明显的召回率下降，将其视为性能和质量之间的合理权衡</u>。
+
+## HNSW 图压缩(HNSW Graph Compaction)
+
+压缩需要解决的主要问题是压缩速度。如前所述，压缩是减少同时服务的段总数的方法。最好的情况是，较长的压缩时间会导致较高的 CPU 使用率；最坏的情况是，系统停止摄取，导致新的更新无法反映和提供。
+
+### 清白合并(Clean Slate Merger)
+
+对 hnsw 压缩算法的第一次尝试就是所说的 clean slate；本质上，该算法根据所有输入段的未删除embedding构建一个全新的图。这种方法对于的一些用例来说太慢了，所以需要优化算法。
+
+### 添加合并(Add on Merger)
+
+下一个策略是尽可能多地重用索引；从所有要压缩的段中选择最大的段，并将索引转换为可以重用的内存结构。然后将其他段的剩余embedding添加到重用图中。
+
+剩下的问题是如何处理从重用段中删除的embedding。尝试了两种不同的方法：1）持久删除并重新选择邻居，2）将已删除的embedding与附近的活动embedding分组。尽管这两个选项都适合客户，但事实证明第一个选项在某些情况下速度太慢。
+
+### 持久删除(Persisting Deletions)
+
+需要维护图的小世界属性，并且简单地删除已删除的节点及其输入/输出边缘可能会破坏图中的连接性。为了解决这个问题，使用称为邻居重选的过程，其中节点可能连接到已删除节点的邻居以保持连接。
+
+发现，如果存在大量删除节点，压缩时间实际上会比 clean slate 算法慢，这并不理想。
+
+### 将已删除的节点与其最近的活动节点分组(Grouping Deleted Nodes with their Closest Alive Nodes)
+
+持久删除可能比使用全新算法慢的原因有两个。
+
+- 正在重用段中回填节点与其邻居之间的距离，从而导致大量昂贵的距离计算。
+- 邻居重选过程可能非常昂贵，尤其是在删除许多节点的情况下。这是因为如果删除节点的邻居也被删除，则需要更多的重选迭代。
+
+![img](https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/13.png)
+
+第二个优化是将已删除的节点与附近的活动节点分组，从而避免昂贵的重选过程。原始图与以前相同，但现在多个节点映射到相同的embedding。由于图形未更改，因此保持连接性。此外，延迟计算节点与其邻居之间的距离，而不是主动回填它们，从而避免了不必要的距离计算。还需要在算法中添加重复数据删除步骤，因为多个节点可以对应相同的embedding。
+
+## 在线召回监控(Online Recall Monitoring)
+
+到目前为止，一直专注于如何构建和优化系统中的组件。但生产系统还有另一个非常重要的方面——质量验证。对于 HNSW，召回率是用来验证索引质量的指标。它是通过将近似最近邻 (ANN) 搜索的结果与精确最近邻 (KNN) 搜索返回的理想结果进行比较来计算的。
+
+监控召回也特别重要，因为某些优化可能涉及为了更好的系统性能而进行的质量权衡。需要跟踪这些质量下降情况，以确保仍然为客户提供良好的结果。
+
+通过一组不可变的embedding，计算给定查询的召回率相对容易。可以使用离线批处理作业预先计算 KNN，并通过生成索引并向其发出查询来计算 ANN。由于embedding集是恒定的，KNN 结果永远不会改变，可以调整索引构建参数来优化召回率。
+
+然而，在实时场景中，embedding不断被添加和删除，使得预先计算的 KNN 集无法使用。为了解决这个问题，开发了一个在线召回工具；在服务集群中添加了计算 ANN 和 KNN 结果的功能，这使能够计算给定时间点的召回率。
+
+## 下一步是什么
+
+对于来说，在批量索引集群上启动 HNSW 并通过为 HNSW 提供实时服务来突破的能力界限是一次激动人心的旅程。但 HNSW 只是基于embedding的检索系统愿景的第一步。
+
+### 效率和实验(Efficiency and Experimentation)
+
+构建了一个系统，可以为基于embedding的检索进行生产化，从而使机器学习工程师能够尝试新的embedding或新算法，而无需从头开始构建新的生产系统。将继续迭代该系统，改进服务性能、渠道效率和促进轻松实验等方面。
+
+### 流式过滤(Streaming Filtering)
+
+当前的过滤方法是从 HNSW 图中预取 K 个 ANN，然后应用过滤器来获得最终的候选集。这不是非常有效的漏斗，并且很难弄清楚 K 的值将给带来需要的最终候选者的数量。计划以流式方式实现 HNSW 算法，其中可以在获取期间应用过滤器，并且流式获取仅在检索到所需数量的候选者时才终止。
+
+敬请关注！
+
+
+
+# 章节四 Manas HNSW 流式过滤器
+
+## 介绍
+
+基于embedding的检索是 Pinterest 推荐引擎的核心部分。支持无数的用例，从基于内容相似性的检索到学习检索。它由内部搜索引擎[Manas](https://medium.com/pinterest-engineering/manas-a-high-performing-customized-search-system-cf189f6ca40f)提供支持，该引擎提供近似最近邻 (ANN) 搜索服务，主要使用[分层可导航小世界图 (HNSW)](https://arxiv.org/abs/1603.09320)。
+
+传统的基于token的搜索根据具有 AND 和 OR 等逻辑连接，匹配term在对应term树结构中来检索文档，而 ANN 搜索则基于embedding相似性进行检索。通常希望进行将两者结合起来的混合搜索查询。例如，“找到与这双鞋相似、价格低于 100 美元、评级为 4 星或以上的产品，然后运送到英国。” 这是一个常见问题，并非完全没有解决，但每种解决方案都有各自的注意事项和权衡。
+
+**注**：这个类似查询paser流程的优化，引入filter, 相当于算子，尽量利用索引。
+
+## 现有解决方案
+
+### 后置过滤
+
+之前的方法是后过滤，本质上是首先执行 ANN 搜索，然后执行仅限于结果集基于token的搜索。后过滤会受到漏斗效率的影响，使用超取来解决这个问题。然而，这是不可扩展的，因为客户端需要不断调整其超取，并且每个请求都可以具有不同的过滤率。
+
+### 预过滤
+
+另一种方法是预过滤。首先，在索引期间或首先评估token搜索查询来找出与基于token过滤器匹配的文档集。然后执行 ANN 搜索，同时过滤掉该集合中不存在的文档。然而，索引时间方法很难推广到任意树过滤器；预评估token搜索查询对于一组简单的过滤器或一小部分文档可以很好地工作，但有不属于任一类别的用例。即使没有人工神经网络的传统搜索，导致提前终止，通常也只能搜索大型语料库的一小部分。
+
+### 解决方案
+
+每种方法都有其优点，根据具体情况，它们甚至可能是解决问题的最理想方法。做为 Pinterest 的无数用例提供服务的通用平台，每个用例都有不同的语料库大小、查询复杂性和过滤条件。因此，选择了一种在 HNSW 图遍历过程中以流方式应用过滤器的通用方法。不对用例做出任何假设，同时仍然提供一种在此框架上构建并根据需要应用优化的方法（例如，可以将预评估作为构建过滤器添加预处理步骤）。
+
+## 概述
+
+之前：查询被表示为一棵树，在叶子处执行 HNSW 预取，将混合查询减少为传统的搜索查询。 之后：HNSW 从叶子中提取到迭代器中，该迭代器可以流式传输近似按距离排序的结果。 树的其余部分用作这些结果的过滤器。
+
+![](https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/14.png)
+
+上图总结了系统在流变化之前和之后如何处理 ANN 查询。有几个值得注意的点：
+
+1. HNSW从查询解析阶段的批量预取变为查询执行阶段的流式取。
+2. 查询执行从按 doc_id 顺序检索文档更改为按近似距离顺序检索文档。这是一个需要解决的问题，因为作为搜索引擎，索引格式针对 doc_id 顺序进行了优化。
+3. 查询结构保持不变，提供向后兼容性和无缝迁移。
+4. 轻量级评分已与迭代器树中的执行解耦。这对于 HNSW 流并不重要，但它符合将评分从基于树的线性组合方法中推广出来。
+
+还有一些影响设计的原则，指出这些原则可能会有所帮助：
+
+1. **模块化**：ANN 检索、过滤和评分都应该相互解耦。
+2. **最小的更改**：通过尽可能地重用现有组件来快速构建和启动，并在以后根据需要进行优化。
+3. **向后兼容性**：客户应该能够在对其请求进行最小程度的更改的情况下加入。
+4. **前向兼容性**：接口应该是通用的，并且每个组件（例如过滤器索引格式）应该易于升级。
+
+希望本节能够对系统组件以及为何以这种方式构建事物提供良好的高级概述。为了更深入地了解一切如何工作，需要打开两个黑匣子：1）流算法，以及 2）过滤器如何工作。
+
+## 流式算法
+
+流式算法实际上在高层次上非常简单：获取一些候选者，应用过滤器，评分，将候选者添加到结果堆中，然后重复。下图从高层次上展示了这一点。
+
+![](https://github.com/weedge/mypic/raw/master/oneday/manas-a-high-performing-customized-search-system/15.png)
+
+获取候选 -> 应用过滤器 -> 评分 -> 添加到结果堆 重复此操作，直到达到停止条件。
+
+以下是在实施过程中考虑的一些事项：
+
+1. 最初，设计的流处理过程是一次检索一个候选者，但很快意识到往返获取/过滤/评分效率不高，因此转而使用小批量。然后需要决定使用什么小批量大小。HNSW 实际上存储了每个节点的邻居列表，因此使用邻居列表作为小批量。
+2. 为了继续流，需要存储内部 HNSW 算法的一些状态。由于使用邻居列表作为小批量，因此只存储已经处理的候选者（访问列表）和仍需要处理的候选者（候选集）。
+3. 最后，必须弄清楚何时停止流式搜索。这需要单独的一节，将在接下来讨论。
+
+### 停止条件
+
+#### HNSW 停止条件(HNSW Stopping Condition)
+
+退后一步，如果看一下最初的 HNSW 论文，当检索到足够的候选者时，算法不会终止；相反，当积累的候选者都比候选集中最接近的候选者更接近时，它就会终止。这背后的主要直觉是确保算法以高概率检索最佳（最接近）的候选者。在流式搜索中应用了相同的概念，主要区别在于仅对过滤后的候选者进行操作。
+
+#### 时间预算(Time Budget)
+
+在高过滤率场景中，最终可能会遍历整个图，但仍然找不到足够的候选者，从而导致极高的延迟。由于大多数客户都有延迟要求，因此使用时间预算来限制流式搜索所花费的时间。一旦达到预算，就会退回已经积累的候选人。
+
+### 过滤器(Filters)
+
+设计过滤的方式很大程度上受到上面列出的一些原则的影响：模块化和前向兼容性。实现过滤最简单的方法就是直接在HNSW代码中添加代码。事实上，开源 HNSW 代码中的删除标记已经这样做了。然而，这破坏了模块化性，并且对于过滤器代码的可维护性和前向兼容性来说并不理想。这对应用场景来说尤其重要，因为为许多具有不同过滤器要求的客户提供服务。
+
+设计接口时不采用任何底层过滤器结构或存储格式。实现了对主要用例的支持，其中客户端可以在请求中指定任意过滤树，用合取和析取连接词表示。
+
+本着最小改变的精神，重新使用倒排索引作为过滤器存储。因此，本质上有一个由叶子处的postinglists支持的过滤树，其结构与在基于标记的搜索中使用的迭代器树非常相似。这方便重用，但效率低下，因为倒排索引针对 doc_id 有序迭代进行了优化，但 HNSW 流需要非有序逐点查找。通过使用位图和数组支持的倒排列表而不是跳表支持的倒排列表来解决这个问题，以内存效率换取计算效率。这确实带来了明显的可扩展性挑战：使用大量过滤器，根本无法承受内存成本，但这并不是短期内需要解决的主要问题。计划未来的工作是升级过滤器存储。
+
+## 优化
+
+### 如果已经有足够的候选者，则放弃远处的候选者
+
+在一些客户端用例中，过滤器树非常复杂，导致过滤器阶段占用最多的延迟。一种优化是当结果堆已满时跳过距离比结果堆中的候选者更差的候选者，以避免过滤无论如何都不会选择的候选者。
+
+### 批处理初始化
+
+不是从头开始流式传输，而是首先检索等于客户端想要的候选者数量的批量大小，因为最初需要至少检索那么多。
+
+### 重新排序过滤器树节点
+
+由于流式处理进行非排序的逐点查找，因此过滤器树节点的排序变得很重要，因为首先评估最严格的过滤器会更有效。
+
+## 未来的工作
+
+### 带子图的流式传输(Streaming with Subgraphs)
+
+上面需要注意的关键是，当前的流方法实际上并没有减少检索所需的候选数量，它只是自动为每个请求计算出适当的超取。每个过滤的候选者仍然是浪费的距离计算。
+
+目前正在尝试通过更大的过滤器（例如美国或非美国）将空间划分为单独的子图。这对于使用一些大型过滤器的用例来说效果很好。更具可扩展性的扩展可能是使用过滤器来标记图形，并允许遍历标签的析取或合取。
+
+### 高效过滤器存储(Efficient Filter Store)
+
+使用倒排索引作为过滤器存储在某些场景下效果很好，但它确实针对传统搜索进行了优化，而不是针对图遍历的过滤进行了优化。可以从头开始设计一个针对基于图的过滤进行优化的过滤器存储，并将其与其他基于图的检索系统（如[Pixie](https://medium.com/pinterest-engineering/an-update-on-pixie-pinterests-recommendation-system-6f273f737e1b))共享。
+
+### 量化(Quantization)
+
+极高的过滤率场景可以通过暴力破解来解决，但仍然存在一系列具有非常高的过滤率但使用暴力破解成本高昂的情况。这些情况的瓶颈是大量浪费的距离计算。通过量化可以大大降低这一成本。可以转向不同的算法，例如 PQ IVF，或者HNSW 引入 PQ（注：这部分参考faiss，需要提供训练接口）
+
+## 结论
+
+实现了流式过滤，它抽象了如何执行过滤的实现细节，并减轻了客户端过度获取调整的负担。从系统的角度来看，有一个通用的过滤器解决方案，它足够灵活，可以支持所有的用例，并且可以支持未来的优化，例如预过滤和过滤器存储升级。通过消除不精确的超取调整，已经看到了巨大的成本节省和质量改进，并且了解到了未来优化的许多机会。
+
+敬请关注！
+
+---
+
+题外话：
+
+> 不能脱离应用场景去理解算法所要解决的实际问题；
+>
+> 没有上下文引发的问题，何来解决方案；只谈结果，拿果子，忽略了上下文case, YY~
+
+# reference
+
+1. https://en.wikipedia.org/wiki/Non-blocking_algorithm
+2. https://fulmanski.pl/tutorials/computer-science/nosql/column-family-bigtable-stores/
+3. https://medium.com/pinterest-engineering/manas-a-high-performing-customized-search-system-cf189f6ca40f
+4. https://medium.com/pinterest-engineering/manas-realtime-enabling-changes-to-be-searchable-in-a-blink-of-an-eye-36acc3506843
+5. https://medium.com/pinterest-engineering/manas-hnsw-realtime-powering-realtime-embedding-based-retrieval-dc71dfd6afdd
+6. https://medium.com/pinterest-engineering/manas-hnsw-streaming-filters-351adf9ac1c4
+7. [为什么微信推荐这么快？](https://mp.weixin.qq.com/s/rXXm6c8LrTqqP4iWf9mtxA)
+8. [小红书高时效推荐系统背后的技术升级](https://mp.weixin.qq.com/s/1a2bl983bGKM713xI_3v_A)
+9. [快手搜索在向量检索方向的探索和实践](https://mp.weixin.qq.com/s/1ed9BDZKzjQIgDScyxpbHw) [向量索引](https://yongyuan.name/blog/vector-ann-search.html)
+10. [达摩院自研向量检索引擎 Proxima](https://damo.alibaba.com/events/112?lang=zh)
+11. [baidu-puck](https://github.com/baidu/puck/blob/main/docs/README.md)
+12. [Announcing ScaNN: Efficient Vector Similarity Search](https://blog.research.google/2020/07/announcing-scann-efficient-vector.html)
+13. [Faiss: The Missing Manual](https://www.pinecone.io/learn/series/faiss/) [https://www.pinecone.io/learn/](https://www.pinecone.io/learn/)
+14. **Vector Search and Databases at Scale**. Highload++ Conference, Serbia. [Event](https://highload.rs/2023/abstracts/9770). [Slides](https://drive.google.com/file/d/11M51Jw9UdEmzHDTGZmn4n3bxgTcQt3sw/view?usp=sharing) [YouTube](https://www.youtube.com/watch?v=UMrhB3icP9w&t=65s).   [ash.vardanian](https://ashvardanian.com/talks/)
+
+
+
+## 附：相关向量数据库HNSW使用(一般都会支持)
+
+1. [vearch-Hnsw Real time Index Detailed Design](https://github.com/vearch/vearch/wiki/Hnsw%E5%AE%9E%E6%97%B6%E7%B4%A2%E5%BC%95%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1) 
+2. [weaviate-Vector Indexing](https://weaviate.io/developers/weaviate/concepts/vector-index)。文档不错，知其然知其所以然~ 
+   1. [Why is Vector Search so fast?](https://weaviate.io/blog/why-is-vector-search-so-fast) 
+   2. [Vamana vs. HNSW - Exploring ANN algorithms Part 1](https://weaviate.io/blog/ann-algorithms-vamana-vs-hnsw) (In-memory Index 和 DiskANN)
+   3. [HNSW+PQ - Exploring ANN algorithms Part 2.1](https://weaviate.io/blog/ann-algorithms-hnsw-pq)
+   4. [The Tile Encoder - Exploring ANN algorithms Part 2.2](https://weaviate.io/blog/ann-algorithms-tiles-enocoder)
+3. [milvus-Vector Index](https://milvus.io/docs/index.md) (In-memory Index 和 DiskANN)  包括新ANN算法支持跟进活跃，比如ScANN ；好的开源生态~
+   1. [**milvus-deep-dive**](https://milvus.io/blog/deep-dive-1-milvus-architecture-overview.md) (整体思路和manas有一定相似，比如基于日志)	
+4. [qdrant-vector index](https://qdrant.tech/documentation/concepts/indexing/#vector-index)
+5. [ES8.0/knn-search](https://www.elastic.co/guide/en/elasticsearch/reference/8.0/knn-search.html) [OpenSearch-plugin-knn](https://opensearch.org/docs/latest/search-plugins/knn/index/) [https://github.com/opensearch-project/k-NN](https://github.com/opensearch-project/k-NN)
+6. [Redis Stack7.2/vss](https://redis.io/docs/interact/search-and-query/search/vectors/)
+7. [alibabacloud-tair-vector](https://www.alibabacloud.com/help/zh/tair/developer-reference/vector)
