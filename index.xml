@@ -325,8 +325,33 @@ PERIOD    LOAD  STORE  CODE  NEW   |   PERIOD    LOAD  STORE  CODE  NEW
 &lt;p&gt;&lt;strong&gt;中文版PDF(推荐)&lt;/strong&gt;: &lt;a href=&#34;https://raw.githubusercontent.com/weedge/perf-book-cn/main/perf-book-cn.pdf&#34;&gt;https://raw.githubusercontent.com/weedge/perf-book-cn/main/perf-book-cn.pdf&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&#34;学习资料&#34;&gt;学习资料&lt;/h2&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/dendibakh/perf-ninja&#34;&gt;https://github.com/dendibakh/perf-ninja&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=2tzdkC6IDbo&amp;amp;list=PLRWO2AL1QAV6bJAU2kgB4xfodGID43Y5d&#34;&gt;https://www.youtube.com/watch?v=2tzdkC6IDbo&amp;amp;list=PLRWO2AL1QAV6bJAU2kgB4xfodGID43Y5d&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/dendibakh/perf-ninja&#34;&gt;https://github.com/dendibakh/perf-ninja&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=2tzdkC6IDbo&amp;amp;list=PLRWO2AL1QAV6bJAU2kgB4xfodGID43Y5d&#34;&gt;https://www.youtube.com/watch?v=2tzdkC6IDbo&amp;amp;list=PLRWO2AL1QAV6bJAU2kgB4xfodGID43Y5d&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;现代cpu微架构(书中第一章微架构内容)：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=vgPFzblBh7w&#34;&gt;Architecture All Access: Modern CPU Architecture Part 1 – Key Concepts | Intel Technology&lt;/a&gt;&lt;/p&gt;
+
+&lt;div style=&#34;position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;&#34;&gt;
+  &lt;iframe src=&#34;https://www.youtube.com/embed/vgPFzblBh7w&#34; style=&#34;position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;&#34; allowfullscreen title=&#34;YouTube Video&#34;&gt;&lt;/iframe&gt;
+&lt;/div&gt;
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=o_WXTRS2qTY&#34;&gt;Architecture All Access: Modern CPU Architecture 2 - Microarchitecture Deep Dive &lt;/a&gt; | &lt;a href=&#34;https://www.bilibili.com/video/BV1a2421M7Tz/&#34;&gt;bilibili&lt;/a&gt;&lt;/p&gt;
+
+&lt;div style=&#34;position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;&#34;&gt;
+  &lt;iframe src=&#34;https://www.youtube.com/embed/o_WXTRS2qTY&#34; style=&#34;position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;&#34; allowfullscreen title=&#34;YouTube Video&#34;&gt;&lt;/iframe&gt;
+&lt;/div&gt;
+
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
 &lt;/ol&gt;
 &lt;blockquote&gt;
 &lt;p&gt;[!TIP]&lt;/p&gt;
