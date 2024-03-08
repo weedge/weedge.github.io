@@ -25,6 +25,7 @@
 <meta name="author" content="weedge" />
   <meta name="description" content="大型语言模型（LLMs）展示了显著的能力，但面临着幻觉、过时知识和不透明、不可追踪的推理过程等挑战。检索增强生成（RAG）已经成为一个有前途的解决方案，通过整合外部数据库的知识。这增强了模型的准确性和可信度，特别适用于知识密集型任务，并允许持续的知识更新和领域特定信息的整合。RAG通过将LLMs的内在知识与庞大、动态的外部数据库资源相结合，产生了协同效应。这篇综述论文详细考察了RAG范式的发展，包括朴素RAG、高级RAG和模块化RAG。它对RAG框架的三方基础进行了细致的了解，其中包括检索、生成和增强技术。该论文强调嵌入(embedding)在每个关键组成部分的最先进技术，并提对RAG系统进展的深入研究了解。此外，该论文介绍了评估RAG模型的指标和基准，以及最新的评估框架。最后，该论文讲了一些研究前景，包括未来挑战、多模态的扩展以及RAG基础设施及其生态系统的进展1。
 论文地址: Retrieval-Augmented Generation for Large Language Models: A Survey | PPT
+注： 主要是了解RAG的发展过程(召回率)，以及对相关子模块领域的现阶段了解，如果感兴趣，通过索引到论文引用处进一步了解。(提高看相应论文的准确率)
 " />
 
   <meta name="keywords" content="工作, 技术, 生活" />
@@ -65,7 +66,8 @@
 
 <meta property="og:title" content="论文：Retrieval-Augmented Generation for Large Language Models: A Survey" />
 <meta property="og:description" content="大型语言模型（LLMs）展示了显著的能力，但面临着幻觉、过时知识和不透明、不可追踪的推理过程等挑战。检索增强生成（RAG）已经成为一个有前途的解决方案，通过整合外部数据库的知识。这增强了模型的准确性和可信度，特别适用于知识密集型任务，并允许持续的知识更新和领域特定信息的整合。RAG通过将LLMs的内在知识与庞大、动态的外部数据库资源相结合，产生了协同效应。这篇综述论文详细考察了RAG范式的发展，包括朴素RAG、高级RAG和模块化RAG。它对RAG框架的三方基础进行了细致的了解，其中包括检索、生成和增强技术。该论文强调嵌入(embedding)在每个关键组成部分的最先进技术，并提对RAG系统进展的深入研究了解。此外，该论文介绍了评估RAG模型的指标和基准，以及最新的评估框架。最后，该论文讲了一些研究前景，包括未来挑战、多模态的扩展以及RAG基础设施及其生态系统的进展1。
-论文地址:  Retrieval-Augmented Generation for Large Language Models: A Survey |  PPT" />
+论文地址:  Retrieval-Augmented Generation for Large Language Models: A Survey |  PPT
+注： 主要是了解RAG的发展过程(召回率)，以及对相关子模块领域的现阶段了解，如果感兴趣，通过索引到论文引用处进一步了解。(提高看相应论文的准确率)" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://weedge.github.io/post/paper/rag/rag-for-llms-a-survey/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2024-03-08T10:26:23+08:00" />
@@ -73,13 +75,15 @@
 
 <meta itemprop="name" content="论文：Retrieval-Augmented Generation for Large Language Models: A Survey">
 <meta itemprop="description" content="大型语言模型（LLMs）展示了显著的能力，但面临着幻觉、过时知识和不透明、不可追踪的推理过程等挑战。检索增强生成（RAG）已经成为一个有前途的解决方案，通过整合外部数据库的知识。这增强了模型的准确性和可信度，特别适用于知识密集型任务，并允许持续的知识更新和领域特定信息的整合。RAG通过将LLMs的内在知识与庞大、动态的外部数据库资源相结合，产生了协同效应。这篇综述论文详细考察了RAG范式的发展，包括朴素RAG、高级RAG和模块化RAG。它对RAG框架的三方基础进行了细致的了解，其中包括检索、生成和增强技术。该论文强调嵌入(embedding)在每个关键组成部分的最先进技术，并提对RAG系统进展的深入研究了解。此外，该论文介绍了评估RAG模型的指标和基准，以及最新的评估框架。最后，该论文讲了一些研究前景，包括未来挑战、多模态的扩展以及RAG基础设施及其生态系统的进展1。
-论文地址:  Retrieval-Augmented Generation for Large Language Models: A Survey |  PPT"><meta itemprop="datePublished" content="2024-03-08T10:26:23+08:00" />
+论文地址:  Retrieval-Augmented Generation for Large Language Models: A Survey |  PPT
+注： 主要是了解RAG的发展过程(召回率)，以及对相关子模块领域的现阶段了解，如果感兴趣，通过索引到论文引用处进一步了解。(提高看相应论文的准确率)"><meta itemprop="datePublished" content="2024-03-08T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2024-03-08T10:26:23+08:00" />
-<meta itemprop="wordCount" content="36961">
+<meta itemprop="wordCount" content="32853">
 <meta itemprop="keywords" content="RAG,LLM," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="论文：Retrieval-Augmented Generation for Large Language Models: A Survey"/>
 <meta name="twitter:description" content="大型语言模型（LLMs）展示了显著的能力，但面临着幻觉、过时知识和不透明、不可追踪的推理过程等挑战。检索增强生成（RAG）已经成为一个有前途的解决方案，通过整合外部数据库的知识。这增强了模型的准确性和可信度，特别适用于知识密集型任务，并允许持续的知识更新和领域特定信息的整合。RAG通过将LLMs的内在知识与庞大、动态的外部数据库资源相结合，产生了协同效应。这篇综述论文详细考察了RAG范式的发展，包括朴素RAG、高级RAG和模块化RAG。它对RAG框架的三方基础进行了细致的了解，其中包括检索、生成和增强技术。该论文强调嵌入(embedding)在每个关键组成部分的最先进技术，并提对RAG系统进展的深入研究了解。此外，该论文介绍了评估RAG模型的指标和基准，以及最新的评估框架。最后，该论文讲了一些研究前景，包括未来挑战、多模态的扩展以及RAG基础设施及其生态系统的进展1。
-论文地址:  Retrieval-Augmented Generation for Large Language Models: A Survey |  PPT"/>
+论文地址:  Retrieval-Augmented Generation for Large Language Models: A Survey |  PPT
+注： 主要是了解RAG的发展过程(召回率)，以及对相关子模块领域的现阶段了解，如果感兴趣，通过索引到论文引用处进一步了解。(提高看相应论文的准确率)"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -449,6 +453,7 @@
     <div class="post-content">
       <p>大型语言模型（LLMs）展示了显著的能力，但面临着幻觉、过时知识和不透明、不可追踪的推理过程等挑战。检索增强生成（RAG）已经成为一个有前途的解决方案，通过整合外部数据库的知识。这增强了模型的准确性和可信度，特别适用于知识密集型任务，并允许持续的知识更新和领域特定信息的整合。RAG通过将LLMs的内在知识与庞大、动态的外部数据库资源相结合，产生了协同效应。这篇综述论文详细考察了RAG范式的发展，包括朴素RAG、高级RAG和模块化RAG。它对RAG框架的三方基础进行了细致的了解，其中包括检索、生成和增强技术。该论文强调嵌入(embedding)在每个关键组成部分的最先进技术，并提对RAG系统进展的深入研究了解。此外，该论文介绍了评估RAG模型的指标和基准，以及最新的评估框架。最后，该论文讲了一些研究前景，包括未来挑战、多模态的扩展以及RAG基础设施及其生态系统的进展<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>。</p>
 <p>论文地址:  <a href="https://arxiv.org/pdf/2312.10997.pdf">Retrieval-Augmented Generation for Large Language Models: A Survey</a> |  <a href="https://github.com/Tongji-KGLLM/RAG-Survey/blob/main/assets/RAG_Slide_ENG.pdf">PPT</a></p>
+<p>注： 主要是了解RAG的发展过程(召回率)，以及对相关子模块领域的现阶段了解，如果感兴趣，通过索引到论文引用处进一步了解。(提高看相应论文的准确率)</p>
 <h2 id="第1章引言">第1章：引言</h2>
 <p>大型语言模型（LLMs）如GPT系列和LLama系列在自然语言处理方面取得了显著的成功，展示了在各种基准测试中的卓越性能，包括SuperGLUE、MMLU和BIG-bench。尽管取得了这些进步，LLMs在处理特定领域或高度专业化的查询时表现出明显的局限性。一个常见问题是生成错误信息，或称为“幻觉”，尤其是当查询超出模型的训练数据或需要最新信息时。这些缺点强调了在没有额外保障措施的情况下，将LLMs作为黑盒解决方案部署在现实世界生产环境中的不切实际性。缓解这些局限性的一个有前景的方法是检索增强生成（Retrieval-Augmented Generation, RAG），它通过将外部数据检索整合到生成过程中，从而增强了模型提供准确和相关响应的能力。</p>
 <p>RAG由Lewis等人在2020年中期引入，作为LLMs领域内的一种范式，增强了生成任务。具体来说，RAG涉及一个初始检索步骤，其中LLMs查询外部数据源以获取相关信息，然后再进行回答问题或生成文本。这个过程不仅为后续的生成阶段提供信息，还确保响应基于检索到的证据，从而显著提高了输出的准确性和相关性。在推理阶段从知识库动态检索信息允许RAG解决生成事实上不正确内容的问题，通常称为“幻觉”。将RAG整合到LLMs中已经迅速被采用，并成为完善聊天机器人能力和使LLMs更适用于实际应用的关键技术。</p>
@@ -713,115 +718,115 @@
 <p>尽管RAG技术取得了进步，但在提高其鲁棒性和管理扩展上下文的能力方面仍有许多研究机会。RAG的应用范围也在向多模态领域扩展，将其原理适应于解释和处理各种数据形式，如图像、视频和代码。这种扩展强调了RAG在AI部署中的重要实际意义，吸引了学术界和工业界的关注。RAG的生态系统正在增长，RAG中心的AI应用和支持工具的持续开发。然而，随着RAG应用领域的扩大，迫切需要完善评估方法以跟上其发展的步伐。确保性能评估保持准确和代表性对于捕捉RAG对AI研究和发展社区的贡献至关重要。</p>
 <p><img src="https://github.com/weedge/mypic/raw/master/rag/RAG_for_LLMs_A_Survey/7.png" alt=""></p>
 <h2 id="references">References</h2>
-<p>[Alon等人，2022] Uri Alon, Frank Xu, Junxian He, Sudipta Sengupta, Dan Roth, 和 Graham Neubig. 使用自动机增强检索的神经符号语言建模。在国际机器学习会议上，第468-485页。PMLR, 2022.</p>
-<p>[Anderson等人，2022] Nathan Anderson, Caleb Wilson, 和 Stephen D. Richardson. Lingua: 针对现场口译和自动配音的场景。在Janice Campbell, Stephen Larocca, Jay Marciano, Konstantin Savenkov, 和 Alex Yanishevsky编辑的第15届美洲机器翻译协会双年会（第2卷：用户和提供者轨道和政府轨道），第202-209页，奥兰多，美国，2022年9月。美洲机器翻译协会。</p>
-<p>[Arora等人，2023] Daman Arora, Anush Kini, Sayak Ray Chowdhury, Nagarajan Natarajan, Gaurav Sinha, 和 Amit Sharma. 零次信息检索的Gar-meets-rag范式。arXiv预印本arXiv:2310.20158, 2023.</p>
-<p>[Asai等人，2023] Akari Asai, Zeqiu Wu, Yizhong Wang, Avirup Sil, 和 Hannaneh Hajishirzi. Self-rag: 通过自我反思学习检索、生成和批评。arXiv预印本arXiv:2310.11511, 2023.</p>
+<p>[Alon等人，2022] Uri Alon, Frank Xu, Junxian He, Sudipta Sengupta, Dan Roth, and Graham Neubig. Neurosymbolic language modeling with automaton-augmented retrieval. In International Conference on Machine Learning, pages 468–485. PMLR, 2022.</p>
+<p>[Anderson等人，2022] Nathan Anderson, Caleb Wilson, and Stephen D. Richardson. Lingua: Addressing scenarios for live interpretation and automatic dubbing. In Janice Campbell, Stephen Larocca, Jay Marciano, Konstantin Savenkov, and Alex Yanishevsky, editors, Proceedings of the 15th Biennial Conference of the Association for Machine Translation in the Americas (Volume 2: Users and Providers Track and Government Track), pages 202–209, Orlando, USA, September 2022. Association for Machine Translation in the Americas.</p>
+<p>[Arora等人，2023] Daman Arora, Anush Kini, Sayak Ray Chowdhury, Nagarajan Natarajan, Gaurav Sinha, and Amit Sharma. Gar-meets-rag paradigm for zero-shot information retrieval. arXiv preprint arXiv:2310.20158, 2023.</p>
+<p>[Asai等人，2023] Akari Asai, Zeqiu Wu, Yizhong Wang, Avirup Sil, and Hannaneh Hajishirzi. Self-rag: Learning to retrieve, generate, and critique through self-reflection. arXiv preprint arXiv:2310.11511, 2023.</p>
 <p>[BAAI, 2023] BAAI. Flagembedding. <a href="https://github.com/FlagOpen/FlagEmbedding">https://github.com/FlagOpen/FlagEmbedding</a>, 2023.</p>
-<p>[Baek等人，2023] Jinheon Baek, Soyeong Jeong, Minki Kang, Jong C Park, 和 Sung Ju Hwang. 增强语言模型验证。arXiv预印本arXiv:2310.12836, 2023.</p>
-<p>[Berchansky等人，2023] Moshe Berchansky, Peter Izsak, Avi Caciularu, Ido Dagan, 和 Moshe Wasserblat. 通过标记消除优化检索增强的阅读器模型。arXiv预印本arXiv:2310.13682, 2023.</p>
-<p>[Blagojevi, 2023] Vladimir Blagojevi. 在Haystack中增强RAG管道：引入DiversityRanker和LostInTheMiddleRanker。https://towardsdatascience.com/enhancing-rag-pipelines-in-haystack-45f14e2bc9f5, 2023.</p>
-<p>[Borgeaud等人，2022] Sebastian Borgeaud, Arthur Mensch, Jordan Hoffmann, Trevor Cai, Eliza Rutherford, Katie Millican, George Bm Van Den Driessche, Jean-Baptiste Lespiau, Bogdan Damoc, Aidan Clark, 等. 通过从数万亿个标记中检索来改进语言模型。在国际机器学习会议上，第2206-2240页。PMLR, 2022.</p>
-<p>[Brown等人，2020] Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, 等. 语言模型是少次学习者。在神经信息处理系统进展中，第33卷：1877-1901, 2020.</p>
-<p>[Cai等人，2021] Deng Cai, Yan Wang, Huayang Li, Wai Lam, 和 Lemao Liu. 带有单语言翻译记忆的神经机器翻译。arXiv预印本arXiv:2105.11269, 2021.</p>
-<p>[Chan等人，2023] David M Chan, Shalini Ghosh, Ariya Rastrow, 和 Björn Hoffmeister. 在上下文端到端自动语音识别中使用外部离策略语音到文本映射。arXiv预印本arXiv:2301.02736, 2023.</p>
-<p>[Chen等人，2023a] Howard Chen, Ramakanth Pasunuru, Jason Weston, 和 Asli Celikyilmaz. 走过记忆迷宫：通过交互式阅读超越上下文限制。arXiv预印本arXiv:2310.05029, 2023.</p>
-<p>[Chen等人，2023b] Jiawei Chen, Hongyu Lin, Xianpei Han, 和 Le Sun. 对大型语言模型进行基准测试。arXiv预印本arXiv:2309.01431, 2023.</p>
-<p>[Cheng等人，2022] Xin Cheng, Shen Gao, Lemao Liu, Dongyan Zhao, 和 Rui Yan. 使用对比翻译记忆的神经机器翻译。arXiv预印本arXiv:2212.03140, 2022.</p>
-<p>[Cheng等人，2023a] Daixuan Cheng, Shaohan Huang, Junyu Bi, Yuefeng Zhan, Jianfeng Liu, Yujing Wang, Hao Sun, Furu Wei, Denvy Deng, 和 Qi Zhang. Uprise: 通用提示检索，用于改善零次评估。arXiv预印本arXiv:2303.08518, 2023.</p>
-<p>[Cheng等人，2023b] Xin Cheng, Di Luo, Xiuying Chen, Lemao Liu, Dongyan Zhao, 和 Rui Yan. Lift yourself up: 使用自我记忆的检索增强文本生成。arXiv预印本arXiv:2305.02437, 2023.</p>
-<p>[Cohere, 2023] Cohere. 告别不相关的搜索结果：Cohere rerank来了。https://txt.cohere.com/rerank/, 2023.</p>
-<p>[Dai等人，2022] Zhuyun Dai, Vincent Y Zhao, Ji Ma, Yi Luan, Jianmo Ni, Jing Lu, Anton Bakalov, Kelvin Guu, Keith B Hall, 和 Ming-Wei Chang. Promptagator: 从8个示例中进行少次密集检索。arXiv预印本arXiv:2209.11755, 2022.</p>
-<p>[Es等人，2023] Shahul Es, Jithin James, Luis EspinosaAnke, 和 Steven Schockaert. Ragas: 自动评估检索增强生成。arXiv预印本arXiv:2309.15217, 2023.</p>
-<p>[Feng等人，2023] Zhangyin Feng, Xiaocheng Feng, Dezhi Zhao, Maojin Yang, 和 Bing Qin. 检索-生成协同增强的大型语言模型。arXiv预印本arXiv:2310.05149, 2023.</p>
-<p>[Gao等人，2022] Luyu Gao, Xueguang Ma, Jimmy Lin, 和 Jamie Callan. 无需相关性标签的精确零次密集检索。arXiv预印本arXiv:2212.10496, 2022.</p>
-<p>[Glass等人，2021] Michael Glass, Gaetano Rossiello, Md Faisal Mahbub Chowdhury, 和 Alfio Gliozzo. 鲁棒的检索增强生成用于零次槽填充。arXiv预印本arXiv:2108.13934, 2021.</p>
-<p>[Google, 2023] Google. Gemini: 一系列具有很高能力的多模态模型。https://goo.gle/GeminiPaper, 2023.</p>
-<p>[Guo等人，2023] Zhicheng Guo, Sijie Cheng, Yile Wang, Peng Li, 和 Yang Liu. 非知识密集型任务的提示引导检索增强。arXiv预印本arXiv:2305.17653, 2023.</p>
-<p>[Hendrycks等人，2020] Dan Hendrycks, Collin Burns, Steven Basart, Andy Zou, Mantas Mazeika, Dawn Song, 和 Jacob Steinhardt. 测量大规模多任务语言理解。arXiv预印本arXiv:2009.03300, 2020.</p>
-<p>[Hoshi等人，2023] Yasuto Hoshi, Daisuke Miyashita, Youyang Ng, Kento Tatsuno, Yasuhiro Morioka, Osamu Torii, 和 Jun Deguchi. Ralle: 开发和评估检索增强大型语言模型的框架。arXiv预印本arXiv:2308.10633, 2023.</p>
-<p>[Huang等人，2023] Jie Huang, Wei Ping, Peng Xu, Mohammad Shoeybi, Kevin Chen-Chuan Chang, 和 Bryan Catanzaro. Raven: 在上下文中学习，使用检索增强的编码器-解码器语言模型。arXiv预印本arXiv:2308.07922, 2023.</p>
-<p>[ILIN, 2023] IVAN ILIN. 高级RAG技术：图解概述。https://pub.towardsai.net/advanced-rag-techniques-an-illustrated-overview-04d193d8fec6, 2023.</p>
-<p>[Izacard等人，2022] Gautier Izacard, Patrick Lewis, Maria Lomeli, Lucas Hosseini, Fabio Petroni, Timo Schick, Jane Dwivedi-Yu, Armand Joulin, Sebastian Riedel, 和 Edouard Grave. 使用检索增强语言模型的少次学习。arXiv预印本arXiv:2208.03299, 2022.</p>
-<p>[Jarvis和Allard, 2023] Colin Jarvis 和 John Allard. 一项关于最大化LLM性能的技术调查。https://community.openai.com/t/openai-dev-day-2023-breakout-sessions/505213#a-survey-of-techniques-for-maximizing-llm-performance-2, 2023.</p>
-<p>[Jiang等人，2023a] Huiqiang Jiang, Qianhui Wu, Chin-Yew Lin, Yuqing Yang, 和 Lili Qiu. Llmlingua: 压缩提示以加速大型语言模型的推理。arXiv预印本arXiv:2310.05736, 2023.</p>
-<p>[Jiang等人，2023b] Zhengbao Jiang, Frank F Xu, Luyu Gao, Zhiqing Sun, Qian Liu, Jane Dwivedi-Yu, Yiming Yang, Jamie Callan, 和 Graham Neubig. 主动检索增强生成。arXiv预印本arXiv:2305.06983, 2023.</p>
-<p>[Kandpal等人，2023] Nikhil Kandpal, Haikang Deng, Adam Roberts, Eric Wallace, 和 Colin Raffel. 大型语言模型在学习长尾知识方面存在困难。在国际机器学习会议上，第15696-15707页。PMLR, 2023.</p>
-<p>[Kang等人，2023] Minki Kang, Jin Myung Kwak, Jinheon Baek, 和 Sung Ju Hwang. 知识图谱增强的语言模型用于知识引导的对话生成。arXiv预印本arXiv:2305.18846, 2023.</p>
-<p>[Kaplan等人，2020] Jared Kaplan, Sam McCandlish, Tom Henighan, Tom B Brown, Benjamin Chess, Rewon Child, Scott Gray, Alec Radford, Jeffrey Wu, 和 Dario Amodei. 神经语言模型的规模法则。arXiv预印本arXiv:2001.08361, 2020.</p>
-<p>[Karpukhin等人，2020] Vladimir Karpukhin, Barlas O˘guz, Sewon Min, Patrick Lewis, Ledell Wu, Sergey Edunov, Danqi Chen, 和 Wen-tau Yih. 用于开放领域问答的密集段落检索。arXiv预印本arXiv:2004.04906, 2020.</p>
-<p>[Khandelwal等人，2019] Urvashi Khandelwal, Omer Levy, Dan Jurafsky, Luke Zettlemoyer, 和 Mike Lewis. 通过记忆实现泛化：最近邻语言模型。arXiv预印本arXiv:1911.00172, 2019.</p>
-<p>[Khattab等人，2022] Omar Khattab, Keshav Santhanam, Xiang Lisa Li, David Hall, Percy Liang, Christopher Potts, 和 Matei Zaharia. Demonstrate-search-predict: 组合检索和语言模型进行知识密集型NLP。arXiv预印本arXiv:2212.14024, 2022.</p>
-<p>[Kim等人，2023] Gangwoo Kim, Sungdong Kim, Byeongguk Jeon, Joonsuk Park, 和 Jaewoo Kang. 澄清树：使用检索增强的大型语言模型回答模糊问题。arXiv预印本arXiv:2310.14696, 2023.</p>
-<p>[Lan等人，2022] Tian Lan, Deng Cai, Yan Wang, Heyan Huang, 和 Xian-Ling Mao. 复制是你需要的一切。在第十一届国际学习表示会议上，2022.</p>
-<p>[Lee等人，2020] Jinhyuk Lee, Mujeen Sung, Jaewoo Kang, 和 Danqi Chen. 学习大规模的短语密集表示。arXiv预印本arXiv:2012.12624, 2020.</p>
-<p>[Leng等人，2023] Quinn Leng, Kasey Uhlenhuth, 和 Alkis Polyzotis. LLM评估RAG应用的最佳实践。https://www.databricks.com/blog/LLM-auto-eval-best-practices-RAG, 2023.</p>
-<p>[Lewis等人，2020] Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio Petroni, Vladimir Karpukhin, Naman Goyal, Heinrich Küttner, Mike Lewis, Wen-tau Yih, Tim Rocktäschel, 等. 检索增强生成用于知识密集型NLP任务。在神经信息处理系统进展中，第33卷：9459-9474, 2020.</p>
-<p>[Li和Li，2023] Xianming Li 和 Jing Li. 角度优化的文本嵌入。arXiv预印本arXiv:2309.12871, 2023.</p>
-<p>[Li等人，2023a] Junnan Li, Dongxu Li, Silvio Savarese, 和 Steven Hoi. Blip-2: 使用冻结的图像编码器和大型语言模型引导语言-图像预训练。arXiv预印本arXiv:2301.12597, 2023.</p>
-<p>[Li等人，2023b] Xiaoqian Li, Ercong Nie, 和 Sheng Liang. 从分类到生成：跨语言检索增强ICL的见解。arXiv预印本arXiv:2311.06595, 2023.</p>
-<p>[Li等人，2023c] Xingxuan Li, Ruochen Zhao, Yew Ken Chia, Bosheng Ding, Lidong Bing, Shafiq Joty, 和 Soujanya Poria. 知识链：一个框架，用于将大型语言模型与结构化知识库接地。arXiv预印本arXiv:2305.13269, 2023.</p>
-<p>[Li等人，2023d] Xinze Li, Zhenghao Liu, Chenyan Xiong, Shi Yu, Yu Gu, Zhiyuan Liu, 和 Ge Yu. 结构感知语言模型预训练提高了结构化数据上的密集检索。arXiv预印本arXiv:2305.19912, 2023.</p>
-<p>[Liang等人，2023] Han Liang, Wenqian Zhang, Wenxuan Li, Jingyi Yu, 和 Lan Xu. Intergen: 在复杂交互下基于扩散的多人体运动生成。arXiv预印本arXiv:2304.05684, 2023.</p>
-<p>[Lin等人，2023] Xi Victoria Lin, Xilun Chen, Mingda Chen, Weijia Shi, Maria Lomeli, Rich James, Pedro Rodriguez, Jacob Kahn, Gergely Szilvasy, Mike Lewis, 等. Ra-dit: 检索增强的双指令调整。arXiv预印本arXiv:2310.01352, 2023.</p>
-<p>[Litman等人，2020] Ron Litman, Oron Anschel, Shahar Tsiper, Roee Litman, Shai Mazor, 和 R Manmatha. Scatter: 选择性上下文注意场景文本识别器。在IEEE/CVF计算机视觉和模式识别会议论文集中，第11962-11972页，2020年。</p>
-<p>[Liu等人，2023a] Nelson F Liu, Kevin Lin, John Hewitt, Ashwin Paranjape, Michele Bevilacqua, Fabio Petroni, 和 Percy Liang. Lost in the middle: 语言模型如何使用长上下文。arXiv预印本arXiv:2307.03172, 2023。</p>
-<p>[Liu等人，2023b] Yi Liu, Lianzhe Huang, Shicheng Li, Sishuo Chen, Hao Zhou, Fandong Meng, Jie Zhou, 和 Xu Sun. Recall: 一个基准，用于评估LLMs对外部反事实知识的鲁棒性。arXiv预印本arXiv:2311.08147, 2023。</p>
-<p>[Liu, 2023] Jerry Liu. 构建生产就绪的RAG应用。https://www.ai.engineer/summit/schedule/building-production-ready-rag-applications, 2023。</p>
-<p>[Luo等人，2023] Ziyang Luo, Can Xu, Pu Zhao, Xiubo Geng, Chongyang Tao, Jing Ma, Qingwei Lin, 和 Daxin Jiang. 增强大型语言模型的参数化知识引导。arXiv预印本arXiv:2305.04757, 2023。</p>
-<p>[Ma等人，2023a] Xinbei Ma, Yeyun Gong, Pengcheng He, Hai Zhao, 和 Nan Duan. 查询重写用于检索增强的大型语言模型。arXiv预印本arXiv:2305.14283, 2023。</p>
-<p>[Ma等人，2023b] Yubo Ma, Yixin Cao, YongChing Hong, 和 Aixin Sun. 大型语言模型不是一个好的少次信息提取器，而是硬样本的优秀重排器！arXiv, abs/2303.08559, 2023。</p>
-<p>[Modarressi等人，2023] Ali Modarressi, Ayyoob Imani, Mohsen Fayyaz, 和 Hinrich Schütze. Ret-llm: 朝着通用的读写记忆的大型语言模型。arXiv预印本arXiv:2305.14322, 2023。</p>
-<p>[Nakano等人，2021] Reiichiro Nakano, Jacob Hilton, Suchir Balaji, Jeff Wu, Long Ouyang, Christina Kim, Christopher Hesse, Shantanu Jain, Vineet Kosaraju, William Saunders, 等。WebGPT: 带有人类反馈的浏览器辅助问答。arXiv预印本arXiv:2112.09332, 2021。</p>
-<p>[Nashid等人，2023] Noor Nashid, Mifta Sintaha, 和 Ali Mesbah. 基于检索的代码相关少次学习的提示选择。在2023年IEEE/ACM第45届国际软件工程会议（ICSE）上，第2450-2462页，2023年。</p>
-<p>[Nguyen, 2023] Isabelle Nguyen. 评估RAG第一部分：如何评估文档检索。https://www.deepset.ai/blog/rag-evaluation-retrieval, 2023。</p>
-<p>[Nishikawa等人，2022] Sosuke Nishikawa, Ryokan Ri, Ikuya Yamada, Yoshimasa Tsuruoka, 和 Isao Echizen. EASE: 实体感知的句子嵌入的对比学习。arXiv预印本arXiv:2205.04260, 2022。</p>
-<p>[OpenAI, 2023] OpenAI. GPT-4技术报告。https://cdn.openai.com/papers/gpt-4.pdf, 2023。</p>
-<p>[Packer等人，2023] Charles Packer, Vivian Fang, Shishir G Patil, Kevin Lin, Sarah Wooders, 和 Joseph E Gonzalez. MemGPT: 朝着LLMs作为操作系统。arXiv预印本arXiv:2310.08560, 2023。</p>
-<p>[Raffel等人，2020] Colin Raffel, Noam Shazeer, Adam Roberts, Katherine Lee, Sharan Narang, Michael Matena, Yanqi Zhou, Wei Li, 和 Peter J Liu. 探索转移学习的极限，使用统一的文本到文本转换器。机器学习研究杂志，21(1):5485–5551, 2020。</p>
-<p>[Ram等人，2023] Ori Ram, Yoav Levine, Itay Dalmedigos, Dor Muhlgay, Amnon Shashua, Kevin Leyton-Brown, 和 Yoav Shoham. 上下文检索增强的语言模型。arXiv预印本arXiv:2302.00083, 2023。</p>
-<p>[Raudaschl, 2023] Adrian H. Raudaschl. 忘记RAG，未来是RAG-Fusion。https://towardsdatascience.com/forget-rag-the-future-is-rag-fusion-1147298d8ad1, 2023。</p>
-<p>[Saad-Falcon等人，2023] Jon Saad-Falcon, Omar Khattab, Christopher Potts, 和 Matei Zaharia. Ares: 检索增强生成系统的自动化评估框架。arXiv预印本arXiv:2311.09476, 2023。</p>
-<p>[Schick等人，2023] Timo Schick, Jane Dwivedi-Yu, Roberto Dess`ı, Roberta Raileanu, Maria Lomeli, Luke Zettlemoyer, Nicola Cancedda, 和 Thomas Scialom. Toolformer: 语言模型可以教会自己使用工具。arXiv预印本arXiv:2302.04761, 2023。</p>
-<p>[Sciavolino等人，2021] Christopher Sciavolino, Zexuan Zhong, Jinhyuk Lee, 和 Danqi Chen. 简单的实体中心问题挑战密集检索器。arXiv预印本arXiv:2109.08535, 2021。</p>
-<p>[Shao等人，2023] Zhihong Shao, Yeyun Gong, Yelong Shen, Minlie Huang, Nan Duan, 和 Weizhu Chen. 通过迭代检索-生成协同增强检索增强的大型语言模型。arXiv预印本arXiv:2305.15294, 2023。</p>
-<p>[Shi等人，2023] Weijia Shi, Sewon Min, Michihiro Yasunaga, Minjoon Seo, Rich James, Mike Lewis, Luke Zettlemoyer, 和 Wen-tau Yih. Replug: 检索增强的黑盒语言模型。arXiv预印本arXiv:2301.12652, 2023。</p>
-<p>[Srivastava等人，2022] Aarohi Srivastava, Abhinav Rastogi, Abhishek Rao, Abu Awal Md Shoeb, Abubakar Abid, Adam Fisch, Adam R Brown, Adam Santoro, Aditya Gupta, Adri`a Garriga-Alonso, 等。超越模仿游戏：量化和推断语言模型的能力。arXiv预印本arXiv:2206.04615, 2022。</p>
-<p>[Sun等人，2022] Zhiqing Sun, Xuezhi Wang, Yi Tay, Yiming Yang, 和 Denny Zhou. Recitation-augmented language models。arXiv预印本arXiv:2210.01296, 2022。</p>
-<p>[Touvron等人，2023] Hugo Touvron, Louis Martin, Kevin Stone, Peter Albert, Amjad Almahairi, Yasmine Babaei, Nikolay Bashlykov, Soumya Batra, Prajjwal Bhargava, Shruti Bhosale, 等。Llama 2: 开放基础和微调聊天模型。arXiv预印本arXiv:2307.09288, 2023。</p>
-<p>[Trivedi等人，2022] Harsh Trivedi, Niranjan Balasubramanian, Tushar Khot, 和 Ashish Sabharwal. 将检索与思维链推理交织以解决知识密集型多步骤问题。arXiv预印本arXiv:2212.10509, 2022。</p>
-<p>[Vaswani等人，2017] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, 和 Illia Polosukhin. 注意力就是你需要的一切。在神经信息处理系统进展中，第30页，2017年。</p>
-<p>[VoyageAI, 2023] VoyageAI. Voyage的嵌入模型。https://docs.voyageai.com/embeddings/, 2023。</p>
-<p>[Wang等人，2019] Alex Wang, Yada Pruksachatkun, Nikita Nangia, Amanpreet Singh, Julian Michael, Felix Hill, Omer Levy, 和 Samuel Bowman. SuperGLUE: 一个更粘性的通用语言理解系统的基准。在神经信息处理系统进展中，第32页，2019年。</p>
-<p>[Wang等人，2022a] Shuohang Wang, Yichong Xu, Yuwei Fang, Yang Liu, Siqi Sun, Ruochen Xu, Chenguang Zhu, 和 Michael Zeng. 训练数据比你想象的更有价值：通过检索训练数据的简单有效方法。arXiv预印本arXiv:2203.08773, 2022。</p>
-<p>[Wang等人，2022b] Shuohang Wang, Yichong Xu, Yuwei Fang, Yang Liu, Siqi Sun, Ruochen Xu, Chenguang Zhu, 和 Michael Zeng. 训练数据比你想象的更有价值：通过检索训练数据的简单有效方法。在Smaranda Muresan, Preslav Nakov, 和 Aline Villavicencio编辑的第60届年度计算语言学协会会议（第1卷：长论文），第3170-3179页，都柏林，爱尔兰，2022年5月。计算语言学协会。</p>
-<p>[Wang等人，2023a] Boxin Wang, Wei Ping, Lawrence McAfee, Peng Xu, Bo Li, Mohammad Shoeybi, 和 Bryan Catanzaro. Instructretro: 检索增强预训练后的指令调整。arXiv预印本arXiv:2310.07713, 2023。</p>
-<p>[Wang等人，2023b] Boxin Wang, Wei Ping, Peng Xu, Lawrence McAfee, Zihan Liu, Mohammad Shoeybi, Yi Dong, Oleksii Kuchaiev, Bo Li, Chaowei Xiao, 等。我们是否应该用检索来预训练自回归语言模型？全面研究。arXiv预印本arXiv:2304.06762, 2023。</p>
-<p>[Wang等人，2023c] Liang Wang, Nan Yang, 和 Furu Wei. Query2doc: 使用大型语言模型进行查询扩展。arXiv预印本arXiv:2303.07678, 2023。</p>
-<p>[Wang等人，2023d] Xintao Wang, Qianwen Yang, Yongting Qiu, Jiaqing Liang, Qianyu He, Zhouhong Gu, Yanghua Xiao, 和 Wei Wang. Knowledgpt: 通过检索和存储访问知识库增强大型语言模型。arXiv预印本arXiv:2308.11761, 2023。</p>
-<p>[Wang等人，2023e] Yile Wang, Peng Li, Maosong Sun, 和 Yang Liu. 自我知识引导的检索增强用于大型语言模型。arXiv预印本arXiv:2310.05002, 2023。</p>
-<p>[Xia等人，2019] Mengzhou Xia, Guoping Huang, Lemao Liu, 和 Shuming Shi. 基于图的翻译记忆用于神经机器翻译。在人工智能AAAI会议论文集中，第33卷，第7297-7304页，2019年。</p>
-<p>[Xiao等人，2023] Guangxuan Xiao, Yuandong Tian, Beidi Chen, Song Han, 和 Mike Lewis. 高效的流式语言模型与注意力汇聚。arXiv预印本arXiv:2309.17453, 2023。</p>
-<p>[Xu等人，2023a] Fangyuan Xu, Weijia Shi, 和 Eunsol Choi. Recomp: 通过压缩和选择性增强改进检索增强的语言模型。arXiv预印本arXiv:2310.04408, 2023。</p>
-<p>[Xu等人，2023b] Peng Xu, Wei Ping, Xianchao Wu, Lawrence McAfee, Chen Zhu, Zihan Liu, Sandeep Subramanian, Evelina Bakhturina, Mohammad Shoeybi, 和 Bryan Catanzaro. 检索遇见长上下文的大型语言模型。arXiv预印本arXiv:2310.03025, 2023。</p>
-<p>[Xu等人，2023c] Peng Xu, Wei Ping, Xianchao Wu, Lawrence McAfee, Chen Zhu, Zihan Liu, Sandeep Subramanian, Evelina Bakhturina, Mohammad Shoeybi, 和 Bryan Catanzaro. 检索遇见长上下文的大型语言模型。arXiv预印本arXiv:2310.03025, 2023。</p>
-<p>[Yang等人，2023a] Antoine Yang, Arsha Nagrani, Paul Hongsuck Seo, Antoine Miech, Jordi Pont-Tuset, Ivan Laptev, Josef Sivic, 和 Cordelia Schmid。Vid2Seq: 用于密集视频字幕的大型视觉语言模型的大规模预训练。在IEEE/CVF计算机视觉和模式识别会议论文集中，第10714-10726页，2023年。</p>
-<p>[Yang等人，2023b] Haoyan Yang, Zhitao Li, Yong Zhang, Jianzong Wang, Ning Cheng, Ming Li, 和 Jing Xiao。PRCA: 通过可插拔的奖励驱动上下文适配器为检索问题回答拟合黑盒大型语言模型。arXiv预印本arXiv:2310.18347, 2023。</p>
-<p>[Yang等人，2023c] Hui Yang, Sifu Yue, 和 Yunzhong He。Auto-GPT用于在线决策：基准和额外意见。arXiv预印本arXiv:2306.02224, 2023。</p>
-<p>[Yasunaga等人，2022] Michihiro Yasunaga, Armen Aghajanyan, Weijia Shi, Rich James, Jure Leskovec, Percy Liang, Mike Lewis, Luke Zettlemoyer, 和 Wen-tau Yih. 检索增强的多模态语言建模。arXiv预印本arXiv:2211.12561, 2022。</p>
-<p>[Ye等人，2020] Deming Ye, Yankai Lin, Jiaju Du, Zhenghao Liu, Peng Li, Maosong Sun, 和 Zhiyuan Liu. 核心指代推理学习用于语言表示。arXiv预印本arXiv:2004.06870, 2020。</p>
-<p>[Yoran等人，2023] Ori Yoran, Tomer Wolfson, Ori Ram, 和 Jonathan Berant. 使检索增强的语言模型对不相关上下文鲁棒。arXiv预印本arXiv:2310.01558, 2023。</p>
-<p>[Yu等人，2022] Wenhao Yu, Dan Iter, Shuohang Wang, Yichong Xu, Mingxuan Ju, Soumya Sanyal, Chenguang Zhu, Michael Zeng, 和 Meng Jiang. 生成而不是检索：大型语言模型是强大的上下文生成器。arXiv预印本arXiv:2209.10063, 2022。</p>
-<p>[Yu等人，2023a] Wenhao Yu, Hongming Zhang, Xiaoman Pan, Kaixin Ma, Hongwei Wang, 和 Dong Yu. Chainof-note: 在检索增强的语言模型中增强鲁棒性。arXiv预印本arXiv:2311.09210, 2023。</p>
-<p>[Yu等人，2023b] Zichun Yu, Chenyan Xiong, Shi Yu, 和 Zhiyuan Liu. 增强适应的检索器提高了语言模型作为通用插件的泛化能力。arXiv预印本arXiv:2305.17331, 2023。</p>
-<p>[Zhang等人，2019] Zhengyan Zhang, Xu Han, Zhiyuan Liu, Xin Jiang, Maosong Sun, 和 Qun Liu. ERNIE: 通过信息实体增强语言表示。arXiv预印本arXiv:1905.07129, 2019。</p>
-<p>[Zhang等人，2023a] Peitian Zhang, Shitao Xiao, Zheng Liu, Zhicheng Dou, 和 Jian-Yun Nie. 检索任何东西来增强大型语言模型。arXiv预印本arXiv:2310.07554, 2023。</p>
-<p>[Zhang等人，2023b] Yue Zhang, Yafu Li, Leyang Cui, Deng Cai, Lemao Liu, Tingchen Fu, Xinting Huang, Enbo Zhao, Yu Zhang, Yulong Chen, 等。AI海洋中的塞壬之歌：关于大型语言模型幻觉的调查。arXiv预印本arXiv:2309.01219, 2023。</p>
-<p>[Zhang, 2023] Jiawei Zhang. Graph-Toolformer: 通过ChatGPT增强的提示赋予LLMs图推理能力。arXiv预印本arXiv:2304.11116, 2023。</p>
-<p>[Zhao等人，2022] Jinming Zhao, Gholamreza Haffar, 和 Ehsan Shareghi。为语音翻译生成合成语音。arXiv预印本arXiv:2210.08174, 2022。</p>
-<p>[Zheng等人，2023] Huaixiu Steven Zheng, Swaroop Mishra, Xinyun Chen, Heng-Tze Cheng, Ed H Chi, Quoc V Le, 和 Denny Zhou. 退一步：在大型语言模型中通过抽象唤起推理。arXiv预印本arXiv:2310.06117, 2023。</p>
-<p>[Zhu等人，2022] Wanrong Zhu, An Yan, Yujie Lu, Wenda Xu, Xin Eric Wang, Miguel Eckstein, 和 William Yang Wang. 在你写作之前先可视化：引导开放式文本生成的想象力。arXiv预印本arXiv:2210.03765, 2022。</p>
-<p>[Zhuang等人，2023] Shengyao Zhuang, Bing Liu, Bevan Koopman, 和 Guido Zuccon. 开源大型语言模型是文档排名的强零次查询可能性模型。arXiv预印本arXiv:2310.13243, 2023。</p>
+<p>[Baek等人，2023] Jinheon Baek, Soyeong Jeong, Minki Kang, Jong C Park, and Sung Ju Hwang. Knowledge-augmented language model verification. arXiv preprint arXiv:2310.12836, 2023.</p>
+<p>[Berchansky等人，2023] Moshe Berchansky, Peter Izsak, Avi Caciularu, Ido Dagan, and Moshe Wasserblat. Optimizing retrieval-augmented reader models via token elimination. arXiv preprint arXiv:2310.13682, 2023.</p>
+<p>[Blagojevi, 2023] Vladimir Blagojevi. Enhancing rag pipelines in haystack: Introducing diversityranker and lostinthemiddleranker. <a href="https://towardsdatascience.com/enhancing-rag-pipelines-in-haystack-45f14e2bc9f5">https://towardsdatascience.com/enhancing-rag-pipelines-in-haystack-45f14e2bc9f5</a>, 2023.</p>
+<p>[Borgeaud等人，2022] Sebastian Borgeaud, Arthur Mensch, Jordan Hoffmann, Trevor Cai, Eliza Rutherford, Katie Millican, George Bm Van Den Driessche, Jean-Baptiste Lespiau, Bogdan Damoc, Aidan Clark, et al. Improving language models by retrieving from trillions of tokens. In International conference on machine learning, pages 2206–2240. PMLR, 2022.</p>
+<p>[Brown等人，2020] Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al. Language models are few-shot learners. Advances in neural information processing systems, 33:1877–1901, 2020.</p>
+<p>[Cai等人，2021] Deng Cai, Yan Wang, Huayang Li, Wai Lam, and Lemao Liu. Neural machine translation with monolingual translation memory. arXiv preprint arXiv:2105.11269, 2021.</p>
+<p>[Chan等人，2023] David M Chan, Shalini Ghosh, Ariya Rastrow, and Björn Hoffmeister. Using external off-policy speech-to-text mappings in contextual end-to-end automated speech recognition. arXiv preprint arXiv:2301.02736, 2023.</p>
+<p>[Chen等人，2023a] Howard Chen, Ramakanth Pasunuru, Jason Weston, and Asli Celikyilmaz. Walking down the memory maze: Beyond context limit through interactive reading. arXiv preprint arXiv:2310.05029, 2023.</p>
+<p>[Chen等人，2023b] Jiawei Chen, Hongyu Lin, Xianpei Han, and Le Sun. Benchmarking large language models in retrieval-augmented generation. arXiv preprint arXiv:2309.01431, 2023.</p>
+<p>[Cheng等人，2022] Xin Cheng, Shen Gao, Lemao Liu, Dongyan Zhao, and Rui Yan. Neural machine translation with contrastive translation memories. arXiv preprint arXiv:2212.03140, 2022.</p>
+<p>[Cheng等人，2023a] Daixuan Cheng, Shaohan Huang, Junyu Bi, Yuefeng Zhan, Jianfeng Liu, Yujing Wang, Hao Sun, Furu Wei, Denvy Deng, and Qi Zhang. Uprise: Universal prompt retrieval for improving zero-shot evaluation. arXiv preprint arXiv:2303.08518, 2023.</p>
+<p>[Cheng等人，2023b] Xin Cheng, Di Luo, Xiuying Chen, Lemao Liu, Dongyan Zhao, and Rui Yan. Lift yourself up: Retrieval-augmented text generation with self memory. arXiv preprint arXiv:2305.02437, 2023.</p>
+<p>[Cohere, 2023] Cohere. Say goodbye to irrelevant search results: Cohere rerank is here. <a href="https://txt.cohere.com/rerank/">https://txt.cohere.com/rerank/</a>, 2023.</p>
+<p>[Dai等人，2022] Zhuyun Dai, Vincent Y Zhao, Ji Ma, Yi Luan, Jianmo Ni, Jing Lu, Anton Bakalov, Kelvin Guu, Keith B Hall, and Ming-Wei Chang. Promptagator: Few-shot dense retrieval from 8 examples. arXiv preprint arXiv:2209.11755, 2022.</p>
+<p>[Es等人，2023] Shahul Es, Jithin James, Luis EspinosaAnke, and Steven Schockaert. Ragas: Automated evaluation of retrieval augmented generation. arXiv preprint arXiv:2309.15217, 2023.</p>
+<p>[Feng等人，2023] Zhangyin Feng, Xiaocheng Feng, Dezhi Zhao, Maojin Yang, and Bing Qin. Retrieval-generation synergy augmented large language models. arXiv preprint arXiv:2310.05149, 2023.</p>
+<p>[Gao等人，2022] Luyu Gao, Xueguang Ma, Jimmy Lin, and Jamie Callan. Precise zero-shot dense retrieval without relevance labels. arXiv preprint arXiv:2212.10496, 2022.</p>
+<p>[Glass等人，2021] Michael Glass, Gaetano Rossiello, Md Faisal Mahbub Chowdhury, and Alfio Gliozzo. Robust retrieval augmented generation for zero-shot slot filling. arXiv preprint arXiv:2108.13934, 2021.</p>
+<p>[Google, 2023] Google. Gemini: A family of highly capable multimodal models. <a href="https://goo.gle/GeminiPaper">https://goo.gle/GeminiPaper</a>, 2023.</p>
+<p>[Guo等人，2023] Zhicheng Guo, Sijie Cheng, Yile Wang, Peng Li, and Yang Liu. Prompt-guided retrieval augmentation for non-knowledge-intensive tasks. arXiv preprint arXiv:2305.17653, 2023.</p>
+<p>[Hendrycks等人，2020] Dan Hendrycks, Collin Burns, Steven Basart, Andy Zou, Mantas Mazeika, Dawn Song, and Jacob Steinhardt. Measuring massive multitask language understanding. arXiv preprint arXiv:2009.03300, 2020.</p>
+<p>[Hoshi等人，2023] Yasuto Hoshi, Daisuke Miyashita, Youyang Ng, Kento Tatsuno, Yasuhiro Morioka, Osamu Torii, and Jun Deguchi. Ralle: A framework for developing and evaluating retrieval-augmented large language models. arXiv preprint arXiv:2308.10633, 2023.</p>
+<p>[Huang等人，2023] Jie Huang, Wei Ping, Peng Xu, Mohammad Shoeybi, Kevin Chen-Chuan Chang, and Bryan Catanzaro. Raven: In-context learning with retrieval augmented encoder-decoder language models. arXiv preprint arXiv:2308.07922, 2023.</p>
+<p>[ILIN, 2023] IVAN ILIN. Advanced rag techniques: an illustrated overview. <a href="https://pub.towardsai.net/advanced-rag-techniques-an-illustrated-overview-04d193d8fec6">https://pub.towardsai.net/advanced-rag-techniques-an-illustrated-overview-04d193d8fec6</a>, 2023.</p>
+<p>[Izacard等人，2022] Gautier Izacard, Patrick Lewis, Maria Lomeli, Lucas Hosseini, Fabio Petroni, Timo Schick, Jane Dwivedi-Yu, Armand Joulin, Sebastian Riedel, and Edouard Grave. Few-shot learning with retrieval augmented language models. arXiv preprint arXiv:2208.03299, 2022.</p>
+<p>[Jarvis和Allard，2023] Colin Jarvis and John Allard. A survey of techniques for maximizing LLM performance. <a href="https://community.openai.com/t/openai-dev-day-2023-breakout-sessions/505213#a-survey-of-techniques-for-maximizing-llm-performance-2">https://community.openai.com/t/openai-dev-day-2023-breakout-sessions/505213#a-survey-of-techniques-for-maximizing-llm-performance-2</a>, 2023.</p>
+<p>[Jiang等人，2023a] Huiqiang Jiang, Qianhui Wu, Chin-Yew Lin, Yuqing Yang, and Lili Qiu. Llmlingua: Compressing prompts for accelerated inference of large language models. arXiv preprint arXiv:2310.05736, 2023.</p>
+<p>[Jiang等人，2023b] Zhengbao Jiang, Frank F Xu, Luyu Gao, Zhiqing Sun, Qian Liu, Jane Dwivedi-Yu, Yiming Yang, Jamie Callan, and Graham Neubig. Active retrieval augmented generation. arXiv preprint arXiv:2305.06983, 2023.</p>
+<p>[Kandpal等人，2023] Nikhil Kandpal, Haikang Deng, Adam Roberts, Eric Wallace, and Colin Raffel. Large language models struggle to learn long-tail knowledge. In International Conference on Machine Learning, pages 15696–15707. PMLR, 2023.</p>
+<p>[Kang等人，2023] Minki Kang, Jin Myung Kwak, Jinheon Baek, and Sung Ju Hwang. Knowledge graph-augmented language models for knowledge-grounded dialogue generation. arXiv preprint arXiv:2305.18846, 2023.</p>
+<p>[Kaplan等人，2020] Jared Kaplan, Sam McCandlish, Tom Henighan, Tom B Brown, Benjamin Chess, Rewon Child, Scott Gray, Alec Radford, Jeffrey Wu, and Dario Amodei. Scaling laws for neural language models. arXiv preprint arXiv:2001.08361, 2020.</p>
+<p>[Karpukhin等人，2020] Vladimir Karpukhin, Barlas O˘guz, Sewon Min, Patrick Lewis, Ledell Wu, Sergey Edunov, Danqi Chen, and Wen-tau Yih. Dense passage retrieval for open-domain question answering. arXiv preprint arXiv:2004.04906, 2020.</p>
+<p>[Khandelwal等人，2019] Urvashi Khandelwal, Omer Levy, Dan Jurafsky, Luke Zettlemoyer, and Mike Lewis. Generalization through memorization: Nearest neighbor language models. arXiv preprint arXiv:1911.00172, 2019.</p>
+<p>[Khattab等人，2022] Omar Khattab, Keshav Santhanam, Xiang Lisa Li, David Hall, Percy Liang, Christopher Potts, and Matei Zaharia. Demonstrate-search-predict: Composing retrieval and language models for knowledge-intensive nlp. arXiv preprint arXiv:2212.14024, 2022.</p>
+<p>[Kim等人，2023] Gangwoo Kim, Sungdong Kim, Byeongguk Jeon, Joonsuk Park, and Jaewoo Kang. Tree of clarifications: Answering ambiguous questions with retrieval-augmented large language models. arXiv preprint arXiv:2310.14696, 2023.</p>
+<p>[Lan等人，2022] Tian Lan, Deng Cai, Yan Wang, Heyan Huang, and Xian-Ling Mao. Copy is all you need. In The Eleventh International Conference on Learning Representations, 2022.</p>
+<p>[Lee等人，2020] Jinhyuk Lee, Mujeen Sung, Jaewoo Kang, and Danqi Chen. Learning dense representations of phrases at scale. arXiv preprint arXiv:2012.12624, 2020.</p>
+<p>[Leng等人，2023] Quinn Leng, Kasey Uhlenhuth, and Alkis Polyzotis. Best practices for LLM evaluation of RAG applications. <a href="https://www.databricks.com/blog/LLM-auto-eval-best-practices-RAG">https://www.databricks.com/blog/LLM-auto-eval-best-practices-RAG</a>, 2023.</p>
+<p>[Lewis等人，2020] Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio Petroni, Vladimir Karpukhin, Naman Goyal, Heinrich K¨uttler, Mike Lewis, Wen-tau Yih, Tim Rockt¨aschel, et al. Retrieval-augmented generation for knowledge-intensive nlp tasks. Advances in Neural Information Processing Systems, 33:9459–9474, 2020.</p>
+<p>[Li and Li, 2023] Xianming Li and Jing Li. Angle-optimized text embeddings. arXiv preprint arXiv:2309.12871, 2023.</p>
+<p>[Li等人，2023a] Junnan Li, Dongxu Li, Silvio Savarese, and Steven Hoi. Blip-2: Bootstrapping language-image pretraining with frozen image encoders and large language models. arXiv preprint arXiv:2301.12597, 2023.</p>
+<p>[Li等人，2023b] Xiaoqian Li, Ercong Nie, and Sheng Liang. From classification to generation: Insights into crosslingual retrieval augmented ICL. arXiv preprint arXiv:2311.06595, 2023.</p>
+<p>[Li等人，2023c] Xingxuan Li, Ruochen Zhao, Yew Ken Chia, Bosheng Ding, Lidong Bing, Shafiq Joty, and Soujanya Poria. Chain of knowledge: A framework for grounding large language models with structured knowledge bases. arXiv preprint arXiv:2305.13269, 2023.</p>
+<p>[Li等人，2023d] Xinze Li, Zhenghao Liu, Chenyan Xiong, Shi Yu, Yu Gu, Zhiyuan Liu, and Ge Yu. Structure-aware language model pretraining improves dense retrieval on structured data. arXiv preprint arXiv:2305.19912, 2023.</p>
+<p>[Liang等人，2023] Han Liang, Wenqian Zhang, Wenxuan Li, Jingyi Yu, and Lan Xu. Intergen: Diffusion-based multi-human motion generation under complex interactions. arXiv preprint arXiv:2304.05684, 2023.</p>
+<p>[Lin等人，2023] Xi Victoria Lin, Xilun Chen, Mingda Chen, Weijia Shi, Maria Lomeli, Rich James, Pedro Rodriguez, Jacob Kahn, Gergely Szilvasy, Mike Lewis, et al. Ra-dit: Retrieval-augmented dual instruction tuning. arXiv preprint arXiv:2310.01352, 2023.</p>
+<p>[Litman等人，2020] Ron Litman, Oron Anschel, Shahar Tsiper, Roee Litman, Shai Mazor, and R Manmatha. Scatter: selective context attentional scene text recognizer. In proceedings of the IEEE/CVF conference on computer vision and pattern recognition, pages 11962–11972, 2020.</p>
+<p>[Liu等人，2023a] Nelson F Liu, Kevin Lin, John Hewitt, Ashwin Paranjape, Michele Bevilacqua, Fabio Petroni, and Percy Liang. Lost in the middle: How language models use long contexts. arXiv preprint arXiv:2307.03172, 2023.</p>
+<p>[Liu等人，2023b] Yi Liu, Lianzhe Huang, Shicheng Li, Sishuo Chen, Hao Zhou, Fandong Meng, Jie Zhou, and Xu Sun. Recall: A benchmark for LLMs robustness against external counterfactual knowledge. arXiv preprint arXiv:2311.08147, 2023.</p>
+<p>[Liu, 2023] Jerry Liu. Building production-ready RAG applications. <a href="https://www.ai.engineer/summit/schedule/building-production-ready-rag-applications">https://www.ai.engineer/summit/schedule/building-production-ready-rag-applications</a>, 2023.</p>
+<p>[Luo等人，2023] Ziyang Luo, Can Xu, Pu Zhao, Xiubo Geng, Chongyang Tao, Jing Ma, Qingwei Lin, and Daxin Jiang. Augmented large language models with parametric knowledge guiding. arXiv preprint arXiv:2305.04757, 2023.</p>
+<p>[Ma等人，2023a] Xinbei Ma, Yeyun Gong, PengchengHe, Hai Zhao, and Nan Duan. Query rewriting for retrieval-augmented large language models. arXiv preprint arXiv:2305.14283, 2023.</p>
+<p>[Ma等人，2023b] Yubo Ma, Yixin Cao, YongChing Hong, and Aixin Sun. Large language model is not a good few-shot information extractor, but a good reranker for hard samples! ArXiv, abs/2303.08559, 2023.</p>
+<p>[Modarressi等人，2023] Ali Modarressi, Ayyoob Imani, Mohsen Fayyaz, and Hinrich Schütze. Ret-llm: Towards a general read-write memory for large language models. arXiv preprint arXiv:2305.14322, 2023.</p>
+<p>[Nakano等人，2021] Reiichiro Nakano, Jacob Hilton, Suchir Balaji, Jeff Wu, Long Ouyang, Christina Kim, Christopher Hesse, Shantanu Jain, Vineet Kosaraju, William Saunders, et al. Webgpt: Browser-assisted question-answering with human feedback. arXiv preprint arXiv:2112.09332, 2021.</p>
+<p>[Nashid等人，2023] Noor Nashid, Mifta Sintaha, and Ali Mesbah. Retrieval-based prompt selection for code-related few-shot learning. In 2023 IEEE/ACM 45th International Conference on Software Engineering (ICSE), pages 2450– 2462, 2023.</p>
+<p>[Nguyen, 2023] Isabelle Nguyen. Evaluating RAG part i: How to evaluate document retrieval. <a href="https://www.deepset.ai/">https://www.deepset.ai/</a> blog/rag-evaluation-retrieval, 2023.</p>
+<p>[Nishikawa等人，2022] Sosuke Nishikawa, Ryokan Ri, Ikuya Yamada, Yoshimasa Tsuruoka, and Isao Echizen. EASE: Entity-aware contrastive learning of sentence embedding. arXiv preprint arXiv:2205.04260, 2022.</p>
+<p>[OpenAI, 2023] OpenAI. GPT-4 technical report. https://cdn. openai.com/papers/gpt-4.pdf, 2023.</p>
+<p>[Packer等人，2023] Charles Packer, Vivian Fang, Shishir G Patil, Kevin Lin, Sarah Wooders, and Joseph E Gonzalez. Memgpt: Towards LLMs as operating systems. arXiv preprint arXiv:2310.08560, 2023.</p>
+<p>[Raffel等人，2020] Colin Raffel, Noam Shazeer, Adam Roberts, Katherine Lee, Sharan Narang, Michael Matena, Yanqi Zhou, Wei Li, and Peter J Liu. Exploring the limits of transfer learning with a unified text-to-text transformer. The Journal of Machine Learning Research, 21(1):5485– 5551, 2020.</p>
+<p>[Ram等人，2023] Ori Ram, Yoav Levine, Itay Dalmedigos, Dor Muhlgay, Amnon Shashua, Kevin Leyton-Brown, and Yoav Shoham. In-context retrieval-augmented language models. arXiv preprint arXiv:2302.00083, 2023.</p>
+<p>[Raudaschl, 2023] Adrian H. Raudaschl. Forget RAG, the future is RAG-Fusion. <a href="https://towardsdatascience.com/">https://towardsdatascience.com/</a> forget-RAG-the-future-is-RAG-Fusion-1147298d8ad1, 2023.</p>
+<p>[Saad-Falcon等人，2023] Jon Saad-Falcon, Omar Khattab, Christopher Potts, and Matei Zaharia. Ares: An automated evaluation framework for retrieval-augmented generation systems. arXiv preprint arXiv:2311.09476, 2023.</p>
+<p>[Schick等人，2023] Timo Schick, Jane Dwivedi-Yu, Roberto Dess`ı, Roberta Raileanu, Maria Lomeli, Luke Zettlemoyer, Nicola Cancedda, and Thomas Scialom. Toolformer: Language models can teach themselves to use tools. arXiv preprint arXiv:2302.04761, 2023.</p>
+<p>[Sciavolino等人，2021] Christopher Sciavolino, Zexuan Zhong, Jinhyuk Lee, and Danqi Chen. Simple entity-centric questions challenge dense retrievers. arXiv preprint arXiv:2109.08535, 2021.</p>
+<p>[Shao等人，2023] Zhihong Shao, Yeyun Gong, Yelong Shen, Minlie Huang, Nan Duan, and Weizhu Chen. Enhancing retrieval-augmented large language models with iterative retrieval-generation synergy. arXiv preprint arXiv:2305.15294, 2023.</p>
+<p>[Shi等人，2023] Weijia Shi, Sewon Min, Michihiro Yasunaga, Minjoon Seo, Rich James, Mike Lewis, Luke Zettlemoyer, and Wen-tau Yih. Replug: Retrieval-augmented black-box language models. arXiv preprint arXiv:2301.12652, 2023.</p>
+<p>[Srivastava等人，2022] Aarohi Srivastava, Abhinav Rastogi, Abhishek Rao, Abu Awal Md Shoeb, Abubakar Abid, Adam Fisch, Adam R Brown, Adam Santoro, Aditya Gupta, Adri`a Garriga-Alonso, et al. Beyond the imitation game: Quantifying and extrapolating the capabilities of language models. arXiv preprint arXiv:2206.04615, 2022.</p>
+<p>[Sun等人，2022] Zhiqing Sun, Xuezhi Wang, Yi Tay, Yiming Yang, and Denny Zhou. Recitation-augmented language models. arXiv preprint arXiv:2210.01296, 2022.</p>
+<p>[Touvron等人，2023] Hugo Touvron, Louis Martin, Kevin Stone, Peter Albert, Amjad Almahairi, Yasmine Babaei, Nikolay Bashlykov, Soumya Batra, Prajjwal Bhargava, Shruti Bhosale, et al. Llama 2: Open foundation and fine-tuned chat models. arXiv preprint arXiv:2307.09288, 2023.</p>
+<p>[Trivedi等人，2022] Harsh Trivedi, Niranjan Balasubramanian, Tushar Khot, and Ashish Sabharwal. Interleaving retrieval with chain-of-thought reasoning for knowledge-intensive multi-step questions. arXiv preprint arXiv:2212.10509, 2022.</p>
+<p>[Vaswani等人，2017] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. Advances in neural information processing systems, 30, 2017.</p>
+<p>[VoyageAI, 2023] VoyageAI. Voyage’s embedding models. <a href="https://docs.voyageai.com/embeddings/">https://docs.voyageai.com/embeddings/</a>, 2023.</p>
+<p>[Wang等人，2019] Alex Wang, Yada Pruksachatkun, Nikita Nangia, Amanpreet Singh, Julian Michael, Felix Hill, Omer Levy, and Samuel Bowman. SuperGLUE: A stickier benchmark for general-purpose language understanding systems. Advances in neural information processing systems, 32, 2019.</p>
+<p>[Wang等人，2022a] Shuohang Wang, Yichong Xu, Yuwei Fang, Yang Liu, Siqi Sun, Ruochen Xu, Chenguang Zhu, and Michael Zeng. Training data is more valuable than you think: A simple and effective method by retrieving from training data. arXiv preprint arXiv:2203.08773, 2022.</p>
+<p>[Wang等人，2022b] Shuohang Wang, Yichong Xu, Yuwei Fang, Yang Liu, Siqi Sun, Ruochen Xu, Chenguang Zhu, and Michael Zeng. Training data is more valuable than you think: A simple and effective method by retrieving from training data. In Smaranda Muresan, Preslav Nakov, and Aline Villavicencio, editors, Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pages 3170– 3179, Dublin, Ireland, May 2022. Association for Computational Linguistics.</p>
+<p>[Wang等人，2023a] Boxin Wang, Wei Ping, Lawrence McAfee, Peng Xu, Bo Li, Mohammad Shoeybi, and Bryan Catanzaro. Instructretro: Instruction tuning post retrieval-augmented pretraining. arX-print arXiv:2310.07713, 2023.</p>
+<p>[Wang等人，2023b] Boxin Wang, Wei Ping, Peng Xu, Lawrence McAfee, Zihan Liu, Mohammad Shoeybi, Yi Dong, Oleksii Kuchaiev, Bo Li, Chaowei Xiao, et al. Shall we pretrain autoregressive language models with retrieval? A comprehensive study. arXiv preprint arXiv:2304.06762, 2023.</p>
+<p>[Wang等人，2023c] Liang Wang, Nan Yang, and Furu Wei. Query2doc: Query expansion with large language models. arXiv preprint arXiv:2303.07678, 2023.</p>
+<p>[Wang等人，2023d] Xintao Wang, Qianwen Yang, Yongting Qiu, Jiaqing Liang, Qianyu He, Zhouhong Gu, Yanghua Xiao, and Wei Wang. Knowledgpt: Enhancing large language models with retrieval and storage access on knowledge bases. arXiv preprint arXiv:2308.11761, 2023.</p>
+<p>[Wang等人，2023e] Yile Wang, Peng Li, Maosong Sun, and Yang Liu. Self-knowledge guided retrieval augmentation for large language models. arXiv preprint arXiv:2310.05002, 2023.</p>
+<p>[Xia等人，2019] Mengzhou Xia, Guoping Huang, Lemao Liu, and Shuming Shi. Graph based translation memory for neural machine translation. In Proceedings of the AAAI conference on artificial intelligence, volume 33, pages 7297–7304, 2019.</p>
+<p>[Xiao等人，2023] Guangxuan Xiao, Yuandong Tian, Beidi Chen, Song Han, and Mike Lewis. Efficient streaming language models with attention sinks. arXiv preprint arXiv:2309.17453, 2023.</p>
+<p>[Xu等人，2023a] Fangyuan Xu, Weijia Shi, and Eunsol Choi. Recomp: Improving retrieval-augmented LMs with compression and selective augmentation. arXiv preprint arXiv:2310.04408, 2023.</p>
+<p>[Xu等人，2023b] Peng Xu, Wei Ping, Xianchao Wu, Lawrence McAfee, Chen Zhu, Zihan Liu, Sandeep Subramanian, Evelina Bakhturina, Mohammad Shoeybi, and Bryan Catanzaro. Retrieval meets long context large language models. arXiv preprint arXiv:2310.03025, 2023.</p>
+<p>[Xu等人，2023c] Peng Xu, Wei Ping, Xianchao Wu, Lawrence McAfee, Chen Zhu, Zihan Liu, Sandeep Subramanian, Evelina Bakhturina, Mohammad Shoeybi, and Bryan Catanzaro. Retrieval meets long context large language models. arXiv preprint arXiv:2310.03025, 2023.</p>
+<p>[Yang等人，2023a] Antoine Yang, Arsha Nagrani, Paul Hongsuck Seo, Antoine Miech, Jordi Pont-Tuset, Ivan Laptev, Josef Sivic, and Cordelia Schmid. Vid2seq: Large-scale pretraining of a visual language model for dense video captioning. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 10714–10726, 2023.</p>
+<p>[Yang等人，2023b] Haoyan Yang, Zhitao Li, Yong Zhang, Jianzong Wang, Ning Cheng, Ming Li, and Jing Xiao. PRCA: Fitting black-box large language models for retrieval question answering via pluggable reward-driven contextual adapter. arXiv preprint arXiv:2310.18347, 2023.</p>
+<p>[Yang等人，2023c] Hui Yang, Sifu Yue, and Yunzhong He. Auto-gpt for online decision making: Benchmarks and additional opinions. arXiv preprint arXiv:2306.02224, 2023.</p>
+<p>[Yasunaga等人，2022] Michihiro Yasunaga, Armen Aghajanyan, Weijia Shi, Rich James, Jure Leskovec, Percy Liang, Mike Lewis, Luke Zettlemoyer, and Wen-tau Yih. Retrieval-augmented multimodal language modeling. arXiv preprint arXiv:2211.12561, 2022.</p>
+<p>[Ye等人，2020] Deming Ye, Yankai Lin, Jiaju Du, Zhenghao Liu, Peng Li, Maosong Sun, and Zhiyuan Liu. Coreferential reasoning learning for language representation. arXiv preprint arXiv:2004.06870, 2020.</p>
+<p>[Yoran等人，2023] Ori Yoran, Tomer Wolfson, Ori Ram, and Jonathan Berant. Making retrieval-augmented language models robust to irrelevant context. arXiv preprint arXiv:2310.01558, 2023.</p>
+<p>[Yu等人，2022] Wenhao Yu, Dan Iter, Shuohang Wang, Yichong Xu, Mingxuan Ju, Soumya Sanyal, Chenguang Zhu, Michael Zeng, and Meng Jiang. Generate rather than retrieve: Large language models are strong context generators. arXiv preprint arXiv:2209.10063, 2022.</p>
+<p>[Yu等人，2023a] Wenhao Yu, Hongming Zhang, Xiaoman Pan, Kaixin Ma, Hongwei Wang, and Dong Yu. Chainof-note: Enhancing robustness in retrieval-augmented language models. arXiv preprint arXiv:2311.09210, 2023.</p>
+<p>[Yu等人，2023b] Zichun Yu, Chenyan Xiong, Shi Yu, and Zhiyuan Liu. Augmentation-adapted retriever improves generalization of language models as generic plug-in. arXiv preprint arXiv:2305.17331, 2023.</p>
+<p>[Zhang等人，2019] Zhengyan Zhang, Xu Han, Zhiyuan Liu, Xin Jiang, Maosong Sun, and Qun Liu. ERNIE: Enhanced language representation with informative entities. arXiv preprint arXiv:1905.07129, 2019.</p>
+<p>[Zhang等人，2023a] Peitian Zhang, Shitao Xiao, Zheng Liu, Zhicheng Dou, and Jian-Yun Nie. Retrieve anything to augment large language models. arXiv preprint arXiv:2310.07554, 2023.</p>
+<p>[Zhang等人，2023b] Yue Zhang, Yafu Li, Leyang Cui, Deng Cai, Lemao Liu, Tingchen Fu, Xinting Huang, Enbo Zhao, Yu Zhang, Yulong Chen, et al. Siren’s song in the AI ocean: A survey on hallucination in large language models. arXiv preprint arXiv:2309.01219, 2023.</p>
+<p>[Zhang, 2023] Jiawei Zhang. Graph-toolformer: To empower LLMs with graph reasoning ability via prompt augmented by ChatGPT. arXiv preprint arXiv:2304.11116, 2023.</p>
+<p>[Zhao等人，2022] Jinming Zhao, Gholamreza Haffar, and Ehsan Shareghi. Generating synthetic speech from spoken-vocab for speech translation. arXiv preprint arXiv:2210.08174, 2022.</p>
+<p>[Zheng等人，2023] Huaixiu Steven Zheng, Swaroop Mishra, Xinyun Chen, Heng-Tze Cheng, Ed H Chi, Quoc V Le, and Denny Zhou. Take a step back: Evoking reasoning via abstraction in large language models. arXiv preprint arXiv:2310.06117, 2023.</p>
+<p>[Zhu等人，2022] Wanrong Zhu, An Yan, Yujie Lu, Wenda Xu, Xin Eric Wang, Miguel Eckstein, and William Yang Wang. Visualize before you write: Imagination-guided open-ended text generation. arXiv preprint arXiv:2210.03765, 2022.</p>
+<p>[Zhuang等人，2023] Shengyao Zhuang, Bing Liu, Bevan Koopman, and Guido Zuccon. Open-source large language models are strong zero-shot query likelihood models for document ranking. arXiv preprint arXiv:2310.13243, 2023.</p>
 <section class="footnotes" role="doc-endnotes">
 <hr>
 <ol>
