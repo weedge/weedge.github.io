@@ -342,6 +342,51 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/user-behavior-analytics-solution/">用户行为分析方案设计</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2022-11-02" class="post-time">
+        2022-11-02
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <h2 id="背景">背景</h2>
+<p>用户在手机和pc端使用客户业务产品，比如浏览网页，购买商品，查看文档，观看视频，直播，IOT场景；会产生大量的用户行为数据，主要包括：</p>
+<ol>
+<li>非结构化数据：日志(前端事件埋点日志，服务端处理事件日志)，还有些非结构化的图片，音视频数据等等，主要存放在文件存储系统中；</li>
+<li>结构化和半结构化数据： 用户操作产品写入的结构化数据存放于数据库表中，将文档型半结构化的数据放入文档数据库中；</li>
+</ol>
+<p>需要分析用户的行为数据，进行决策；分为实时流式处理和离线批处理：</p>
+<ol>
+<li>实时流处理，主要用于实时展现客户端看板，后台BI实时分析，实时风控/推荐，异常报警等场景；</li>
+<li>离线批处理，分析用户历史数据，进行推荐算法等机器学习算法模型训练使用，数据仓库中根据不同维度对数据过滤聚合，进行上卷下钻分析，比如计算DAU,WAU,MAU，转化率(购买率，注册率)分析等，通常对数据建设投入多的话， 会把用户产生的结构化非结构化的数据都存下，放在一个大的池子里待使用时进行分析，即所谓的数据湖，围湖而建挖掘数据价值；而数仓相对精细化的分析，前置建模建表分析；</li>
+</ol>
+<p>对此进行方案分析，本文将介绍一种实时离线处理分析用户行为数据方案，即能帮助企业低成本地使用海量数据，又能更快速地响应业务需求，同时借助亚马逊云科技的托管服务，能够快速实施和轻松运维。</p>
+    </div>
+    <div class="read-more">
+      <a href="/post/user-behavior-analytics-solution/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/shop/">全栈开发</a>
     </h1>
     
@@ -554,41 +599,6 @@
     </div>
     <div class="read-more">
       <a href="/post/ping/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/lru/">缓存淘汰策略-LRU</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2021-11-08" class="post-time">
-        2021-11-08
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h2 id="序言">序言</h2>
-<p>​	在计算机硬件中缓/内存设计是用来机器启动的时候加载程序，分配运行空间数据，停机，缓/内存中的数据会丢失；磁盘用来持久化存储，提供数据加载到内存中，内存的读写速度比磁盘快很多，以下是<a href="https://research.google/people/jeff/">Jeff Dean</a>  &ldquo;<a href="http://brenocon.com/dean_perf.html">Numbers Everyone Should Know</a>&rdquo; 中提供的数据(虽然过去10多年了)， 读取1MB数据，从内存中读比从磁盘中读取快100+倍；但是缓/内存的空间比磁盘空间少，为了加快数据的访问，减少缓存/磁盘io，大概分为三种：1. 可以提前将数据从磁盘加载到内/缓存中(page)、2. 内/缓存miss从下层存储获取数据(cache,pool,page)、3. 无需加载，直接内/缓存evict；如果提供给进程的最大内/缓存资源到了最大限制，需要对存储资源进行evict操作，常用的evict策略可以从<a href="https://en.wikipedia.org/wiki/Cache_replacement_policies">Cache_replacement_policies</a>中了解；有关特定于分页的详细算法，请参阅<a href="https://en.wikipedia.org/wiki/Page_replacement_algorithm">页面替换算法</a>；有关特定于 CPU 和 RAM 之间缓存的详细算法，请参阅<a href="https://en.wikipedia.org/wiki/CPU_cache">CPU 缓存</a>。这里主要关注LRU evict相关策略。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/lru/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>

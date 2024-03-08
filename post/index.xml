@@ -6,7 +6,17 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sun, 03 Mar 2024 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 08 Mar 2024 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>论文：Retrieval-Augmented Generation for Large Language Models: A Survey</title>
+      <link>https://weedge.github.io/post/paper/rag/rag-for-llms-a-survey/</link>
+      <pubDate>Fri, 08 Mar 2024 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/paper/rag/rag-for-llms-a-survey/</guid>
+      <description>&lt;p&gt;大型语言模型（LLMs）展示了显著的能力，但面临着幻觉、过时知识和不透明、不可追踪的推理过程等挑战。检索增强生成（RAG）已经成为一个有前途的解决方案，通过整合外部数据库的知识。这增强了模型的准确性和可信度，特别适用于知识密集型任务，并允许持续的知识更新和领域特定信息的整合。RAG通过将LLMs的内在知识与庞大、动态的外部数据库资源相结合，产生了协同效应。这篇综述论文详细考察了RAG范式的发展，包括天真的RAG、高级的RAG和模块化的RAG。它对RAG框架的三方基础进行了细致的审查，其中包括检索、生成和增强技术。该论文突出了嵌入在每个关键组成部分的最先进技术，提供了对RAG系统进展的深刻理解。此外，该论文介绍了评估RAG模型的指标和基准，以及最新的评估框架。总之，该论文勾勒了研究的前景，包括挑战的识别、多模态的扩展以及RAG基础设施及其生态系统的进展&lt;sup id=&#34;fnref:1&#34;&gt;&lt;a href=&#34;#fn:1&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;1&lt;/a&gt;&lt;/sup&gt;。&lt;/p&gt;
+&lt;p&gt;论文地址:  &lt;a href=&#34;https://arxiv.org/pdf/2312.10997.pdf&#34;&gt;Retrieval-Augmented Generation for Large Language Models: A Survey&lt;/a&gt; |  &lt;a href=&#34;https://github.com/Tongji-KGLLM/RAG-Survey/blob/main/assets/RAG_Slide_ENG.pdf&#34;&gt;PPT&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>译：内存分析</title>
       <link>https://weedge.github.io/post/cpu/memory_profiling/</link>
@@ -339,22 +349,6 @@
 &lt;p&gt;所有人之间的社会关系距离不超过 6 个。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;在继续讨论 HNSW 的内部工作之前，让我们首先讨论跳跃列表和可导航小世界——HNSW 实现中使用的关键数据结构。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>译：相似性搜索，第 3 部分：混合倒排文件索引和乘积量化</title>
-      <link>https://weedge.github.io/post/oneday/similarity-search/3.blending-inverted-file-index-and-product-quantization/</link>
-      <pubDate>Mon, 25 Sep 2023 11:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/oneday/similarity-search/3.blending-inverted-file-index-and-product-quantization/</guid>
-      <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/blending-inverted-file-index-and-product-quantization/0.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;了解如何结合两个基本的相似性搜索索引以发挥两者的优势&lt;/strong&gt;&lt;/p&gt;
-&lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
-&lt;p&gt;在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。&lt;/p&gt;
-&lt;p&gt;在本系列的前两部分中，我们讨论了信息检索中的两种基本算法：&lt;strong&gt;倒排文件索引&lt;/strong&gt;和&lt;strong&gt;乘积量化&lt;/strong&gt;。它们都优化了搜索性能，但侧重于不同的方面：第一个加速了搜索速度，而后者将向量压缩为更小的、节省内存的表示形式。&lt;/p&gt;
-&lt;p&gt;由于两种算法侧重于不同的方面，自然出现的问题是是否可以将这两种算法合并为一种新算法&lt;/p&gt;
-&lt;p&gt;在本文中，我们将结合这两种方法的优点来产生快速且内存高效的算法。作为参考，大多数讨论的想法都将基于&lt;a href=&#34;https://inria.hal.science/inria-00514462v2/document&#34;&gt;本文&lt;/a&gt;。&lt;/p&gt;
-&lt;p&gt;在深入研究细节之前，有必要了解残差向量(residual vectors)是什么，并对它们的有用属性有一个简单的直觉。稍后我们将在设计算法时使用它们。&lt;/p&gt;</description>
     </item>
     
   </channel>
