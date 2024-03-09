@@ -53,7 +53,7 @@
     </item>
     
     <item>
-      <title>论文：Retrieval-Augmented Generation for Large Language Models: A Survey</title>
+      <title>论文：Retrieval-Augmented Generation for Large Language Models: A Survey [v4]</title>
       <link>https://weedge.github.io/post/paper/rag/rag-for-llms-a-survey/</link>
       <pubDate>Fri, 08 Mar 2024 10:26:23 +0800</pubDate>
       
@@ -323,8 +323,8 @@
 &lt;p&gt;RAG模型及其技术栈的相互增长显而易见；技术进步不断为现有基础设施设定新的标准。反过来，技术栈的增强推动了RAG能力的进化。RAG工具包正在汇聚成一个基础技术栈，为先进的企业应用奠定基础。然而，一个完全集成的、全面平台的概念仍然在地平线上，等待进一步的创新和发展。&lt;/p&gt;
 &lt;h2 id=&#34;第9章结论&#34;&gt;第9章：结论&lt;/h2&gt;
 &lt;p&gt;本文的总结，如图7所示，突出了RAG在通过整合来自语言模型的参数化知识与来自外部知识库的非参数化数据，显著提升了LLMs的能力。我们的综述展示了RAG技术的演变及其对知识密集型任务的影响。我们的分析描绘了RAG框架内的三个发展范式：朴素RAG、高级RAG和模块化RAG，每个都标志着对其前身的逐步增强。高级RAG范式通过引入复杂的架构元素，如查询重写、块重排和提示摘要，超越了朴素方法。这些创新导致了更细致和模块化的架构，提高了LLMs的性能和可解释性。RAG与其他AI方法（如微调和强化学习）的技术整合进一步扩展了其能力。在内容检索方面，一种混合方法正在兴起，它利用结构化和非结构化数据源，提供了更丰富的检索过程。RAG框架内的最新研究正在探索诸如从LLMs自我检索和信息检索的动态时机等新概念。&lt;/p&gt;
-&lt;p&gt;尽管RAG技术取得了进步，但在提高其鲁棒性和管理扩展上下文的能力方面仍有许多研究机会。RAG的应用范围也在向多模态领域扩展，将其原理适应于解释和处理各种数据形式，如图像、视频和代码。这种扩展强调了RAG在AI部署中的重要实际意义，吸引了学术界和工业界的关注。RAG的生态系统正在增长，RAG中心的AI应用和支持工具的持续开发。然而，随着RAG应用领域的扩大，迫切需要完善评估方法以跟上其发展的步伐。确保性能评估保持准确和代表性对于捕捉RAG对AI研究和发展社区的贡献至关重要。&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/rag/RAG_for_LLMs_A_Survey/7.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;尽管RAG技术取得了进步，但在提高其鲁棒性和管理扩展上下文的能力方面仍有许多研究机会。RAG的应用范围也在向多模态领域扩展，将其原理适应于解释和处理各种数据形式，如图像、视频和代码。这种扩展强调了RAG在AI部署中的重要实际意义，吸引了学术界和工业界的关注。RAG的生态系统正在增长，RAG中心的AI应用和支持工具的持续开发。然而，随着RAG应用领域的扩大，迫切需要完善评估方法以跟上其发展的步伐。确保性能评估保持准确和代表性对于捕捉RAG对AI研究和发展社区的贡献至关重要。&lt;/p&gt;
 &lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
 &lt;p&gt;[Alon等人，2022] Uri Alon, Frank Xu, Junxian He, Sudipta Sengupta, Dan Roth, and Graham Neubig. Neurosymbolic language modeling with automaton-augmented retrieval. In International Conference on Machine Learning, pages 468–485. PMLR, 2022.&lt;/p&gt;
 &lt;p&gt;[Anderson等人，2022] Nathan Anderson, Caleb Wilson, and Stephen D. Richardson. Lingua: Addressing scenarios for live interpretation and automatic dubbing. In Janice Campbell, Stephen Larocca, Jay Marciano, Konstantin Savenkov, and Alex Yanishevsky, editors, Proceedings of the 15th Biennial Conference of the Association for Machine Translation in the Americas (Volume 2: Users and Providers Track and Government Track), pages 202–209, Orlando, USA, September 2022. Association for Machine Translation in the Americas.&lt;/p&gt;
