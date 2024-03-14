@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 08 Mar 2024 10:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 14 Mar 2024 20:16:30 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -49,6 +49,575 @@
 &lt;li&gt;“&lt;strong&gt;万物之始，大道至简，衍化至繁&lt;/strong&gt;” – 老子《道德经》&lt;/li&gt;
 &lt;/ol&gt;
 </description>
+      
+    </item>
+    
+    <item>
+      <title>Redis和GCP AI服务搭建RAG参考架构解决方案</title>
+      <link>https://weedge.github.io/post/doraemon/redis_gcp_rag_stack/</link>
+      <pubDate>Thu, 14 Mar 2024 20:16:30 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/doraemon/redis_gcp_rag_stack/</guid>
+      
+        <description>&lt;p&gt;本文主要是讲解一个快速搭建比如RAG pipeline相关应用参考方案，结合云厂商GCP AI服务，以及&lt;a href=&#34;https://redis.io/docs/about/about-stack/&#34;&gt;redis stack&lt;/a&gt; | &lt;a href=&#34;https://redis.io/docs/get-started/vector-database/&#34;&gt;vector index&lt;/a&gt;，借助 Google Cloud Platform 上易用的开发&lt;a href=&#34;https://cloud.google.com/sdk&#34;&gt;SDK&lt;/a&gt;,  以及使用&lt;a href=&#34;https://app.redislabs.com&#34;&gt;redislabs&lt;/a&gt; 提供的免费30M内存空间服务；GCP新用户前三个月好像是免费使用一些服务，而且提供 &lt;strong&gt;$300&lt;/strong&gt; 的赠金使用，对于前期学习和使用体验服务还是不错的选择，而且个人感觉学习文档很齐全，不会很零散。但是解决方案相对AWS要少些，毕竟AWS做的很深入，搭建解决方案很方便，集成开发工具比较齐全，特别是serverless lambda服务，可以看下以前写的文章『 &lt;a href=&#34;https://weedge.github.io/post/user-behavior-analytics-solution/&#34;&gt;用户行为分析方案设计&lt;/a&gt;』通过CDK构建解决方案stack(用于前期架构推演，不要YY，要动手，节约成本是干出来的)。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/doraemon/redis_gcp_rag_stack/gcp-cost.png&#34; alt=&#34;image-20240314215720290&#34;&gt;&lt;/p&gt;
+&lt;p&gt;以前注册的，忘记用了。。。&lt;/p&gt;
+&lt;p&gt;笔记地址：&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/Google_BigQuery_Palm_Redis.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/Google_BigQuery_Palm_Redis.ipynb&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;：这里使用redis作为向量索引数据库，也可以结合其他向量索引库来搭建相应方案。主要目的是熟悉GCP服务和redis cloud服务。&lt;/p&gt;
+&lt;h2 id=&#34;引言&#34;&gt;引言&lt;/h2&gt;
+&lt;p&gt;☁️ Google 的 Vertex AI 通过引入&lt;a href=&#34;https://cloud.google.com/vertex-ai/docs/generative-ai/learn/overview&#34;&gt;生成式 AI&lt;/a&gt;扩展了其能力。这项先进技术配备了专门的&lt;a href=&#34;https://cloud.google.com/vertex-ai/docs/generative-ai/start/quickstarts/quickstart&#34;&gt;控制台工作室体验&lt;/a&gt;、&lt;a href=&#34;https://cloud.google.com/vertex-ai/docs/generative-ai/start/quickstarts/api-quickstart&#34;&gt;专用 API&lt;/a&gt; 和 &lt;a href=&#34;https://cloud.google.com/vertex-ai/docs/python-sdk/use-vertex-ai-python-sdk&#34;&gt;Python SDK&lt;/a&gt;，专为部署和管理 Google 强大的 PaLM 语言模型实例而设计（&lt;a href=&#34;https://github.com/GoogleCloudPlatform/generative-ai&#34;&gt;更多示例代码&lt;/a&gt;）。PaLM 模型专注于文本生成、摘要、聊天完成和嵌入创建，正在重塑自然语言处理和机器学习的边界。&lt;/p&gt;
+&lt;p&gt;⚡ &lt;a href=&#34;https://redis.io/docs/about/about-stack/&#34;&gt;redis stack&lt;/a&gt;  提供向量数据库功能，具有高效的 API 用于创建向量索引、管理、选择距离度量、相似性搜索和混合过滤。当与它的多功能数据结构（包括列表、哈希、JSON 和集合）结合使用时，&lt;a href=&#34;https://redis.io/docs/about/about-stack/&#34;&gt;redis stack&lt;/a&gt; 作为打造高质量基于大型语言模型（LLM）的应用程序的最佳解决方案而脱颖而出。它体现了简化的架构和性能，使其成为生产环境中不可或缺的工具。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/RedisVentures/redis-google-llms/blob/main/assets/GCP_RE_GenAI.drawio.png?raw=true&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;接下来，我们将通过几种与 Vertex AI LLM 和 Redis Enterprise 相关的设计模式，确保最佳的生产性能。&lt;/p&gt;
+&lt;h2 id=&#34;安装&#34;&gt;安装&lt;/h2&gt;
+&lt;h3 id=&#34;1-先决条件&#34;&gt;1. 先决条件&lt;/h3&gt;
+&lt;p&gt;在我们开始之前，我们必须安装一些必需的库，与 Google 进行身份验证，创建 Redis 数据库，并初始化其他必需的组件。&lt;/p&gt;
+&lt;h4 id=&#34;安装必需的库&#34;&gt;安装必需的库&lt;/h4&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;!pip install redis &lt;span class=&#34;s2&#34;&gt;&amp;#34;google-cloud-aiplatform==1.25.0&amp;#34;&lt;/span&gt; --upgrade --user
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;本地安装-redis可选&#34;&gt;本地安装 Redis（可选）&lt;/h4&gt;
+&lt;p&gt;如果您在其他地方已经运行了安装了 &lt;a href=&#34;https://redis.io/docs/about/about-stack/&#34;&gt;Redis Stack&lt;/a&gt; 的 Redis 数据库，那么您不需要在这台机器上运行它。可以跳过这一步，直接进行“连接到 Redis 服务器”的步骤。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;curl -fsSL https://packages.redis.io/gpg &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+&lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;lsb_release -cs&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt; main&amp;#34;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; sudo tee /etc/apt/sources.list.d/redis.list
+sudo apt-get update  &amp;gt; /dev/null 2&amp;gt;&lt;span class=&#34;p&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;
+sudo apt-get install redis-stack-server  &amp;gt; /dev/null 2&amp;gt;&lt;span class=&#34;p&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;
+redis-stack-server --daemonize yes
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;在云上使用免费的-redis-cloud-账户&#34;&gt;在云上使用免费的 Redis Cloud 账户&lt;/h4&gt;
+&lt;p&gt;您也可以激活 Redis Cloud 的永久免费实例。激活步骤如下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;访问 &lt;a href=&#34;https://redis.com/try-free/&#34;&gt;https://redis.com/try-free/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;注册（使用基于 Gmail 的注册是最简便的方式）&lt;/li&gt;
+&lt;li&gt;创建新订阅&lt;/li&gt;
+&lt;li&gt;使用以下选项：
+&lt;ul&gt;
+&lt;li&gt;固定计划，选择部署服务到 Google Cloud或者 aws都可以&lt;/li&gt;
+&lt;li&gt;新的 30Mb 免费数据库&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;创建新的 RedisStack 数据库&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果您是第一次在 Redis Cloud 注册 - 那么最后几步默认会自动为您执行(默认使用aws)。请记录下新数据库的主机、端口和默认密码。您可以在接下来的代码块中使用这些信息，而不是默认的 &lt;code&gt;localhost&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/doraemon/redis_gcp_rag_stack/redislab-databases.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h4 id=&#34;连接到-redis-服务器&#34;&gt;连接到 Redis 服务器&lt;/h4&gt;
+&lt;p&gt;如果您正在连接到外部的 Redis 实例，请将下面的连接参数替换为您自己的。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;os&lt;/span&gt;
+&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;redis&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# Redis connection params&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;REDIS_HOST&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;os&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;getenv&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;REDIS_HOST&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;redis-10610.c274.us-east-1-3.ec2.cloud.redislabs.com&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;#&amp;#34;redis-10610.c274.us-east-1-3.ec2.cloud.redislabs.com&amp;#34;&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;REDIS_PORT&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;os&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;getenv&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;REDIS_PORT&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;10610&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;      &lt;span class=&#34;c1&#34;&gt;#10610&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;REDIS_PASSWORD&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;os&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;getenv&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;REDIS_PASSWORD&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;******&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;#&amp;#34;pobhBJP7Psicp2gV0iqa2ZOc1WdXXXXX&amp;#34;&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# Create Redis client&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;redis&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Redis&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+  &lt;span class=&#34;n&#34;&gt;host&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;REDIS_HOST&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+  &lt;span class=&#34;n&#34;&gt;port&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;REDIS_PORT&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+  &lt;span class=&#34;n&#34;&gt;password&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;REDIS_PASSWORD&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# Test connection&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ping&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+&lt;span class=&#34;c1&#34;&gt;# Clear Redis database (optional)&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;flushdb&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;gcp认证&#34;&gt;GCP认证&lt;/h4&gt;
+&lt;p&gt;如果使用google的colab操作，直接认证用户，然后会提示关联到对应google账户。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;google.colab&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;auth&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;auth&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;authenticate_user&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+&lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;Authenticated&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;getpass&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;getpass&lt;/span&gt;
+
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;设置所在项目id 和 区域服务&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# input your GCP project ID and region for Vertex AI&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;PROJECT_ID&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;getpass&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;PROJECT_ID:&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;#&amp;#39;central-beach-194106&amp;#39;&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;REGION&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;input&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;REGION:&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;#&amp;#39;us-central1&amp;#39;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果是本地，可以使用&lt;code&gt;gcloud&lt;/code&gt; cli来操作 (类似 &lt;code&gt;aws&lt;/code&gt; cli工具)&lt;/p&gt;
+&lt;h4 id=&#34;初始-vertex-ai-组件&#34;&gt;初始 Vertex AI 组件&lt;/h4&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;vertexai&lt;/span&gt;
+
+&lt;span class=&#34;n&#34;&gt;vertexai&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;init&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;project&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PROJECT_ID&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;location&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;REGION&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;2-创建-bigquery-表&#34;&gt;2. 创建 BigQuery 表&lt;/h3&gt;
+&lt;p&gt;第二步涉及到为我们的 LLM 应用程序准备数据集。我们使用了来自 &lt;strong&gt;Google BigQuery&lt;/strong&gt; 的一个免费（公开）的黑客新闻数据集。&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;利用 BigQuery 构建机器学习应用程序是一种常见模式，因为它具有强大的查询和分析能力。&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;我们将从为这个数据集创建我们自己的 BigQuery 表开始。此外，如果您有不同的数据集要处理，您可以遵循类似的模式，甚至可以将 CSV 从 Google Cloud Storage 存储桶加载到 BigQuery 中。&lt;/p&gt;
+&lt;h4 id=&#34;创建源表&#34;&gt;创建源表&lt;/h4&gt;
+&lt;p&gt;第一步是从公共数据源创建一个新表。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;google.cloud&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bigquery&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# Create bigquery client&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;bq&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bigquery&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Client&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;project&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PROJECT_ID&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;n&#34;&gt;TABLE_NAME&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;input&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;Input a Big Query TABLE_NAME:&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;#hackernews&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;DATASET_ID&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;sa&#34;&gt;f&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PROJECT_ID&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;.google_redis_llms&amp;#34;&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# Create dataset&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bigquery&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Dataset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;DATASET_ID&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;location&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;US&amp;#34;&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bq&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;create_dataset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;timeout&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;30&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;exists_ok&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;True&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# Define table ID&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;TABLE_ID&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;sa&#34;&gt;f&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;DATASET_ID&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;TABLE_NAME&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# Create source table&lt;/span&gt;
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;create_source_table&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;table_id&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;create_job&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bq&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;sa&#34;&gt;f&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;&amp;#39;&amp;#39;
+&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;      CREATE OR REPLACE TABLE `&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;table_id&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;` AS (
+&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;        SELECT
+&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;          title, text, time, timestamp, id
+&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;        FROM `bigquery-public-data.hacker_news.full`
+&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;        WHERE
+&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;          type =&amp;#39;story&amp;#39;
+&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;        LIMIT 1000
+&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;      )
+&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;    &amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;res&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;create_job&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;result&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;# Make an API request&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;table&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bq&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;get_table&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;table_id&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;table&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# Create table&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;table&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;create_source_table&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;TABLE_ID&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# List schema&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;table&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;schema&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;上面的数据集包含黑客新闻帖子的记录，包括&lt;strong&gt;标题&lt;/strong&gt;、&lt;strong&gt;文本&lt;/strong&gt;、&lt;strong&gt;时间&lt;/strong&gt;、&lt;strong&gt;id&lt;/strong&gt;和&lt;strong&gt;时间戳&lt;/strong&gt;。让我们提取一些示例行并进行检查。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# Query 5 sample records from BQ&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;query_job&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bq&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;sa&#34;&gt;f&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;&amp;#39;&amp;#39;
+&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;SELECT *
+&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;FROM &lt;/span&gt;&lt;span class=&#34;si&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;TABLE_ID&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;LIMIT 5
+&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;n&#34;&gt;query_job&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;result&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;to_dataframe&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;具体表格数据见&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/Google_BigQuery_Palm_Redis.ipynb&#34;&gt;操作笔记&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;3-生成-embeddings&#34;&gt;3. 生成 Embeddings&lt;/h3&gt;
+&lt;h4 id=&#34;使用-vertex-ai-嵌入模型创建文本嵌入&#34;&gt;使用 Vertex AI 嵌入模型创建文本嵌入&lt;/h4&gt;
+&lt;p&gt;使用 Google 开发的 &lt;a href=&#34;https://cloud.google.com/vertex-ai/docs/generative-ai/embeddings/get-text-embeddings&#34;&gt;Vertex AI API for text embeddings&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;如需详细了解嵌入，请参阅 &lt;a href=&#34;https://cloud.google.com/blog/topics/developers-practitioners/meet-ais-multitool-vector-embeddings?hl=zh-cn&#34;&gt;Meet AI 的多工具：向量嵌入&lt;/a&gt;。如需学习有关嵌入的基础机器学习速成课程，请参阅&lt;a href=&#34;https://developers.google.com/machine-learning/crash-course/embeddings/video-lecture?hl=zh-cn&#34;&gt;嵌入&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;使用gpc 进行相关embeddings的case: &lt;a href=&#34;https://github.com/GoogleCloudPlatform/generative-ai/tree/main/embeddings&#34;&gt;https://github.com/GoogleCloudPlatform/generative-ai/tree/main/embeddings&lt;/a&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;文本嵌入是内容的密集向量表示，如果两个内容在语义上相似，它们各自的嵌入在嵌入向量空间中的位置也相近。这种表示可以用来解决常见的自然语言处理（NLP）任务，例如：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;语义搜索&lt;/strong&gt;：根据语义相似性对搜索文本进行排名。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;推荐&lt;/strong&gt;：返回与给定文本具有相似文本属性的项目。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;分类&lt;/strong&gt;：返回与给定文本相似的文本属性的项目类别。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;聚类&lt;/strong&gt;：对与给定文本的文本属性相似的项目进行聚类。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;异常检测&lt;/strong&gt;：返回与给定文本的文本属性关系最小的项目。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;code&gt;textembedding-gecko&lt;/code&gt; 模型接受最多 3,072 个输入标记（即单词），并输出 768 维的向量嵌入。&lt;/p&gt;
+&lt;h4 id=&#34;定义嵌入辅助函数&#34;&gt;定义嵌入辅助函数&lt;/h4&gt;
+&lt;p&gt;我们定义了一个辅助函数 &lt;code&gt;embedding_model_with_backoff&lt;/code&gt;，用于从文本列表创建嵌入，同时通过&lt;a href=&#34;https://en.wikipedia.org/wiki/Exponential_backoff&#34;&gt;指数退避&lt;/a&gt;来使其对&lt;a href=&#34;https://cloud.google.com/vertex-ai/docs/quotas&#34;&gt;Vertex AI API 配额&lt;/a&gt;具有弹性，使用&lt;a href=&#34;https://github.com/jd/tenacity&#34;&gt;tenacity&lt;/a&gt;库。&lt;/p&gt;
+&lt;p&gt;我们还定义了一种方法，将浮点数数组转换为字节字符串，以便在 Redis 中高效存储（稍后使用）。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;typing&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Generator&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;List&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Any&lt;/span&gt;
+
+&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;tenacity&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;retry&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;stop_after_attempt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;wait_random_exponential&lt;/span&gt;
+&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;vertexai.preview.language_models&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;TextEmbeddingModel&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# Embedding model definition from VertexAI PaLM API&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;embedding_model&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;TextEmbeddingModel&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;from_pretrained&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;textembedding-gecko@001&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;VECTOR_DIMENSIONS&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;768&lt;/span&gt;
+
+&lt;span class=&#34;nd&#34;&gt;@retry&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;wait&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;wait_random_exponential&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nb&#34;&gt;min&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;max&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;20&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;stop&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;stop_after_attempt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;embed_text&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;text&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[]):&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;embeddings&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;embedding_model&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;get_embeddings&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;text&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;each&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;values&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;each&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;embeddings&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# Convert embeddings to bytes for Redis storage&lt;/span&gt;
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;convert_embedding&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;emb&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;List&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;nb&#34;&gt;float&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]):&lt;/span&gt;
+  &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;np&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;array&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;emb&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;astype&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;np&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;float32&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;tobytes&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;嵌入文本数据&#34;&gt;嵌入文本数据&lt;/h4&gt;
+&lt;p&gt;目前，我们在 BigQuery 中创建的表（如上所述）包含了我们希望嵌入并为大型语言模型（LLMs）提供可用的黑客新闻文章记录。&lt;/p&gt;
+&lt;p&gt;为了节省这台机器的 RAM 使用量，我们将分批次迭代 BigQuery 中的文章，创建嵌入，并将它们写入 Redis，Redis 在此被用作&lt;a href=&#34;https://redis.com/solutions/use-cases/vector-database&#34;&gt;向量数据库&lt;/a&gt;。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;pandas&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;as&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;pd&lt;/span&gt;
+&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;numpy&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;as&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;np&lt;/span&gt;
+
+&lt;span class=&#34;n&#34;&gt;QUERY_TEMPLATE&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;sa&#34;&gt;f&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&amp;#34;&amp;#34;
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;SELECT id, title, text
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;FROM &lt;/span&gt;&lt;span class=&#34;si&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;TABLE_ID&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;LIMIT &lt;/span&gt;&lt;span class=&#34;se&#34;&gt;{{&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;limit&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;}}&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt; OFFSET &lt;/span&gt;&lt;span class=&#34;se&#34;&gt;{{&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;offset&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;}}&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;;
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&amp;#34;&amp;#34;&lt;/span&gt;
+
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;query_bigquery_batches&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;max_rows&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;rows_per_batch&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;start_batch&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Generator&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;pd&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;DataFrame&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Any&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;None&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]:&lt;/span&gt;
+    &lt;span class=&#34;c1&#34;&gt;# Generate batches from a table in big query&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;offset&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;range&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;start_batch&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;max_rows&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rows_per_batch&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;query&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;QUERY_TEMPLATE&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;format&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;limit&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;rows_per_batch&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;offset&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;offset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;query_job&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bq&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;rows&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;query_job&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;result&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;df&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rows&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;to_dataframe&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+        &lt;span class=&#34;c1&#34;&gt;# Join title and text fields&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;df&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;content&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;df&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;apply&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;lambda&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;r&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;Title: &amp;#34;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;r&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;title&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;. Content: &amp;#34;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;r&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;text&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;axis&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+        &lt;span class=&#34;k&#34;&gt;yield&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;df&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在下面，我们定义了一些辅助函数，用于处理单个数据行、将批次写入 &lt;strong&gt;Redis&lt;/strong&gt;、从 &lt;strong&gt;BigQuery&lt;/strong&gt; 查询源数据，以及使用 &lt;strong&gt;Vertex AI&lt;/strong&gt; 创建文本嵌入。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;math&lt;/span&gt;
+&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;tqdm.auto&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;tqdm&lt;/span&gt;
+
+
+&lt;span class=&#34;c1&#34;&gt;# Redis key helper function&lt;/span&gt;
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;redis_key&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;key_prefix&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;id&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+  &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;sa&#34;&gt;f&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;key_prefix&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;nb&#34;&gt;id&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# Process a single dataset record&lt;/span&gt;
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;process_record&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;record&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;dict&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;dict&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+  &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+      &lt;span class=&#34;s1&#34;&gt;&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;record&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;],&lt;/span&gt;
+      &lt;span class=&#34;s1&#34;&gt;&amp;#39;embedding&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;record&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;embedding&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;],&lt;/span&gt;
+      &lt;span class=&#34;s1&#34;&gt;&amp;#39;text&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;record&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;text&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;],&lt;/span&gt;
+      &lt;span class=&#34;s1&#34;&gt;&amp;#39;title&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;record&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;title&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
+  &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# Load batch of data into Redis as HASH objects&lt;/span&gt;
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;load_redis_batch&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;redis&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Redis&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;list&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;key_prefix&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;doc&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;id_column&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;id&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;pipe&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;pipeline&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;i&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;record&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;enumerate&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;tqdm&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)):&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;record&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;process_record&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;record&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;key&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;redis_key&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;key_prefix&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;record&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;id_column&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;])&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;pipe&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;hset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;key&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;mapping&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;record&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;pipe&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;execute&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# Run the entire process&lt;/span&gt;
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;create_embeddings_bigquery_redis&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+    &lt;span class=&#34;c1&#34;&gt;# Create generator from BigQuery&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;max_rows&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1000&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;rows_per_batch&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;100&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;bq_content_query&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;query_bigquery_batches&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;max_rows&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rows_per_batch&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+    &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;batch&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;tqdm&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;bq_content_query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+      &lt;span class=&#34;c1&#34;&gt;# Split batch into smaller chunks for embedding generation&lt;/span&gt;
+      &lt;span class=&#34;n&#34;&gt;batch_splits&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;np&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;array_split&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;batch&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;math&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ceil&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;rows_per_batch&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;5&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
+      &lt;span class=&#34;c1&#34;&gt;# Create embeddings&lt;/span&gt;
+      &lt;span class=&#34;n&#34;&gt;batch&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;embedding&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;
+          &lt;span class=&#34;n&#34;&gt;convert_embedding&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;embedding&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+          &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;split&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;batch_splits&lt;/span&gt;
+          &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;embedding&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;embed_text&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;split&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;content&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+      &lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
+      &lt;span class=&#34;c1&#34;&gt;# Write batch to Redis&lt;/span&gt;
+      &lt;span class=&#34;n&#34;&gt;batch&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;batch&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;to_dict&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;records&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+      &lt;span class=&#34;n&#34;&gt;load_redis_batch&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;batch&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/doraemon/redis_gcp_rag_stack/redis-insights-vector.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;4-加载嵌入&#34;&gt;4. 加载嵌入&lt;/h3&gt;
+&lt;p&gt;现在我们已经有了一个函数来生成 BigQuery 批次、创建文本嵌入以及将批次写入 Redis，我们可以运行这一个函数来处理我们整个数据集：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;n&#34;&gt;create_embeddings_bigquery_redis&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;c1&#34;&gt;# Validate how many records are stored in Redis&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dbsize&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;5-创建向量索引&#34;&gt;5. 创建向量索引&lt;/h3&gt;
+&lt;p&gt;现在我们已经创建了代表我们数据集中文本的嵌入，并将它们存储在 Redis 中，我们将创建一个辅助索引，以实现对嵌入的高效搜索。要了解更多关于 Redis 中向量相似性功能的信息，&lt;a href=&#34;https://redis.io/docs/interact/search-and-query/search/vectors/&#34;&gt;请查看这些文档&lt;/a&gt; 以及 &lt;a href=&#34;https://github.com/RedisVentures/redis-ai-resources&#34;&gt;这些 Redis AI 资源&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;为什么我们需要启用搜索功能呢？&lt;/strong&gt;
+使用 Redis 进行向量相似性搜索可以让我们检索与输入问题或查询&lt;strong&gt;相似&lt;/strong&gt;或&lt;strong&gt;相关&lt;/strong&gt;的文本数据块。这对于我们的示例生成式 AI / LLM 应用程序来说将非常有帮助。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;redis.commands.search.field&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;NumericField&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;TagField&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;TextField&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;VectorField&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;redis.commands.search.indexDefinition&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;IndexDefinition&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;IndexType&lt;/span&gt;
+&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;redis.commands.search.query&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Query&lt;/span&gt;
+
+
+&lt;span class=&#34;n&#34;&gt;INDEX_NAME&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;google:idx&amp;#34;&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;PREFIX&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;doc:&amp;#34;&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;VECTOR_FIELD_NAME&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;embedding&amp;#34;&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# Store vectors in redis and create index&lt;/span&gt;
+&lt;span class=&#34;c1&#34;&gt;# 对hash中的 embedding字段建向量索引FLAT,维度768,相似度测量方法:cosine&lt;/span&gt;
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;create_redis_index&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;redis&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Redis&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;vector_field_name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;VECTOR_FIELD_NAME&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;index_name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;INDEX_NAME&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;prefix&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;list&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PREFIX&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;],&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;dim&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;VECTOR_DIMENSIONS&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;#768&lt;/span&gt;
+  &lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+
+    &lt;span class=&#34;c1&#34;&gt;# Construct index&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;try&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;index_name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;info&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+        &lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;Existing index found. Dropping and recreating the index&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;flush&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;True&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;index_name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dropindex&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;delete_documents&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;False&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;except&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+        &lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;Creating new index&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;flush&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;True&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+    &lt;span class=&#34;c1&#34;&gt;# Create new index&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;index_name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;create_index&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+        &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+            &lt;span class=&#34;n&#34;&gt;VectorField&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+                &lt;span class=&#34;n&#34;&gt;vector_field_name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;FLAT&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+                &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+                    &lt;span class=&#34;s2&#34;&gt;&amp;#34;TYPE&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;FLOAT32&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+                    &lt;span class=&#34;s2&#34;&gt;&amp;#34;DIM&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;dim&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+                    &lt;span class=&#34;s2&#34;&gt;&amp;#34;DISTANCE_METRIC&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;COSINE&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+                &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+            &lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+        &lt;span class=&#34;p&#34;&gt;),&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;definition&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;IndexDefinition&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;prefix&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;prefix&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;index_type&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;IndexType&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;HASH&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# Create index&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;create_redis_index&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;c1&#34;&gt;# Inspect index attributes&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;INDEX_NAME&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;info&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# Retreive single HASH from Redis&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;key&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;keys&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
+&lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;key&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;hgetall&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;key&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/doraemon/redis_gcp_rag_stack/redis-vector-index.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Redis&lt;/strong&gt;数据存储完全加载了来自&lt;strong&gt;BigQuery&lt;/strong&gt;的数据子集，包括使用&lt;strong&gt;Vertex AI&lt;/strong&gt; PaLM api创建的文本嵌入。&lt;/p&gt;
+&lt;h2 id=&#34;构建-llm-应用程序&#34;&gt;构建 LLM 应用程序&lt;/h2&gt;
+&lt;p&gt;随着 Redis 作为向量数据库完全加载，并且我们可以利用强大的 PaLM API，我们可以在这个技术栈上构建许多 AI 应用程序。下面我们将简要描述每个应用程序及其用例：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;文档检索&lt;/strong&gt; - 搜索文档，只返回与给定查询最相关的文档。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;产品推荐&lt;/strong&gt; - 根据购物者喜欢的产品的属性和描述，推荐具有相似属性和描述的产品。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;聊天机器人&lt;/strong&gt; - 提供一个对话式界面，用于信息检索或客户服务。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;文本摘要与生成&lt;/strong&gt; - 从相关信息源生成新的内容，以加速团队产出。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;欺诈/异常检测&lt;/strong&gt; - 基于与其他已知实体的属性相似性，识别异常和潜在的欺诈事件、交易或项目。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;更多应用case见：&lt;a href=&#34;https://github.com/redis-developer/redis-ai-resources&#34;&gt;https://github.com/redis-developer/redis-ai-resources&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;llm-设计模式&#34;&gt;LLM 设计模式&lt;/h2&gt;
+&lt;p&gt;为了构建这类应用程序，下面我们强调了四种技术设计模式和技巧，Redis Enterprise 在这些方面非常有用，可以提升 LLM 的性能：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;语义搜索&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;检索增强生成（Retrieval Augmented Generation，RAG）&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;缓存&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;内存&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;结合这些模式的某种组合是推荐的最佳实践，这些实践来自于全球各地企业用例和开源用户的经验和总结。&lt;/p&gt;
+&lt;h3 id=&#34;简单的语义搜索&#34;&gt;简单的语义搜索&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;语义搜索&lt;/strong&gt;，在大型语言模型（LLMs）的背景下，是一种复杂的搜索技术，它超越了字面上的关键词匹配，以理解用户查询背后的上下文含义和意图。利用 Google Vertex AI 平台的强大能力和 Redis 向量数据库的功能，语义搜索可以从大量文本数据集中映射和提取深层次的知识，包括细微的关系和隐藏的模式。&lt;/p&gt;
+&lt;p&gt;这使得应用程序能够返回在上下文中相关的搜索结果，通过提供有意义的回应，增强了用户体验，即使是对复杂或模糊的搜索词也是如此。因此，语义搜索不仅提高了搜索结果的准确性和相关性，还使应用程序能够以更类似人类、直观的方式与用户互动。&lt;/p&gt;
+&lt;p&gt;语义搜索的一般过程包括三个步骤：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;创建查询向量&lt;/li&gt;
+&lt;li&gt;执行向量搜索&lt;/li&gt;
+&lt;li&gt;审查并返回结果&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 1. Create query vector&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;What is the best computer operating system for software dev?&amp;#34;&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;query_vector&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;embed_text&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;([&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;])[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# Our query has been converted to a list of floats (this is a truncated view)&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;query_vector&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[:&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
+
+
+&lt;span class=&#34;c1&#34;&gt;# Helper method to perform KNN similarity search in Redis&lt;/span&gt;
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;similarity_search&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;k&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;return_fields&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;tuple&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;index_name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;INDEX_NAME&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;list&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+    &lt;span class=&#34;c1&#34;&gt;# create embedding from query text&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;query_vector&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;embed_text&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;([&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;])[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
+    &lt;span class=&#34;c1&#34;&gt;# create redis query object&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;redis_query&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;Query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;sa&#34;&gt;f&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;*=&amp;gt;[KNN &lt;/span&gt;&lt;span class=&#34;si&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;k&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt; @&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;VECTOR_FIELD_NAME&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt; $embedding AS score]&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+            &lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;sort_by&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;score&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+            &lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;return_fields&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;return_fields&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+            &lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;paging&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;k&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+            &lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dialect&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;c1&#34;&gt;# execute the search&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;results&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;index_name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;search&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;redis_query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;query_params&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;embedding&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;convert_embedding&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query_vector&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)}&lt;/span&gt;
+    &lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;pd&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;DataFrame&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;([&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;t&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;vm&#34;&gt;__dict__&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;results&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;docs&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;])&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;drop&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;columns&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;payload&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;])&lt;/span&gt;
+
+  
+&lt;span class=&#34;c1&#34;&gt;# 2. Perform vector similarity search with given query&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;results&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;similarity_search&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;k&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;5&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;return_fields&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;score&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;title&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;text&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
+
+
+&lt;span class=&#34;c1&#34;&gt;# 3. Review and return the results&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;display&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;results&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;具体表格数据见&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/Google_BigQuery_Palm_Redis.ipynb&#34;&gt;操作笔记&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;上述结果表明，我们针对软件开发者推荐的操作系统的搜索，找到了一些可能有助于回答这个问题的 Hacker News 的帖子。可尝试使用不同的&lt;a href=&#34;https://redis.io/docs/interact/search-and-query/advanced-concepts/vectors/#creation-attributes-per-algorithm&#34;&gt;索引类型和距离度量&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;检索增强生成rag&#34;&gt;检索增强生成（RAG）&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;检索增强生成&lt;/strong&gt;（Retrieval Augmented Generation，RAG）在大型语言模型（LLMs）的范围内，是一种结合特定领域数据知识和生成模型的技术，用于增强产生丰富上下文问题回答的能力。本质上，&lt;em&gt;RAG&lt;/em&gt; 通过从文档或数据的知识库中检索相关信息，然后再生成回答的方式进行工作。这使得通用的基础模型能够在运行时访问这些数据源，这与微调不是同一回事。&lt;/p&gt;
+&lt;p&gt;RAG 利用 Redis 作为低延迟向量数据库的优势进行高效的检索操作，以及利用 Google 的 Vertex AI 生成连贯的文本回答。在 LLM 应用程序中，RAG 使得对上下文的深入理解成为可能，即使是对复杂的查询也能返回高度细腻的回答。这种模式增强了应用程序的交互能力，提供了更精确和信息丰富的回答，从而显著丰富了用户体验。&lt;/p&gt;
+&lt;p&gt;为了构建一个用于问答的RAG管道，我们需要使用Vertex PaLM API来生成文本(&lt;code&gt;text-bison@001&lt;/code&gt;)。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;vertexai.preview.language_models&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;TextGenerationModel&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# Define generation model&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;generation_model&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;TextGenerationModel&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;from_pretrained&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;text-bison@001&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;n&#34;&gt;response&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;generation_model&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;predict&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;prompt&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;What is a large language model?&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;Example response:&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\n&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;response&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;text&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;为了能够&lt;strong&gt;在引用特定领域的来源&lt;/strong&gt;（如我们的示例 hackernews 数据集）的同时回答问题，我们必须构建一个 RAG 管道：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;首先在知识库（存储在 Redis 中）上使用用户查询进行&lt;strong&gt;语义搜索&lt;/strong&gt;，以找到有助于语言模型智能回答的相关来源。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;这些来源（称为上下文）被“塞入”提示（输入）中。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;最后，完整的提示被传递给语言模型进行文本生成。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;create_prompt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;prompt_template&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;**&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;kwargs&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+  &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;prompt_template&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;format&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;**&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;kwargs&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;rag&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;prompt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;verbose&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;bool&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;True&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+    &lt;span class=&#34;s2&#34;&gt;&amp;#34;&amp;#34;&amp;#34;
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;    Simple pipeline for performing retrieval augmented generation with
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;    Google Vertex PaLM API and Redis Enterprise.
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;    &amp;#34;&amp;#34;&amp;#34;&lt;/span&gt;
+    &lt;span class=&#34;c1&#34;&gt;# Perform a vector similarity search in Redis&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;verbose&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+        &lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;Pulling relevant data sources from Redis&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;flush&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;True&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;relevant_sources&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;similarity_search&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;k&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;return_fields&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;text&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,))&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;verbose&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+        &lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;Relevant sources found!&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;flush&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;True&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;c1&#34;&gt;# Combine the relevant sources and inject into the prompt&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;sources_text&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;-&amp;#34;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\n&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;-&amp;#34;&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;join&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;([&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;source&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;source&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;relevant_sources&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;text&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;values&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;])&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;full_prompt&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;create_prompt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;prompt_template&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;prompt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;sources&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;sources_text&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;
+      &lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;verbose&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+        &lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\n&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;Full prompt:&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\n\n&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;full_prompt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;flush&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;True&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;c1&#34;&gt;# Perform text generation to get a response from PaLM API&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;response&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;generation_model&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;predict&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;prompt&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;full_prompt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;response&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;text&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;下面是一个示例提示模板。您可以随意编辑和调整为语言模型设置上下文的初始句子，以执行我们预期的操作。对提示设计进行调整和迭代的过程通常被称为“提示工程”。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;n&#34;&gt;PROMPT&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&amp;#34;&amp;#34;You are a helpful virtual technology and IT assistant. Use the hacker news posts below as relevant context and sources to help answer the user question. Don&amp;#39;t blindly make things up.
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;SOURCES:
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;{sources}&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;QUESTION:
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;{query}&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;?
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;ANSWER:&amp;#34;&amp;#34;&amp;#34;&lt;/span&gt;
+
+&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;What are the best operating systems for software development?&amp;#34;&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;response&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rag&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;prompt&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PROMPT&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;response&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;What are some commonly reported problems with MacBooks and MacOS for software dev purposes?&amp;#34;&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;response&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rag&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;prompt&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PROMPT&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;response&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;显然，这个示例数据集(hackernews)并不是我们可以使用的唯一示例，它当然也不是现成的“production”。这也只是为了教学目的而使用了实际数据的一个子集(1000条记录)。&lt;/p&gt;
+&lt;p&gt;但是，这个示例演示了如何将外部数据源和llm结合起来，以显示更有用的信息。&lt;/p&gt;
+&lt;h3 id=&#34;llm-缓存&#34;&gt;LLM 缓存&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;LLM 缓存&lt;/strong&gt;是一种用于优化大型语言模型（LLM）应用程序性能的高级策略。利用 Redis 的超快速内存数据存储功能，LLM 缓存能够存储并快速检索由 Google 的 Vertex AI（PaLM）生成的预先计算的响应。这意味着，尤其是对于重复查询，生成响应的计算成本高昂的过程被显著减少，从而实现更快的响应时间和高效的资源利用。因此，将 Google 强大的生成式 AI 能力与 Redis 高性能的缓存系统相结合，为 LLM 应用程序提供了一个更具可扩展性和性能的架构，提高了整体用户体验和应用程序的可靠性。&lt;/p&gt;
+&lt;p&gt;LLM 的缓存主要有两种模式：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;标准缓存&lt;/li&gt;
+&lt;li&gt;语义缓存&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;标准缓存&#34;&gt;标准缓存&lt;/h4&gt;
+&lt;p&gt;LLM 的标准缓存涉及简单地匹配以前提供过的确切短语或提示。我们可以返回之前使用的 LLM 响应，以加快系统的整体吞吐量并减少冗余计算。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# Some boiler plate helper methods&lt;/span&gt;
+&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;hashlib&lt;/span&gt;
+
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;hash_input&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;prefix&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;_input&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;prefix&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;hashlib&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;sha256&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;_input&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;encode&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;utf-8&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;hexdigest&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;standard_check&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;key&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+  &lt;span class=&#34;c1&#34;&gt;# function to perform a standard cache check&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;res&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;hgetall&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;key&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;res&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+      &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;res&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;sa&#34;&gt;b&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;response&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;decode&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;utf-8&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;cache_response&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;response&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;key&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;hash_input&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;llmcache:&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;hset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;key&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;mapping&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;prompt&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;response&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;response&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;})&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# LLM Cache wrapper / decorator function&lt;/span&gt;
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;standard_llmcache&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;llm_callable&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;wrapper&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;args&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;**&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;kwargs&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+        &lt;span class=&#34;c1&#34;&gt;# Check LLM Cache first&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;key&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;hash_input&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;llmcache:&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;args&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;**&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;kwargs&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;response&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;standard_check&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;key&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+        &lt;span class=&#34;c1&#34;&gt;# Check if we have a cached response we can use&lt;/span&gt;
+        &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;response&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+            &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;response&lt;/span&gt;
+        &lt;span class=&#34;c1&#34;&gt;# Otherwise execute the llm callable here&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;response&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;llm_callable&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;args&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;**&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;kwargs&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;cache_response&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;response&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+        &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;response&lt;/span&gt;
+
+    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;wrapper&lt;/span&gt;
+  
+&lt;span class=&#34;c1&#34;&gt;# Define a function that invokes the PaLM API wrapped with a cache check&lt;/span&gt;
+&lt;span class=&#34;nd&#34;&gt;@standard_llmcache&lt;/span&gt;
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;ask_palm&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+  &lt;span class=&#34;n&#34;&gt;prompt&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PROMPT&lt;/span&gt;
+  &lt;span class=&#34;n&#34;&gt;response&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rag&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;prompt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;verbose&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;False&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+  &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;response&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;What are the best operating systems for software development?&amp;#34;&lt;/span&gt;
+
+&lt;span class=&#34;n&#34;&gt;ask_palm&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;现在，如果我们再问同样的问题，我们应该会得到几乎实时的相同回答。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;o&#34;&gt;%%&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;time&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;# for ipynb&lt;/span&gt;
+
+&lt;span class=&#34;n&#34;&gt;ask_palm&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;语义缓存-semantic-caching&#34;&gt;语义缓存 (Semantic Caching)&lt;/h4&gt;
+&lt;p&gt;语义缓存基于上述相同的概念，但利用 Redis 的向量数据库特性来查找以前应用过的语义上相似的提示——这使得缓存那些在意义上非常相似但不一定使用完全相同单词和短语的查询的响应成为可能。这提高了“命中率”，使得 LLM 缓存在实践中更加有效。&lt;/p&gt;
+&lt;p&gt;在langchain开发框架中集成：&lt;a href=&#34;https://python.langchain.com/docs/integrations/llms/llm_caching#semantic-cache&#34;&gt;https://python.langchain.com/docs/integrations/llms/llm_caching#semantic-cache&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;历史记录&#34;&gt;历史记录&lt;/h3&gt;
+&lt;p&gt;为应用程序提供对“历史记录”的访问，以记录聊天历史，是一种常见的技术，用于提高模型推理最近或过去对话的能力，从之前的回答中获得上下文，从而提供更准确和可接受的回应。&lt;/p&gt;
+&lt;p&gt;下面我们设置了简单的辅助函数来在Redis List数据结构中持久化和加载会话历史记录。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;json&lt;/span&gt;
+
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;add_message&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;prompt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;response&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;str&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;msg&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+        &lt;span class=&#34;s2&#34;&gt;&amp;#34;prompt&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;prompt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+        &lt;span class=&#34;s2&#34;&gt;&amp;#34;response&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;response&lt;/span&gt;
+    &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;lpush&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;chat-history&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;json&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dumps&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;msg&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
+
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;get_messages&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;k&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;5&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;json&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;loads&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;msg&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;msg&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;lrange&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;chat-history&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;k&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)]&lt;/span&gt;
+  
+
+&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;Do you have any advice for getting started in the tech field as a software dev?&amp;#34;&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;response&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rag&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PROMPT&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;verbose&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;False&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;response&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;add_message&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;response&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;What if I am still in college, any tips there?&amp;#34;&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;response&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rag&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PROMPT&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;verbose&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;False&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;response&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;add_message&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;response&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;n&#34;&gt;get_messages&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/doraemon/redis_gcp_rag_stack/redis-list-chat-records.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;结束工作&#34;&gt;结束工作&lt;/h2&gt;
+&lt;p&gt;清理bigquery 创建的表&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# Clean up bigquery&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;bq&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;delete_table&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;TABLE_ID&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;not_found_ok&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;True&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;n&#34;&gt;bq&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;delete_dataset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;DATASET_ID&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;delete_contents&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;True&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;not_found_ok&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;True&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/doraemon/redis_gcp_rag_stack/bigquery-table-del.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;清理redis中的数据，关闭服务&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# Clean up redis&lt;/span&gt;
+&lt;span class=&#34;c1&#34;&gt;#!redis-stack-server stop&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;flushdb&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;redis_client&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;close&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/RedisVentures/gcp-redis-llm-stack&#34;&gt;https://github.com/RedisVentures/gcp-redis-llm-stack&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://redis.io/docs/get-started/vector-database/&#34;&gt;https://redis.io/docs/get-started/vector-database/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://redis.com/solutions/use-cases/vector-database/&#34;&gt;https://redis.com/solutions/use-cases/vector-database/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/redis-developer/redis-ai-resources&#34;&gt;https://github.com/redis-developer/redis-ai-resources&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://console.cloud.google.com/apis/library&#34;&gt;https://console.cloud.google.com/apis/library&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/GoogleCloudPlatform/generative-ai&#34;&gt;https://github.com/GoogleCloudPlatform/generative-ai&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://cloud.google.com/blog/topics/developers-practitioners/meet-ais-multitool-vector-embeddings&#34;&gt;https://cloud.google.com/blog/topics/developers-practitioners/meet-ais-multitool-vector-embeddings&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://cloud.google.com/vertex-ai/pricing?hl=zh-cn#generative_ai_models&#34;&gt;https://cloud.google.com/vertex-ai/pricing?hl=zh-cn#generative_ai_models&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/Langchain_RAG.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/Langchain_RAG.ipynb&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;</description>
       
     </item>
     
@@ -12330,140 +12899,6 @@ make_strings_column    0.5ms
 &lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/lsh_sparse_implementation.ipynb&#34;&gt;&lt;strong&gt;lsh_sparse_implementation.ipynb&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_lsh_implementation.ipynb&#34;&gt;&lt;strong&gt;faiss_lsh_implementation.ipynb&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_locality_sensitive_hashing_random_projection.ipynb&#34;&gt;&lt;strong&gt;faiss_locality_sensitive_hashing_random_projection.ipynb&lt;/strong&gt;&lt;/a&gt; 学习笔记&lt;/p&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>译：相似性搜索，第 5 部分：局部敏感哈希 (LSH)</title>
-      <link>https://weedge.github.io/post/oneday/similarity-search/5.locality-sensitive-hashing/</link>
-      <pubDate>Tue, 26 Sep 2023 15:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/oneday/similarity-search/5.locality-sensitive-hashing/</guid>
-      
-        <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/0.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;探索如何将相似性信息合并到哈希函数中&lt;/strong&gt;&lt;/p&gt;
-&lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
-&lt;p&gt;在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。&lt;/p&gt;
-&lt;p&gt;在本系列文章的前几部分中，我们讨论了倒排文件索引、产品量化和 HNSW 以及如何将它们结合使用来提高搜索质量。在本章中，我们将研究一种主要不同的方法，该方法可以保持高搜索速度和质量。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;局部敏感哈希&lt;/strong&gt;（LSH）是一组方法，用于通过将数据向量转换为哈希值来缩小搜索范围，同时保留有关其相似性的信息。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;我们将讨论传统方法，该方法包括三个步骤：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Shingling&lt;/strong&gt;：将原始文本编码为向量。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;MinHashing&lt;/strong&gt; ：将向量转换为称为&lt;strong&gt;签名&lt;/strong&gt;的特殊表示，可用于比较它们之间的相似性。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;LSH函数&lt;/strong&gt;：将签名块散列到不同的桶中。如果一对向量的签名至少一次落入同一个桶中，则它们被视为候选向量。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;我们将在整篇文章中逐步深入探讨每个步骤的细节。&lt;/p&gt;
-&lt;h1 id=&#34;shingling&#34;&gt;Shingling&lt;/h1&gt;
-&lt;p&gt;&lt;strong&gt;Shingling&lt;/strong&gt; 是收集给定文本的k元模型的过程。k-gram是一组&lt;em&gt;k&lt;/em&gt;个连续标记(token)。根据上下文，标记(token)可以是单词或符号。shingling 的最终目标是使用收集的&lt;em&gt;k&lt;/em&gt;元模型对每个文档进行编码。我们将为此使用 one-hot 编码。然而，也可以应用其他编码方法。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;为“学习数据科学令人着迷(learning data science is fascinating)”这句话收集长度为 k = 3 的独特碎片(shingles)&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;首先，收集每个文档的唯一&lt;em&gt;k&lt;/em&gt;元组。其次，为了对每个文档进行编码，需要一个词汇表来表示所有文档中一组唯一的&lt;em&gt;k&lt;/em&gt;元组。然后，对于每个文档，创建一个长度等于词汇表大小的零向量。对于文档中出现的每个 k-gram，都会识别其在词汇表中的位置，并在文档向量的相应位置放置“1” 。即使相同的&lt;em&gt;k&lt;/em&gt;元模型在文档中出现多次，也没关系：向量中的值将始终为 1。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/2.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​	&lt;em&gt;one-hot编码&lt;/em&gt;&lt;/p&gt;
-&lt;h1 id=&#34;最小散列法minhashing&#34;&gt;最小散列法(MinHashing)&lt;/h1&gt;
-&lt;p&gt;在此阶段，初始文本已被向量化。向量的相似度可以通过&lt;strong&gt;Jaccard系数&lt;/strong&gt;进行比较。请记住，两个集合的Jaccard系数定义为两个集合中公共元素的数量除以所有元素的长度。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/3.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​	&lt;em&gt;Jaccard系数定义为两个集合的并集的交集&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;如果采用一对编码向量，则 Jaccard 系数公式中的交集是同时包含 1 的行数（即&lt;em&gt;k&lt;/em&gt; -gram 出现在两个向量中），并集是至少包含一个 1 的行数（&lt;em&gt;k&lt;/em&gt; -gram 至少出现在向量之一中）。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/4.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​	&lt;em&gt;两个向量的Jaccard系数&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/5.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​	&lt;em&gt;使用上述公式计算两个向量的Jaccard系数的示例&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;目前的问题是编码向量的稀疏性。计算两个 one-hot 编码向量之间的相似度得分将花费大量时间。将它们转换为密集格式将使以后的操作更加高效。最终，目标是设计这样一个函数，将这些向量转换为更小的维度，保留有关它们相似性的信息。构造这样一个函数的方法称为 MinHashing。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;MinHashing&lt;/strong&gt;是一个哈希函数，它对输入向量的分量进行排列，然后返回排列后的向量分量等于 1 的第一个索引。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/6.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​	&lt;em&gt;计算给定向量和排列的 minhash 值的示例&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;为了获得由n 个数字组成的向量的密集表示，可以使用n 个minhash 函数来获取形成签名的n个minhash值。&lt;/p&gt;
-&lt;p&gt;乍一听起来可能并不明显，但可以使用几个 minhash 值来近似向量之间的 Jaccard 相似度。事实上，使用的 minhash 值越多，近似值就越准确。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/7.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​	&lt;em&gt;签名矩阵的计算以及如何使用它来计算向量之间的相似度。使用 Jaccard 相似度和签名计算的相似度通常应大致相等。&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;这只是一个有用的观察。事实证明，幕后有一个完整的定理。我们来了解一下为什么可以使用签名来计算Jaccard指数。&lt;/p&gt;
-&lt;h2 id=&#34;证明statement-proof&#34;&gt;证明(Statement proof)&lt;/h2&gt;
-&lt;p&gt;让我们假设给定的向量对仅包含类型为&lt;em&gt;01&lt;/em&gt;、&lt;em&gt;10&lt;/em&gt;和&lt;em&gt;11&lt;/em&gt;的行。然后对这些向量进行随机排列。由于所有行中至少存在一个 1，因此在计算两个哈希值时，这两个哈希值计算过程中至少有一个会停在对应哈希值等于 1 的向量的第一行。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/8.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;第二个哈希值等于第一个哈希值的概率是多少？显然，只有当第二个哈希值也等于 1 时才会发生这种情况。这意味着第一行必须是类型&lt;em&gt;11&lt;/em&gt;。由于排列是随机进行的，因此此类事件的概率等于&lt;em&gt;P&lt;/em&gt; &lt;em&gt;=&lt;/em&gt; &lt;em&gt;count(11) / (count(01) + count(10) + count(11) )&lt;/em&gt;。这个表达式与杰卡德指数公式完全相同。所以：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;基于随机行排列的两个二进制向量获得相等哈希值的概率等于 Jaccard 系数&lt;/strong&gt;。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;然而，通过证明上面的陈述，我们假设初始向量不包含类型00的行。很明显，类型00的行不会更改 Jaccard 索引的值。同样，获得包含类型00的行的相同哈希值的概率也不会对其产生影响。例如，如果第一个排列行是00，那么 minhash 算法会忽略它并切换到下一行，直到一行中至少存在一个 1。当然，类型 00 的行可能会产生与没有类型 00 的行不同的哈希值，但获得相同哈希值的概率保持不变。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/9.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;我们已经证明了一个重要的说法。但是如何估计获得相同 minhash 值的概率呢？当然，可以生成向量的所有可能排列，然后计算所有最小哈希值以找到所需的概率。出于显而易见的原因，这效率不高，因为大小为&lt;em&gt;n&lt;/em&gt;的向量的可能排列数量等于&lt;em&gt;n!&lt;/em&gt;。不过，可以近似地评估概率：让我们使用许多哈希函数来生成那么多哈希值。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;两个二进制向量的 Jaccard 系数大约等于其签名中对应值的数量。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/10.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;很容易注意到，采用更长的签名会导致计算更准确。&lt;/p&gt;
-&lt;h1 id=&#34;lsh-函数&#34;&gt;LSH 函数&lt;/h1&gt;
-&lt;p&gt;目前，我们可以将原始文本转换为等长度的密集签名，保留有关相似性的信息。然而，在实践中，如此密集的签名通常仍然具有很高的维度，直接比较它们的效率很低。&lt;/p&gt;
-&lt;p&gt;考虑&lt;em&gt;n = 10⁶&lt;/em&gt;文档，其签名长度为 100。假设单个签名需要 4 个字节来存储，那么整个签名将需要 400 个字节。为了存储&lt;em&gt;n = 10⁶&lt;/em&gt;文档，需要 400 MB 的空间，这在现实中是可行的。但是以强力方式比较每个文档将需要大约 5 * 10^1 比较，这太多了，尤其是当&lt;em&gt;n&lt;/em&gt;更大时。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/11.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;为了避免这个问题，可以构建一个哈希表来加速搜索性能，但即使两个签名非常相似并且仅在 1 个位置上不同，它们仍然可能具有不同的哈希值（因为向量余数可能不同）。然而，我们通常希望它们落入同一个桶中。这正是LSH能够发挥作用的地方。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;LSH&lt;/strong&gt;机制构建了一个由多个部分组成的哈希表，如果一对签名至少有一个对应的部分，则将它们放入同一个桶中。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;LSH 采用签名矩阵并将其水平划分为相等的&lt;em&gt;b&lt;/em&gt;部分，称为&lt;strong&gt;band&lt;/strong&gt;，每个部分包含&lt;em&gt;r&lt;/em&gt; &lt;strong&gt;rows&lt;/strong&gt;。不是将整个签名插入单个哈希函数，而是将签名分为&lt;em&gt;b&lt;/em&gt;个部分，并且每个子签名由哈希函数独立处理。因此，每个子签名都会落入不同的桶中。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/12.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;使用 LSH 的示例：长度为 9 的两个签名被分为 b = 3 个带，每个带包含 r = 3 行。每个子向量被散列到 k 个可能的桶之一中。由于第二个带中存在匹配（两个子向量具有相同的哈希值），因此我们将这些签名中的一对视为最近邻居的候选者。&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;如果两个不同签名的相应子向量之间至少存在一次冲突，则这些签名被视为候选。正如我们所看到的，这个条件更加灵活，因为将向量视为候选向量不需要绝对相等。然而，这增加了误报的数量：一对不同的签名可以具有单个对应部分，但总体上完全不同。根据问题的不同，优化参数&lt;em&gt;b&lt;/em&gt;、&lt;em&gt;r&lt;/em&gt;和 k。&lt;/p&gt;
-&lt;h1 id=&#34;错误率error-rate&#34;&gt;错误率(Error rate)&lt;/h1&gt;
-&lt;p&gt;使用 LSH，可以估计具有相似性&lt;em&gt;s&lt;/em&gt;的两个签名将被视为候选的概率，给定多个频带&lt;em&gt;b&lt;/em&gt;和每个频带中的行数&lt;em&gt;r&lt;/em&gt;。让我们分几步找到它的公式。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/13.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​	&lt;em&gt;两个签名的随机行相等的概率&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/14.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​	&lt;em&gt;具有 r 行的一个随机带相等的概率&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/15.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​	&lt;em&gt;具有 r 行的一个随机带不同的概率&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/16.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​	&lt;em&gt;表中所有b波段不同的概率&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/17.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​	&lt;em&gt;b 个波段中至少有一个相等的概率，因此两个签名是候选者&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;请注意，该公式没有考虑不同子向量意外散列到同一存储桶中时的冲突。因此，签名成为候选人的真实概率可能差别不大。&lt;/p&gt;
-&lt;h2 id=&#34;例子&#34;&gt;例子&lt;/h2&gt;
-&lt;p&gt;为了更好地理解我们刚刚获得的公式，让我们考虑一个简单的例子。考虑两个长度为 35 个符号的签名，它们被平均分为 5 个带，每个带 7 行。下表表示基于 Jaccard 相似度至少有一个相等带的概率：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/18.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​	&lt;em&gt;根据两个签名的相似度 s 获得至少一个相应频带的概率 P&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;我们注意到，如果两个相似的签名的 Jaccard 相似度为 80%，那么它们在 93.8% 的情况下具有相应的band（&lt;em&gt;真阳性 true positives TP&lt;/em&gt;）。在其余 6.2% 的场景中，这样的一对签名是&lt;em&gt;漏报的&lt;/em&gt;。&lt;/p&gt;
-&lt;p&gt;现在让我们采取两个不同的签名。例如，它们的相似度只有 20%。因此，在 0.224% 的情况下，它们是&lt;em&gt;假阳性 false positive FP&lt;/em&gt;候选者。在其他 99.776% 的情况下，它们没有类似的band，因此它们是&lt;em&gt;真阴性 true negatives TN&lt;/em&gt;。&lt;/p&gt;
-&lt;h2 id=&#34;可视化visualisation&#34;&gt;可视化(Visualisation)&lt;/h2&gt;
-&lt;p&gt;现在让我们可视化相似性&lt;em&gt;s&lt;/em&gt;和两个签名成为候选者的概率&lt;em&gt;P&lt;/em&gt;之间的联系。通常，签名相似度越高*，*签名成为候选的概率就越高。理想情况下，它看起来像下面这样：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/19.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​	&lt;em&gt;理想的场景。仅当一对签名的相似度大于某个阈值 t 时，才将其视为候选签名&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;根据上面获得的概率公式，一条典型的线路如下图所示：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/20.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​	&lt;em&gt;一条典型的线，在开始和结束时缓慢增加，并在图中近似概率公式给出的阈值 t 处具有陡峭的斜率&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;可以改变band &lt;em&gt;b&lt;/em&gt;的数量来将图中的线向左或向右移动。增加&lt;em&gt;b&lt;/em&gt;将线向左移动并导致更多&lt;em&gt;FP&lt;/em&gt;，减少 - 将其向右移动并导致更多&lt;em&gt;FN&lt;/em&gt;。根据问题的不同，找到良好的平衡点很重要。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/21.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;band数量较多时，该线向左移动，band数量较少时，则向右移动&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/22.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;向左移动阈值会增加 FP，向右移动会增加 FN&lt;/p&gt;
-&lt;h2 id=&#34;不同数量的band和行的实验&#34;&gt;不同数量的band和行的实验&lt;/h2&gt;
-&lt;p&gt;&lt;em&gt;下面针对b&lt;/em&gt;和&lt;em&gt;r&lt;/em&gt;的不同值构建了几个线图。最好根据特定任务调整这些参数，以成功检索所有相似文档对并忽略具有不同签名的文档。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/23.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​	&lt;em&gt;调整频段数量&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/locality-sensitive-hashing/24.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;​	&lt;em&gt;调整行数&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;（注&lt;/strong&gt;：&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/testing_lsh.ipynb&#34;&gt;&lt;strong&gt;testing_lsh.ipynb&lt;/strong&gt;&lt;/a&gt; 实操笔记）&lt;/p&gt;
-&lt;h1 id=&#34;结论&#34;&gt;结论&lt;/h1&gt;
-&lt;p&gt;我们已经完成了 LSH 方法的经典实现。LSH 通过使用较低维的签名表示和快速哈希机制来缩小候选者的搜索范围，从而显着优化搜索速度。同时，这是以搜索准确性为代价的，但在实践中，差异通常是微不足道的。&lt;/p&gt;
-&lt;p&gt;然而，LSH 容易受到高维数据的影响：更多维度需要更长的签名长度和更多的计算才能保持良好的搜索质量。在这种情况下，建议使用其他索引。&lt;/p&gt;
-&lt;p&gt;事实上，LSH 存在不同的实现，但它们都基于相同的范例，即将&lt;em&gt;输入向量转换为哈希值，同时保留有关其相似性的信息&lt;/em&gt;。基本上，其他算法只是定义了获取这些哈希值的其他方式。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;随机投影&lt;/strong&gt;是另一种 LSH 方法，将在下一章中介绍，它在&lt;a href=&#34;https://github.com/facebookresearch/faiss&#34;&gt;Faiss&lt;/a&gt;库中作为 LSH 索引实现，用于相似性搜索。&lt;/p&gt;
-&lt;h1 id=&#34;reference&#34;&gt;Reference&lt;/h1&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://cse.iitkgp.ac.in/~animeshm/algoml/lsh.pdf&#34;&gt;Locality Sensitive Hashing | Andrew Wylie | December 2, 2013&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.inf.u-szeged.hu/~berendg/docs/dm/DM_lsh_en_pf.pdf&#34;&gt;Data Mining | Locality Sensitive Hashing | University of Szeged&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss&#34;&gt;Faiss repository&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.pinecone.io/learn/series/faiss/locality-sensitive-hashing/&#34;&gt;https://www.pinecone.io/learn/series/faiss/locality-sensitive-hashing/&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;em&gt;除非另有说明，所有图片均由作者提供&lt;/em&gt;。&lt;/p&gt;
-&lt;p&gt;原文地址： &lt;a href=&#34;https://medium.com/towards-data-science/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203&#34;&gt;https://medium.com/towards-data-science/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;附操作笔记&lt;/strong&gt;:&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/testing_traditional_lsh.ipynb&#34;&gt;&lt;strong&gt;testing_traditional_lsh.ipynb&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/faiss_lsh.ipynb&#34;&gt;&lt;strong&gt;faiss_lsh.ipynb&lt;/strong&gt;&lt;/a&gt; 学习笔记&lt;/p&gt;</description>
       
     </item>
     

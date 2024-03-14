@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="zh-cn" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Redis和GCP AI服务搭建RAG参考架构解决方案 - 时间飘过</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="weedge" />
+  <meta name="description" content="本文主要是讲解一个快速搭建比如RAG pipeline相关应用参考方案，结合云厂商GCP AI服务，以及redis stack | vector index，借助 Google Cloud Platform 上易用的开发SDK, 以及使用redislabs 提供的免费30M内存空间服务；GCP新用户前三个月好像是免费使用一些服务，而且提供 $300 的赠金使用，对于前期学习和使用体验服务还是不错的选择，而且个人感觉学习文档很齐全，不会很零散。但是解决方案相对AWS要少些，毕竟AWS做的很深入，搭建解决方案很方便，集成开发工具比较齐全，特别是serverless lambda服务，可以看下以前写的文章『 用户行为分析方案设计』通过CDK构建解决方案stack(用于前期架构推演，不要YY，要动手，节约成本是干出来的)。
+以前注册的，忘记用了。。。
+笔记地址：https://github.com/weedge/doraemon-nb/blob/main/Google_BigQuery_Palm_Redis.ipynb
+注：这里使用redis作为向量索引数据库，也可以结合其他向量索引库来搭建相应方案。主要目的是熟悉GCP服务和redis cloud服务。
+" />
+
+  <meta name="keywords" content="工作, 技术, 生活" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.91.0" />
+
+
+<link rel="canonical" href="https://weedge.github.io/post/doraemon/redis_gcp_rag_stack/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css" integrity="sha256-&#43;ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
+
+<meta property="og:title" content="Redis和GCP AI服务搭建RAG参考架构解决方案" />
+<meta property="og:description" content="本文主要是讲解一个快速搭建比如RAG pipeline相关应用参考方案，结合云厂商GCP AI服务，以及redis stack | vector index，借助 Google Cloud Platform 上易用的开发SDK,  以及使用redislabs 提供的免费30M内存空间服务；GCP新用户前三个月好像是免费使用一些服务，而且提供 $300 的赠金使用，对于前期学习和使用体验服务还是不错的选择，而且个人感觉学习文档很齐全，不会很零散。但是解决方案相对AWS要少些，毕竟AWS做的很深入，搭建解决方案很方便，集成开发工具比较齐全，特别是serverless lambda服务，可以看下以前写的文章『 用户行为分析方案设计』通过CDK构建解决方案stack(用于前期架构推演，不要YY，要动手，节约成本是干出来的)。
+
+以前注册的，忘记用了。。。
+笔记地址：https://github.com/weedge/doraemon-nb/blob/main/Google_BigQuery_Palm_Redis.ipynb
+注：这里使用redis作为向量索引数据库，也可以结合其他向量索引库来搭建相应方案。主要目的是熟悉GCP服务和redis cloud服务。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/doraemon/redis_gcp_rag_stack/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2024-03-14T20:16:30+08:00" />
+<meta property="article:modified_time" content="2024-03-14T20:16:30+08:00" />
+
+<meta itemprop="name" content="Redis和GCP AI服务搭建RAG参考架构解决方案">
+<meta itemprop="description" content="本文主要是讲解一个快速搭建比如RAG pipeline相关应用参考方案，结合云厂商GCP AI服务，以及redis stack | vector index，借助 Google Cloud Platform 上易用的开发SDK,  以及使用redislabs 提供的免费30M内存空间服务；GCP新用户前三个月好像是免费使用一些服务，而且提供 $300 的赠金使用，对于前期学习和使用体验服务还是不错的选择，而且个人感觉学习文档很齐全，不会很零散。但是解决方案相对AWS要少些，毕竟AWS做的很深入，搭建解决方案很方便，集成开发工具比较齐全，特别是serverless lambda服务，可以看下以前写的文章『 用户行为分析方案设计』通过CDK构建解决方案stack(用于前期架构推演，不要YY，要动手，节约成本是干出来的)。
+
+以前注册的，忘记用了。。。
+笔记地址：https://github.com/weedge/doraemon-nb/blob/main/Google_BigQuery_Palm_Redis.ipynb
+注：这里使用redis作为向量索引数据库，也可以结合其他向量索引库来搭建相应方案。主要目的是熟悉GCP服务和redis cloud服务。"><meta itemprop="datePublished" content="2024-03-14T20:16:30+08:00" />
+<meta itemprop="dateModified" content="2024-03-14T20:16:30+08:00" />
+<meta itemprop="wordCount" content="6031">
+<meta itemprop="keywords" content="GCP,redis,rag," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Redis和GCP AI服务搭建RAG参考架构解决方案"/>
+<meta name="twitter:description" content="本文主要是讲解一个快速搭建比如RAG pipeline相关应用参考方案，结合云厂商GCP AI服务，以及redis stack | vector index，借助 Google Cloud Platform 上易用的开发SDK,  以及使用redislabs 提供的免费30M内存空间服务；GCP新用户前三个月好像是免费使用一些服务，而且提供 $300 的赠金使用，对于前期学习和使用体验服务还是不错的选择，而且个人感觉学习文档很齐全，不会很零散。但是解决方案相对AWS要少些，毕竟AWS做的很深入，搭建解决方案很方便，集成开发工具比较齐全，特别是serverless lambda服务，可以看下以前写的文章『 用户行为分析方案设计』通过CDK构建解决方案stack(用于前期架构推演，不要YY，要动手，节约成本是干出来的)。
+
+以前注册的，忘记用了。。。
+笔记地址：https://github.com/weedge/doraemon-nb/blob/main/Google_BigQuery_Palm_Redis.ipynb
+注：这里使用redis作为向量索引数据库，也可以结合其他向量索引库来搭建相应方案。主要目的是熟悉GCP服务和redis cloud服务。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">时间飘过</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/perf-book-cn/zh/" rel="noopener" target="_blank">
+              《现代CPU性能分析与优化》
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      时间飘过
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/perf-book-cn/zh/" rel="noopener" target="_blank">
+              《现代CPU性能分析与优化》
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">Redis和GCP AI服务搭建RAG参考架构解决方案</h1>
+      
+      <div class="post-meta">
+        <time datetime="2024-03-14" class="post-time">
+          2024-03-14
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            <a href="https://weedge.github.io/categories/doraemon/"> doraemon </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#引言">引言</a></li>
+    <li><a href="#安装">安装</a>
+      <ul>
+        <li><a href="#1-先决条件">1. 先决条件</a></li>
+        <li><a href="#2-创建-bigquery-表">2. 创建 BigQuery 表</a></li>
+        <li><a href="#3-生成-embeddings">3. 生成 Embeddings</a></li>
+        <li><a href="#4-加载嵌入">4. 加载嵌入</a></li>
+        <li><a href="#5-创建向量索引">5. 创建向量索引</a></li>
+      </ul>
+    </li>
+    <li><a href="#构建-llm-应用程序">构建 LLM 应用程序</a></li>
+    <li><a href="#llm-设计模式">LLM 设计模式</a>
+      <ul>
+        <li><a href="#简单的语义搜索">简单的语义搜索</a></li>
+        <li><a href="#检索增强生成rag">检索增强生成（RAG）</a></li>
+        <li><a href="#llm-缓存">LLM 缓存</a></li>
+        <li><a href="#历史记录">历史记录</a></li>
+      </ul>
+    </li>
+    <li><a href="#结束工作">结束工作</a></li>
+    <li><a href="#参考">参考</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <p>本文主要是讲解一个快速搭建比如RAG pipeline相关应用参考方案，结合云厂商GCP AI服务，以及<a href="https://redis.io/docs/about/about-stack/">redis stack</a> | <a href="https://redis.io/docs/get-started/vector-database/">vector index</a>，借助 Google Cloud Platform 上易用的开发<a href="https://cloud.google.com/sdk">SDK</a>,  以及使用<a href="https://app.redislabs.com">redislabs</a> 提供的免费30M内存空间服务；GCP新用户前三个月好像是免费使用一些服务，而且提供 <strong>$300</strong> 的赠金使用，对于前期学习和使用体验服务还是不错的选择，而且个人感觉学习文档很齐全，不会很零散。但是解决方案相对AWS要少些，毕竟AWS做的很深入，搭建解决方案很方便，集成开发工具比较齐全，特别是serverless lambda服务，可以看下以前写的文章『 <a href="https://weedge.github.io/post/user-behavior-analytics-solution/">用户行为分析方案设计</a>』通过CDK构建解决方案stack(用于前期架构推演，不要YY，要动手，节约成本是干出来的)。</p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/doraemon/redis_gcp_rag_stack/gcp-cost.png" alt="image-20240314215720290"></p>
+<p>以前注册的，忘记用了。。。</p>
+<p>笔记地址：<a href="https://github.com/weedge/doraemon-nb/blob/main/Google_BigQuery_Palm_Redis.ipynb">https://github.com/weedge/doraemon-nb/blob/main/Google_BigQuery_Palm_Redis.ipynb</a></p>
+<p><strong>注</strong>：这里使用redis作为向量索引数据库，也可以结合其他向量索引库来搭建相应方案。主要目的是熟悉GCP服务和redis cloud服务。</p>
+<h2 id="引言">引言</h2>
+<p>☁️ Google 的 Vertex AI 通过引入<a href="https://cloud.google.com/vertex-ai/docs/generative-ai/learn/overview">生成式 AI</a>扩展了其能力。这项先进技术配备了专门的<a href="https://cloud.google.com/vertex-ai/docs/generative-ai/start/quickstarts/quickstart">控制台工作室体验</a>、<a href="https://cloud.google.com/vertex-ai/docs/generative-ai/start/quickstarts/api-quickstart">专用 API</a> 和 <a href="https://cloud.google.com/vertex-ai/docs/python-sdk/use-vertex-ai-python-sdk">Python SDK</a>，专为部署和管理 Google 强大的 PaLM 语言模型实例而设计（<a href="https://github.com/GoogleCloudPlatform/generative-ai">更多示例代码</a>）。PaLM 模型专注于文本生成、摘要、聊天完成和嵌入创建，正在重塑自然语言处理和机器学习的边界。</p>
+<p>⚡ <a href="https://redis.io/docs/about/about-stack/">redis stack</a>  提供向量数据库功能，具有高效的 API 用于创建向量索引、管理、选择距离度量、相似性搜索和混合过滤。当与它的多功能数据结构（包括列表、哈希、JSON 和集合）结合使用时，<a href="https://redis.io/docs/about/about-stack/">redis stack</a> 作为打造高质量基于大型语言模型（LLM）的应用程序的最佳解决方案而脱颖而出。它体现了简化的架构和性能，使其成为生产环境中不可或缺的工具。</p>
+<p><img src="https://github.com/RedisVentures/redis-google-llms/blob/main/assets/GCP_RE_GenAI.drawio.png?raw=true" alt=""></p>
+<p>接下来，我们将通过几种与 Vertex AI LLM 和 Redis Enterprise 相关的设计模式，确保最佳的生产性能。</p>
+<h2 id="安装">安装</h2>
+<h3 id="1-先决条件">1. 先决条件</h3>
+<p>在我们开始之前，我们必须安装一些必需的库，与 Google 进行身份验证，创建 Redis 数据库，并初始化其他必需的组件。</p>
+<h4 id="安装必需的库">安装必需的库</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">!pip install redis <span class="s2">&#34;google-cloud-aiplatform==1.25.0&#34;</span> --upgrade --user
+</code></pre></div><h4 id="本地安装-redis可选">本地安装 Redis（可选）</h4>
+<p>如果您在其他地方已经运行了安装了 <a href="https://redis.io/docs/about/about-stack/">Redis Stack</a> 的 Redis 数据库，那么您不需要在这台机器上运行它。可以跳过这一步，直接进行“连接到 Redis 服务器”的步骤。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">curl -fsSL https://packages.redis.io/gpg <span class="p">|</span> sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+<span class="nb">echo</span> <span class="s2">&#34;deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb </span><span class="k">$(</span>lsb_release -cs<span class="k">)</span><span class="s2"> main&#34;</span> <span class="p">|</span> sudo tee /etc/apt/sources.list.d/redis.list
+sudo apt-get update  &gt; /dev/null 2&gt;<span class="p">&amp;</span><span class="m">1</span>
+sudo apt-get install redis-stack-server  &gt; /dev/null 2&gt;<span class="p">&amp;</span><span class="m">1</span>
+redis-stack-server --daemonize yes
+</code></pre></div><h4 id="在云上使用免费的-redis-cloud-账户">在云上使用免费的 Redis Cloud 账户</h4>
+<p>您也可以激活 Redis Cloud 的永久免费实例。激活步骤如下：</p>
+<ul>
+<li>访问 <a href="https://redis.com/try-free/">https://redis.com/try-free/</a></li>
+<li>注册（使用基于 Gmail 的注册是最简便的方式）</li>
+<li>创建新订阅</li>
+<li>使用以下选项：
+<ul>
+<li>固定计划，选择部署服务到 Google Cloud或者 aws都可以</li>
+<li>新的 30Mb 免费数据库</li>
+</ul>
+</li>
+<li>创建新的 RedisStack 数据库</li>
+</ul>
+<p>如果您是第一次在 Redis Cloud 注册 - 那么最后几步默认会自动为您执行(默认使用aws)。请记录下新数据库的主机、端口和默认密码。您可以在接下来的代码块中使用这些信息，而不是默认的 <code>localhost</code>。</p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/doraemon/redis_gcp_rag_stack/redislab-databases.jpg" alt=""></p>
+<h4 id="连接到-redis-服务器">连接到 Redis 服务器</h4>
+<p>如果您正在连接到外部的 Redis 实例，请将下面的连接参数替换为您自己的。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">redis</span>
+
+<span class="c1"># Redis connection params</span>
+<span class="n">REDIS_HOST</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;REDIS_HOST&#34;</span><span class="p">,</span> <span class="s2">&#34;redis-10610.c274.us-east-1-3.ec2.cloud.redislabs.com&#34;</span><span class="p">)</span> <span class="c1">#&#34;redis-10610.c274.us-east-1-3.ec2.cloud.redislabs.com&#34;</span>
+<span class="n">REDIS_PORT</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;REDIS_PORT&#34;</span><span class="p">,</span> <span class="s2">&#34;10610&#34;</span><span class="p">)</span>      <span class="c1">#10610</span>
+<span class="n">REDIS_PASSWORD</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;REDIS_PASSWORD&#34;</span><span class="p">,</span> <span class="s2">&#34;******&#34;</span><span class="p">)</span>  <span class="c1">#&#34;pobhBJP7Psicp2gV0iqa2ZOc1WdXXXXX&#34;</span>
+
+<span class="c1"># Create Redis client</span>
+<span class="n">redis_client</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">Redis</span><span class="p">(</span>
+  <span class="n">host</span><span class="o">=</span><span class="n">REDIS_HOST</span><span class="p">,</span>
+  <span class="n">port</span><span class="o">=</span><span class="n">REDIS_PORT</span><span class="p">,</span>
+  <span class="n">password</span><span class="o">=</span><span class="n">REDIS_PASSWORD</span>
+<span class="p">)</span>
+
+<span class="c1"># Test connection</span>
+<span class="n">redis_client</span><span class="o">.</span><span class="n">ping</span><span class="p">()</span>
+<span class="c1"># Clear Redis database (optional)</span>
+<span class="n">redis_client</span><span class="o">.</span><span class="n">flushdb</span><span class="p">()</span>
+</code></pre></div><h4 id="gcp认证">GCP认证</h4>
+<p>如果使用google的colab操作，直接认证用户，然后会提示关联到对应google账户。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">google.colab</span> <span class="kn">import</span> <span class="n">auth</span>
+<span class="n">auth</span><span class="o">.</span><span class="n">authenticate_user</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Authenticated&#39;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">getpass</span> <span class="kn">import</span> <span class="n">getpass</span>
+
+
+</code></pre></div><p>设置所在项目id 和 区域服务</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># input your GCP project ID and region for Vertex AI</span>
+<span class="n">PROJECT_ID</span> <span class="o">=</span> <span class="n">getpass</span><span class="p">(</span><span class="s2">&#34;PROJECT_ID:&#34;</span><span class="p">)</span> <span class="c1">#&#39;central-beach-194106&#39;</span>
+<span class="n">REGION</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&#34;REGION:&#34;</span><span class="p">)</span> <span class="c1">#&#39;us-central1&#39;</span>
+</code></pre></div><p>如果是本地，可以使用<code>gcloud</code> cli来操作 (类似 <code>aws</code> cli工具)</p>
+<h4 id="初始-vertex-ai-组件">初始 Vertex AI 组件</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">vertexai</span>
+
+<span class="n">vertexai</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">PROJECT_ID</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">REGION</span><span class="p">)</span>
+</code></pre></div><h3 id="2-创建-bigquery-表">2. 创建 BigQuery 表</h3>
+<p>第二步涉及到为我们的 LLM 应用程序准备数据集。我们使用了来自 <strong>Google BigQuery</strong> 的一个免费（公开）的黑客新闻数据集。</p>
+<p><em>利用 BigQuery 构建机器学习应用程序是一种常见模式，因为它具有强大的查询和分析能力。</em></p>
+<p>我们将从为这个数据集创建我们自己的 BigQuery 表开始。此外，如果您有不同的数据集要处理，您可以遵循类似的模式，甚至可以将 CSV 从 Google Cloud Storage 存储桶加载到 BigQuery 中。</p>
+<h4 id="创建源表">创建源表</h4>
+<p>第一步是从公共数据源创建一个新表。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">google.cloud</span> <span class="kn">import</span> <span class="n">bigquery</span>
+
+<span class="c1"># Create bigquery client</span>
+<span class="n">bq</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">PROJECT_ID</span><span class="p">)</span>
+
+<span class="n">TABLE_NAME</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&#34;Input a Big Query TABLE_NAME:&#34;</span><span class="p">)</span> <span class="c1">#hackernews</span>
+<span class="n">DATASET_ID</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">PROJECT_ID</span><span class="si">}</span><span class="s2">.google_redis_llms&#34;</span>
+
+<span class="c1"># Create dataset</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">DATASET_ID</span><span class="p">)</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="s2">&#34;US&#34;</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">bq</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">exists_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Define table ID</span>
+<span class="n">TABLE_ID</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">DATASET_ID</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">TABLE_NAME</span><span class="si">}</span><span class="s2">&#34;</span>
+
+<span class="c1"># Create source table</span>
+<span class="k">def</span> <span class="nf">create_source_table</span><span class="p">(</span><span class="n">table_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="n">create_job</span> <span class="o">=</span> <span class="n">bq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&#39;&#39;
+</span><span class="s1">      CREATE OR REPLACE TABLE `</span><span class="si">{</span><span class="n">table_id</span><span class="si">}</span><span class="s1">` AS (
+</span><span class="s1">        SELECT
+</span><span class="s1">          title, text, time, timestamp, id
+</span><span class="s1">        FROM `bigquery-public-data.hacker_news.full`
+</span><span class="s1">        WHERE
+</span><span class="s1">          type =&#39;story&#39;
+</span><span class="s1">        LIMIT 1000
+</span><span class="s1">      )
+</span><span class="s1">    &#39;&#39;&#39;</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">create_job</span><span class="o">.</span><span class="n">result</span><span class="p">()</span> <span class="c1"># Make an API request</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">bq</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="n">table_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">table</span>
+
+<span class="c1"># Create table</span>
+<span class="n">table</span> <span class="o">=</span> <span class="n">create_source_table</span><span class="p">(</span><span class="n">TABLE_ID</span><span class="p">)</span>
+
+<span class="c1"># List schema</span>
+<span class="n">table</span><span class="o">.</span><span class="n">schema</span>
+</code></pre></div><p>上面的数据集包含黑客新闻帖子的记录，包括<strong>标题</strong>、<strong>文本</strong>、<strong>时间</strong>、<strong>id</strong>和<strong>时间戳</strong>。让我们提取一些示例行并进行检查。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># Query 5 sample records from BQ</span>
+<span class="n">query_job</span> <span class="o">=</span> <span class="n">bq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&#39;&#39;
+</span><span class="s1">SELECT *
+</span><span class="s1">FROM </span><span class="si">{</span><span class="n">TABLE_ID</span><span class="si">}</span><span class="s1">
+</span><span class="s1">LIMIT 5
+</span><span class="s1">&#39;&#39;&#39;</span><span class="p">)</span>
+
+<span class="n">query_job</span><span class="o">.</span><span class="n">result</span><span class="p">()</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
+</code></pre></div><p>具体表格数据见<a href="https://github.com/weedge/doraemon-nb/blob/main/Google_BigQuery_Palm_Redis.ipynb">操作笔记</a></p>
+<h3 id="3-生成-embeddings">3. 生成 Embeddings</h3>
+<h4 id="使用-vertex-ai-嵌入模型创建文本嵌入">使用 Vertex AI 嵌入模型创建文本嵌入</h4>
+<p>使用 Google 开发的 <a href="https://cloud.google.com/vertex-ai/docs/generative-ai/embeddings/get-text-embeddings">Vertex AI API for text embeddings</a>。</p>
+<p>如需详细了解嵌入，请参阅 <a href="https://cloud.google.com/blog/topics/developers-practitioners/meet-ais-multitool-vector-embeddings?hl=zh-cn">Meet AI 的多工具：向量嵌入</a>。如需学习有关嵌入的基础机器学习速成课程，请参阅<a href="https://developers.google.com/machine-learning/crash-course/embeddings/video-lecture?hl=zh-cn">嵌入</a></p>
+<p>使用gpc 进行相关embeddings的case: <a href="https://github.com/GoogleCloudPlatform/generative-ai/tree/main/embeddings">https://github.com/GoogleCloudPlatform/generative-ai/tree/main/embeddings</a></p>
+<blockquote>
+<p>文本嵌入是内容的密集向量表示，如果两个内容在语义上相似，它们各自的嵌入在嵌入向量空间中的位置也相近。这种表示可以用来解决常见的自然语言处理（NLP）任务，例如：</p>
+<ul>
+<li><strong>语义搜索</strong>：根据语义相似性对搜索文本进行排名。</li>
+<li><strong>推荐</strong>：返回与给定文本具有相似文本属性的项目。</li>
+<li><strong>分类</strong>：返回与给定文本相似的文本属性的项目类别。</li>
+<li><strong>聚类</strong>：对与给定文本的文本属性相似的项目进行聚类。</li>
+<li><strong>异常检测</strong>：返回与给定文本的文本属性关系最小的项目。</li>
+</ul>
+</blockquote>
+<p><code>textembedding-gecko</code> 模型接受最多 3,072 个输入标记（即单词），并输出 768 维的向量嵌入。</p>
+<h4 id="定义嵌入辅助函数">定义嵌入辅助函数</h4>
+<p>我们定义了一个辅助函数 <code>embedding_model_with_backoff</code>，用于从文本列表创建嵌入，同时通过<a href="https://en.wikipedia.org/wiki/Exponential_backoff">指数退避</a>来使其对<a href="https://cloud.google.com/vertex-ai/docs/quotas">Vertex AI API 配额</a>具有弹性，使用<a href="https://github.com/jd/tenacity">tenacity</a>库。</p>
+<p>我们还定义了一种方法，将浮点数数组转换为字节字符串，以便在 Redis 中高效存储（稍后使用）。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="kn">from</span> <span class="nn">tenacity</span> <span class="kn">import</span> <span class="n">retry</span><span class="p">,</span> <span class="n">stop_after_attempt</span><span class="p">,</span> <span class="n">wait_random_exponential</span>
+<span class="kn">from</span> <span class="nn">vertexai.preview.language_models</span> <span class="kn">import</span> <span class="n">TextEmbeddingModel</span>
+
+<span class="c1"># Embedding model definition from VertexAI PaLM API</span>
+<span class="n">embedding_model</span> <span class="o">=</span> <span class="n">TextEmbeddingModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">&#34;textembedding-gecko@001&#34;</span><span class="p">)</span>
+<span class="n">VECTOR_DIMENSIONS</span> <span class="o">=</span> <span class="mi">768</span>
+
+<span class="nd">@retry</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="n">wait_random_exponential</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop_after_attempt</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">embed_text</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="n">embeddings</span> <span class="o">=</span> <span class="n">embedding_model</span><span class="o">.</span><span class="n">get_embeddings</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">each</span><span class="o">.</span><span class="n">values</span> <span class="k">for</span> <span class="n">each</span> <span class="ow">in</span> <span class="n">embeddings</span><span class="p">]</span>
+
+<span class="c1"># Convert embeddings to bytes for Redis storage</span>
+<span class="k">def</span> <span class="nf">convert_embedding</span><span class="p">(</span><span class="n">emb</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
+  <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">emb</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+</code></pre></div><h4 id="嵌入文本数据">嵌入文本数据</h4>
+<p>目前，我们在 BigQuery 中创建的表（如上所述）包含了我们希望嵌入并为大型语言模型（LLMs）提供可用的黑客新闻文章记录。</p>
+<p>为了节省这台机器的 RAM 使用量，我们将分批次迭代 BigQuery 中的文章，创建嵌入，并将它们写入 Redis，Redis 在此被用作<a href="https://redis.com/solutions/use-cases/vector-database">向量数据库</a>。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">QUERY_TEMPLATE</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;&#34;&#34;
+</span><span class="s2">SELECT id, title, text
+</span><span class="s2">FROM </span><span class="si">{</span><span class="n">TABLE_ID</span><span class="si">}</span><span class="s2">
+</span><span class="s2">LIMIT </span><span class="se">{{</span><span class="s2">limit</span><span class="se">}}</span><span class="s2"> OFFSET </span><span class="se">{{</span><span class="s2">offset</span><span class="se">}}</span><span class="s2">;
+</span><span class="s2">&#34;&#34;&#34;</span>
+
+<span class="k">def</span> <span class="nf">query_bigquery_batches</span><span class="p">(</span>
+    <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">rows_per_batch</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">start_batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="c1"># Generate batches from a table in big query</span>
+    <span class="k">for</span> <span class="n">offset</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_batch</span><span class="p">,</span> <span class="n">max_rows</span><span class="p">,</span> <span class="n">rows_per_batch</span><span class="p">):</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">QUERY_TEMPLATE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="n">rows_per_batch</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">)</span>
+        <span class="n">query_job</span> <span class="o">=</span> <span class="n">bq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="n">query_job</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">rows</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
+        <span class="c1"># Join title and text fields</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&#34;content&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="s2">&#34;Title: &#34;</span> <span class="o">+</span> <span class="n">r</span><span class="o">.</span><span class="n">title</span> <span class="o">+</span> <span class="s2">&#34;. Content: &#34;</span> <span class="o">+</span> <span class="n">r</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">df</span>
+
+</code></pre></div><p>在下面，我们定义了一些辅助函数，用于处理单个数据行、将批次写入 <strong>Redis</strong>、从 <strong>BigQuery</strong> 查询源数据，以及使用 <strong>Vertex AI</strong> 创建文本嵌入。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+
+<span class="c1"># Redis key helper function</span>
+<span class="k">def</span> <span class="nf">redis_key</span><span class="p">(</span><span class="n">key_prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">key_prefix</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">&#34;</span>
+
+<span class="c1"># Process a single dataset record</span>
+<span class="k">def</span> <span class="nf">process_record</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+  <span class="k">return</span> <span class="p">{</span>
+      <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">record</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+      <span class="s1">&#39;embedding&#39;</span><span class="p">:</span> <span class="n">record</span><span class="p">[</span><span class="s1">&#39;embedding&#39;</span><span class="p">],</span>
+      <span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">record</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">],</span>
+      <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="n">record</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span>
+  <span class="p">}</span>
+
+<span class="c1"># Load batch of data into Redis as HASH objects</span>
+<span class="k">def</span> <span class="nf">load_redis_batch</span><span class="p">(</span>
+    <span class="n">redis_client</span><span class="p">:</span> <span class="n">redis</span><span class="o">.</span><span class="n">Redis</span><span class="p">,</span>
+    <span class="n">dataset</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+    <span class="n">key_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&#34;doc&#34;</span><span class="p">,</span>
+    <span class="n">id_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&#34;id&#34;</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">pipe</span> <span class="o">=</span> <span class="n">redis_client</span><span class="o">.</span><span class="n">pipeline</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">record</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">dataset</span><span class="p">)):</span>
+        <span class="n">record</span> <span class="o">=</span> <span class="n">process_record</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">redis_key</span><span class="p">(</span><span class="n">key_prefix</span><span class="p">,</span> <span class="n">record</span><span class="p">[</span><span class="n">id_column</span><span class="p">])</span>
+        <span class="n">pipe</span><span class="o">.</span><span class="n">hset</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">mapping</span><span class="o">=</span><span class="n">record</span><span class="p">)</span>
+    <span class="n">pipe</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+
+<span class="c1"># Run the entire process</span>
+<span class="k">def</span> <span class="nf">create_embeddings_bigquery_redis</span><span class="p">(</span><span class="n">redis_client</span><span class="p">):</span>
+    <span class="c1"># Create generator from BigQuery</span>
+    <span class="n">max_rows</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">rows_per_batch</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">bq_content_query</span> <span class="o">=</span> <span class="n">query_bigquery_batches</span><span class="p">(</span><span class="n">max_rows</span><span class="p">,</span> <span class="n">rows_per_batch</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">bq_content_query</span><span class="p">):</span>
+      <span class="c1"># Split batch into smaller chunks for embedding generation</span>
+      <span class="n">batch_splits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">rows_per_batch</span><span class="o">/</span><span class="mi">5</span><span class="p">))</span>
+      <span class="c1"># Create embeddings</span>
+      <span class="n">batch</span><span class="p">[</span><span class="s2">&#34;embedding&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+          <span class="n">convert_embedding</span><span class="p">(</span><span class="n">embedding</span><span class="p">)</span>
+          <span class="k">for</span> <span class="n">split</span> <span class="ow">in</span> <span class="n">batch_splits</span>
+          <span class="k">for</span> <span class="n">embedding</span> <span class="ow">in</span> <span class="n">embed_text</span><span class="p">(</span><span class="n">split</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+      <span class="p">]</span>
+      <span class="c1"># Write batch to Redis</span>
+      <span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="s2">&#34;records&#34;</span><span class="p">)</span>
+      <span class="n">load_redis_batch</span><span class="p">(</span><span class="n">redis_client</span><span class="p">,</span> <span class="n">batch</span><span class="p">)</span>
+
+</code></pre></div><p><img src="https://raw.githubusercontent.com/weedge/mypic/master/doraemon/redis_gcp_rag_stack/redis-insights-vector.jpg" alt=""></p>
+<h3 id="4-加载嵌入">4. 加载嵌入</h3>
+<p>现在我们已经有了一个函数来生成 BigQuery 批次、创建文本嵌入以及将批次写入 Redis，我们可以运行这一个函数来处理我们整个数据集：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">create_embeddings_bigquery_redis</span><span class="p">(</span><span class="n">redis_client</span><span class="p">)</span>
+<span class="c1"># Validate how many records are stored in Redis</span>
+<span class="n">redis_client</span><span class="o">.</span><span class="n">dbsize</span><span class="p">()</span>
+</code></pre></div><h3 id="5-创建向量索引">5. 创建向量索引</h3>
+<p>现在我们已经创建了代表我们数据集中文本的嵌入，并将它们存储在 Redis 中，我们将创建一个辅助索引，以实现对嵌入的高效搜索。要了解更多关于 Redis 中向量相似性功能的信息，<a href="https://redis.io/docs/interact/search-and-query/search/vectors/">请查看这些文档</a> 以及 <a href="https://github.com/RedisVentures/redis-ai-resources">这些 Redis AI 资源</a>。</p>
+<p><strong>为什么我们需要启用搜索功能呢？</strong>
+使用 Redis 进行向量相似性搜索可以让我们检索与输入问题或查询<strong>相似</strong>或<strong>相关</strong>的文本数据块。这对于我们的示例生成式 AI / LLM 应用程序来说将非常有帮助。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">redis.commands.search.field</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">NumericField</span><span class="p">,</span>
+    <span class="n">TagField</span><span class="p">,</span>
+    <span class="n">TextField</span><span class="p">,</span>
+    <span class="n">VectorField</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">redis.commands.search.indexDefinition</span> <span class="kn">import</span> <span class="n">IndexDefinition</span><span class="p">,</span> <span class="n">IndexType</span>
+<span class="kn">from</span> <span class="nn">redis.commands.search.query</span> <span class="kn">import</span> <span class="n">Query</span>
+
+
+<span class="n">INDEX_NAME</span> <span class="o">=</span> <span class="s2">&#34;google:idx&#34;</span>
+<span class="n">PREFIX</span> <span class="o">=</span> <span class="s2">&#34;doc:&#34;</span>
+<span class="n">VECTOR_FIELD_NAME</span> <span class="o">=</span> <span class="s2">&#34;embedding&#34;</span>
+
+<span class="c1"># Store vectors in redis and create index</span>
+<span class="c1"># 对hash中的 embedding字段建向量索引FLAT,维度768,相似度测量方法:cosine</span>
+<span class="k">def</span> <span class="nf">create_redis_index</span><span class="p">(</span>
+    <span class="n">redis_client</span><span class="p">:</span> <span class="n">redis</span><span class="o">.</span><span class="n">Redis</span><span class="p">,</span>
+    <span class="n">vector_field_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">VECTOR_FIELD_NAME</span><span class="p">,</span>
+    <span class="n">index_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">INDEX_NAME</span><span class="p">,</span>
+    <span class="n">prefix</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="n">PREFIX</span><span class="p">],</span>
+    <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">VECTOR_DIMENSIONS</span> <span class="c1">#768</span>
+  <span class="p">):</span>
+
+    <span class="c1"># Construct index</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">redis_client</span><span class="o">.</span><span class="n">ft</span><span class="p">(</span><span class="n">index_name</span><span class="p">)</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Existing index found. Dropping and recreating the index&#34;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">redis_client</span><span class="o">.</span><span class="n">ft</span><span class="p">(</span><span class="n">index_name</span><span class="p">)</span><span class="o">.</span><span class="n">dropindex</span><span class="p">(</span><span class="n">delete_documents</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Creating new index&#34;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Create new index</span>
+    <span class="n">redis_client</span><span class="o">.</span><span class="n">ft</span><span class="p">(</span><span class="n">index_name</span><span class="p">)</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="n">VectorField</span><span class="p">(</span>
+                <span class="n">vector_field_name</span><span class="p">,</span> <span class="s2">&#34;FLAT&#34;</span><span class="p">,</span>
+                <span class="p">{</span>
+                    <span class="s2">&#34;TYPE&#34;</span><span class="p">:</span> <span class="s2">&#34;FLOAT32&#34;</span><span class="p">,</span>
+                    <span class="s2">&#34;DIM&#34;</span><span class="p">:</span> <span class="n">dim</span><span class="p">,</span>
+                    <span class="s2">&#34;DISTANCE_METRIC&#34;</span><span class="p">:</span> <span class="s2">&#34;COSINE&#34;</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">definition</span><span class="o">=</span><span class="n">IndexDefinition</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">index_type</span><span class="o">=</span><span class="n">IndexType</span><span class="o">.</span><span class="n">HASH</span><span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="c1"># Create index</span>
+<span class="n">create_redis_index</span><span class="p">(</span><span class="n">redis_client</span><span class="p">)</span>
+<span class="c1"># Inspect index attributes</span>
+<span class="n">redis_client</span><span class="o">.</span><span class="n">ft</span><span class="p">(</span><span class="n">INDEX_NAME</span><span class="p">)</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+
+<span class="c1"># Retreive single HASH from Redis</span>
+<span class="n">key</span> <span class="o">=</span> <span class="n">redis_client</span><span class="o">.</span><span class="n">keys</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+<span class="n">redis_client</span><span class="o">.</span><span class="n">hgetall</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+</code></pre></div><p><img src="https://raw.githubusercontent.com/weedge/mypic/master/doraemon/redis_gcp_rag_stack/redis-vector-index.jpg" alt=""></p>
+<p><strong>Redis</strong>数据存储完全加载了来自<strong>BigQuery</strong>的数据子集，包括使用<strong>Vertex AI</strong> PaLM api创建的文本嵌入。</p>
+<h2 id="构建-llm-应用程序">构建 LLM 应用程序</h2>
+<p>随着 Redis 作为向量数据库完全加载，并且我们可以利用强大的 PaLM API，我们可以在这个技术栈上构建许多 AI 应用程序。下面我们将简要描述每个应用程序及其用例：</p>
+<ul>
+<li><strong>文档检索</strong> - 搜索文档，只返回与给定查询最相关的文档。</li>
+<li><strong>产品推荐</strong> - 根据购物者喜欢的产品的属性和描述，推荐具有相似属性和描述的产品。</li>
+<li><strong>聊天机器人</strong> - 提供一个对话式界面，用于信息检索或客户服务。</li>
+<li><strong>文本摘要与生成</strong> - 从相关信息源生成新的内容，以加速团队产出。</li>
+<li><strong>欺诈/异常检测</strong> - 基于与其他已知实体的属性相似性，识别异常和潜在的欺诈事件、交易或项目。</li>
+</ul>
+<p>更多应用case见：<a href="https://github.com/redis-developer/redis-ai-resources">https://github.com/redis-developer/redis-ai-resources</a></p>
+<h2 id="llm-设计模式">LLM 设计模式</h2>
+<p>为了构建这类应用程序，下面我们强调了四种技术设计模式和技巧，Redis Enterprise 在这些方面非常有用，可以提升 LLM 的性能：</p>
+<ul>
+<li><strong>语义搜索</strong></li>
+<li><strong>检索增强生成（Retrieval Augmented Generation，RAG）</strong></li>
+<li><strong>缓存</strong></li>
+<li><strong>内存</strong></li>
+</ul>
+<p>结合这些模式的某种组合是推荐的最佳实践，这些实践来自于全球各地企业用例和开源用户的经验和总结。</p>
+<h3 id="简单的语义搜索">简单的语义搜索</h3>
+<p><strong>语义搜索</strong>，在大型语言模型（LLMs）的背景下，是一种复杂的搜索技术，它超越了字面上的关键词匹配，以理解用户查询背后的上下文含义和意图。利用 Google Vertex AI 平台的强大能力和 Redis 向量数据库的功能，语义搜索可以从大量文本数据集中映射和提取深层次的知识，包括细微的关系和隐藏的模式。</p>
+<p>这使得应用程序能够返回在上下文中相关的搜索结果，通过提供有意义的回应，增强了用户体验，即使是对复杂或模糊的搜索词也是如此。因此，语义搜索不仅提高了搜索结果的准确性和相关性，还使应用程序能够以更类似人类、直观的方式与用户互动。</p>
+<p>语义搜索的一般过程包括三个步骤：</p>
+<ol>
+<li>创建查询向量</li>
+<li>执行向量搜索</li>
+<li>审查并返回结果</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 1. Create query vector</span>
+<span class="n">query</span> <span class="o">=</span> <span class="s2">&#34;What is the best computer operating system for software dev?&#34;</span>
+<span class="n">query_vector</span> <span class="o">=</span> <span class="n">embed_text</span><span class="p">([</span><span class="n">query</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># Our query has been converted to a list of floats (this is a truncated view)</span>
+<span class="n">query_vector</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span>
+
+
+<span class="c1"># Helper method to perform KNN similarity search in Redis</span>
+<span class="k">def</span> <span class="nf">similarity_search</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">return_fields</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">index_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">INDEX_NAME</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+    <span class="c1"># create embedding from query text</span>
+    <span class="n">query_vector</span> <span class="o">=</span> <span class="n">embed_text</span><span class="p">([</span><span class="n">query</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># create redis query object</span>
+    <span class="n">redis_query</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">Query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;*=&gt;[KNN </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> @</span><span class="si">{</span><span class="n">VECTOR_FIELD_NAME</span><span class="si">}</span><span class="s2"> $embedding AS score]&#34;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">sort_by</span><span class="p">(</span><span class="s2">&#34;score&#34;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">return_fields</span><span class="p">(</span><span class="o">*</span><span class="n">return_fields</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">paging</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">dialect</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="c1"># execute the search</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">redis_client</span><span class="o">.</span><span class="n">ft</span><span class="p">(</span><span class="n">index_name</span><span class="p">)</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+        <span class="n">redis_query</span><span class="p">,</span> <span class="n">query_params</span><span class="o">=</span><span class="p">{</span><span class="s2">&#34;embedding&#34;</span><span class="p">:</span> <span class="n">convert_embedding</span><span class="p">(</span><span class="n">query_vector</span><span class="p">)}</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">t</span><span class="o">.</span><span class="vm">__dict__</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">docs</span> <span class="p">])</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;payload&#34;</span><span class="p">])</span>
+
+  
+<span class="c1"># 2. Perform vector similarity search with given query</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">similarity_search</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">return_fields</span><span class="o">=</span><span class="p">(</span><span class="s2">&#34;score&#34;</span><span class="p">,</span> <span class="s2">&#34;title&#34;</span><span class="p">,</span> <span class="s2">&#34;text&#34;</span><span class="p">))</span>
+
+
+<span class="c1"># 3. Review and return the results</span>
+<span class="n">display</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+</code></pre></div><p>具体表格数据见<a href="https://github.com/weedge/doraemon-nb/blob/main/Google_BigQuery_Palm_Redis.ipynb">操作笔记</a></p>
+<p>上述结果表明，我们针对软件开发者推荐的操作系统的搜索，找到了一些可能有助于回答这个问题的 Hacker News 的帖子。可尝试使用不同的<a href="https://redis.io/docs/interact/search-and-query/advanced-concepts/vectors/#creation-attributes-per-algorithm">索引类型和距离度量</a></p>
+<h3 id="检索增强生成rag">检索增强生成（RAG）</h3>
+<p><strong>检索增强生成</strong>（Retrieval Augmented Generation，RAG）在大型语言模型（LLMs）的范围内，是一种结合特定领域数据知识和生成模型的技术，用于增强产生丰富上下文问题回答的能力。本质上，<em>RAG</em> 通过从文档或数据的知识库中检索相关信息，然后再生成回答的方式进行工作。这使得通用的基础模型能够在运行时访问这些数据源，这与微调不是同一回事。</p>
+<p>RAG 利用 Redis 作为低延迟向量数据库的优势进行高效的检索操作，以及利用 Google 的 Vertex AI 生成连贯的文本回答。在 LLM 应用程序中，RAG 使得对上下文的深入理解成为可能，即使是对复杂的查询也能返回高度细腻的回答。这种模式增强了应用程序的交互能力，提供了更精确和信息丰富的回答，从而显著丰富了用户体验。</p>
+<p>为了构建一个用于问答的RAG管道，我们需要使用Vertex PaLM API来生成文本(<code>text-bison@001</code>)。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">vertexai.preview.language_models</span> <span class="kn">import</span> <span class="n">TextGenerationModel</span>
+
+<span class="c1"># Define generation model</span>
+<span class="n">generation_model</span> <span class="o">=</span> <span class="n">TextGenerationModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">&#34;text-bison@001&#34;</span><span class="p">)</span>
+
+<span class="n">response</span> <span class="o">=</span> <span class="n">generation_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="s2">&#34;What is a large language model?&#34;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Example response:</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+</code></pre></div><p>为了能够<strong>在引用特定领域的来源</strong>（如我们的示例 hackernews 数据集）的同时回答问题，我们必须构建一个 RAG 管道：</p>
+<ol>
+<li>
+<p>首先在知识库（存储在 Redis 中）上使用用户查询进行<strong>语义搜索</strong>，以找到有助于语言模型智能回答的相关来源。</p>
+</li>
+<li>
+<p>这些来源（称为上下文）被“塞入”提示（输入）中。</p>
+</li>
+<li>
+<p>最后，完整的提示被传递给语言模型进行文本生成。</p>
+</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">create_prompt</span><span class="p">(</span><span class="n">prompt_template</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="k">return</span> <span class="n">prompt_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">rag</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    Simple pipeline for performing retrieval augmented generation with
+</span><span class="s2">    Google Vertex PaLM API and Redis Enterprise.
+</span><span class="s2">    &#34;&#34;&#34;</span>
+    <span class="c1"># Perform a vector similarity search in Redis</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Pulling relevant data sources from Redis&#34;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">relevant_sources</span> <span class="o">=</span> <span class="n">similarity_search</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">return_fields</span><span class="o">=</span><span class="p">(</span><span class="s2">&#34;text&#34;</span><span class="p">,))</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Relevant sources found!&#34;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># Combine the relevant sources and inject into the prompt</span>
+    <span class="n">sources_text</span> <span class="o">=</span> <span class="s2">&#34;-&#34;</span> <span class="o">+</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">-&#34;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">source</span> <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">relevant_sources</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">values</span><span class="p">])</span>
+    <span class="n">full_prompt</span> <span class="o">=</span> <span class="n">create_prompt</span><span class="p">(</span>
+        <span class="n">prompt_template</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>
+        <span class="n">sources</span><span class="o">=</span><span class="n">sources_text</span><span class="p">,</span>
+        <span class="n">query</span><span class="o">=</span><span class="n">query</span>
+      <span class="p">)</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">Full prompt:</span><span class="se">\n\n</span><span class="s2">&#34;</span><span class="p">,</span> <span class="n">full_prompt</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># Perform text generation to get a response from PaLM API</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">generation_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="n">full_prompt</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span>
+
+</code></pre></div><p>下面是一个示例提示模板。您可以随意编辑和调整为语言模型设置上下文的初始句子，以执行我们预期的操作。对提示设计进行调整和迭代的过程通常被称为“提示工程”。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">PROMPT</span> <span class="o">=</span> <span class="s2">&#34;&#34;&#34;You are a helpful virtual technology and IT assistant. Use the hacker news posts below as relevant context and sources to help answer the user question. Don&#39;t blindly make things up.
+</span><span class="s2">
+</span><span class="s2">SOURCES:
+</span><span class="s2"></span><span class="si">{sources}</span><span class="s2">
+</span><span class="s2">
+</span><span class="s2">QUESTION:
+</span><span class="s2"></span><span class="si">{query}</span><span class="s2">?
+</span><span class="s2">
+</span><span class="s2">ANSWER:&#34;&#34;&#34;</span>
+
+<span class="n">query</span> <span class="o">=</span> <span class="s2">&#34;What are the best operating systems for software development?&#34;</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">rag</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="n">PROMPT</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+<span class="n">query</span> <span class="o">=</span> <span class="s2">&#34;What are some commonly reported problems with MacBooks and MacOS for software dev purposes?&#34;</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">rag</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="n">PROMPT</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</code></pre></div><p>显然，这个示例数据集(hackernews)并不是我们可以使用的唯一示例，它当然也不是现成的“production”。这也只是为了教学目的而使用了实际数据的一个子集(1000条记录)。</p>
+<p>但是，这个示例演示了如何将外部数据源和llm结合起来，以显示更有用的信息。</p>
+<h3 id="llm-缓存">LLM 缓存</h3>
+<p><strong>LLM 缓存</strong>是一种用于优化大型语言模型（LLM）应用程序性能的高级策略。利用 Redis 的超快速内存数据存储功能，LLM 缓存能够存储并快速检索由 Google 的 Vertex AI（PaLM）生成的预先计算的响应。这意味着，尤其是对于重复查询，生成响应的计算成本高昂的过程被显著减少，从而实现更快的响应时间和高效的资源利用。因此，将 Google 强大的生成式 AI 能力与 Redis 高性能的缓存系统相结合，为 LLM 应用程序提供了一个更具可扩展性和性能的架构，提高了整体用户体验和应用程序的可靠性。</p>
+<p>LLM 的缓存主要有两种模式：</p>
+<ul>
+<li>标准缓存</li>
+<li>语义缓存</li>
+</ul>
+<h4 id="标准缓存">标准缓存</h4>
+<p>LLM 的标准缓存涉及简单地匹配以前提供过的确切短语或提示。我们可以返回之前使用的 LLM 响应，以加快系统的整体吞吐量并减少冗余计算。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># Some boiler plate helper methods</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+
+<span class="k">def</span> <span class="nf">hash_input</span><span class="p">(</span><span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_input</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">prefix</span> <span class="o">+</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">_input</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&#34;utf-8&#34;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">standard_check</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+  <span class="c1"># function to perform a standard cache check</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">redis_client</span><span class="o">.</span><span class="n">hgetall</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">res</span><span class="p">:</span>
+      <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="sa">b</span><span class="s1">&#39;response&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">cache_response</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">hash_input</span><span class="p">(</span><span class="s2">&#34;llmcache:&#34;</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+    <span class="n">redis_client</span><span class="o">.</span><span class="n">hset</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">mapping</span><span class="o">=</span><span class="p">{</span><span class="s2">&#34;prompt&#34;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span> <span class="s2">&#34;response&#34;</span><span class="p">:</span> <span class="n">response</span><span class="p">})</span>
+
+<span class="c1"># LLM Cache wrapper / decorator function</span>
+<span class="k">def</span> <span class="nf">standard_llmcache</span><span class="p">(</span><span class="n">llm_callable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Check LLM Cache first</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">hash_input</span><span class="p">(</span><span class="s2">&#34;llmcache:&#34;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">standard_check</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="c1"># Check if we have a cached response we can use</span>
+        <span class="k">if</span> <span class="n">response</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">response</span>
+        <span class="c1"># Otherwise execute the llm callable here</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">llm_callable</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">cache_response</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span>
+  
+<span class="c1"># Define a function that invokes the PaLM API wrapped with a cache check</span>
+<span class="nd">@standard_llmcache</span>
+<span class="k">def</span> <span class="nf">ask_palm</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+  <span class="n">prompt</span> <span class="o">=</span> <span class="n">PROMPT</span>
+  <span class="n">response</span> <span class="o">=</span> <span class="n">rag</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">response</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">query</span> <span class="o">=</span> <span class="s2">&#34;What are the best operating systems for software development?&#34;</span>
+
+<span class="n">ask_palm</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+</code></pre></div><p>现在，如果我们再问同样的问题，我们应该会得到几乎实时的相同回答。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="o">%%</span><span class="n">time</span> <span class="c1"># for ipynb</span>
+
+<span class="n">ask_palm</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+</code></pre></div><h4 id="语义缓存-semantic-caching">语义缓存 (Semantic Caching)</h4>
+<p>语义缓存基于上述相同的概念，但利用 Redis 的向量数据库特性来查找以前应用过的语义上相似的提示——这使得缓存那些在意义上非常相似但不一定使用完全相同单词和短语的查询的响应成为可能。这提高了“命中率”，使得 LLM 缓存在实践中更加有效。</p>
+<p>在langchain开发框架中集成：<a href="https://python.langchain.com/docs/integrations/llms/llm_caching#semantic-cache">https://python.langchain.com/docs/integrations/llms/llm_caching#semantic-cache</a></p>
+<h3 id="历史记录">历史记录</h3>
+<p>为应用程序提供对“历史记录”的访问，以记录聊天历史，是一种常见的技术，用于提高模型推理最近或过去对话的能力，从之前的回答中获得上下文，从而提供更准确和可接受的回应。</p>
+<p>下面我们设置了简单的辅助函数来在Redis List数据结构中持久化和加载会话历史记录。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">json</span>
+
+<span class="k">def</span> <span class="nf">add_message</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&#34;prompt&#34;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">,</span>
+        <span class="s2">&#34;response&#34;</span><span class="p">:</span> <span class="n">response</span>
+    <span class="p">}</span>
+    <span class="n">redis_client</span><span class="o">.</span><span class="n">lpush</span><span class="p">(</span><span class="s2">&#34;chat-history&#34;</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">get_messages</span><span class="p">(</span><span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">redis_client</span><span class="o">.</span><span class="n">lrange</span><span class="p">(</span><span class="s2">&#34;chat-history&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">k</span><span class="p">)]</span>
+  
+
+<span class="n">query</span> <span class="o">=</span> <span class="s2">&#34;Do you have any advice for getting started in the tech field as a software dev?&#34;</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">rag</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">PROMPT</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+<span class="n">add_message</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+
+<span class="n">query</span> <span class="o">=</span> <span class="s2">&#34;What if I am still in college, any tips there?&#34;</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">rag</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">PROMPT</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+<span class="n">add_message</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+
+<span class="n">get_messages</span><span class="p">()</span>
+</code></pre></div><p><img src="https://raw.githubusercontent.com/weedge/mypic/master/doraemon/redis_gcp_rag_stack/redis-list-chat-records.jpg" alt=""></p>
+<h2 id="结束工作">结束工作</h2>
+<p>清理bigquery 创建的表</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># Clean up bigquery</span>
+<span class="n">bq</span><span class="o">.</span><span class="n">delete_table</span><span class="p">(</span><span class="n">TABLE_ID</span><span class="p">,</span> <span class="n">not_found_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">bq</span><span class="o">.</span><span class="n">delete_dataset</span><span class="p">(</span>
+    <span class="n">DATASET_ID</span><span class="p">,</span> <span class="n">delete_contents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">not_found_ok</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+</code></pre></div><p><img src="https://raw.githubusercontent.com/weedge/mypic/master/doraemon/redis_gcp_rag_stack/bigquery-table-del.jpg" alt=""></p>
+<p>清理redis中的数据，关闭服务</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># Clean up redis</span>
+<span class="c1">#!redis-stack-server stop</span>
+<span class="n">redis_client</span><span class="o">.</span><span class="n">flushdb</span><span class="p">();</span>
+<span class="n">redis_client</span><span class="o">.</span><span class="n">close</span><span class="p">();</span>
+</code></pre></div><h2 id="参考">参考</h2>
+<ol>
+<li><a href="https://github.com/RedisVentures/gcp-redis-llm-stack">https://github.com/RedisVentures/gcp-redis-llm-stack</a></li>
+<li><a href="https://redis.io/docs/get-started/vector-database/">https://redis.io/docs/get-started/vector-database/</a></li>
+<li><a href="https://redis.com/solutions/use-cases/vector-database/">https://redis.com/solutions/use-cases/vector-database/</a></li>
+<li><a href="https://github.com/redis-developer/redis-ai-resources">https://github.com/redis-developer/redis-ai-resources</a></li>
+<li><a href="https://console.cloud.google.com/apis/library">https://console.cloud.google.com/apis/library</a></li>
+<li><a href="https://github.com/GoogleCloudPlatform/generative-ai">https://github.com/GoogleCloudPlatform/generative-ai</a></li>
+<li><a href="https://cloud.google.com/blog/topics/developers-practitioners/meet-ais-multitool-vector-embeddings">https://cloud.google.com/blog/topics/developers-practitioners/meet-ais-multitool-vector-embeddings</a></li>
+<li><a href="https://cloud.google.com/vertex-ai/pricing?hl=zh-cn#generative_ai_models">https://cloud.google.com/vertex-ai/pricing?hl=zh-cn#generative_ai_models</a></li>
+<li><a href="https://github.com/weedge/doraemon-nb/blob/main/Langchain_RAG.ipynb">https://github.com/weedge/doraemon-nb/blob/main/Langchain_RAG.ipynb</a></li>
+</ol>
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2024-03-14
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/gcp/">GCP</a>
+          <a href="https://weedge.github.io/tags/redis/">redis</a>
+          <a href="https://weedge.github.io/tags/rag/">rag</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/paper/rag/rag-for-llms-a-survey/">
+            <span class="next-text nav-default">论文：Retrieval-Augmented Generation for Large Language Models: A Survey [v4]</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/post/doraemon/redis_gcp_rag_stack/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:weege007@gmail.com" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/weedge" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://weibo.com/weedge" rel="me noopener" class="iconfont"
+      title="weibo"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M385.714286 733.714286q12-19.428571 6.285714-39.428571t-25.714286-28.571429q-19.428571-8-41.714286-0.571429t-34.285714 26.285714q-12.571429 19.428571-7.428571 39.142857t24.571429 28.857143 42.571429 1.428571 35.714286-27.142857zm53.714286-69.142857q4.571429-7.428571 2-15.142857t-10-10.571429q-8-2.857143-16.285714 2.857143t-12.285714 10.571429q-9.714286 17.714286 7.428571 25.714286 8 2.857143 16.571429 2.857143t12.571429-10.571429zm99.428571 61.142857q-25.714286 58.285714-90.285714 85.714286t-128 6.857143q-61.142857-19.428571-84.285714-72.285714t3.714286-107.142857q26.857143-53.142857 86.571429-79.428571t120.285714-10.857143q63.428571 16.571429 90.571429 68.285714t1.428571 108.857143zm178.285714-91.428571q-5.142857-54.857143-50.857143-97.142857t-119.142857-62.285714-156.857143-12q-127.428571 13.142857-211.142857 80.857143t-75.714286 151.142857q5.142857 54.857143 50.857143 97.142857t119.142857 62.285714 156.857143 12q127.428571-13.142857 211.142857-80.857143t75.714286-151.142857zm176 2.285714q0 38.857143-21.142857 79.714286t-62.285714 78.285714-96.285714 67.142857-129.142857 47.428571-154.571429 17.714286-157.142857-19.142857-137.428571-53.142857-98-86.285714-37.142857-114q0-65.714286 39.714286-140t112.857143-147.428571q96.571429-96.571429 195.142857-134.857143t140.857143 4q37.142857 36.571429 11.428571 119.428571-2.285714 8-0.571429 11.428571t5.714286 4 8.285714 2.857143 7.714286-2l3.428571-1.142857q79.428571-33.714286 140.571429-33.714286t87.428571 34.857143q25.714286 36 0 101.714286-1.142857 7.428571-2.571429 11.428571t2.571429 7.142857 6.857143 4.285714 9.714286 3.428571q32.571429 10.285714 58.857143 26.857143t45.714286 46.571429 19.428571 66.571429zm-42.285714-356.571429q24 26.857143 31.142857 62t-3.714286 67.142857q-4.571429 13.142857-16.857143 19.428571t-25.428571 2.285714q-13.142857-4.571429-19.428571-16.857143t-2.285714-25.428571q11.428571-36-13.714286-63.428571t-61.142857-20q-13.714286 2.857143-25.714286-4.571429t-14.285714-21.142857q-2.857143-13.714286 4.571429-25.428571t21.142857-14.571429q34.285714-7.428571 68 3.142857t57.714286 37.428571zm103.428571-93.142857q49.714286 54.857143 64.285714 127.142857t-7.714286 138q-5.142857 15.428571-19.428571 22.857143t-29.714286 2.285714-22.857143-19.428571-2.857143-29.714286q16-46.857143 5.714286-98.285714t-45.714286-90.285714q-35.428571-39.428571-84.571429-54.571429t-98.857143-4.857143q-16 3.428571-29.714286-5.428571t-17.142857-24.857143 5.428571-29.428571 24.857143-16.857143q70.285714-14.857143 139.428571 6.571429t118.857143 76.857143z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://weedge.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2013 -
+    2024
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        weedge
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//weedge.disqus.com/count.js" async></script>
+
+
+
+
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
+
+
+</body>
+</html>
