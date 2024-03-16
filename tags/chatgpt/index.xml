@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>chatGPT on 时间飘过</title>
+    <link>https://weedge.github.io/tags/chatgpt/</link>
+    <description>Recent content in chatGPT on 时间飘过</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sat, 16 Mar 2024 20:16:30 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/chatgpt/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>通过chatGPT聊天解决rust线程安全问题</title>
+      <link>https://weedge.github.io/post/rust/chatgpt_rust_check_thread_safety/</link>
+      <pubDate>Sat, 16 Mar 2024 20:16:30 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/rust/chatgpt_rust_check_thread_safety/</guid>
+      <description>&lt;iframe frameborder=&#34;no&#34; border=&#34;0&#34; marginwidth=&#34;0&#34; marginheight=&#34;0&#34; width=330 height=86 src=&#34;//music.163.com/outchain/player?type=2&amp;id=27445288&amp;auto=1&amp;height=66&#34;&gt;&lt;/iframe&gt;
+
+
+
+&lt;p&gt;发现一个有趣玩法，针对rust 编译检查的问题（这个在编写代码逻辑的时候经常会遇到，逻辑是OK，但是通不过rust的安全检查），可以直接发给 chatGPT (其他通过代码库进行PT的模型，或者SFT的模型)， 会给出修改意见，并且可以根据它的提示继续追问怎么解决； 如果直接通过传统的搜索引擎比如google, 也很难找出好的解决方法，而且还要去筛选，去尝试这个方法，如果不是权威网站，可能还被坑。来来回回折腾，效率太低了。像最近的AI程序员 david： &lt;a href=&#34;https://weibo.cn/sinaurl?u=https%3A%2F%2Fwww.cognition-labs.com%2Fintroducing-devin&#34;&gt;网页链接&lt;/a&gt; ，其实类似思路，也是通过聊天来解决问题，只不过更加的专业，归根结底还是需要专业数据去PT/SFT底层的模型，上层应用通过pipeline对应框架去整体系统调优。(不知是否满足类似这种rust场景的解决方案pipeline，直接给它代码，帮忙修改)&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>
