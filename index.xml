@@ -81,7 +81,7 @@
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/rust/chatgpt_rust_check_thread_safety/4.jpeg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
 &lt;p&gt;最终通过rust编译安全检查。而且边学边做，提高效率，而且学到了，下次遇到相同情况，直接把聊天记录找出来(或者形成一片解决该问题方案md文档)，咦~~ 这里可以把聊天记录chunk建好向量索引，通过RAG pipeline来增强检索，完美学习复利闭环。&lt;/p&gt;
 &lt;p&gt;总结下： 现在大部分基于LLM的上层应用都是通过在某个场景下经历过的痛点，将这些需求整理，变成自动化的pipeline，形成应用，进而提高该场景下的工作效能，至于成本计算干了才知道。&lt;/p&gt;
-&lt;p&gt;整体聊天记录：&lt;/p&gt;
+&lt;p&gt;整体聊天记录：(没有单开聊天会话，有些其他记录)&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://chat.openai.com/share/b498f8ef-97de-4db8-936b-654abc25df2b&#34;&gt;https://chat.openai.com/share/b498f8ef-97de-4db8-936b-654abc25df2b&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;哈哈，作为一个挨踢工程师，以前总考察基本技能是否使用google解决代码问题 和 stackoverflow 解决回答问题数作为一个指标来衡量一个合格的工程师；那现在还应该加个选项，是否会高效使用先进的LLM工具(主要是chat类)。以后就缺合理的实现方案设计了，细节问题可交个类似david程序员去帮忙解决了，但是前提条件是会问关键问题，和清晰的逻辑思路。&lt;/p&gt;</description>
       
