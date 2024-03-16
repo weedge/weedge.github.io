@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content=" 发现一个有趣玩法，针对rust 编译检查的问题（这个在编写代码逻辑的时候经常会遇到，逻辑是OK，但是通不过rust的安全检查），可以直接发给 chatGPT (其他通过代码库进行PT的模型，或者SFT的模型)， 会给出修改意见，并且可以根据它的提示继续追问怎么解决； 如果直接通过传统的搜索引擎比如google, 也很难找出好的解决方法，而且还要去筛选，去尝试这个方法，如果不是权威网站，可能还被坑。来来回回折腾，效率太低了。像最近的AI程序员 david： 网页链接 ，其实类似思路，也是通过聊天来解决问题，只不过更加的专业，归根结底还是需要专业数据去PT/SFT底层的模型，上层应用通过pipeline对应框架去整体系统调优。(不知是否满足类似这种rust场景的解决方案pipeline，直接给它代码，帮忙修改)
+  <meta name="description" content=" 发现一个有趣玩法，针对rust 编译检查的问题（这个在编写代码逻辑的时候经常会遇到，逻辑是OK，但是通不过rust的安全检查），可以直接发给 chatGPT (其他通过代码库进行PT的模型，或者SFT的模型)， 会给出修改意见，并且可以根据它的提示继续追问怎么解决； 如果直接通过传统的搜索引擎比如google, 也很难找出好的解决方法，而且还要去筛选，去尝试这个方法，如果不是权威网站，可能还被坑。来来回回折腾，效率太低了。像最近的AI程序员 david： introducing-devin ，其实类似思路，也是通过聊天来解决问题，只不过更加的专业，归根结底还是需要专业数据去PT/SFT底层的模型，上层应用通过pipeline对应框架去整体系统调优。(不知是否满足类似这种rust场景的解决方案pipeline，直接给它代码，帮忙修改)
 " />
 
   <meta name="keywords" content="工作, 技术, 生活" />
@@ -67,7 +67,7 @@
 
 
 
-发现一个有趣玩法，针对rust 编译检查的问题（这个在编写代码逻辑的时候经常会遇到，逻辑是OK，但是通不过rust的安全检查），可以直接发给 chatGPT (其他通过代码库进行PT的模型，或者SFT的模型)， 会给出修改意见，并且可以根据它的提示继续追问怎么解决； 如果直接通过传统的搜索引擎比如google, 也很难找出好的解决方法，而且还要去筛选，去尝试这个方法，如果不是权威网站，可能还被坑。来来回回折腾，效率太低了。像最近的AI程序员 david： 网页链接 ，其实类似思路，也是通过聊天来解决问题，只不过更加的专业，归根结底还是需要专业数据去PT/SFT底层的模型，上层应用通过pipeline对应框架去整体系统调优。(不知是否满足类似这种rust场景的解决方案pipeline，直接给它代码，帮忙修改)" />
+发现一个有趣玩法，针对rust 编译检查的问题（这个在编写代码逻辑的时候经常会遇到，逻辑是OK，但是通不过rust的安全检查），可以直接发给 chatGPT (其他通过代码库进行PT的模型，或者SFT的模型)， 会给出修改意见，并且可以根据它的提示继续追问怎么解决； 如果直接通过传统的搜索引擎比如google, 也很难找出好的解决方法，而且还要去筛选，去尝试这个方法，如果不是权威网站，可能还被坑。来来回回折腾，效率太低了。像最近的AI程序员 david： introducing-devin ，其实类似思路，也是通过聊天来解决问题，只不过更加的专业，归根结底还是需要专业数据去PT/SFT底层的模型，上层应用通过pipeline对应框架去整体系统调优。(不知是否满足类似这种rust场景的解决方案pipeline，直接给它代码，帮忙修改)" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://weedge.github.io/post/rust/chatgpt_rust_check_thread_safety/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2024-03-16T20:16:30+08:00" />
@@ -78,16 +78,16 @@
 
 
 
-发现一个有趣玩法，针对rust 编译检查的问题（这个在编写代码逻辑的时候经常会遇到，逻辑是OK，但是通不过rust的安全检查），可以直接发给 chatGPT (其他通过代码库进行PT的模型，或者SFT的模型)， 会给出修改意见，并且可以根据它的提示继续追问怎么解决； 如果直接通过传统的搜索引擎比如google, 也很难找出好的解决方法，而且还要去筛选，去尝试这个方法，如果不是权威网站，可能还被坑。来来回回折腾，效率太低了。像最近的AI程序员 david： 网页链接 ，其实类似思路，也是通过聊天来解决问题，只不过更加的专业，归根结底还是需要专业数据去PT/SFT底层的模型，上层应用通过pipeline对应框架去整体系统调优。(不知是否满足类似这种rust场景的解决方案pipeline，直接给它代码，帮忙修改)"><meta itemprop="datePublished" content="2024-03-16T20:16:30+08:00" />
+发现一个有趣玩法，针对rust 编译检查的问题（这个在编写代码逻辑的时候经常会遇到，逻辑是OK，但是通不过rust的安全检查），可以直接发给 chatGPT (其他通过代码库进行PT的模型，或者SFT的模型)， 会给出修改意见，并且可以根据它的提示继续追问怎么解决； 如果直接通过传统的搜索引擎比如google, 也很难找出好的解决方法，而且还要去筛选，去尝试这个方法，如果不是权威网站，可能还被坑。来来回回折腾，效率太低了。像最近的AI程序员 david： introducing-devin ，其实类似思路，也是通过聊天来解决问题，只不过更加的专业，归根结底还是需要专业数据去PT/SFT底层的模型，上层应用通过pipeline对应框架去整体系统调优。(不知是否满足类似这种rust场景的解决方案pipeline，直接给它代码，帮忙修改)"><meta itemprop="datePublished" content="2024-03-16T20:16:30+08:00" />
 <meta itemprop="dateModified" content="2024-03-16T20:16:30+08:00" />
-<meta itemprop="wordCount" content="1369">
+<meta itemprop="wordCount" content="1371">
 <meta itemprop="keywords" content="chatGPT," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="通过chatGPT聊天解决rust线程安全问题"/>
 <meta name="twitter:description" content="
 
 
 
-发现一个有趣玩法，针对rust 编译检查的问题（这个在编写代码逻辑的时候经常会遇到，逻辑是OK，但是通不过rust的安全检查），可以直接发给 chatGPT (其他通过代码库进行PT的模型，或者SFT的模型)， 会给出修改意见，并且可以根据它的提示继续追问怎么解决； 如果直接通过传统的搜索引擎比如google, 也很难找出好的解决方法，而且还要去筛选，去尝试这个方法，如果不是权威网站，可能还被坑。来来回回折腾，效率太低了。像最近的AI程序员 david： 网页链接 ，其实类似思路，也是通过聊天来解决问题，只不过更加的专业，归根结底还是需要专业数据去PT/SFT底层的模型，上层应用通过pipeline对应框架去整体系统调优。(不知是否满足类似这种rust场景的解决方案pipeline，直接给它代码，帮忙修改)"/>
+发现一个有趣玩法，针对rust 编译检查的问题（这个在编写代码逻辑的时候经常会遇到，逻辑是OK，但是通不过rust的安全检查），可以直接发给 chatGPT (其他通过代码库进行PT的模型，或者SFT的模型)， 会给出修改意见，并且可以根据它的提示继续追问怎么解决； 如果直接通过传统的搜索引擎比如google, 也很难找出好的解决方法，而且还要去筛选，去尝试这个方法，如果不是权威网站，可能还被坑。来来回回折腾，效率太低了。像最近的AI程序员 david： introducing-devin ，其实类似思路，也是通过聊天来解决问题，只不过更加的专业，归根结底还是需要专业数据去PT/SFT底层的模型，上层应用通过pipeline对应框架去整体系统调优。(不知是否满足类似这种rust场景的解决方案pipeline，直接给它代码，帮忙修改)"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -388,14 +388,14 @@
 
 
 
-<p>发现一个有趣玩法，针对rust 编译检查的问题（这个在编写代码逻辑的时候经常会遇到，逻辑是OK，但是通不过rust的安全检查），可以直接发给 chatGPT (其他通过代码库进行PT的模型，或者SFT的模型)， 会给出修改意见，并且可以根据它的提示继续追问怎么解决； 如果直接通过传统的搜索引擎比如google, 也很难找出好的解决方法，而且还要去筛选，去尝试这个方法，如果不是权威网站，可能还被坑。来来回回折腾，效率太低了。像最近的AI程序员 david： <a href="https://weibo.cn/sinaurl?u=https%3A%2F%2Fwww.cognition-labs.com%2Fintroducing-devin">网页链接</a> ，其实类似思路，也是通过聊天来解决问题，只不过更加的专业，归根结底还是需要专业数据去PT/SFT底层的模型，上层应用通过pipeline对应框架去整体系统调优。(不知是否满足类似这种rust场景的解决方案pipeline，直接给它代码，帮忙修改)</p>
+<p>发现一个有趣玩法，针对rust 编译检查的问题（这个在编写代码逻辑的时候经常会遇到，逻辑是OK，但是通不过rust的安全检查），可以直接发给 chatGPT (其他通过代码库进行PT的模型，或者SFT的模型)， 会给出修改意见，并且可以根据它的提示继续追问怎么解决； 如果直接通过传统的搜索引擎比如google, 也很难找出好的解决方法，而且还要去筛选，去尝试这个方法，如果不是权威网站，可能还被坑。来来回回折腾，效率太低了。像最近的AI程序员 david： <a href="https://www.cognition-labs.com/introducing-devin"><strong>introducing-devin</strong></a> ，其实类似思路，也是通过聊天来解决问题，只不过更加的专业，归根结底还是需要专业数据去PT/SFT底层的模型，上层应用通过pipeline对应框架去整体系统调优。(不知是否满足类似这种rust场景的解决方案pipeline，直接给它代码，帮忙修改)</p>
 <p>PS：应该多去玩玩最先进的chat类LLM(聊天过程(prompt engineering)，其实就是一种反馈机制), 找到痛点，然后形成pipeline解决方案，进而推动上层应用改造，或者演变新生事物，当然冒出idea💡需要去落地又是另外一回事了(伪需求，还是真心痛点)，脱离场景耍流氓~~~</p>
 <p>这个case error: temporary value dropped while borrowed ：</p>
-<p><img src="https://wx4.sinaimg.cn/large/646bc66fgy1hnt5j4jgisj217q0k2gtv.jpg" alt=""></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/rust/chatgpt_rust_check_thread_safety/1.jpeg" alt=""></p>
 <p>这里把错误先告知chatGPT,  待给出错误发生的原因和修改建议时，然后将错误的源码段发给chatGPT</p>
-<p><img src="https://wx4.sinaimg.cn/large/646bc66fgy1hnt8siwdosj21dq0ws1ac.jpg" alt=""></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/rust/chatgpt_rust_check_thread_safety/2.jpeg" alt=""></p>
 <p>因为这里涉及多线程场景，多线程的数据竞争，rust的在编译时也会提示，常规做法是给多线程共享变量加原子引用计数Arc, 在对变量进行读写操作时，需要加互斥锁Mutex, 比如： 这里的ctx是共享的，将上下文包装在 <code>Arc&lt;Mutex&lt;_&gt;&gt;</code> 中，然后在需要在多个线程中使用时，我们克隆了 Arc 并在每个线程中使用其克隆，如下图chatGPT的提示。</p>
-<p><img src="https://wx3.sinaimg.cn/large/646bc66fgy1hnt8qrcg87j211e10adrr.jpg" alt=""></p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/rust/chatgpt_rust_check_thread_safety/3.jpeg" alt=""></p>
 <p>当然也有特例，这个是按照正常逻辑来解，但是也有特殊例子，比如自己封装的私有库，这个时候就需要引导LLM 网络往提示的私有路径去推理，需要私有的数据去continue PT 或者 SFT，（或者用RAG知识库的方式）。
 比如：这里的ctx提供了一个线程安全的ThreadSafeContext,   对操作的互斥区域上锁，unlock的时候调用drop函数</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="c1">// let thread_ctx = ThreadSafeContext::new();
@@ -403,12 +403,12 @@
 </span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">thread_ctx</span><span class="p">.</span><span class="n">lock</span><span class="p">();</span><span class="w">
 </span><span class="w"></span><span class="o">....</span><span class="w">
 </span><span class="w"></span><span class="nb">drop</span><span class="p">(</span><span class="n">ctx</span><span class="p">);</span><span class="w">
-</span></code></pre></div><p><img src="https://wx3.sinaimg.cn/large/646bc66fgy1hnt9f0knz9j21ik0mito6.jpg" alt=""></p>
+</span></code></pre></div><p><img src="https://raw.githubusercontent.com/weedge/mypic/master/rust/chatgpt_rust_check_thread_safety/4.jpeg" alt=""></p>
 <p>最终通过rust编译安全检查。而且边学边做，提高效率，而且学到了，下次遇到相同情况，直接把聊天记录找出来(或者形成一片解决该问题方案md文档)，咦~~ 这里可以把聊天记录chunk建好向量索引，通过RAG pipeline来增强检索，完美学习复利闭环。</p>
 <p>总结下： 现在大部分基于LLM的上层应用都是通过在某个场景下经历过的痛点，将这些需求整理，变成自动化的pipeline，形成应用，进而提高该场景下的工作效能，至于成本计算干了才知道。</p>
 <p>整体聊天记录：</p>
 <p><a href="https://chat.openai.com/share/b498f8ef-97de-4db8-936b-654abc25df2b">https://chat.openai.com/share/b498f8ef-97de-4db8-936b-654abc25df2b</a></p>
-<p>哈哈，作为一个挨踢工程师，以前总考察基本技能是否使用google解决代码问题 和 stackoverflow 解决回答问题数作为一个指标来衡量一个合格的工程师， 用以后应该加个选项，是否会高效使用先进的LLM工具(主要是chat类)。以后就缺合理的实现了，细节问题可交个类似david程序员去帮忙解决了，但是前提条件是会问关键问题，和清晰的逻辑思路。</p>
+<p>哈哈，作为一个挨踢工程师，以前总考察基本技能是否使用google解决代码问题 和 stackoverflow 解决回答问题数作为一个指标来衡量一个合格的工程师；那现在还应该加个选项，是否会高效使用先进的LLM工具(主要是chat类)。以后就缺合理的实现方案设计了，细节问题可交个类似david程序员去帮忙解决了，但是前提条件是会问关键问题，和清晰的逻辑思路。</p>
     </div>
 
     
