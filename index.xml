@@ -62,6 +62,8 @@
         <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/rag/gemma_faiss_langchain_rag/0.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
 &lt;h2 id=&#34;介绍&#34;&gt;介绍&lt;/h2&gt;
 &lt;p&gt;随着大型语言模型的不断发展，构建 RAG（检索增强生成）应用程序的热潮与日俱增。谷歌推出了一个开源模型：Gemma。众所周知，RAG 代表了两种基本方法之间的融合: 基于检索的技术和生成模型。基于检索的技术涉及从广泛的知识库或语料库中获取相关信息以响应特定的查询。生成模型擅长利用训练数据中的见解从头开始创建新内容，从而精心制作原始文本或响应。通过这次发布，为什么不尝试使用新的开源模型来构建 RAG 管道并看看它的性能如何呢？&lt;/p&gt;
+&lt;p&gt;这里分两个场景介绍： 生成幼儿故事demo 和 虚拟人物介绍demo,  均属于 naive RAG。&lt;/p&gt;
+&lt;h2 id=&#34;case1-生成幼儿故事demo&#34;&gt;Case1: 生成幼儿故事demo&lt;/h2&gt;
 &lt;p&gt;让我们开始并将该过程分为以下步骤：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;加载数据集：Cosmopedia&lt;/li&gt;
@@ -70,7 +72,6 @@
 &lt;li&gt;Gemma：介绍 SOTA 模型&lt;/li&gt;
 &lt;li&gt;查询RAG管道&lt;/li&gt;
 &lt;/ol&gt;
-&lt;h2 id=&#34;case1-生成幼儿故事demo&#34;&gt;Case1: 生成幼儿故事demo&lt;/h2&gt;
 &lt;p&gt;在行动起来之前，先安装并导入所需的依赖项。&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;%pip install -q -U langchain torch transformers sentence-transformers datasets faiss-cpu
 
