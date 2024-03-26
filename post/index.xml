@@ -15,7 +15,8 @@
       <guid>https://weedge.github.io/post/doraemon/gemma_faiss_langchain_rag/</guid>
       <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/rag/gemma_faiss_langchain_rag/0.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
 &lt;h2 id=&#34;介绍&#34;&gt;介绍&lt;/h2&gt;
-&lt;p&gt;随着大型语言模型的不断发展，构建 RAG（检索增强生成）应用程序的热潮与日俱增。谷歌推出了一个开源模型：Gemma。众所周知，RAG 代表了两种基本方法之间的融合: 基于检索的技术和生成模型。基于检索的技术涉及从广泛的知识库或语料库中获取相关信息以响应特定的查询。生成模型擅长利用训练数据中的见解从头开始创建新内容，从而精心制作原始文本或响应。通过这次发布，为什么不尝试使用新的开源模型来构建 RAG 管道并看看它的性能如何呢？&lt;/p&gt;</description>
+&lt;p&gt;随着大型语言模型的不断发展，构建 RAG（检索增强生成）应用程序的热潮与日俱增。谷歌推出了一个开源模型：Gemma。众所周知，RAG 代表了两种基本方法之间的融合: 基于检索的技术和生成模型。基于检索的技术涉及从广泛的知识库或语料库中获取相关信息以响应特定的查询。生成模型擅长利用训练数据中的见解从头开始创建新内容，从而精心制作原始文本或响应。&lt;/p&gt;
+&lt;p&gt;目的：使用开源模型gemma来构建 RAG 管道并看看它的性能如何。&lt;/p&gt;</description>
     </item>
     
     <item>
