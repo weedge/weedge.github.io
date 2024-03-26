@@ -79,7 +79,7 @@
 随着大型语言模型的不断发展，构建 RAG（检索增强生成）应用程序的热潮与日俱增。谷歌推出了一个开源模型：Gemma。众所周知，RAG 代表了两种基本方法之间的融合: 基于检索的技术和生成模型。基于检索的技术涉及从广泛的知识库或语料库中获取相关信息以响应特定的查询。生成模型擅长利用训练数据中的见解从头开始创建新内容，从而精心制作原始文本或响应。
 目的：使用开源模型gemma来构建 RAG 管道并看看它的性能如何。"><meta itemprop="datePublished" content="2024-03-26T20:16:30+08:00" />
 <meta itemprop="dateModified" content="2024-03-26T20:16:30+08:00" />
-<meta itemprop="wordCount" content="7601">
+<meta itemprop="wordCount" content="7599">
 <meta itemprop="keywords" content="gemma,langchain,rag," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="使用Gemma LLM构建RAG应用程序"/>
 <meta name="twitter:description" content="
@@ -980,7 +980,7 @@ AI:
 <p>下一步找些中文故事集(翻译下也行)，两种可行方式，一个是外挂知识库，一个是在Gemma基础模型上继续训练。</p>
 </li>
 <li>
-<p><strong>Case2</strong>: 虚拟人物介绍，设计多轮会话的情况，可以通过外挂会话存储来将强聊天会话上下文情景，但是这带来一个问题，随着会话轮数增多，每次给LLM的上下文prompt长度增加，会突破模型的最大上下文长度，受限于大模型处理长文本的长度，可以外挂会话历史聊天记录存储。这个case gemma模型有对<code>gojo</code>知识的理解，没有出现幻觉，如果找一个最新出现的虚拟人物名字，会出现幻觉问题。</p>
+<p><strong>Case2</strong>: 虚拟人物介绍，设计多轮会话的情况，可以通过会话存储来将强聊天会话上下文情景，但是这带来一个问题，随着会话轮数增多，每次给LLM的上下文prompt长度增加，会突破模型的最大上下文长度，受限于大模型处理长文本的长度，可以外挂会话历史聊天记录存储。这个case gemma模型有对<code>gojo</code>知识的理解，没有出现幻觉，如果找一个最新出现的虚拟人物名字，会出现幻觉问题。</p>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/rag/gemma_faiss_langchain_rag/longcontextrag.jpg" alt="img"></p>
 </li>
 </ul>
