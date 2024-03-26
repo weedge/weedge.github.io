@@ -6,7 +6,34 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sat, 16 Mar 2024 20:16:30 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 26 Mar 2024 20:16:30 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>gemma</title>
+      <link>https://weedge.github.io/tags/gemma/</link>
+      <pubDate>Tue, 26 Mar 2024 20:16:30 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/gemma/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>langchain</title>
+      <link>https://weedge.github.io/tags/langchain/</link>
+      <pubDate>Tue, 26 Mar 2024 20:16:30 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/langchain/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>rag</title>
+      <link>https://weedge.github.io/tags/rag/</link>
+      <pubDate>Tue, 26 Mar 2024 20:16:30 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/rag/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>chatGPT</title>
       <link>https://weedge.github.io/tags/chatgpt/</link>
@@ -22,15 +49,6 @@
       <pubDate>Thu, 14 Mar 2024 20:16:30 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/gcp/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>rag</title>
-      <link>https://weedge.github.io/tags/rag/</link>
-      <pubDate>Thu, 14 Mar 2024 20:16:30 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/rag/</guid>
       <description></description>
     </item>
     
@@ -166,24 +184,6 @@
       <pubDate>Tue, 07 Nov 2023 15:00:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/gpu/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>RAPIDS libcudf</title>
-      <link>https://weedge.github.io/tags/rapids-libcudf/</link>
-      <pubDate>Tue, 07 Nov 2023 15:00:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/rapids-libcudf/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>string</title>
-      <link>https://weedge.github.io/tags/string/</link>
-      <pubDate>Tue, 07 Nov 2023 15:00:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/string/</guid>
       <description></description>
     </item>
     

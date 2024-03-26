@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="zh-cn" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>使用Gemma LLM构建RAG应用程序 - 时间飘过</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="weedge" />
+  <meta name="description" content="介绍 随着大型语言模型的不断发展，构建 RAG（检索增强生成）应用程序的热潮与日俱增。谷歌推出了一个开源模型：Gemma。众所周知，RAG 代表了两种基本方法之间的融合: 基于检索的技术和生成模型。基于检索的技术涉及从广泛的知识库或语料库中获取相关信息以响应特定的查询。生成模型擅长利用训练数据中的见解从头开始创建新内容，从而精心制作原始文本或响应。通过这次发布，为什么不尝试使用新的开源模型来构建 RAG 管道并看看它的性能如何呢？
+" />
+
+  <meta name="keywords" content="工作, 技术, 生活" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.91.0" />
+
+
+<link rel="canonical" href="https://weedge.github.io/post/doraemon/gemma_faiss_langchain_rag/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css" integrity="sha256-&#43;ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
+
+<meta property="og:title" content="使用Gemma LLM构建RAG应用程序" />
+<meta property="og:description" content="
+介绍
+随着大型语言模型的不断发展，构建 RAG（检索增强生成）应用程序的热潮与日俱增。谷歌推出了一个开源模型：Gemma。众所周知，RAG 代表了两种基本方法之间的融合: 基于检索的技术和生成模型。基于检索的技术涉及从广泛的知识库或语料库中获取相关信息以响应特定的查询。生成模型擅长利用训练数据中的见解从头开始创建新内容，从而精心制作原始文本或响应。通过这次发布，为什么不尝试使用新的开源模型来构建 RAG 管道并看看它的性能如何呢？" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/doraemon/gemma_faiss_langchain_rag/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2024-03-26T20:16:30+08:00" />
+<meta property="article:modified_time" content="2024-03-26T20:16:30+08:00" />
+
+<meta itemprop="name" content="使用Gemma LLM构建RAG应用程序">
+<meta itemprop="description" content="
+介绍
+随着大型语言模型的不断发展，构建 RAG（检索增强生成）应用程序的热潮与日俱增。谷歌推出了一个开源模型：Gemma。众所周知，RAG 代表了两种基本方法之间的融合: 基于检索的技术和生成模型。基于检索的技术涉及从广泛的知识库或语料库中获取相关信息以响应特定的查询。生成模型擅长利用训练数据中的见解从头开始创建新内容，从而精心制作原始文本或响应。通过这次发布，为什么不尝试使用新的开源模型来构建 RAG 管道并看看它的性能如何呢？"><meta itemprop="datePublished" content="2024-03-26T20:16:30+08:00" />
+<meta itemprop="dateModified" content="2024-03-26T20:16:30+08:00" />
+<meta itemprop="wordCount" content="7569">
+<meta itemprop="keywords" content="gemma,langchain,rag," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="使用Gemma LLM构建RAG应用程序"/>
+<meta name="twitter:description" content="
+介绍
+随着大型语言模型的不断发展，构建 RAG（检索增强生成）应用程序的热潮与日俱增。谷歌推出了一个开源模型：Gemma。众所周知，RAG 代表了两种基本方法之间的融合: 基于检索的技术和生成模型。基于检索的技术涉及从广泛的知识库或语料库中获取相关信息以响应特定的查询。生成模型擅长利用训练数据中的见解从头开始创建新内容，从而精心制作原始文本或响应。通过这次发布，为什么不尝试使用新的开源模型来构建 RAG 管道并看看它的性能如何呢？"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">时间飘过</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/perf-book-cn/zh/" rel="noopener" target="_blank">
+              《现代CPU性能分析与优化》
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      时间飘过
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/perf-book-cn/zh/" rel="noopener" target="_blank">
+              《现代CPU性能分析与优化》
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">使用Gemma LLM构建RAG应用程序</h1>
+      
+      <div class="post-meta">
+        <time datetime="2024-03-26" class="post-time">
+          2024-03-26
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            <a href="https://weedge.github.io/categories/doraemon/"> doraemon </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#介绍">介绍</a></li>
+    <li><a href="#case1-生成幼儿故事demo">Case1: 生成幼儿故事demo</a>
+      <ul>
+        <li><a href="#加载数据集cosmopedia-stories">加载数据集：Cosmopedia stories</a></li>
+        <li><a href="#使用hf-上-训练好的embedding-模型生成嵌入">使用HF 上 训练好的embedding 模型生成嵌入</a></li>
+        <li><a href="#存储在-faiss-本地向量数据库中">存储在 FAISS 本地向量数据库中</a></li>
+        <li><a href="#开源llm-gemma">开源LLM Gemma</a></li>
+        <li><a href="#查询rag管道">查询RAG管道</a></li>
+      </ul>
+    </li>
+    <li><a href="#case2-生成虚拟人物介绍demo">Case2: 生成虚拟人物介绍demo</a>
+      <ul>
+        <li><a href="#使用基本的prompttemplate-操作-可选操作prompt工程">使用基本的PromptTemplate 操作 (可选操作，prompt工程)</a></li>
+        <li><a href="#多个-questions">多个 Questions</a></li>
+        <li><a href="#根据上下文提问">根据上下文提问</a></li>
+        <li><a href="#会话记忆-可选操作">会话记忆 （可选操作）</a></li>
+        <li><a href="#1-将网页文档数据分块写入faiss中">1. 将网页文档数据分块写入faiss中</a></li>
+        <li><a href="#2-创建rag-chain">2. 创建RAG chain</a></li>
+        <li><a href="#3-对话式rag">3. 对话式RAG</a></li>
+      </ul>
+    </li>
+    <li><a href="#总结">总结</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/rag/gemma_faiss_langchain_rag/0.png" alt="img"></p>
+<h2 id="介绍">介绍</h2>
+<p>随着大型语言模型的不断发展，构建 RAG（检索增强生成）应用程序的热潮与日俱增。谷歌推出了一个开源模型：Gemma。众所周知，RAG 代表了两种基本方法之间的融合: 基于检索的技术和生成模型。基于检索的技术涉及从广泛的知识库或语料库中获取相关信息以响应特定的查询。生成模型擅长利用训练数据中的见解从头开始创建新内容，从而精心制作原始文本或响应。通过这次发布，为什么不尝试使用新的开源模型来构建 RAG 管道并看看它的性能如何呢？</p>
+<p>让我们开始并将该过程分为以下步骤：</p>
+<ol>
+<li>加载数据集：Cosmopedia</li>
+<li>拥抱脸部的嵌入生成</li>
+<li>存储在 FAISS DB 中</li>
+<li>Gemma：介绍 SOTA 模型</li>
+<li>查询RAG管道</li>
+</ol>
+<h2 id="case1-生成幼儿故事demo">Case1: 生成幼儿故事demo</h2>
+<p>在行动起来之前，先安装并导入所需的依赖项。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">%pip install -q -U langchain torch transformers sentence-transformers datasets faiss-cpu
+
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_dataset</span>
+<span class="kn">from</span> <span class="nn">langchain_community.document_loaders.csv_loader</span> <span class="kn">import</span> <span class="n">CSVLoader</span>
+<span class="kn">from</span> <span class="nn">langchain.text_splitter</span> <span class="kn">import</span> <span class="n">RecursiveCharacterTextSplitter</span>
+<span class="kn">from</span> <span class="nn">langchain.embeddings</span> <span class="kn">import</span> <span class="n">HuggingFaceEmbeddings</span>
+<span class="kn">from</span> <span class="nn">langchain.vectorstores</span> <span class="kn">import</span> <span class="n">FAISS</span>
+<span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoTokenizer</span><span class="p">,</span> <span class="n">AutoModelForCausalLM</span>
+<span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoTokenizer</span><span class="p">,</span> <span class="n">pipeline</span>
+<span class="kn">from</span> <span class="nn">langchain</span> <span class="kn">import</span> <span class="n">HuggingFacePipeline</span>
+<span class="kn">from</span> <span class="nn">langchain.chains</span> <span class="kn">import</span> <span class="n">RetrievalQA</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+</code></pre></div><h3 id="加载数据集cosmopedia-stories">加载数据集：Cosmopedia stories</h3>
+<p>为了制作 RAG 应用程序，我们选择了 Hugging Face 数据集<a href="https://huggingface.co/datasets/HuggingFaceTB/cosmopedia">Cosmopedia</a>。该数据集由 Mixtral-8x7B-Instruct-v0.1 生成的综合教科书、博客文章、故事、帖子和 WikiHow 文章组成。该数据集包含超过 3000 万个文件和 250 亿个token，这使其成为迄今为止最大的开放综合数据集。</p>
+<p>该数据集包含 8 个子集。将使用“stories”子集。将使用<code>datasets</code>库加载数据集。</p>
+<p>首先从HF上下载数据集, 如果是快速测试直接下载一个文件就行，并且加载一部分数据用于测试。(国内ip下载到本地,需要用代理)</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">!huggingface-cli login
+
+!huggingface-cli download <span class="se">\
+</span><span class="se"></span>  --repo-type dataset HuggingFaceTB/cosmopedia data/stories/train-00000-of-00043.parquet <span class="se">\
+</span><span class="se"></span>  --local-dir dataset/HuggingFaceTB/cosmopedia <span class="se">\
+</span><span class="se"></span>  --local-dir-use-symlinks False
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_dataset</span>
+
+<span class="c1">#data = load_dataset(&#34;./dataset/HuggingFaceTB/cosmopedia&#34;, split=&#34;train[:100]&#34;)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">&#34;./dataset/HuggingFaceTB/cosmopedia&#34;</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&#34;train&#34;</span><span class="p">)</span>
+
+</code></pre></div><p>或者直接下载stories全部数据集 然后加载一部分数据， 具体操作见： <a href="https://huggingface.co/docs/datasets/loading">https://huggingface.co/docs/datasets/loading</a></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># https://huggingface.co/docs/datasets/loading</span>
+<span class="c1"># download all, then choose sample</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">&#34;HuggingFaceTB/cosmopedia&#34;</span><span class="p">,</span> <span class="s2">&#34;stories&#34;</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&#34;train[:1000]&#34;</span><span class="p">)</span>
+
+</code></pre></div><p>然后，我们将其转换为 Pandas 数据帧，并将其保存为 CSV 文件。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">data = data.to_pandas()
+data.to_csv(&#34;dataset.csv&#34;)
+data.head()
+
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">!ls -lh dataset.csv
+!wc -l dataset.csv
+</code></pre></div><p>现在数据集已保存在我们的系统上，我们将使用 LangChain 加载数据集。 这里需要先释放掉前面加载时所用到的内存。另外，如果你是在Colab中运行的，你也可以重置Colab运行时环境来释放内存。你可以选择“Runtime”菜单，然后选择“Factory reset runtime”来重新启动Colab运行时环境，这将清除所有已加载的数据和对象，并释放内存空间； 然后重新执行import。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">loader</span> <span class="o">=</span> <span class="n">CSVLoader</span><span class="p">(</span><span class="n">file_path</span><span class="o">=</span><span class="s1">&#39;./dataset.csv&#39;</span><span class="p">,)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+
+</code></pre></div><p>现在数据已加载，需要拆分数据内的文档。这里将文档分成大小为 1000 的块。这将有助于模型快速高效地工作。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1">#直接加载切分, 数据量比较大，会OOM，最好通过一次加载1-3个文件每个文件带个300~400M左右</span>
+<span class="n">text_splitter</span> <span class="o">=</span> <span class="n">RecursiveCharacterTextSplitter</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">chunk_overlap</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+<span class="n">docs</span> <span class="o">=</span> <span class="n">text_splitter</span><span class="o">.</span><span class="n">split_documents</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+</code></pre></div><h3 id="使用hf-上-训练好的embedding-模型生成嵌入">使用HF 上 训练好的embedding 模型生成嵌入</h3>
+<p>之后，我们将使用 Hugging Face Embeddings 并在 Sentence Transformers 模型<code>sentence-transformers/all-MiniLM-l6-v2</code>的帮助下生成嵌入。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">modelPath</span> <span class="o">=</span> <span class="s2">&#34;sentence-transformers/all-MiniLM-l6-v2&#34;</span>
+<span class="n">model_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span><span class="s1">&#39;cpu&#39;</span><span class="p">}</span>
+<span class="n">encode_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;normalize_embeddings&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+<span class="n">embeddings</span> <span class="o">=</span> <span class="n">HuggingFaceEmbeddings</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="n">modelPath</span><span class="p">,</span>
+    <span class="n">model_kwargs</span><span class="o">=</span><span class="n">model_kwargs</span><span class="p">,</span>
+    <span class="n">encode_kwargs</span><span class="o">=</span><span class="n">encode_kwargs</span>
+<span class="p">)</span>
+</code></pre></div><h3 id="存储在-faiss-本地向量数据库中">存储在 FAISS 本地向量数据库中</h3>
+<p>嵌入已生成，但我们需要将它们存储在向量数据库中。我们将把这些嵌入保存在 FAISS 矢量存储中，这是一个用于高效相似性搜索和聚类密集矢量的库。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">db</span> <span class="o">=</span> <span class="n">FAISS</span><span class="o">.</span><span class="n">from_documents</span><span class="p">(</span><span class="n">docs</span><span class="p">,</span> <span class="n">embeddings</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">ntotal</span><span class="p">)</span>
+
+</code></pre></div><h3 id="开源llm-gemma">开源LLM Gemma</h3>
+<p>Gemma 提供两种模型大小，分别具有 20 亿和 70 亿参数，满足不同的计算约束和应用场景。提供预训练和微调的检查点，以及用于推理和服务的开源代码库。它接受了多达 6 万亿个文本数据标记的训练，并利用与 Gemini 模型类似的架构、数据集和训练方法。两者都在跨文本领域展现了强大的通才能力，并且擅长大规模的理解和推理任务。</p>
+<p>该版本包括原始的、预先训练的检查点以及针对对话、遵循指令、帮助和安全等特定任务进行优化的微调检查点。我们进行了全面评估，以评估模型的性能并解决任何缺陷，从而能够对模型调整机制进行深入研究和调查，并开发更安全、更负责任的模型开发方法。Gemma 的性能超越了各个领域的同等规模的开放模型，包括问答、常识推理、数学和科学以及编码，自动化基准测试和人工评估都证明了这一点。要了解有关 Gemma 模型的更多信息，请访问此<a href="https://storage.googleapis.com/deepmind-media/gemma/gemma-report.pdf">技术报告</a>。要开始使用<a href="https://huggingface.co/google/gemma-7b">Gemma</a>模型，应该了解他们在 Hugging Face 上的条款。</p>
+<p>如果运行在colab笔记中，使用笔记中的<code>HF_TOKEN</code>, 本地系统使用<code>HUGGINGFACEHUB_API_TOKEN</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">google.colab</span> <span class="kn">import</span> <span class="n">userdata</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&#34;HUGGINGFACEHUB_API_TOKEN&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">userdata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;HF_TOKEN&#39;</span><span class="p">)</span>
+</code></pre></div><p>这里分两种方式使用huggingface上的gemma模型:</p>
+<h4 id="本地部署进行推理生成">本地部署进行推理生成</h4>
+<p>更具本地硬件环境进行部署对应模型，这里使用原始指令微调后,参数量大小为70亿的模型<code>google/gemma-7b-it</code>， 使用Transforms库进行初始化</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForCausalLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">&#34;google/gemma-7b-it&#34;</span><span class="p">)</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">&#34;google/gemma-7b-it&#34;</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span>
+</code></pre></div><p>使用langchain对pipeline进行初始化</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># issue: https://github.com/langchain-ai/langchain/discussions/19403 ;</span>
+<span class="c1"># remove `return_tensors=&#39;pt&#39;` return raw json, don&#39;t work, no answer</span>
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">(</span>
+ <span class="s2">&#34;text-generation&#34;</span><span class="p">,</span>
+ <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+ <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span>
+ <span class="n">return_tensors</span><span class="o">=</span><span class="s1">&#39;pt&#39;</span><span class="p">,</span>
+ <span class="n">max_length</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+ <span class="n">max_new_tokens</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+ <span class="n">model_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&#34;torch_dtype&#34;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">},</span>
+ <span class="n">device</span><span class="o">=</span><span class="s2">&#34;cuda&#34;</span>
+<span class="p">)</span>
+
+<span class="c1"># generate pipeline</span>
+<span class="n">llm</span> <span class="o">=</span> <span class="n">HuggingFacePipeline</span><span class="p">(</span>
+ <span class="n">pipeline</span><span class="o">=</span><span class="n">pipe</span><span class="p">,</span>
+ <span class="n">model_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&#34;temperature&#34;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span> <span class="s2">&#34;max_length&#34;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span><span class="s2">&#34;top_k&#34;</span><span class="p">:</span><span class="mi">40</span><span class="p">,</span> <span class="s2">&#34;top_p&#34;</span><span class="p">:</span><span class="mf">0.95</span><span class="p">},</span>
+<span class="p">)</span>
+
+</code></pre></div><h4 id="远程访问-huggingface-llm-endpoint-服务">远程访问 HuggingFace LLM Endpoint 服务</h4>
+<p>huggingface Hub是一个拥有超过35万个模型、75万个数据集和15万个演示应用程序(空间)的平台，所有都是开源的和公开的，在这个在线平台上，人们可以轻松地合作和构建ML。Hub作为一个中心场所，任何人都可以通过机器学习探索、实验、协作和构建技术。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">langchain_community.llms</span> <span class="kn">import</span> <span class="n">HuggingFaceEndpoint</span>
+
+<span class="c1">#repo_id = &#34;google/gemma-2b-it&#34;</span>
+<span class="n">repo_id</span> <span class="o">=</span> <span class="s2">&#34;google/gemma-7b-it&#34;</span>
+<span class="c1">#repo_id = &#34;google/gemma-2b&#34;</span>
+<span class="c1">#repo_id = &#34;google/gemma-7b&#34;</span>
+
+<span class="n">llm</span> <span class="o">=</span> <span class="n">HuggingFaceEndpoint</span><span class="p">(</span>
+    <span class="n">repo_id</span><span class="o">=</span><span class="n">repo_id</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">top_k</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">top_p</span><span class="o">=</span><span class="mf">0.95</span>
+<span class="p">)</span>
+
+</code></pre></div><h3 id="查询rag管道">查询RAG管道</h3>
+<p>使用langchain构建RAG管道；然后传递查询并看看它的执行情况， 这里将RAG管道生成的故事 和 直接使用LLM gemma来生成故事，进行对比</p>
+<h4 id="构建rag查询管道">构建RAG查询管道</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># RAG pipeline</span>
+<span class="n">qa</span> <span class="o">=</span> <span class="n">RetrievalQA</span><span class="o">.</span><span class="n">from_chain_type</span><span class="p">(</span>
+ <span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span>
+ <span class="n">chain_type</span><span class="o">=</span><span class="s2">&#34;stuff&#34;</span><span class="p">,</span>
+ <span class="n">retriever</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">as_retriever</span><span class="p">()</span>
+<span class="p">)</span>
+
+</code></pre></div><h4 id="直接使用llm推理生成">直接使用LLM推理生成</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># llm gemma generate en story</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="s2">&#34;Write an educational story for young children.&#34;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"> Maybe your story explains the basics of the solar system, or it introduces children to the idea of saving money.
+
+There are many ways to write an educational story for children. In a book I have written with my wife, &lt;strong&gt;Stories and Lessons&lt;/strong&gt;, we introduce 100 Bible stories to children.
+
+Each story comes with a lesson or moral. These lessons are written by my wife, Jennifer, and she has done a brilliant job of distilling the moral of the story into a few words.
+
+I would love to be a part of your children’s educational experience. If you would like to write an educational story for children, then please get in touch.
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># llm gemma generate zh-CN story</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="s2">&#34;为幼儿写一个有教育意义的故事。&#34;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">
+要求：
+1.故事要有主题，有启发作用
+2.故事的构思要有新意，有独创性
+3.故事的语言要通顺，生动形象
+4.故事的长短适中，最好能达到500字左右
+
+参考答案：
+1.你走入校园的每一步，都为下一代铺平了一条路。
+
+2.我读小学时，有一位教师把我的作文批上了“不负我青春，不负韶华”的字样，这令我大受鼓舞，从那时起，我便决定，我要在每一个学生的心中，扎下根，打下台阶，用我的全部努力，帮助学生树立正确的理想、价值观、目标和人生观。
+
+3.我们这群教师，是国家对下一代的厚爱，是下一代对国家的深情。我们就像一棵棵树，每棵树是独立的，但又互相交融为一体。每棵树在不同的季节、不同的光影、不同的角度，都会呈现出不同的颜色，不同的形态。
+
+4.我们这一代的教育工作者是教育界的巨人，是社会发展的先锋，是培养新一代中国人的摇篮。我们这一代的教育工作者，是人类历史发展的转折点，是人类进步史的转折点。我们这一代的教育工作者，是教育界的巨人，是社会发展的先锋，是培养新一代中国人的摇篮。
+
+5.我读大学时，有一位大学教授，每天都把他的心意写在我的身上，让我体会到老师的真情。那一年，我得到了一张全省的奖学金，老师说：“你虽然得到了一张全省的奖学金，但是我给你的情，是全省的奖学金的十倍。”那年的9月份，我离开母校，去我未来的工作岗位，去我的新生活，可是那年10月份，我的母校又来了一位学生，她叫李明，是来自一个山穷水尽的地方的。李明说，她很希望可以来学校读大学，可是她的家境很困难，没有钱。她来到学校，到了一位教授那里，教授给了她一封信，这封信里的内容是：“李明，如果你真的想来这里来读大学，你可以来我的研究
+</code></pre></div><h4 id="使用rag管道生成">使用RAG管道生成</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">res</span> <span class="o">=</span> <span class="n">qa</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="s2">&#34;Write an educational story for young children.&#34;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">])</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">Timmy and Sally were curious about who would win a race combining both running and swimming. The wise old turtle suggested organizing a competition among various animals. Nobody expected either Timmy or Sally to win, but instead, Kiki Koala surprised everyone by climbing trees and swimming strongly against the current. This unexpected revelation taught Timmy and Sally that every creature has unique abilities, making each special and valuable.
+
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1">#知识库里木有中文故事, 生成的还是英文故事</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">qa</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="s2">&#34;为幼儿写一个有教育意义的故事。&#34;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">])</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">Sarah and Julian&#39;s story teaches us about the power of friendship, compassion, and resilience. It also highlights the importance of standing up for what we believe in, even when it means going against the grain.
+
+</code></pre></div><p>具体操作笔记： <a href="https://github.com/weedge/doraemon-nb/blob/main/gemma_FAISS_Cosmopedia_RAG.ipynb">https://github.com/weedge/doraemon-nb/blob/main/gemma_FAISS_Cosmopedia_RAG.ipynb</a></p>
+<hr>
+<h2 id="case2-生成虚拟人物介绍demo">Case2: 生成虚拟人物介绍demo</h2>
+<p>初始化 模型llm 和上文一样，这里忽略。</p>
+<h3 id="使用基本的prompttemplate-操作-可选操作prompt工程">使用基本的PromptTemplate 操作 (可选操作，prompt工程)</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">langchain.chains</span> <span class="kn">import</span> <span class="n">LLMChain</span>
+<span class="kn">from</span> <span class="nn">langchain.prompts</span> <span class="kn">import</span> <span class="n">PromptTemplate</span>
+
+<span class="n">question</span> <span class="o">=</span> <span class="s2">&#34;Who won the FIFA World Cup in the year 1994? &#34;</span>
+
+<span class="n">template</span> <span class="o">=</span> <span class="s2">&#34;&#34;&#34;Question: </span><span class="si">{question}</span><span class="s2">
+</span><span class="s2">
+</span><span class="s2">Answer: Let&#39;s think step by step.&#34;&#34;&#34;</span>
+
+<span class="n">prompt</span> <span class="o">=</span> <span class="n">PromptTemplate</span><span class="o">.</span><span class="n">from_template</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
+<span class="n">prompt</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">llm_chain</span> <span class="o">=</span> <span class="n">LLMChain</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span> <span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">llm_chain</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="n">question</span><span class="p">))</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">{&#39;question&#39;: &#39;Who won the FIFA World Cup in the year 1994? &#39;, &#39;text&#39;: &#39;\n\nThe year 1994 was not a year in which the FIFA World Cup was held.&#39;}
+
+</code></pre></div><h3 id="多个-questions">多个 Questions</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">qs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s1">&#39;question&#39;</span><span class="p">:</span> <span class="s2">&#34;What is the Kaggle?&#34;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;question&#39;</span><span class="p">:</span> <span class="s2">&#34;What is the first step I should do in Kaggle?&#34;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;question&#39;</span><span class="p">:</span> <span class="s2">&#34;I did it the way you told me. What should I do next?&#34;</span><span class="p">}</span>
+<span class="p">]</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">llm_chain</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">qs</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">generated</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">generations</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">generated</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">---------------</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="c1">#print(res.generations)</span>
+</code></pre></div><p>中文</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">qs</span> <span class="o">=</span> <span class="p">[</span> 
+    <span class="p">{</span><span class="s1">&#39;question&#39;</span><span class="p">:</span> <span class="s2">&#34;什么是 Kaggle？&#34;</span><span class="p">},</span> 
+    <span class="p">{</span><span class="s1">&#39;question&#39;</span><span class="p">:</span> <span class="s2">&#34;我应该在 Kaggle 上采取的第一步是什么？&#34;</span><span class="p">},</span> 
+    <span class="p">{</span><span class="s1">&#39;question&#39;</span><span class="p">:</span> <span class="s2">&#34;我按照你的指示操作了。接下来我应该做什么？&#34;</span><span class="p">}</span> 
+<span class="p">]</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">llm_chain</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">qs</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">generated</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">generations</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">generated</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">---------------</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre></div><h3 id="根据上下文提问">根据上下文提问</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">prompt</span> <span class="o">=</span> <span class="s2">&#34;&#34;&#34;Answer the question based on the context below. If the question cannot be answered using the information provided answer with &#34;I don&#39;t know&#34;.
+</span><span class="s2">
+</span><span class="s2">Context: Kaggle is a platform for data science and machine learning competitions, where users can find and publish datasets, explore and build models in a web-based data science environment, and work with other data scientists and machine learning engineers. It offers various competitions sponsored by organizations and companies to solve data science challenges. Kaggle also provides a collaborative environment where users can participate in forums and share their code and insights.
+</span><span class="s2">
+</span><span class="s2">Question: Which platform provides datasets, machine learning competitions, and a collaborative environment for data scientists?
+</span><span class="s2">
+</span><span class="s2">Answer:&#34;&#34;&#34;</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="n">llm</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="n">prompt</span><span class="p">))</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">Kaggle
+</code></pre></div><p>中文</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">prompt</span> <span class="o">=</span> <span class="s2">&#34;&#34;&#34;根据下面的上下文回答问题。如果使用所提供的信息无法回答问题，请回答“我不知道”。
+</span><span class="s2">
+</span><span class="s2">上下文：Kaggle 是一个数据科学和机器学习竞赛平台，其中用户可以在基于网络的数据科学环境中查找和发布数据集、探索和构建模型，并与其他数据科学家和机器学习工程师合作。它提供由组织和公司赞助的各种竞赛来解决数据科学挑战。Kaggle 还提供用户可以参与论坛并分享代码和见解的协作环境。
+</span><span class="s2">
+</span><span class="s2">问题：哪个平台为数据科学家提供数据集、机器学习竞赛和协作环境？
+</span><span class="s2">
+</span><span class="s2">答案：&#34;&#34;&#34;</span> 
+
+
+<span class="nb">print</span><span class="p">(</span><span class="n">llm</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="n">prompt</span><span class="p">))</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">Kaggle 平台。
+</code></pre></div><p>FewShotPromptTemplate 根据提供的示例生成响应：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># Import the FewShotPromptTemplate class from langchain module</span>
+<span class="kn">from</span> <span class="nn">langchain</span> <span class="kn">import</span> <span class="n">FewShotPromptTemplate</span>
+
+<span class="c1"># Define examples that include user queries and AI&#39;s answers specific to Kaggle competitions</span>
+<span class="n">examples</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s2">&#34;query&#34;</span><span class="p">:</span> <span class="s2">&#34;How do I start with Kaggle competitions?&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;answer&#34;</span><span class="p">:</span> <span class="s2">&#34;Start by picking a competition that interests you and suits your skill level. Don&#39;t worry about winning; focus on learning and improving your skills.&#34;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s2">&#34;query&#34;</span><span class="p">:</span> <span class="s2">&#34;What should I do if my model isn&#39;t performing well?&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;answer&#34;</span><span class="p">:</span> <span class="s2">&#34;It&#39;s all part of the process! Try exploring different models, tuning your hyperparameters, and don&#39;t forget to check the forums for tips from other Kagglers.&#34;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s2">&#34;query&#34;</span><span class="p">:</span> <span class="s2">&#34;How can I find a team to join on Kaggle?&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;answer&#34;</span><span class="p">:</span> <span class="s2">&#34;Check out the competition&#39;s discussion forums. Many teams look for members there, or you can post your own interest in joining a team. It&#39;s a great way to learn from others and share your skills.&#34;</span>
+    <span class="p">}</span>
+<span class="p">]</span>
+
+
+<span class="c1"># Define the format for how each example should be presented in the prompt</span>
+<span class="n">example_template</span> <span class="o">=</span> <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">User: </span><span class="si">{query}</span><span class="s2">
+</span><span class="s2">AI: </span><span class="si">{answer}</span><span class="s2">
+</span><span class="s2">&#34;&#34;&#34;</span>
+
+<span class="c1"># Create an instance of PromptTemplate for formatting the examples</span>
+<span class="n">example_prompt</span> <span class="o">=</span> <span class="n">PromptTemplate</span><span class="p">(</span>
+    <span class="n">input_variables</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;query&#39;</span><span class="p">,</span> <span class="s1">&#39;answer&#39;</span><span class="p">],</span>
+    <span class="n">template</span><span class="o">=</span><span class="n">example_template</span>
+<span class="p">)</span>
+
+<span class="c1"># Define the prefix to introduce the context of the conversation examples</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s2">&#34;&#34;&#34;The following are excerpts from conversations with an AI assistant focused on Kaggle competitions.
+</span><span class="s2">The assistant is typically informative and encouraging, providing insightful and motivational responses to the user&#39;s questions about Kaggle. Here are some examples:
+</span><span class="s2">&#34;&#34;&#34;</span>
+
+<span class="c1"># Define the suffix that specifies the format for presenting the new query to the AI</span>
+<span class="n">suffix</span> <span class="o">=</span> <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">User: </span><span class="si">{query}</span><span class="s2">
+</span><span class="s2">AI: &#34;&#34;&#34;</span>
+
+<span class="c1"># Create an instance of FewShotPromptTemplate with the defined examples, templates, and formatting</span>
+<span class="n">few_shot_prompt_template</span> <span class="o">=</span> <span class="n">FewShotPromptTemplate</span><span class="p">(</span>
+    <span class="n">examples</span><span class="o">=</span><span class="n">examples</span><span class="p">,</span>
+    <span class="n">example_prompt</span><span class="o">=</span><span class="n">example_prompt</span><span class="p">,</span>
+    <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
+    <span class="n">suffix</span><span class="o">=</span><span class="n">suffix</span><span class="p">,</span>
+    <span class="n">input_variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;query&#34;</span><span class="p">],</span>
+    <span class="n">example_separator</span><span class="o">=</span><span class="s2">&#34;</span><span class="se">\n\n</span><span class="s2">&#34;</span>
+<span class="p">)</span>
+</code></pre></div><p>此代码设置用户查询和 AI 答案的示例，定义用于呈现示例的格式，然后使用 FewShotPromptTemplate 根据提供的新查询生成响应。最后，它打印生成的响应。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">query</span><span class="o">=</span><span class="s2">&#34;Is participating in Kaggle competitions worth my time?&#34;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">few_shot_prompt_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">))</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">The following are excerpts from conversations with an AI assistant focused on Kaggle competitions.
+The assistant is typically informative and encouraging, providing insightful and motivational responses to the user&#39;s questions about Kaggle. Here are some examples:
+
+
+
+User: How do I start with Kaggle competitions?
+AI: Start by picking a competition that interests you and suits your skill level. Don&#39;t worry about winning; focus on learning and improving your skills.
+
+
+
+User: What should I do if my model isn&#39;t performing well?
+AI: It&#39;s all part of the process! Try exploring different models, tuning your hyperparameters, and don&#39;t forget to check the forums for tips from other Kagglers.
+
+
+
+User: How can I find a team to join on Kaggle?
+AI: Check out the competition&#39;s discussion forums. Many teams look for members there, or you can post your own interest in joining a team. It&#39;s a great way to learn from others and share your skills.
+
+
+
+User: Is participating in Kaggle competitions worth my time?
+AI: 
+
+</code></pre></div><p>打印模版prompt生成的响应内容</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="nb">print</span><span class="p">(</span><span class="n">llm</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="n">few_shot_prompt_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">)))</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">100%. It&#39;s a fantastic opportunity to learn, network, and build your resume. Plus, the competition can be a lot of fun!
+
+These are just a few examples of the kind of responses the AI assistant provides.
+
+**Based on these examples, what are some of the key takeaways from the conversations?**
+
+- **Focus on learning and improving your skills.**
+- **Don&#39;t worry about winning; focus on learning and improving.**
+- **Explore different models, tune your hyperparameters, and don&#39;t forget to check the forums for tips from other Kagglers.**
+- **Join a team to learn from others and share your skills.**
+- **Participating in Kaggle competitions can be a lot of fun.**
+</code></pre></div><p>中文情况：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 从 langchain 模块导入 FewShotPromptTemplate 类 </span>
+<span class="kn">from</span> <span class="nn">langchain</span> <span class="kn">import</span> <span class="n">FewShotPromptTemplate</span> 
+
+<span class="c1"># 定义示例，其中包括特定于 Kaggle 竞赛的用户查询和 AI 答案</span>
+<span class="n">examples</span> <span class="o">=</span> <span class="p">[</span> 
+    <span class="p">{</span> 
+        <span class="s2">&#34;query&#34;</span> <span class="p">:</span> <span class="s2">&#34;如何开始 Kaggle 竞赛？&#34;</span> <span class="p">,</span> 
+        <span class="s2">&#34;answer&#34;</span> <span class="p">:</span> <span class="s2">&#34;首先选择一个您感兴趣且适合您技能水平的比赛。不要担心获胜；专注于学习和提高您的技能。&#34;</span>
+     <span class="p">},</span> 
+    <span class="p">{</span> 
+        <span class="s2">&#34;query&#34;</span> <span class="p">:</span> <span class="s2">&#34;如果我的模型表现不佳，我该怎么办？&#34;</span> <span class="p">,</span> 
+        <span class="s2">&#34;answer&#34;</span> <span class="p">:</span> <span class="s2">&#34;这都是过程的一部分！尝试探索不同的模型，调整你的超参数，并且不要忘记查看论坛以获取其他 Kaggler 的提示。&#34;</span>
+     <span class="p">},</span> 
+    <span class="p">{</span> 
+        <span class="s2">&#34;query&#34;</span> <span class="p">:</span> <span class="s2">&#34;如何在 Kaggle 上找到加入团队？&#34;</span> <span class="p">,</span> 
+        <span class="s2">&#34;answer&#34;</span> <span class="p">:</span> <span class="s2">&#34;查看竞赛的讨论论坛。许多团队都在那里寻找成员，或者您也可以发布自己对加入团队的兴趣。这是向他人学习和分享技能的好方法。&#34;</span>
+     <span class="p">}</span> 
+<span class="p">]</span> 
+
+<span class="c1"># 定义每个示例在提示中的呈现格式</span>
+<span class="n">example_template</span> <span class="o">=</span> <span class="s2">&#34;&#34;&#34; 
+</span><span class="s2">User: </span><span class="si">{query}</span><span class="s2"> 
+</span><span class="s2">AI: </span><span class="si">{answer}</span><span class="s2"> 
+</span><span class="s2">&#34;&#34;&#34;</span> 
+
+<span class="c1"># 创建一个 PromptTemplate 实例来格式化示例</span>
+<span class="n">example_prompt</span> <span class="o">=</span> <span class="n">PromptTemplate</span><span class="p">(</span> 
+    <span class="n">input_variables</span><span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;query&#39;</span> <span class="p">,</span> <span class="s1">&#39;answer&#39;</span> <span class="p">],</span> 
+    <span class="n">template</span><span class="o">=</span><span class="n">example_template</span> 
+<span class="p">)</span> 
+
+<span class="c1"># 定义前缀，引入对话示例的上下文</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s2">&#34;&#34;&#34;以下是与专注于 Kaggle 比赛的 AI 助手的对话节选。
+</span><span class="s2">助手通常是信息丰富且令人鼓舞，对用户关于 Kaggle 的问题提供富有洞察力和激励性的答复。以下是一些示例：
+</span><span class="s2">&#34;&#34;&#34;</span> 
+
+<span class="c1"># 定义后缀，指定向 AI 呈现新查询的格式</span>
+<span class="n">suffix</span> <span class="o">=</span> <span class="s2">&#34;&#34;&#34; 
+</span><span class="s2">User: </span><span class="si">{query}</span><span class="s2"> 
+</span><span class="s2">AI: &#34;&#34;&#34;</span> 
+
+<span class="c1"># 使用定义的示例、模板和格式创建</span>
+<span class="n">few_shot_prompt_template</span> <span class="o">=</span> <span class="n">FewShotPromptTemplate</span><span class="p">(</span>
+    <span class="n">examples</span><span class="o">=</span><span class="n">examples</span><span class="p">,</span>
+    <span class="n">example_prompt</span><span class="o">=</span><span class="n">example_prompt</span><span class="p">,</span>
+    <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
+    <span class="n">suffix</span><span class="o">=</span><span class="n">suffix</span><span class="p">,</span>
+    <span class="n">input_variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;query&#34;</span><span class="p">],</span>
+    <span class="n">example_separator</span><span class="o">=</span><span class="s2">&#34;</span><span class="se">\n\n</span><span class="s2">&#34;</span>
+<span class="p">)</span>
+
+<span class="n">query</span><span class="o">=</span><span class="s2">&#34;参加 Kaggle 比赛值得我花时间吗？&#34;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">few_shot_prompt_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">))</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">以下是与专注于 Kaggle 比赛的 AI 助手的对话节选。
+助手通常是信息丰富且令人鼓舞，对用户关于 Kaggle 的问题提供富有洞察力和激励性的答复。以下是一些示例：
+
+
+ 
+User: 如何开始 Kaggle 竞赛？ 
+AI: 首先选择一个您感兴趣且适合您技能水平的比赛。不要担心获胜；专注于学习和提高您的技能。 
+
+
+ 
+User: 如果我的模型表现不佳，我该怎么办？ 
+AI: 这都是过程的一部分！尝试探索不同的模型，调整你的超参数，并且不要忘记查看论坛以获取其他 Kaggler 的提示。 
+
+
+ 
+User: 如何在 Kaggle 上找到加入团队？ 
+AI: 查看竞赛的讨论论坛。许多团队都在那里寻找成员，或者您也可以发布自己对加入团队的兴趣。这是向他人学习和分享技能的好方法。 
+
+
+ 
+User: 参加 Kaggle 比赛值得我花时间吗？ 
+AI: 
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="nb">print</span><span class="p">(</span><span class="n">llm</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="n">few_shot_prompt_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">)))</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">当然值得！参加比赛可以帮助您提升您的数据分析技能，并获得一份证书，这对于您的职业发展很有帮助。
+
+
+这些对话节选展示了 AI 如何为用户提供支持和鼓励，帮助他们克服挑战并最终成功参加 Kaggle 比赛。
+</code></pre></div><h3 id="会话记忆-可选操作">会话记忆 （可选操作）</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">langchain.chains</span> <span class="kn">import</span> <span class="n">ConversationChain</span>
+
+<span class="c1"># We have already loaded the LLM model above.(Gemma_2b)</span>
+<span class="n">conversation_gemma</span> <span class="o">=</span> <span class="n">ConversationChain</span><span class="p">(</span><span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">)</span>
+
+<span class="n">conversation_gemma</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="s2">&#34;how to incress the rice production?&#34;</span><span class="p">)</span>
+<span class="n">conversation_gemma</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="s2">&#34;如何提高水稻产量?&#34;</span><span class="p">)</span>
+</code></pre></div><h3 id="1-将网页文档数据分块写入faiss中">1. 将网页文档数据分块写入faiss中</h3>
+<p>首先 使用WebBaseLoader从网页获取文档。在此示例中，使用网页“ <a href="https://jujutsu-kaisen.fandom.com/wiki/Satoru_Gojo">https://jujutsu-kaisen.fandom.com/wiki/Satoru_Gojo</a> ”中的文档。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># load a  document</span>
+<span class="kn">from</span> <span class="nn">langchain_community.document_loaders</span> <span class="kn">import</span> <span class="n">WebBaseLoader</span>
+<span class="n">loader</span> <span class="o">=</span> <span class="n">WebBaseLoader</span><span class="p">(</span><span class="s2">&#34;https://jujutsu-kaisen.fandom.com/wiki/Satoru_Gojo&#34;</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">page_content</span><span class="p">))</span>
+</code></pre></div><p>然后将文档分割成块并使用 Langchain 组件创建嵌入。</p>
+<ul>
+<li>
+<p>导入模块：TextLoader、SentenceTransformerEmbeddings、FAISS和CharacterTextSplitter。</p>
+</li>
+<li>
+<p>使用CharacterTextSplitter，将文档分割成可管理的块。</p>
+</li>
+<li>
+<p>使用 为每个块创建嵌入SentenceTransformerEmbeddings。这些嵌入使用有效地存储在 FAISS 中<code>FAISS.from_documents()</code>。此步骤通过将文档分解为更小的部分并创建嵌入以便在生成过程中进行高效处理来准备文档以供检索。</p>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">langchain_community.document_loaders</span> <span class="kn">import</span> <span class="n">TextLoader</span>
+<span class="kn">from</span> <span class="nn">langchain_community.embeddings.sentence_transformer</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SentenceTransformerEmbeddings</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain.vectorstores</span> <span class="kn">import</span> <span class="n">FAISS</span>
+<span class="kn">from</span> <span class="nn">langchain_text_splitters</span> <span class="kn">import</span> <span class="n">CharacterTextSplitter</span>
+
+
+<span class="c1"># split it into chunks</span>
+<span class="n">text_splitter</span> <span class="o">=</span> <span class="n">CharacterTextSplitter</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">chunk_overlap</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">docs</span> <span class="o">=</span> <span class="n">text_splitter</span><span class="o">.</span><span class="n">split_documents</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<span class="c1"># create the open-source embedding function</span>
+<span class="n">embedding_function</span> <span class="o">=</span> <span class="n">SentenceTransformerEmbeddings</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&#34;all-MiniLM-L6-v2&#34;</span><span class="p">)</span>
+
+<span class="c1"># load it into FAISS</span>
+<span class="n">db</span> <span class="o">=</span> <span class="n">FAISS</span><span class="o">.</span><span class="n">from_documents</span><span class="p">(</span><span class="n">docs</span><span class="p">,</span> <span class="n">embedding_function</span><span class="p">)</span>
+</code></pre></div><h3 id="2-创建rag-chain">2. 创建RAG chain</h3>
+<p>让我们看看在提示符和LLM中添加检索步骤，这增加了“检索增强生成”链</p>
+<ul>
+<li>导入模块：<code>hub</code>用于访问预训练模型、<code>StrOutputParser</code>解析字符串输出、<code>RunnablePassthrough</code>传递输入以及<code>RetrievalQA</code>构建 RAG 链。</li>
+<li>使用步骤 2 中创建的 Chroma 矢量存储来配置检索器<code>db</code>，指定搜索参数。</li>
+<li>从 Langchain 中心提取 RAG 提示符。</li>
+<li>定义一个函数<code>format_docs()</code>来格式化检索到的文档。</li>
+<li>使用一系列组件创建 RAG 链：检索器、问题传递、RAG 提示和 Gemma 模型.</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">langchain</span> <span class="kn">import</span> <span class="n">hub</span>
+<span class="kn">from</span> <span class="nn">langchain_core.output_parsers</span> <span class="kn">import</span> <span class="n">StrOutputParser</span>
+<span class="kn">from</span> <span class="nn">langchain_core.runnables</span> <span class="kn">import</span> <span class="n">RunnablePassthrough</span>
+<span class="kn">from</span> <span class="nn">langchain.chains</span> <span class="kn">import</span> <span class="n">RetrievalQA</span>
+
+<span class="n">retriever</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">as_retriever</span><span class="p">(</span><span class="n">search_type</span><span class="o">=</span><span class="s2">&#34;mmr&#34;</span><span class="p">,</span> <span class="n">search_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;k&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;fetch_k&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">})</span>
+<span class="c1"># https://smith.langchain.com/hub/rlm/rag-prompt</span>
+<span class="n">prompt</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">pull</span><span class="p">(</span><span class="s2">&#34;rlm/rag-prompt&#34;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">format_docs</span><span class="p">(</span><span class="n">docs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s2">&#34;</span><span class="se">\n\n</span><span class="s2">&#34;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">page_content</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">docs</span><span class="p">)</span>
+
+
+<span class="n">rag_chain</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">{</span><span class="s2">&#34;context&#34;</span><span class="p">:</span> <span class="n">retriever</span> <span class="o">|</span> <span class="n">format_docs</span><span class="p">,</span> <span class="s2">&#34;question&#34;</span><span class="p">:</span> <span class="n">RunnablePassthrough</span><span class="p">()}</span>
+    <span class="o">|</span> <span class="n">prompt</span>
+    <span class="o">|</span> <span class="n">llm</span>
+<span class="p">)</span>
+
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">rag_chain</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="s2">&#34;who is gojo?&#34;</span><span class="p">)</span>
+<span class="n">rag_chain</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="s2">&#34;谁是gojo?&#34;</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"> Gojo is a powerful sorcerer who is the strongest sorcerer in the world. He is also a very intelligent sorcerer who is able to come up with new and creative ways to defeat his opponents.
+ 
+ Satoru Gojo is one of the main protagonists of the Jujutsu Kaisen series. He is a special grade jujutsu sorcerer and widely recognized as the strongest in the world.
+</code></pre></div><h3 id="3-对话式rag">3. 对话式RAG</h3>
+<p>接收聊天记录(消息列表)和新问题，然后返回该问题的答案。该链的算法由三部分组成:</p>
+<ol>
+<li>使用聊天记录和新问题创建一个“独立问题”。这样做是为了将这个问题传递到检索步骤以获取相关文档。如果只传入新问题，则可能缺乏相关的上下文。如果整个对话都被传递到检索中，可能会有不必要的信息分散检索的注意力。</li>
+<li>这个新问题被传递给检索器并返回相关文档。</li>
+<li>检索到的文档连同新问题(默认行为)或原始问题和聊天历史记录一起传递给LLM，以生成最终响应。</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">langchain.memory</span> <span class="kn">import</span> <span class="n">ConversationBufferMemory</span>
+<span class="kn">from</span> <span class="nn">langchain.chains</span> <span class="kn">import</span> <span class="n">ConversationalRetrievalChain</span>
+
+<span class="n">memory</span> <span class="o">=</span> <span class="n">ConversationBufferMemory</span><span class="p">(</span><span class="n">memory_key</span> <span class="o">=</span> <span class="s1">&#39;chat_history&#39;</span><span class="p">,</span><span class="n">return_messages</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">custom_template</span> <span class="o">=</span> <span class="s2">&#34;&#34;&#34;Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original English.
+</span><span class="s2">                        Chat History:
+</span><span class="s2">                        </span><span class="si">{chat_history}</span><span class="s2">
+</span><span class="s2">                        Follow Up Input: </span><span class="si">{question}</span><span class="s2">
+</span><span class="s2">                        Standalone question:&#34;&#34;&#34;</span>
+
+<span class="n">CUSTOM_QUESTION_PROMPT</span> <span class="o">=</span> <span class="n">PromptTemplate</span><span class="o">.</span><span class="n">from_template</span><span class="p">(</span><span class="n">custom_template</span><span class="p">)</span>
+
+<span class="n">conversational_chain</span> <span class="o">=</span> <span class="n">ConversationalRetrievalChain</span><span class="o">.</span><span class="n">from_llm</span><span class="p">(</span>
+            <span class="n">llm</span> <span class="o">=</span> <span class="n">llm</span><span class="p">,</span>
+            <span class="n">chain_type</span><span class="o">=</span><span class="s2">&#34;stuff&#34;</span><span class="p">,</span>
+            <span class="n">retriever</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">as_retriever</span><span class="p">(),</span>
+            <span class="n">memory</span> <span class="o">=</span> <span class="n">memory</span><span class="p">,</span>
+            <span class="n">condense_question_prompt</span><span class="o">=</span><span class="n">CUSTOM_QUESTION_PROMPT</span>
+        <span class="p">)</span>
+</code></pre></div><h4 id="rag-chain会话生成">RAG chain会话生成</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">conversational_chain</span><span class="p">({</span><span class="s2">&#34;question&#34;</span><span class="p">:</span><span class="s2">&#34;who is gojo?&#34;</span><span class="p">})</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">{&#39;question&#39;: &#39;who is gojo?&#39;,
+ &#39;chat_history&#39;: [HumanMessage(content=&#39;who is gojo?&#39;),
+  AIMessage(content=&#39; Satoru Gojo is one of the main protagonists of the Jujutsu Kaisen series. He is a special grade jujutsu sorcerer and widely recognized as the strongest in the world.&#39;)],
+ &#39;answer&#39;: &#39; Satoru Gojo is one of the main protagonists of the Jujutsu Kaisen series. He is a special grade jujutsu sorcerer and widely recognized as the strongest in the world.&#39;}
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">conversational_chain</span><span class="p">({</span><span class="s2">&#34;question&#34;</span><span class="p">:</span><span class="s2">&#34;what is his power?&#34;</span><span class="p">})</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">{&#39;question&#39;: &#39;what is his power?&#39;,
+ &#39;chat_history&#39;: [HumanMessage(content=&#39;who is gojo?&#39;),
+  AIMessage(content=&#39; Satoru Gojo is one of the main protagonists of the Jujutsu Kaisen series. He is a special grade jujutsu sorcerer and widely recognized as the strongest in the world.&#39;),
+  HumanMessage(content=&#39;what is his power?&#39;),
+  AIMessage(content=&#34; Gojo&#39;s power is immense cursed energy manipulation. He can use a Domain Expansion at least five times in one day, while most sorcerers can only use it once.&#34;)],
+ &#39;answer&#39;: &#34; Gojo&#39;s power is immense cursed energy manipulation. He can use a Domain Expansion at least five times in one day, while most sorcerers can only use it once.&#34;}
+</code></pre></div><h4 id="llm直接推理生成">LLM直接推理生成</h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">res</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="s2">&#34;who is gojo?&#34;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">Gojo is a powerful sorcerer from the popular anime and manga series &#34;JoJo&#39;s Bizarre Adventure.&#34; He is one of the most skilled and enigmatic characters in the series, possessing an immense amount of raw power and magical abilities.
+
+**Background:**
+
+* Gojo was born into a wealthy family in the city of Tokyo.
+* He was trained in the Jojutsu school, a prestigious magical academy, under the tutelage of the late Jujutsu Master, Masao Aizen.
+* Gojo&#39;s training was rigorous and unforgiving, but he eventually rose to become the head of his class.
+
+**Abilities:**
+
+* **Jujutsu:** Gojo is an exceptionally skilled sorcerer with a wide range of powerful techniques and abilities.
+* **Raw Power:** He possesses immense raw power, making him one of the most powerful sorcerers in the world.
+* **Magic Circuits:** Gojo&#39;s body contains numerous magic circuits, which allow him to tap into different types of magic simultaneously.
+* **Jujutsu Techniques:** He has numerous powerful techniques, including:
+    * **Gojo&#39;s Eyes:** Allows him to see the future and predict events.
+    * **Reverse Magic:** Allows him to undo or manipulate the effects of any magical technique.
+    * **Parallel World Technique:** Creates multiple copies of himself, each with a different ability.
+
+**Personality:**
+
+* Gojo is a complex and enigmatic character who is often aloof and indifferent.
+* He is fiercely protective of his friends and will stop at nothing to protect them from danger.
+* Despite his aloofness, Gojo is a caring and compassionate person who is willing to sacrifice himself for those he cares about.
+
+**Role in the Series:**
+
+* Gojo is one of the main protagonists of the series and is responsible for protecting the world from dangerous supernatural threats.
+* He is a formidable opponent who is often underestimated by his opponents.
+* Gojo&#39;s powers and abilities make him a powerful force in the Jojutsu world and a major threat to the Jojutsu community.
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">res</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="s2">&#34;what is his power?&#34;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">I am unable to provide a specific power or ability, as I do not have the context or information to do so.
+</code></pre></div><p>具体操作笔记： <a href="https://github.com/weedge/doraemon-nb/blob/main/Gemma2b_Chroma_langchain_RAG.ipynb">https://github.com/weedge/doraemon-nb/blob/main/Gemma2b_Chroma_langchain_RAG.ipynb</a> (使用chroma存放embedding, 本质和faiss一样)</p>
+<h2 id="总结">总结</h2>
+<ul>
+<li>
+<p><strong>Case1</strong>: Gemma 表现出色。我们读了一个关于小动物的美丽故事，相对只用大模型来讲故事，知识有限，如果模型训练的数据中故事类型的数据少，生成的故事不够多样化; 当然如果外挂知识库，即使数据很多，但是通过query召回相似的数据几乎一样的，这就需要模型随机多样生成泛化能力要强些（故事类场景，特定搜索确定性场景除外）。在 FAISS 矢量存储的帮助下，我们能够构建 RAG 管道。</p>
+<p>下一步找些中文故事集(翻译下也行)，两种可行方式，一个是外挂知识库，一个是在Gemma基础模型上继续训练。</p>
+</li>
+<li>
+<p><strong>Case2</strong>: 虚拟人物介绍，设计多轮会话的情况，可以通过外挂会话存储来将强聊天会话上下文情景，但是这带来一个问题，随着会话轮数增多，每次给LLM的上下文prompt长度增加，会突破模型的最大上下文长度，受限于大模型处理长文本的长度，可以外挂会话历史聊天记录存储。这个case gemma模型有对<code>gojo</code>知识的理解，没有出现幻觉，如果找一个最新出现的虚拟人物名字，会出现幻觉问题。</p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/rag/gemma_faiss_langchain_rag/longcontextrag.jpg" alt="img"></p>
+</li>
+</ul>
+<p>​	下一步结合长文本模型进行case验证，其中有一个笔记有这方面实操，见： <a href="https://github.com/weedge/doraemon-nb/blob/main/RAG_huixiangdou_on_A100.ipynb">https://github.com/weedge/doraemon-nb/blob/main/RAG_huixiangdou_on_A100.ipynb</a></p>
+<p>题外话：数据压缩结晶的好模型+Prompt engineering 生成 好数据。 模型起步阶段，假设模型结构公开，就看谁家数据质量好，好数据就会有模型去学，感觉像是基因迭代一样。。。</p>
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2024-03-26
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/gemma/">gemma</a>
+          <a href="https://weedge.github.io/tags/langchain/">langchain</a>
+          <a href="https://weedge.github.io/tags/rag/">rag</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/rust/chatgpt_rust_check_thread_safety/">
+            <span class="next-text nav-default">通过chatGPT聊天解决rust线程安全问题</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/post/doraemon/gemma_faiss_langchain_rag/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:weege007@gmail.com" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/weedge" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://weibo.com/weedge" rel="me noopener" class="iconfont"
+      title="weibo"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M385.714286 733.714286q12-19.428571 6.285714-39.428571t-25.714286-28.571429q-19.428571-8-41.714286-0.571429t-34.285714 26.285714q-12.571429 19.428571-7.428571 39.142857t24.571429 28.857143 42.571429 1.428571 35.714286-27.142857zm53.714286-69.142857q4.571429-7.428571 2-15.142857t-10-10.571429q-8-2.857143-16.285714 2.857143t-12.285714 10.571429q-9.714286 17.714286 7.428571 25.714286 8 2.857143 16.571429 2.857143t12.571429-10.571429zm99.428571 61.142857q-25.714286 58.285714-90.285714 85.714286t-128 6.857143q-61.142857-19.428571-84.285714-72.285714t3.714286-107.142857q26.857143-53.142857 86.571429-79.428571t120.285714-10.857143q63.428571 16.571429 90.571429 68.285714t1.428571 108.857143zm178.285714-91.428571q-5.142857-54.857143-50.857143-97.142857t-119.142857-62.285714-156.857143-12q-127.428571 13.142857-211.142857 80.857143t-75.714286 151.142857q5.142857 54.857143 50.857143 97.142857t119.142857 62.285714 156.857143 12q127.428571-13.142857 211.142857-80.857143t75.714286-151.142857zm176 2.285714q0 38.857143-21.142857 79.714286t-62.285714 78.285714-96.285714 67.142857-129.142857 47.428571-154.571429 17.714286-157.142857-19.142857-137.428571-53.142857-98-86.285714-37.142857-114q0-65.714286 39.714286-140t112.857143-147.428571q96.571429-96.571429 195.142857-134.857143t140.857143 4q37.142857 36.571429 11.428571 119.428571-2.285714 8-0.571429 11.428571t5.714286 4 8.285714 2.857143 7.714286-2l3.428571-1.142857q79.428571-33.714286 140.571429-33.714286t87.428571 34.857143q25.714286 36 0 101.714286-1.142857 7.428571-2.571429 11.428571t2.571429 7.142857 6.857143 4.285714 9.714286 3.428571q32.571429 10.285714 58.857143 26.857143t45.714286 46.571429 19.428571 66.571429zm-42.285714-356.571429q24 26.857143 31.142857 62t-3.714286 67.142857q-4.571429 13.142857-16.857143 19.428571t-25.428571 2.285714q-13.142857-4.571429-19.428571-16.857143t-2.285714-25.428571q11.428571-36-13.714286-63.428571t-61.142857-20q-13.714286 2.857143-25.714286-4.571429t-14.285714-21.142857q-2.857143-13.714286 4.571429-25.428571t21.142857-14.571429q34.285714-7.428571 68 3.142857t57.714286 37.428571zm103.428571-93.142857q49.714286 54.857143 64.285714 127.142857t-7.714286 138q-5.142857 15.428571-19.428571 22.857143t-29.714286 2.285714-22.857143-19.428571-2.857143-29.714286q16-46.857143 5.714286-98.285714t-45.714286-90.285714q-35.428571-39.428571-84.571429-54.571429t-98.857143-4.857143q-16 3.428571-29.714286-5.428571t-17.142857-24.857143 5.428571-29.428571 24.857143-16.857143q70.285714-14.857143 139.428571 6.571429t118.857143 76.857143z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://weedge.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2013 -
+    2024
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        weedge
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//weedge.disqus.com/count.js" async></script>
+
+
+
+
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
+
+
+</body>
+</html>
