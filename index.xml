@@ -632,7 +632,7 @@ AI:
 &lt;p&gt;下一步找些中文故事集(翻译下也行)，两种可行方式，一个是外挂知识库，一个是在Gemma基础模型上继续训练。&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;&lt;strong&gt;Case2&lt;/strong&gt;: 虚拟人物介绍，设计多轮会话的情况，可以通过会话存储来将强聊天会话上下文情景，但是这带来一个问题，随着会话轮数增多，每次给LLM的上下文prompt长度增加，会突破模型的最大上下文长度，受限于大模型处理长文本的长度，可以外挂会话历史聊天记录存储。这个case gemma模型有对&lt;code&gt;gojo&lt;/code&gt;知识的理解，没有出现幻觉，如果找一个最新出现的虚拟人物名字，会出现幻觉问题。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Case2&lt;/strong&gt;: 虚拟人物介绍，设计多轮会话的情况，可以通过会话存储来将强聊天会话上下文情景，但是这带来一个问题，随着会话轮数增多，每次给LLM的上下文prompt长度增加，会突破模型的最大上下文长度，受限于大模型处理长文本的长度，可以外挂会话历史聊天记录存储。而且对新的虚拟人物，没有上下文，很容易生成不存在的人物，或者是重名的人物。这个case gemma模型有对&lt;code&gt;gojo&lt;/code&gt;知识的理解，但是出现幻觉，gojo 不在 &amp;ldquo;JoJo&amp;rsquo;s Bizarre Adventure&amp;rdquo;。&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/rag/gemma_faiss_langchain_rag/longcontextrag.jpg&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
