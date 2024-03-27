@@ -79,7 +79,7 @@
 随着大型语言模型的不断发展，构建 RAG（检索增强生成）应用程序的热潮与日俱增。谷歌推出了一个开源模型：Gemma。众所周知，RAG 代表了两种基本方法之间的融合: 基于检索的技术和生成模型。基于检索的技术涉及从广泛的知识库或语料库中获取相关信息以响应特定的查询。生成模型擅长利用训练数据中的见解从头开始创建新内容，从而精心制作原始文本或响应。
 目的：使用开源模型gemma来构建 RAG 管道并看看它的性能如何。"><meta itemprop="datePublished" content="2024-03-26T20:16:30+08:00" />
 <meta itemprop="dateModified" content="2024-03-26T20:16:30+08:00" />
-<meta itemprop="wordCount" content="7636">
+<meta itemprop="wordCount" content="7681">
 <meta itemprop="keywords" content="gemma,langchain,rag," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="使用Gemma LLM构建RAG应用程序"/>
 <meta name="twitter:description" content="
@@ -400,6 +400,7 @@
       </ul>
     </li>
     <li><a href="#总结">总结</a></li>
+    <li><a href="#参考">参考</a></li>
   </ul>
 </nav>
   </div>
@@ -986,6 +987,14 @@ AI:
 </ul>
 <p>​	下一步结合长文本模型进行case验证，其中有一个笔记有这方面实操，见： <a href="https://github.com/weedge/doraemon-nb/blob/main/RAG_huixiangdou_on_A100.ipynb">https://github.com/weedge/doraemon-nb/blob/main/RAG_huixiangdou_on_A100.ipynb</a></p>
 <p>题外话：数据压缩结晶的好模型+Prompt engineering 生成 好数据。 模型起步阶段，假设模型结构公开，就看谁家数据质量好，好数据就会有模型去学，感觉像是基因迭代一样。。。</p>
+<h2 id="参考">参考</h2>
+<ol>
+<li><a href="https://blog.superteams.ai/steps-to-build-rag-application-with-gemma-7b-llm-43f7251a36a1">https://blog.superteams.ai/steps-to-build-rag-application-with-gemma-7b-llm-43f7251a36a1</a></li>
+<li><a href="https://blog.google/technology/developers/gemma-open-models/">https://blog.google/technology/developers/gemma-open-models/</a></li>
+<li><a href="https://huggingface.co/learn/nlp-course/chapter5/"><strong>Huggingface NLP course datasets lib</strong></a> | <a href="https://zhuanlan.zhihu.com/p/564816807">翻译</a></li>
+<li>paper: Bechmarking LLM in RAG <a href="https://arxiv.org/abs/2309.01431">Benchmarking Large Language Models in Retrieval-Augmented Generation</a></li>
+<li>使用Transforms库进行翻译任务： <a href="https://huggingface.co/docs/transformers/tasks/translation">https://huggingface.co/docs/transformers/tasks/translation</a></li>
+</ol>
     </div>
 
     

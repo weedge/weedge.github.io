@@ -637,7 +637,15 @@ AI:
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;​	下一步结合长文本模型进行case验证，其中有一个笔记有这方面实操，见： &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/RAG_huixiangdou_on_A100.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/RAG_huixiangdou_on_A100.ipynb&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;题外话：数据压缩结晶的好模型+Prompt engineering 生成 好数据。 模型起步阶段，假设模型结构公开，就看谁家数据质量好，好数据就会有模型去学，感觉像是基因迭代一样。。。&lt;/p&gt;</description>
+&lt;p&gt;题外话：数据压缩结晶的好模型+Prompt engineering 生成 好数据。 模型起步阶段，假设模型结构公开，就看谁家数据质量好，好数据就会有模型去学，感觉像是基因迭代一样。。。&lt;/p&gt;
+&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://blog.superteams.ai/steps-to-build-rag-application-with-gemma-7b-llm-43f7251a36a1&#34;&gt;https://blog.superteams.ai/steps-to-build-rag-application-with-gemma-7b-llm-43f7251a36a1&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://blog.google/technology/developers/gemma-open-models/&#34;&gt;https://blog.google/technology/developers/gemma-open-models/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://huggingface.co/learn/nlp-course/chapter5/&#34;&gt;&lt;strong&gt;Huggingface NLP course datasets lib&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://zhuanlan.zhihu.com/p/564816807&#34;&gt;翻译&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;paper: Bechmarking LLM in RAG &lt;a href=&#34;https://arxiv.org/abs/2309.01431&#34;&gt;Benchmarking Large Language Models in Retrieval-Augmented Generation&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;使用Transforms库进行翻译任务： &lt;a href=&#34;https://huggingface.co/docs/transformers/tasks/translation&#34;&gt;https://huggingface.co/docs/transformers/tasks/translation&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;</description>
       
     </item>
     
