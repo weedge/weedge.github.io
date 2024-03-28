@@ -6,7 +6,34 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 26 Mar 2024 20:16:30 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 28 Mar 2024 21:51:52 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>LM</title>
+      <link>https://weedge.github.io/tags/lm/</link>
+      <pubDate>Thu, 28 Mar 2024 21:51:52 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/lm/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>NLP</title>
+      <link>https://weedge.github.io/tags/nlp/</link>
+      <pubDate>Thu, 28 Mar 2024 21:51:52 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/nlp/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>translate</title>
+      <link>https://weedge.github.io/tags/translate/</link>
+      <pubDate>Thu, 28 Mar 2024 21:51:52 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/translate/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>gemma</title>
       <link>https://weedge.github.io/tags/gemma/</link>
@@ -157,33 +184,6 @@
       <pubDate>Mon, 04 Dec 2023 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/transformer/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>integer parsing</title>
-      <link>https://weedge.github.io/tags/integer-parsing/</link>
-      <pubDate>Thu, 30 Nov 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/integer-parsing/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>simd</title>
-      <link>https://weedge.github.io/tags/simd/</link>
-      <pubDate>Thu, 30 Nov 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/simd/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>gpu</title>
-      <link>https://weedge.github.io/tags/gpu/</link>
-      <pubDate>Tue, 07 Nov 2023 15:00:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/gpu/</guid>
       <description></description>
     </item>
     

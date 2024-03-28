@@ -10,7 +10,63 @@
   
   <url>
     <loc>https://weedge.github.io/categories/</loc>
-    <lastmod>2024-03-26T20:16:30+08:00</lastmod>
+    <lastmod>2024-03-28T21:51:52+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/lm/</loc>
+    <lastmod>2024-03-28T21:51:52+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/nlp/</loc>
+    <lastmod>2024-03-28T21:51:52+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/</loc>
+    <lastmod>2024-03-28T21:51:52+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/</loc>
+    <lastmod>2024-03-28T21:51:52+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/translate/</loc>
+    <lastmod>2024-03-28T21:51:52+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/</loc>
+    <lastmod>2024-03-28T21:51:52+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/</loc>
+    <lastmod>2024-03-28T21:51:52+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/nlp/translate_model_inference_and_finetune/</loc>
+    <lastmod>2024-03-28T21:51:52+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -37,13 +93,6 @@
   </url>
   
   <url>
-    <loc>https://weedge.github.io/post/</loc>
-    <lastmod>2024-03-26T20:16:30+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
     <loc>https://weedge.github.io/tags/rag/</loc>
     <lastmod>2024-03-26T20:16:30+08:00</lastmod>
     <changefreq>weekly</changefreq>
@@ -51,28 +100,7 @@
   </url>
   
   <url>
-    <loc>https://weedge.github.io/tags/</loc>
-    <lastmod>2024-03-26T20:16:30+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
     <loc>https://weedge.github.io/post/doraemon/gemma_faiss_langchain_rag/</loc>
-    <lastmod>2024-03-26T20:16:30+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/</loc>
-    <lastmod>2024-03-26T20:16:30+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/</loc>
     <lastmod>2024-03-26T20:16:30+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>

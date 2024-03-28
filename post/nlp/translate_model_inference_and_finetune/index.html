@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="zh-cn" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>翻译模型 inference 和 微调 - 时间飘过</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="weedge" />
+  <meta name="description" content="想把 HuggingFaceTB/cosmopedia 英文数据中的prompt和text 翻译成 中文， 然后看了下python库 deep_translator的实现， 翻译调用的是三方接口集成库， 于是使用这个库封装的谷歌翻译接口来翻译，但是三方平台接口多会有限流和接口调用频率限制，即使在代码中有容错处理， 比如常规的sleep下再调用，不影响整理处理流程，但是整体处理时间受接口限制，即使用批处理也如此，这个在大规模数据处理中使用三方接口时，经常会遇到的问题，用的三方服务，如果不升级接口服务，在技术上不太好解决； 于是选择另外一种方案，看是否有开源的翻译模型，底层模型结构一般也是Transform架构 Encoder-Decoder model ，也称sequence-to-sequence model； 比如 谷歌的T5模型， 但是推理速度受硬件条件影响，比较慢，而且原始模型不支持英文翻译成中文。
+然后看了下meta nllb 模型，专门用来处理翻译的模型，单个 AI 模型中支持 200 种语言，开源地址： https://github.com/facebookresearch/fairseq/tree/nllb 模型相对现在的LLM参数量小一些，也在huggingface的Transforms库中集成 nllb-200-distilled-600M，直接可以load使用， 等等。。。 既然llm推理可以通过想llama.cpp通过加载ggml格式进行量化，在性能有少许折损的情况下降低推理成本，但是ggml gguf格式还不支持nllb模型权重文件(貌似llama.cpp只支持Transform Decoder模型结构)；那就直接用Transforms库来加载facebook/nllb-200-distilled-600M 模型来批量翻译试试看；后续还尝试使用 Helsinki-NLP/opus-mt-en-zh 模型，进行了简单对比。
+" />
+
+  <meta name="keywords" content="工作, 技术, 生活" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.91.0" />
+
+
+<link rel="canonical" href="https://weedge.github.io/post/nlp/translate_model_inference_and_finetune/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css" integrity="sha256-&#43;ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
+
+<meta property="og:title" content="翻译模型 inference 和 微调" />
+<meta property="og:description" content="
+想把 HuggingFaceTB/cosmopedia 英文数据中的prompt和text 翻译成 中文， 然后看了下python库 deep_translator的实现， 翻译调用的是三方接口集成库， 于是使用这个库封装的谷歌翻译接口来翻译，但是三方平台接口多会有限流和接口调用频率限制，即使在代码中有容错处理， 比如常规的sleep下再调用，不影响整理处理流程，但是整体处理时间受接口限制，即使用批处理也如此，这个在大规模数据处理中使用三方接口时，经常会遇到的问题，用的三方服务，如果不升级接口服务，在技术上不太好解决； 于是选择另外一种方案，看是否有开源的翻译模型，底层模型结构一般也是Transform架构 Encoder-Decoder model ，也称sequence-to-sequence model； 比如 谷歌的T5模型， 但是推理速度受硬件条件影响，比较慢，而且原始模型不支持英文翻译成中文。
+然后看了下meta nllb 模型，专门用来处理翻译的模型，单个 AI 模型中支持 200 种语言，开源地址： https://github.com/facebookresearch/fairseq/tree/nllb 模型相对现在的LLM参数量小一些，也在huggingface的Transforms库中集成 nllb-200-distilled-600M，直接可以load使用， 等等。。。 既然llm推理可以通过想llama.cpp通过加载ggml格式进行量化，在性能有少许折损的情况下降低推理成本，但是ggml gguf格式还不支持nllb模型权重文件(貌似llama.cpp只支持Transform Decoder模型结构)；那就直接用Transforms库来加载facebook/nllb-200-distilled-600M 模型来批量翻译试试看；后续还尝试使用 Helsinki-NLP/opus-mt-en-zh 模型，进行了简单对比。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/nlp/translate_model_inference_and_finetune/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2024-03-28T21:51:52+08:00" />
+<meta property="article:modified_time" content="2024-03-28T21:51:52+08:00" />
+
+<meta itemprop="name" content="翻译模型 inference 和 微调">
+<meta itemprop="description" content="
+想把 HuggingFaceTB/cosmopedia 英文数据中的prompt和text 翻译成 中文， 然后看了下python库 deep_translator的实现， 翻译调用的是三方接口集成库， 于是使用这个库封装的谷歌翻译接口来翻译，但是三方平台接口多会有限流和接口调用频率限制，即使在代码中有容错处理， 比如常规的sleep下再调用，不影响整理处理流程，但是整体处理时间受接口限制，即使用批处理也如此，这个在大规模数据处理中使用三方接口时，经常会遇到的问题，用的三方服务，如果不升级接口服务，在技术上不太好解决； 于是选择另外一种方案，看是否有开源的翻译模型，底层模型结构一般也是Transform架构 Encoder-Decoder model ，也称sequence-to-sequence model； 比如 谷歌的T5模型， 但是推理速度受硬件条件影响，比较慢，而且原始模型不支持英文翻译成中文。
+然后看了下meta nllb 模型，专门用来处理翻译的模型，单个 AI 模型中支持 200 种语言，开源地址： https://github.com/facebookresearch/fairseq/tree/nllb 模型相对现在的LLM参数量小一些，也在huggingface的Transforms库中集成 nllb-200-distilled-600M，直接可以load使用， 等等。。。 既然llm推理可以通过想llama.cpp通过加载ggml格式进行量化，在性能有少许折损的情况下降低推理成本，但是ggml gguf格式还不支持nllb模型权重文件(貌似llama.cpp只支持Transform Decoder模型结构)；那就直接用Transforms库来加载facebook/nllb-200-distilled-600M 模型来批量翻译试试看；后续还尝试使用 Helsinki-NLP/opus-mt-en-zh 模型，进行了简单对比。"><meta itemprop="datePublished" content="2024-03-28T21:51:52+08:00" />
+<meta itemprop="dateModified" content="2024-03-28T21:51:52+08:00" />
+<meta itemprop="wordCount" content="9063">
+<meta itemprop="keywords" content="NLP,LM,translate," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="翻译模型 inference 和 微调"/>
+<meta name="twitter:description" content="
+想把 HuggingFaceTB/cosmopedia 英文数据中的prompt和text 翻译成 中文， 然后看了下python库 deep_translator的实现， 翻译调用的是三方接口集成库， 于是使用这个库封装的谷歌翻译接口来翻译，但是三方平台接口多会有限流和接口调用频率限制，即使在代码中有容错处理， 比如常规的sleep下再调用，不影响整理处理流程，但是整体处理时间受接口限制，即使用批处理也如此，这个在大规模数据处理中使用三方接口时，经常会遇到的问题，用的三方服务，如果不升级接口服务，在技术上不太好解决； 于是选择另外一种方案，看是否有开源的翻译模型，底层模型结构一般也是Transform架构 Encoder-Decoder model ，也称sequence-to-sequence model； 比如 谷歌的T5模型， 但是推理速度受硬件条件影响，比较慢，而且原始模型不支持英文翻译成中文。
+然后看了下meta nllb 模型，专门用来处理翻译的模型，单个 AI 模型中支持 200 种语言，开源地址： https://github.com/facebookresearch/fairseq/tree/nllb 模型相对现在的LLM参数量小一些，也在huggingface的Transforms库中集成 nllb-200-distilled-600M，直接可以load使用， 等等。。。 既然llm推理可以通过想llama.cpp通过加载ggml格式进行量化，在性能有少许折损的情况下降低推理成本，但是ggml gguf格式还不支持nllb模型权重文件(貌似llama.cpp只支持Transform Decoder模型结构)；那就直接用Transforms库来加载facebook/nllb-200-distilled-600M 模型来批量翻译试试看；后续还尝试使用 Helsinki-NLP/opus-mt-en-zh 模型，进行了简单对比。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">时间飘过</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/perf-book-cn/zh/" rel="noopener" target="_blank">
+              《现代CPU性能分析与优化》
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      时间飘过
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/perf-book-cn/zh/" rel="noopener" target="_blank">
+              《现代CPU性能分析与优化》
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">翻译模型 inference 和 微调</h1>
+      
+      <div class="post-meta">
+        <time datetime="2024-03-28" class="post-time">
+          2024-03-28
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#使用已有翻译模型推理">使用已有翻译模型推理</a>
+      <ul>
+        <li><a href="#在线服务调用deep_translator">在线服务调用(deep_translator)</a></li>
+        <li><a href="#使用-facebooknllb-翻译模型">使用 facebook/nllb 翻译模型</a></li>
+        <li><a href="#使用-helsinki-nlpopus-mt-en-zh-模型">使用 Helsinki-NLP/opus-mt-en-zh 模型</a></li>
+      </ul>
+    </li>
+    <li><a href="#使用wmt19数据集微调训练-helsinki-nlpopus-mt-en-zh-翻译模型">使用WMT19数据集微调训练 Helsinki-NLP/opus-mt-en-zh 翻译模型</a>
+      <ul>
+        <li><a href="#安装依赖">安装依赖</a></li>
+        <li><a href="#加载wmt19数据集">加载wmt19数据集</a></li>
+        <li><a href="#预处理数据">预处理数据</a></li>
+        <li><a href="#微调模型">微调模型</a></li>
+        <li><a href="#使用微调训练好的模型进行推理翻译">使用微调训练好的模型进行推理翻译</a></li>
+      </ul>
+    </li>
+    <li><a href="#总结">总结</a></li>
+    <li><a href="#参考">参考</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/nlp/translate_model_inference_and_finetune/1.png" alt="image-20240328231303644"></p>
+<p>想把 HuggingFaceTB/cosmopedia 英文数据中的prompt和text 翻译成 中文， 然后看了下python库 <a href="https://github.com/nidhaloff/deep-translator">deep_translator</a>的实现， 翻译调用的是三方接口集成库， 于是使用这个库封装的谷歌翻译接口来翻译，但是三方平台接口多会有限流和接口调用频率限制，即使在代码中有容错处理， 比如常规的sleep下再调用，不影响整理处理流程，但是整体处理时间受接口限制，即使用批处理也如此，这个在大规模数据处理中使用三方接口时，经常会遇到的问题，用的三方服务，如果不升级接口服务，在技术上不太好解决； 于是选择另外一种方案，看是否有开源的翻译模型，底层模型结构一般也是Transform架构 Encoder-Decoder model ，也称sequence-to-sequence model； 比如 谷歌的T5模型， 但是推理速度受硬件条件影响，比较慢，而且原始模型不支持英文翻译成中文。</p>
+<p>然后看了下meta nllb 模型，专门用来处理翻译的模型，单个 AI 模型中支持 200 种语言，开源地址： <a href="https://github.com/facebookresearch/fairseq/tree/nllb">https://github.com/facebookresearch/fairseq/tree/nllb</a> 模型相对现在的LLM参数量小一些，也在huggingface的Transforms库中集成 nllb-200-distilled-600M，直接可以load使用， 等等。。。 既然llm推理可以通过想llama.cpp通过加载ggml格式进行量化，在性能有少许折损的情况下降低推理成本，但是ggml gguf格式还不支持nllb模型权重文件(貌似llama.cpp只支持Transform Decoder模型结构)；那就直接用Transforms库来加载facebook/nllb-200-distilled-600M 模型来批量翻译试试看；后续还尝试使用 <a href="https://huggingface.co/Helsinki-NLP/opus-mt-en-zh">Helsinki-NLP/opus-mt-en-zh</a> 模型，进行了简单对比。</p>
+<h2 id="使用已有翻译模型推理">使用已有翻译模型推理</h2>
+<p>首先把依赖安装上</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">!pip install -q -U datasets deep-translator transformers
+</code></pre></div><p>住备好实验数据, 使用 HuggingFaceTB/cosmopedia stories 数据，这里直接下载一个文件，用于测试</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">!huggingface-cli login
+
+!huggingface-cli download <span class="se">\
+</span><span class="se"></span>  --repo-type dataset HuggingFaceTB/cosmopedia data/stories/train-00000-of-00043.parquet <span class="se">\
+</span><span class="se"></span>  --local-dir ./datas/datasets/HuggingFaceTB/cosmopedia <span class="se">\
+</span><span class="se"></span>  --local-dir-use-symlinks False
+</code></pre></div><h3 id="在线服务调用deep_translator">在线服务调用(deep_translator)</h3>
+<p>这里从stories数据文件中取出100个做为测试数据，具体文件：<code>translate.py</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># https://huggingface.co/learn/nlp-course/chapter5/</span>
+
+<span class="kn">from</span> <span class="nn">deep_translator</span> <span class="kn">import</span> <span class="n">GoogleTranslator</span>
+<span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_dataset</span><span class="p">,</span> <span class="n">load_from_disk</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+
+<span class="k">def</span> <span class="nf">translate_en2cn</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+    <span class="n">translated</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span>
+    <span class="n">try_cn</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="k">while</span> <span class="n">try_cn</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">translated_prompt</span> <span class="o">=</span> <span class="n">GoogleTranslator</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;en&#39;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s1">&#39;zh-CN&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span>
+                <span class="n">item</span><span class="p">[</span><span class="s2">&#34;prompt&#34;</span><span class="p">])</span>
+            <span class="n">translated_text</span> <span class="o">=</span> <span class="n">GoogleTranslator</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;en&#39;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s1">&#39;zh-CN&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span>
+                <span class="n">item</span><span class="p">[</span><span class="s2">&#34;text&#34;</span><span class="p">])</span>
+            <span class="k">break</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;An error occurred:&#34;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">try_cn</span> <span class="o">-=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&#34;text_zh&#34;</span><span class="p">:</span> <span class="n">translated_text</span><span class="p">,</span> <span class="s2">&#34;prompt_zh&#34;</span><span class="p">:</span> <span class="n">translated_prompt</span><span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">batch_check_data</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&#34;text_zh&#34;</span><span class="p">]]</span>
+
+
+<span class="k">def</span> <span class="nf">translate2save</span><span class="p">(</span><span class="n">src_dataset_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_dataset_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">src_dataset_dir</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&#34;train[:100]&#34;</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">translate_en2cn</span><span class="p">,</span> <span class="n">batched</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">save_to_disk</span><span class="p">(</span><span class="n">target_dataset_dir</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">load2check</span><span class="p">(</span><span class="n">dataset_dir</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">load_from_disk</span><span class="p">(</span><span class="n">dataset_dir</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;filter before&#34;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">batch_check_data</span><span class="p">,</span> <span class="n">batched</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;filter after&#34;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&#34;stage&#34;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;translate&#34;</span><span class="p">,</span> <span class="s2">&#34;check&#34;</span><span class="p">])</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&#34;-s&#34;</span><span class="p">,</span> <span class="s2">&#34;--src_dir&#34;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s2">&#34;path to src dataset dir &#34;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&#34;-t&#34;</span><span class="p">,</span> <span class="s2">&#34;--target_dir&#34;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s2">&#34;path to target dataset dir &#34;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">stage</span> <span class="o">==</span> <span class="s2">&#34;translate&#34;</span><span class="p">:</span>
+        <span class="n">translate2save</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">src_dir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">target_dir</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">stage</span> <span class="o">==</span> <span class="s2">&#34;check&#34;</span><span class="p">:</span>
+        <span class="n">load2check</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">target_dir</span><span class="p">)</span>
+
+</code></pre></div><p>运行翻译</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># translate2save(&#34;./datas/datasets/HuggingFaceTB/cosmopedia/data/stories&#34;,&#34;/datas/datasets/HuggingFaceTB/cosmopedia_zh&#34;)</span>
+<span class="err">!</span><span class="n">python</span> <span class="n">translate</span><span class="o">.</span><span class="n">py</span> <span class="n">translate</span> <span class="o">-</span><span class="n">s</span> <span class="o">./</span><span class="n">datas</span><span class="o">/</span><span class="n">datasets</span><span class="o">/</span><span class="n">HuggingFaceTB</span><span class="o">/</span><span class="n">cosmopedia</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">stories</span> \
+  <span class="o">-</span><span class="n">t</span> <span class="o">./</span><span class="n">datas</span><span class="o">/</span><span class="n">datasets</span><span class="o">/</span><span class="n">HuggingFaceTB</span><span class="o">/</span><span class="n">cosmopedia_zh</span>
+</code></pre></div><p>检查翻译</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1">#load2check(&#34;/datas/datasets/HuggingFaceTB/cosmopedia_zh&#34;)</span>
+<span class="err">!</span><span class="n">python</span> <span class="n">translate</span><span class="o">.</span><span class="n">py</span> <span class="n">check</span> <span class="o">-</span><span class="n">t</span> <span class="o">./</span><span class="n">datas</span><span class="o">/</span><span class="n">datasets</span><span class="o">/</span><span class="n">HuggingFaceTB</span><span class="o">/</span><span class="n">cosmopedia_zh</span>
+</code></pre></div><h3 id="使用-facebooknllb-翻译模型">使用 facebook/nllb 翻译模型</h3>
+<p>使用 facebook/nllb-200-distilled-600M 模型</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoModelForSeq2SeqLM</span><span class="p">,</span> <span class="n">AutoTokenizer</span>
+
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">&#34;facebook/nllb-200-distilled-600M&#34;</span><span class="p">,</span> <span class="n">use_auth_token</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">src_lang</span><span class="o">=</span><span class="s2">&#34;eng_Latn&#34;</span><span class="p">,</span><span class="n">target_lang</span><span class="o">=</span><span class="s2">&#34;zho_Hans&#34;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForSeq2SeqLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">&#34;facebook/nllb-200-distilled-600M&#34;</span><span class="p">,</span> <span class="n">use_auth_token</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+</code></pre></div><p>模型结构</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">M2M100ForConditionalGeneration(
+  (model): M2M100Model(
+    (shared): Embedding(256206, 1024, padding_idx=1)
+    (encoder): M2M100Encoder(
+      (embed_tokens): Embedding(256206, 1024, padding_idx=1)
+      (embed_positions): M2M100SinusoidalPositionalEmbedding()
+      (layers): ModuleList(
+        (0-11): 12 x M2M100EncoderLayer(
+          (self_attn): M2M100Attention(
+            (k_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (v_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (q_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (out_proj): Linear(in_features=1024, out_features=1024, bias=True)
+          )
+          (self_attn_layer_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+          (activation_fn): ReLU()
+          (fc1): Linear(in_features=1024, out_features=4096, bias=True)
+          (fc2): Linear(in_features=4096, out_features=1024, bias=True)
+          (final_layer_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+        )
+      )
+      (layer_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+    )
+    (decoder): M2M100Decoder(
+      (embed_tokens): Embedding(256206, 1024, padding_idx=1)
+      (embed_positions): M2M100SinusoidalPositionalEmbedding()
+      (layers): ModuleList(
+        (0-11): 12 x M2M100DecoderLayer(
+          (self_attn): M2M100Attention(
+            (k_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (v_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (q_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (out_proj): Linear(in_features=1024, out_features=1024, bias=True)
+          )
+          (activation_fn): ReLU()
+          (self_attn_layer_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+          (encoder_attn): M2M100Attention(
+            (k_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (v_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (q_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (out_proj): Linear(in_features=1024, out_features=1024, bias=True)
+          )
+          (encoder_attn_layer_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+          (fc1): Linear(in_features=1024, out_features=4096, bias=True)
+          (fc2): Linear(in_features=4096, out_features=1024, bias=True)
+          (final_layer_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+        )
+      )
+      (layer_norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+    )
+  )
+  (lm_head): Linear(in_features=1024, out_features=256206, bias=False)
+)
+
+</code></pre></div><p>进行批量推理翻译</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="o">%%</span><span class="n">time</span>
+<span class="n">article</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    Dr. Mitchell nodded approvingly. &#34;Yes, indeed! Fatty fish boast rich stores of omega-3 fatty acids – specifically EPA and DHA – which work miracles within our bodies. 
+</span><span class="s2">    Amongst numerous benefits, they decrease triglyceride levels, lower blood pressure, discourage plaque formation, and even suppress irregular heartbeats.&#34;
+</span><span class="s2">    &#34;&#34;&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    An intriguing idea took root in Alex&#39;s mind, blossoming rapidly into resolve. If these simple changes could make such profound differences in his life, 
+</span><span class="s2">    why stop there? Why not share this gift with others – friends, colleagues, strangers who might also benefit from understanding how food choices impact heart health? 
+</span><span class="s2">    Perhaps he could host educational events, cooking demonstrations, or write articles championing these powerful culinary tools. 
+</span><span class="s2">    Yes, he decided, that would be his mission – to spread awareness and inspire change, one plate at a time.
+</span><span class="s2">    &#34;&#34;&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    His thoughts must have shown on his face because Dr. Mitchell suddenly grinned, leaning back in her chair with satisfaction. 
+</span><span class="s2">    &#34;Ah, I see the wheels turning in that brilliant mind of yours, Alex. Go ahead, run with it!&#34;
+</span><span class="s2">    &#34;&#34;&#34;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">article</span><span class="p">:</span>
+  <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
+
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">article</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s2">&#34;pt&#34;</span><span class="p">,</span><span class="n">padding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">translated_tokens</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">,</span> <span class="n">forced_bos_token_id</span><span class="o">=</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">lang_code_to_id</span><span class="p">[</span><span class="s2">&#34;zho_Hans&#34;</span><span class="p">],</span> <span class="n">max_new_tokens</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+<span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">translated_tokens</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div><h3 id="使用-helsinki-nlpopus-mt-en-zh-模型">使用 Helsinki-NLP/opus-mt-en-zh 模型</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoTokenizer</span><span class="p">,</span> <span class="n">AutoModelForSeq2SeqLM</span>
+
+<span class="n">model_checkpoint</span> <span class="o">=</span> <span class="s2">&#34;Helsinki-NLP/opus-mt-en-zh&#34;</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_checkpoint</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForSeq2SeqLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_checkpoint</span><span class="p">)</span>
+
+</code></pre></div><p>模型结构</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">MarianMTModel(
+  (model): MarianModel(
+    (shared): Embedding(65001, 512, padding_idx=65000)
+    (encoder): MarianEncoder(
+      (embed_tokens): Embedding(65001, 512, padding_idx=65000)
+      (embed_positions): MarianSinusoidalPositionalEmbedding(512, 512)
+      (layers): ModuleList(
+        (0-5): 6 x MarianEncoderLayer(
+          (self_attn): MarianAttention(
+            (k_proj): Linear(in_features=512, out_features=512, bias=True)
+            (v_proj): Linear(in_features=512, out_features=512, bias=True)
+            (q_proj): Linear(in_features=512, out_features=512, bias=True)
+            (out_proj): Linear(in_features=512, out_features=512, bias=True)
+          )
+          (self_attn_layer_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+          (activation_fn): SiLU()
+          (fc1): Linear(in_features=512, out_features=2048, bias=True)
+          (fc2): Linear(in_features=2048, out_features=512, bias=True)
+          (final_layer_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+        )
+      )
+    )
+    (decoder): MarianDecoder(
+      (embed_tokens): Embedding(65001, 512, padding_idx=65000)
+      (embed_positions): MarianSinusoidalPositionalEmbedding(512, 512)
+      (layers): ModuleList(
+        (0-5): 6 x MarianDecoderLayer(
+          (self_attn): MarianAttention(
+            (k_proj): Linear(in_features=512, out_features=512, bias=True)
+            (v_proj): Linear(in_features=512, out_features=512, bias=True)
+            (q_proj): Linear(in_features=512, out_features=512, bias=True)
+            (out_proj): Linear(in_features=512, out_features=512, bias=True)
+          )
+          (activation_fn): SiLU()
+          (self_attn_layer_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+          (encoder_attn): MarianAttention(
+            (k_proj): Linear(in_features=512, out_features=512, bias=True)
+            (v_proj): Linear(in_features=512, out_features=512, bias=True)
+            (q_proj): Linear(in_features=512, out_features=512, bias=True)
+            (out_proj): Linear(in_features=512, out_features=512, bias=True)
+          )
+          (encoder_attn_layer_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+          (fc1): Linear(in_features=512, out_features=2048, bias=True)
+          (fc2): Linear(in_features=2048, out_features=512, bias=True)
+          (final_layer_norm): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+        )
+      )
+    )
+  )
+  (lm_head): Linear(in_features=512, out_features=65001, bias=False)
+)
+
+</code></pre></div><p>批量推理翻译</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="o">%%</span><span class="n">time</span>
+<span class="c1">#text = [&#34;In terms of time, the Chinese space station was built more than 20 years later than the International Space Station.&#34;,&#34;hello world.&#34;]</span>
+<span class="n">article</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    Dr. Mitchell nodded approvingly. &#34;Yes, indeed! Fatty fish boast rich stores of omega-3 fatty acids – specifically EPA and DHA – which work miracles within our bodies. 
+</span><span class="s2">    Amongst numerous benefits, they decrease triglyceride levels, lower blood pressure, discourage plaque formation, and even suppress irregular heartbeats.&#34;
+</span><span class="s2">    &#34;&#34;&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    An intriguing idea took root in Alex&#39;s mind, blossoming rapidly into resolve. If these simple changes could make such profound differences in his life, 
+</span><span class="s2">    why stop there? Why not share this gift with others – friends, colleagues, strangers who might also benefit from understanding how food choices impact heart health? 
+</span><span class="s2">    Perhaps he could host educational events, cooking demonstrations, or write articles championing these powerful culinary tools. 
+</span><span class="s2">    Yes, he decided, that would be his mission – to spread awareness and inspire change, one plate at a time.
+</span><span class="s2">    &#34;&#34;&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    His thoughts must have shown on his face because Dr. Mitchell suddenly grinned, leaning back in her chair with satisfaction. 
+</span><span class="s2">    &#34;Ah, I see the wheels turning in that brilliant mind of yours, Alex. Go ahead, run with it!&#34;
+</span><span class="s2">    &#34;&#34;&#34;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">article</span><span class="p">:</span>
+  <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
+
+<span class="c1"># Tokenize the text</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">article</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s2">&#34;pt&#34;</span><span class="p">,</span><span class="n">padding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">input_ids</span>
+
+<span class="c1"># Perform the translation and decode the output</span>
+<span class="n">translation</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">max_new_tokens</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">do_sample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">top_k</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">top_p</span><span class="o">=</span><span class="mf">0.95</span><span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">translation</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</code></pre></div><p>pipeline 适合离线任务流，批量翻译</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="o">%%</span><span class="n">time</span>
+<span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">pipeline</span>
+<span class="n">article</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    Dr. Mitchell nodded approvingly. &#34;Yes, indeed! Fatty fish boast rich stores of omega-3 fatty acids – specifically EPA and DHA – which work miracles within our bodies. 
+</span><span class="s2">    Amongst numerous benefits, they decrease triglyceride levels, lower blood pressure, discourage plaque formation, and even suppress irregular heartbeats.&#34;
+</span><span class="s2">    &#34;&#34;&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    An intriguing idea took root in Alex&#39;s mind, blossoming rapidly into resolve. If these simple changes could make such profound differences in his life, 
+</span><span class="s2">    why stop there? Why not share this gift with others – friends, colleagues, strangers who might also benefit from understanding how food choices impact heart health? 
+</span><span class="s2">    Perhaps he could host educational events, cooking demonstrations, or write articles championing these powerful culinary tools. 
+</span><span class="s2">    Yes, he decided, that would be his mission – to spread awareness and inspire change, one plate at a time.
+</span><span class="s2">    &#34;&#34;&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    His thoughts must have shown on his face because Dr. Mitchell suddenly grinned, leaning back in her chair with satisfaction. 
+</span><span class="s2">    &#34;Ah, I see the wheels turning in that brilliant mind of yours, Alex. Go ahead, run with it!&#34;
+</span><span class="s2">    &#34;&#34;&#34;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">article</span><span class="p">:</span>
+  <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
+
+<span class="n">translator</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">(</span><span class="s2">&#34;translation&#34;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model_checkpoint</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+<span class="n">res</span><span class="o">=</span><span class="n">translator</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+</code></pre></div><p>如果在翻译过程中，发现一些badcase, 可以在已有预训练好模型的基础上进行微调，比如这里使用的 Helsinki-NLP/opus-mt-en-zh</p>
+<h2 id="使用wmt19数据集微调训练-helsinki-nlpopus-mt-en-zh-翻译模型">使用WMT19数据集微调训练 Helsinki-NLP/opus-mt-en-zh 翻译模型</h2>
+<p>本节将介绍如何为翻译任务微调一个<a href="https://github.com/huggingface/transformers">🤗Transformers</a>模型。我们将使用<a href="https://www.statmt.org/wmt19/">WMT19数据集</a>，这是一个由各种来源组成的机器翻译数据集，包括新闻评论和议会会议记录。</p>
+<h3 id="安装依赖">安装依赖</h3>
+<p>安装🤗 Transformers和🤗 Datasets 以及模型训练翻译评估evaluate sacrebleu， 用于加速训练的 accelerate；还有个机器翻译的 sacremoses库, 需要执行以下命令：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="err">!</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">q</span> <span class="n">transformers</span> <span class="n">datasets</span> <span class="n">evaluate</span> <span class="n">sacrebleu</span> <span class="n">accelerate</span> <span class="n">sacremoses</span>
+
+</code></pre></div><p>如果您在本地打开这个笔记本，请确保您的环境已经安装了这些库的最新版本。</p>
+<p>为了能够通过推理API与社区共享您的模型并生成如下图所示的结果，您还需要遵循一些额外的步骤。</p>
+<ul>
+<li>
+<p>需要从Hugging Face网站存储您的认证令牌，然后执行下面的单元格并输入您的用户名和密码；或者在colab中执行时加入秘钥 HF_TOKEN</p>
+</li>
+<li>
+<p>接下来需要安装Git-LFS: <code>apt install git-lfs</code></p>
+</li>
+<li>
+<p>请确保你使用的transformers版本不低于4.11.0，因为该功能是在4.11.0版本中引入的:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">transformers</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">transformers</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+</code></pre></div><p>可以在<a href="https://github.com/huggingface/transformers/tree/master/examples/seq2seq">这里</a>找到此笔记本的脚本版本，以分布式方式使用多个gpu或tpu微调您的模型。</p>
+</li>
+<li>
+<p>上传一些监控数据(telemetry)——这告诉我们正在使用哪些示例和软件版本，以便我们知道在哪里优先进行维护工作。我们不收集(或关心)任何个人身份信息，但如果您希望不被计算在内，请随时跳过此步骤或完全删除此单元格。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">transformers.utils</span> <span class="kn">import</span> <span class="n">send_example_telemetry</span>
+
+<span class="n">send_example_telemetry</span><span class="p">(</span><span class="s2">&#34;translation_notebook&#34;</span><span class="p">,</span> <span class="n">framework</span><span class="o">=</span><span class="s2">&#34;pytorch&#34;</span><span class="p">)</span>
+</code></pre></div></li>
+</ul>
+<h3 id="加载wmt19数据集">加载wmt19数据集</h3>
+<p>我们将使用<a href="https://github.com/huggingface/datasets">🤗Datasets</a>库下载数据并获得我们需要用于评估的指标(将我们的模型与基准进行比较)。这可以通过<code>load_dataset</code>和<code>load_metric</code>函数轻松实现。这里我们使用<a href="https://huggingface.co/datasets/wmt19">haggingface datasets WMT19数据集</a>的英语/中文(zh-en)部分 19M 条数据, 这里使用train 训练数据集的前100,0000条作为训练数据， 其中20%的数据用于测试。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_dataset</span>
+
+<span class="c1">#raw_datasets = load_dataset(&#34;wmt19&#34;, &#34;zh-en&#34;,split=&#34;train[:1000]&#34;)</span>
+<span class="n">raw_datasets</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">&#34;wmt19&#34;</span><span class="p">,</span> <span class="s2">&#34;zh-en&#34;</span><span class="p">,</span><span class="n">split</span><span class="o">=</span><span class="s2">&#34;train[:100000]&#34;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">raw_datasets</span><span class="p">)</span>
+
+<span class="c1"># 取样一部分用来训练测试</span>
+<span class="n">raw_datasets</span> <span class="o">=</span> <span class="n">raw_datasets</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span><span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">raw_datasets</span><span class="p">)</span>
+
+<span class="c1">#要访问一个实际的元素，首先需要选择一个切分，然后给出一个索引:</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">raw_datasets</span><span class="p">[</span><span class="s2">&#34;train&#34;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+</code></pre></div><p>为了对数据的形状有一个大致的了解，下面的函数将展示一些从数据集中随机选取的示例。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">datasets</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span><span class="p">,</span> <span class="n">HTML</span>
+
+<span class="k">def</span> <span class="nf">show_random_elements</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">num_examples</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">num_examples</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">),</span> <span class="s2">&#34;Can&#39;t pick more elements than there are in the dataset.&#34;</span>
+    <span class="n">picks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_examples</span><span class="p">):</span>
+        <span class="n">pick</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">pick</span> <span class="ow">in</span> <span class="n">picks</span><span class="p">:</span>
+            <span class="n">pick</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">picks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pick</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="n">picks</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">column</span><span class="p">,</span> <span class="n">typ</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="n">datasets</span><span class="o">.</span><span class="n">ClassLabel</span><span class="p">):</span>
+            <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="n">typ</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">display</span><span class="p">(</span><span class="n">HTML</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">to_html</span><span class="p">()))</span>
+    
+<span class="n">show_random_elements</span><span class="p">(</span><span class="n">raw_datasets</span><span class="p">[</span><span class="s2">&#34;train&#34;</span><span class="p">])</span>
+</code></pre></div><p>加载metric， 是<code>datasets.Metric</code>的实例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_metric</span>
+
+<span class="n">metric</span> <span class="o">=</span> <span class="n">load_metric</span><span class="p">(</span><span class="s2">&#34;sacrebleu&#34;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span>
+</code></pre></div><p>在Hugging Face的Datasets库中，<code>datasets.Metric</code>是一个用于评估模型性能的类。它提供了一种标准化的方式来计算和报告模型在特定任务上的性能指标，例如准确度、精确度、召回率或F1分数等。 通过使用<code>datasets.Metric</code>类，您可以确保您的评估过程与其他人的工作保持一致，并且可以轻松地与其他模型或结果进行比较。这个类封装了计算指标所需的所有逻辑，因此您只需要提供模型的预测结果和真实的标签，它就会为您计算出相应的性能指标。 此外，<code>datasets.Metric</code>类还支持多种不同的评估指标，并且可以轻松地扩展以支持更多的指标。这使得它成为一个非常灵活和强大的工具，适用于各种不同的自然语言处理任务和评估场景。</p>
+<p>您可以使用您的预测结果和标签调用其<code>compute</code>方法，这些预测结果和标签需要是解码后的字符串列表（标签为列表的列表）：</p>
+<p>在使用Hugging Face的Datasets库中的<code>datasets.Metric</code>类时，您可以利用其<code>compute</code>方法来计算模型的性能指标。为了进行这一计算，您需要提供模型的预测结果和真实的标签数据。
+预测结果应该是一个字符串列表，其中每个字符串代表一个样本的预测输出。对于标签，您需要提供一个列表的列表，因为通常一个样本可能有多个正确的标签（例如，在多标签分类任务中）。
+下面是一个简单的示例，展示了如何使用<code>compute</code>方法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">Metric</span>
+
+<span class="c1"># 初始化Metric实例</span>
+<span class="n">metric</span> <span class="o">=</span> <span class="n">Metric</span><span class="p">(</span><span class="s2">&#34;bleu&#34;</span><span class="p">)</span>
+
+<span class="c1"># 假设predictions是模型的预测结果，labels是真实的标签</span>
+<span class="n">predictions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&#34;this is a prediction&#34;</span><span class="p">,</span> <span class="s2">&#34;another prediction&#34;</span><span class="p">,</span> <span class="s2">&#34;yet another prediction&#34;</span><span class="p">]</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&#34;this is the true label&#34;</span><span class="p">,</span> <span class="s2">&#34;another true label&#34;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&#34;this is the true label&#34;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&#34;this is the true label&#34;</span><span class="p">,</span> <span class="s2">&#34;another true label&#34;</span><span class="p">,</span> <span class="s2">&#34;one more true label&#34;</span><span class="p">]]</span>
+
+<span class="c1"># 对于每个样本，调用compute方法进行计算</span>
+<span class="k">for</span> <span class="n">pred</span><span class="p">,</span> <span class="n">lab</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="n">metric</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">predictions</span><span class="o">=</span><span class="n">pred</span><span class="p">,</span> <span class="n">references</span><span class="o">=</span><span class="n">lab</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Score for this prediction: </span><span class="si">{</span><span class="n">score</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</code></pre></div><p>在这个示例中，我们首先创建了一个<code>Metric</code>实例，用于计算BLEU分数。然后，我们遍历预测结果和标签，对每个样本调用<code>compute</code>方法，并打印出计算得到的分数。
+这种方法使得评估过程变得简单而直接，同时确保了评估的一致性和准确性。通过这种方式，您可以轻松地评估模型在各种任务上的性能，并据此进行进一步的优化和调整。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">fake_preds</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&#34;hello there&#34;</span><span class="p">,</span> <span class="s2">&#34;general kenobi&#34;</span><span class="p">]</span>
+<span class="n">fake_labels</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&#34;hello there&#34;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&#34;general kenobi&#34;</span><span class="p">]]</span>
+<span class="n">metric</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">predictions</span><span class="o">=</span><span class="n">fake_preds</span><span class="p">,</span> <span class="n">references</span><span class="o">=</span><span class="n">fake_labels</span><span class="p">)</span>
+</code></pre></div><p>在训练过程中包含一个度量标准通常有助于评估模型的性能。您可以使用 🤗 <a href="https://huggingface.co/docs/evaluate/index">Evaluate</a> 库快速加载一个评估方法。对于这个任务，加载 <a href="https://huggingface.co/spaces/evaluate-metric/sacrebleu">SacreBLEU</a> 度量标准（查看 🤗 Evaluate <a href="https://huggingface.co/docs/evaluate/a_quick_tour">快速入门</a> 以了解如何加载和计算度量标准）; 更多参考：</p>
+<ul>
+<li>
+<p><a href="https://en.wikipedia.org/wiki/BLEU">https://en.wikipedia.org/wiki/BLEU</a></p>
+</li>
+<li>
+<p><a href="https://cloud.google.com/translate/automl/docs/evaluate?hl=zh-cn#bleu">https://cloud.google.com/translate/automl/docs/evaluate?hl=zh-cn#bleu</a></p>
+</li>
+<li>
+<p><a href="https://www.cs.cmu.edu/%7Ealavie/Presentations/MT-Evaluation-MT-Summit-Tutorial-19Sep11.pdf">https://www.cs.cmu.edu/%7Ealavie/Presentations/MT-Evaluation-MT-Summit-Tutorial-19Sep11.pdf</a></p>
+</li>
+</ul>
+<h3 id="预处理数据">预处理数据</h3>
+<p>在我们将这些文本输入模型之前，我们需要对它们进行预处理。这是通过🤗 Transformers的<code>Tokenizer</code>完成的，它将（正如其名称所示）对输入进行分词（包括将分词转换为预训练词汇表中对应的ID）并将其置于模型期望的格式中，同时生成模型所需的其他输入。</p>
+<p>为了完成所有这些工作，我们使用<code>AutoTokenizer.from_pretrained</code>方法实例化我们的分词器，这将确保：</p>
+<p>- 我们获得与我们想要使用的模型架构相对应的分词器，</p>
+<p>- 我们下载了预训练这个特定检查点时使用的词汇表。</p>
+<p>这个词汇表将被缓存，因此下次我们运行单元格时不会再次下载。</p>
+<p>通过使用<code>AutoTokenizer.from_pretrained</code>方法，我们可以轻松地加载与特定模型架构相匹配的分词器，而无需担心词汇表的下载和处理。这不仅简化了预处理步骤，还提高了效率，因为缓存的词汇表可以在后续的运行中重复使用，避免了重复下载的开销。</p>
+<p>一旦我们有了分词器，我们就可以对数据集中的文本进行分词处理，将它们转换成模型能够理解的格式。这通常包括将文本分割成单独的单词或子词单元（tokens），将这些单元转换为数值ID，并将它们组合成适合模型输入的批次。</p>
+<p>此外，分词器还可以处理其他与模型输入相关的任务，例如添加必要的特殊标记（如开始、结束或分隔符标记），填充或截断序列以确保一致的输入长度，以及生成注意力掩码等。</p>
+<p>总之，分词器在将原始文本数据转换为模型可以处理的格式方面发挥着关键作用，是自然语言处理任务中不可或缺的一部分。通过使用Hugging Face的Transformers库中的<code>AutoTokenizer</code>，我们可以轻松地为各种模型架构进行高效的文本预处理。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoTokenizer</span>
+
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_checkpoint</span><span class="p">)</span>
+<span class="n">tokenizer</span><span class="p">(</span><span class="s2">&#34;Hello, this one sentence!&#34;</span><span class="p">)</span>
+</code></pre></div><p>默认情况下，上面的调用将使用🤗tokenizers库中的一个快速分词器(底层由<a href="https://github.com/huggingface/tokenizers">Rust封装支持</a> )。</p>
+<p>根据您选择的模型，您将在上述单元格返回的字典中看到不同的键。对于我们在这里要做的事情，它们并不重要（只需知道它们是我们稍后将实例化的模型所需的），如果您感兴趣，可以在<a href="https://huggingface.co/transformers/preprocessing.html">这个教程</a>中了解更多关于它们的信息。</p>
+<p>我们可以传递一个句子列表，而不仅仅是一个句子：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">tokenizer</span><span class="p">([</span><span class="s2">&#34;Hello, this one sentence!&#34;</span><span class="p">,</span> <span class="s2">&#34;This is another sentence.&#34;</span><span class="p">])</span>
+</code></pre></div><p>为了准备我们模型的目标序列，我们需要在<code>as_target_tokenizer</code>上下文管理器中对它们进行分词。这样可以确保分词器使用与目标相对应的特殊标记：</p>
+<p>在进行机器翻译或其他序列到序列任务时，通常需要对目标序列（例如，翻译目标语言的句子）进行分词处理。为了确保目标序列的分词正确地使用了特殊标记（如开始、结束、分隔符等），我们可以使用<code>as_target_tokenizer</code>上下文管理器。
+下面是一个如何使用<code>as_target_tokenizer</code>来对目标序列进行分词的示例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoTokenizer</span>
+
+<span class="c1"># 假设您已经加载了适合您模型的分词器</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">&#34;model-name-or-path&#34;</span><span class="p">)</span>
+
+<span class="c1"># 目标序列列表</span>
+<span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&#34;The translated sentence.&#34;</span><span class="p">,</span> <span class="s2">&#34;Another translated sentence.&#34;</span><span class="p">]</span>
+
+<span class="c1"># 使用as_target_tokenizer上下文管理器进行分词</span>
+<span class="k">with</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">as_target_tokenizer</span><span class="p">():</span>
+    <span class="c1"># 对目标序列进行分词</span>
+    <span class="n">encoded_targets</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s2">&#34;pt&#34;</span><span class="p">)</span>
+
+<span class="c1"># 现在encoded_targets包含了分词后的目标序列，可以使用它们作为模型的目标输入</span>
+</code></pre></div><p>在这个例子中，我们首先加载了一个适合我们模型的分词器。然后，我们创建了一个包含目标序列的列表<code>targets</code>。通过使用<code>as_target_tokenizer</code>上下文管理器，我们确保了在对目标序列进行分词时，分词器使用了正确的特殊标记。
+在上下文管理器的作用下，我们调用了<code>tokenizer</code>方法对目标序列进行分词，并通过<code>padding</code>参数对序列进行填充，<code>truncation</code>参数截断较长的序列，<code>return_tensors</code>参数设置为<code>&quot;pt&quot;</code>表示返回的是PyTorch张量格式。
+最后，<code>encoded_targets</code>将包含分词后的目标序列，它们已经转换成了模型所需的格式，可以直接用于模型训练或评估时的目标输入。通过这种方式，我们可以确保目标序列的分词与模型的期望相匹配，从而提高模型的性能。</p>
+<p>然后我们可以编写一个函数来预处理我们的样本。我们只需将它们传递给<code>tokenizer</code>，并使用参数<code>truncation=True</code>。这将确保如果输入长度超过了模型能够处理的最大长度，它将被截断到模型所能接受的最大长度。填充操作将在后续处理中进行（通过数据整理器），因此我们只需将样本填充到批次中的最长长度，而不是整个数据集的长度。</p>
+<p>以下是一个预处理样本的函数示例：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoTokenizer</span>
+
+<span class="c1"># 假设您已经加载了适合您模型的分词器</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">&#34;model-name-or-path&#34;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">preprocess_samples</span><span class="p">(</span><span class="n">samples</span><span class="p">):</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    对样本列表进行预处理，包括分词和截断。
+</span><span class="s2">    参数:
+</span><span class="s2">        samples (list): 要预处理的样本列表。
+</span><span class="s2">    返回:
+</span><span class="s2">        list: 预处理后的样本列表。
+</span><span class="s2">    &#34;&#34;&#34;</span>
+    <span class="c1"># 使用分词器对样本进行分词和截断</span>
+    <span class="n">encoded_inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s1">&#39;max_length&#39;</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s2">&#34;pt&#34;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">encoded_inputs</span>
+
+<span class="c1"># 示例：预处理一些样本</span>
+<span class="n">samples</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&#34;The first sample text.&#34;</span><span class="p">,</span> <span class="s2">&#34;A longer sample text that might need to be truncated.&#34;</span><span class="p">]</span>
+<span class="n">preprocessed_samples</span> <span class="o">=</span> <span class="n">preprocess_samples</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+
+<span class="c1"># 预处理后的样本现在可以直接用于模型的输入</span>
+</code></pre></div><p>在这个函数中，我们首先加载了一个适合我们模型的分词器。然后，我们定义了一个<code>preprocess_samples</code>函数，它接受一个样本列表作为输入，使用分词器对每个样本进行分词和截断。
+我们通过设置<code>padding='max_length'</code>来指定所有样本都应该填充到批次中的最大长度，而<code>max_length</code>参数设置了这个长度的具体值。在这个例子中，我们将其设置为512，这是一个常用的长度限制值，但您应该根据您的模型和任务需求来调整这个值。
+<code>return_tensors=&quot;pt&quot;</code>参数表示我们希望返回的是PyTorch张量格式，这样我们就可以直接将预处理后的数据传递给PyTorch模型。
+最后，<code>preprocessed_samples</code>将包含预处理后的样本，它们已经转换成了模型所需的格式，可以直接用于模型的输入。通过这种方式，我们可以确保所有输入数据都符合模型的预期格式，并且处理了过长的输入，使得模型能够高效地处理它们。</p>
+<p>具体实现：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">max_input_length</span> <span class="o">=</span> <span class="mi">512</span>
+<span class="n">max_target_length</span> <span class="o">=</span> <span class="mi">512</span>
+<span class="n">source_lang</span> <span class="o">=</span> <span class="s2">&#34;en&#34;</span>
+<span class="n">target_lang</span> <span class="o">=</span> <span class="s2">&#34;zh&#34;</span>
+
+<span class="k">def</span> <span class="nf">preprocess_function</span><span class="p">(</span><span class="n">examples</span><span class="p">):</span>
+    <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">ex</span><span class="p">[</span><span class="n">source_lang</span><span class="p">]</span> <span class="k">for</span> <span class="n">ex</span> <span class="ow">in</span> <span class="n">examples</span><span class="p">[</span><span class="s2">&#34;translation&#34;</span><span class="p">]]</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="n">ex</span><span class="p">[</span><span class="n">target_lang</span><span class="p">]</span> <span class="k">for</span> <span class="n">ex</span> <span class="ow">in</span> <span class="n">examples</span><span class="p">[</span><span class="s2">&#34;translation&#34;</span><span class="p">]]</span>
+    <span class="n">model_inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">max_input_length</span><span class="p">,</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Setup the tokenizer for targets</span>
+    <span class="k">with</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">as_target_tokenizer</span><span class="p">():</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">max_target_length</span><span class="p">,</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">model_inputs</span><span class="p">[</span><span class="s2">&#34;labels&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="s2">&#34;input_ids&#34;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">model_inputs</span>
+
+<span class="n">preprocess_function</span><span class="p">(</span><span class="n">raw_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">][:</span><span class="mi">2</span><span class="p">])</span>
+</code></pre></div><p>要将此函数应用于数据集中的所有句子对，我们只需使用之前创建的<code>dataset</code>对象的<code>map</code>方法。这将对<code>dataset</code>中所有划分的所有元素应用该函数，因此我们的训练、验证和测试数据将在一个命令中预处理。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">tokenized_datasets</span> <span class="o">=</span> <span class="n">raw_datasets</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">preprocess_function</span><span class="p">,</span> <span class="n">batched</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div><p>更好的是，🤗数据集库会自动缓存结果，以避免下次运行笔记本时在这一步上花费时间。🤗数据集库通常足够智能，可以检测传递给map的函数何时发生了变化(因此需要不使用缓存数据)。例如，它会正确地检测你是否更改了第一个单元格中的任务并重新运行notebook。🤗数据集警告您，当它使用缓存文件时，您可以在调用<code>map</code>时传递<code>load_from_cache_file=False</code>，以不使用缓存文件，并强制再次应用预处理。</p>
+<p>注意，我们传入<code>batched=True</code>来将文本按批次编码在一起。这是为了充分利用前面加载的快速分词器的优势，它将使用多线程并发地处理一批文本。更多操作见NLP课程中的datasets库操作 <a href="https://huggingface.co/learn/nlp-course/chapter5/"><strong>Huggingface NLP course datasets lib</strong></a></p>
+<h3 id="微调模型">微调模型</h3>
+<p>现在我们的数据已经准备好了，我们可以下载预训练模型并对其进行微调。由于我们的任务是序列到序列的类型，我们使用<code>AutoModelForSeq2SeqLM</code>类。与tokenizer一样，<code>from_pretrained</code>方法将为我们下载并缓存模型。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoModelForSeq2SeqLM</span><span class="p">,</span> <span class="n">DataCollatorForSeq2Seq</span><span class="p">,</span> <span class="n">Seq2SeqTrainingArguments</span><span class="p">,</span> <span class="n">Seq2SeqTrainer</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForSeq2SeqLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_checkpoint</span><span class="p">)</span>
+</code></pre></div><p>注意，我们没有像分类示例那样得到警告。这意味着我们使用了预训练模型的所有权重，在这种情况下没有随机初始化头部。</p>
+<p>要实例化一个<code>Seq2SeqTrainer</code>，我们还需要定义三件事。最重要的是<a href="https://huggingface.co/transformers/main_classes/trainer.html#transformers.Seq2SeqTrainingArguments"><code>Seq2SeqTrainingArguments</code></a>，这是一个包含所有自定义训练属性的类。它需要一个文件夹名，用于保存模型的检查点，其他所有参数都是可选的:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">batch_size</span> <span class="o">=</span> <span class="mi">16</span>
+<span class="n">model_name</span> <span class="o">=</span> <span class="n">model_checkpoint</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&#34;/&#34;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">args</span> <span class="o">=</span> <span class="n">Seq2SeqTrainingArguments</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">-finetuned-</span><span class="si">{</span><span class="n">source_lang</span><span class="si">}</span><span class="s2">-to-</span><span class="si">{</span><span class="n">target_lang</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">,</span>
+    <span class="n">evaluation_strategy</span> <span class="o">=</span> <span class="s2">&#34;epoch&#34;</span><span class="p">,</span>
+    <span class="n">learning_rate</span><span class="o">=</span><span class="mf">2e-5</span><span class="p">,</span>
+    <span class="n">per_device_train_batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+    <span class="n">per_device_eval_batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+    <span class="n">weight_decay</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="n">save_total_limit</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">num_train_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">predict_with_generate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">fp16</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">push_to_hub</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div><p>在这里，我们将评估设置为在每个epoch结束时完成，调整学习率，使用单元顶部定义的<code>batch_size</code>并自定义权重衰减。由于<code>Seq2SeqTrainer</code>将定期保存模型，并且我们的数据集非常大，我们告诉它最多保存三次。最后，我们使用<code>predict_with_generate</code>选项(以正确地生成摘要)并激活混合精度训练(以更快一些)。</p>
+<p>最后一个参数设置一切，以便我们可以在训练期间定期将模型推送到<a href="https://huggingface.co/models">Hub</a>。如果没有按照笔记本顶部的安装步骤操作，请删除它。如果你想将你的模型保存在本地的名称与它将被推送的存储库的名称不同，或者如果你想将你的模型推送到一个组织而不是你的名称空间下，使用<code>hub_model_id</code>参数来设置仓库名称(它需要是完整的名称，包括你的命名空间:例如<code>weege007/opus-mt-en-zh-finetuned-en-to-zh</code>)。</p>
+<p>然后，我们需要一种特殊的数据整理器，它不仅会将输入填充到批数据的最大长度，还会将标签填充到最大长度:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">data_collator</span> <span class="o">=</span> <span class="n">DataCollatorForSeq2Seq</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+</code></pre></div><p>为<code>Seq2SeqTrainer</code>定义的最后一件事是如何根据预测计算指标。我们需要为此定义一个函数，它将使用我们之前加载的<code>metric</code>，并且我们必须进行一些预处理以将预测结果解码为文本:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="k">def</span> <span class="nf">postprocess_text</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">preds</span><span class="p">]</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">[[</span><span class="n">label</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">preds</span><span class="p">,</span> <span class="n">labels</span>
+
+<span class="k">def</span> <span class="nf">compute_metrics</span><span class="p">(</span><span class="n">eval_preds</span><span class="p">):</span>
+    <span class="n">preds</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">eval_preds</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="n">preds</span> <span class="o">=</span> <span class="n">preds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">decoded_preds</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Replace -100 in the labels as we can&#39;t decode them.</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">labels</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span><span class="p">)</span>
+    <span class="n">decoded_labels</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Some simple post-processing</span>
+    <span class="n">decoded_preds</span><span class="p">,</span> <span class="n">decoded_labels</span> <span class="o">=</span> <span class="n">postprocess_text</span><span class="p">(</span><span class="n">decoded_preds</span><span class="p">,</span> <span class="n">decoded_labels</span><span class="p">)</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">metric</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">predictions</span><span class="o">=</span><span class="n">decoded_preds</span><span class="p">,</span> <span class="n">references</span><span class="o">=</span><span class="n">decoded_labels</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&#34;bleu&#34;</span><span class="p">:</span> <span class="n">result</span><span class="p">[</span><span class="s2">&#34;score&#34;</span><span class="p">]}</span>
+
+    <span class="n">prediction_lens</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">pred</span> <span class="o">!=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span><span class="p">)</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">preds</span><span class="p">]</span>
+    <span class="n">result</span><span class="p">[</span><span class="s2">&#34;gen_len&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">prediction_lens</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="k">return</span> <span class="n">result</span>
+</code></pre></div><p>然后我们只需要将所有这些以及我们的数据集传递给<code>Seq2SeqTrainer</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">trainer = Seq2SeqTrainer(
+    model,
+    args,
+    train_dataset=tokenized_datasets[&#34;train&#34;],
+    eval_dataset=tokenized_datasets[&#34;test&#34;],
+    data_collator=data_collator,
+    tokenizer=tokenizer,
+    compute_metrics=compute_metrics
+)
+</code></pre></div><p>现在我们可以通过调用<code>train</code>方法来微调我们的模型:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</code></pre></div><p>你现在可以将训练结果上传到Hub, 比如我的HF上的模型地址 <a href="https://huggingface.co/weege007/opus-mt-en-zh-finetuned-en-to-zh">https://huggingface.co/weege007/opus-mt-en-zh-finetuned-en-to-zh</a> ，只需执行此指令:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">trainer.push_to_hub()
+</code></pre></div><p>训练的时候会上传训练好的 checkpoint 模型权重到模型hub库中， 最后一步是把生成的readme 和配置文件generation_config.json上传到 huggingface models hub 。</p>
+<p>你现在可以与你的所有朋友、家人、最喜欢的宠物共享这个模型:他们都可以使用标识符<code>&quot;your-username/the-name-you-picked&quot;</code>来加载它，例如:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoModelForSeq2SeqLM</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">automodelforseq2seqlm</span> <span class="o">.</span><span class="n">from_pre</span> <span class="o">-</span> <span class="n">trained</span><span class="p">(</span><span class="s2">&#34;weege007/opus-mt-en-zh-finetuned-en-to-zh&#34;</span><span class="p">)</span>
+</code></pre></div><h3 id="使用微调训练好的模型进行推理翻译">使用微调训练好的模型进行推理翻译</h3>
+<p>很好，现在你已经对模型进行了微调，你可以使用它进行推理!</p>
+<p>想出一些你想翻译成另一种语言的文本。</p>
+<p>PS： 对于T5，您需要根据您正在处理的任务为输入添加前缀。为了从英语翻译到中文，你应该像下面这样在输入前加上前缀:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">text = [&#34;hello.&#34;,&#34;translate English to Chinese: Legumes share resources with nitrogen-fixing bacteria.&#34;]
+</code></pre></div><p>尝试用于推理的微调模型的最简单方法是在<a href="https://huggingface.co/docs/transformers/main/en/main_classes/pipelines#transformers.pipeline">pipeline()</a>中使用它。用你的模型实例化一个用于翻译的<code>pipeline</code>，并将你的文本传递给它:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">pipeline</span>
+
+<span class="n">checkpoint</span> <span class="o">=</span> <span class="s2">&#34;weege007/opus-mt-en-zh-finetuned-en-to-zh&#34;</span>
+
+<span class="c1">#translator = pipeline(&#34;translation_en_to_zh&#34;, model=checkpoint, max_length=1024)</span>
+<span class="n">translator</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">(</span><span class="s2">&#34;translation&#34;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+<span class="n">translator</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+</code></pre></div><p>如果你愿意，你也可以手动复制<code>pipeline</code>的结果: 将文本分词并将<code>input_ids</code>作为PyTorch张量返回:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoTokenizer</span>
+
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
+<span class="c1"># 注意如果是多个文本，长度不一样，需要padding, truncation</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">text</span><span class="p">,</span>  <span class="n">return_tensors</span><span class="o">=</span><span class="s2">&#34;pt&#34;</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">input_ids</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+</code></pre></div><p>使用<a href="https://huggingface.co/docs/transformers/main/en/main_classes/text_generation#transformers.GenerationMixin.generate">generate()</a>方法创建翻译。有关控制生成的不同文本生成策略和参数的更多详细信息，请查看<a href="https://huggingface.co/docs/transformers/main/en/tasks/../main_classes/text_generation">text generation</a> API。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoModelForSeq2SeqLM</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForSeq2SeqLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">max_new_tokens</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">do_sample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">top_k</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">top_p</span><span class="o">=</span><span class="mf">0.95</span><span class="p">)</span>
+<span class="n">outputs</span>
+</code></pre></div><p>将生成的token id解码为文本:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1">#tokenizer.decode(outputs[0], skip_special_tokens=True)</span>
+<span class="c1">#tokenizer.decode(outputs[1], skip_special_tokens=True)</span>
+<span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div><h2 id="总结">总结</h2>
+<p>facebook/nllb-200-distilled-600M 模型 翻译 效果一般，Helsinki-NLP/opus-mt-en-zh 整体效果还可以；以上翻译文本受文本长度限制，中文token可能由一个或者多个字组成(比如:&ldquo;一种&rdquo;)，需要对长文本进行切割，然后在批量翻译，最后在组合；</p>
+<p>在本地部署模型翻译的方式pass,需要加载参数大模型才能有好的翻译效果(和硬件无关，和模型推理有关)， 而且推理速度需要硬件GPU来加持，会有模型调参实现成本和计算成本在；</p>
+<ul>
+<li>如果有机器硬件支持推理翻译加速，可以选用本地批量翻译的方式</li>
+<li>如果使用三方翻译接口，批量处理就会受制于接口的限制（限速，翻译文本长度，并发请求数等等）</li>
+</ul>
+<p>这里没有使用T5来进行英文到中文的微调，因为T5模型本身不支持英文到中文翻译，需要基于T5模型结构，使用英文-中文数据集，去训练tokenizer，然后分好词之后喂给模型进行预训练，训练周期长；这里选择已有英文到中文的翻译模型<code>Helsinki-NLP/opus-mt-en-zh</code>进行微调，使用wmt19 英文-中文数据集来训练，每轮训练epoch 会计算对应的评估分数<code>compute_metrics</code>, BLEU的计算和翻译评估，可以看谷歌autoML Translation中的介绍： <a href="https://cloud.google.com/translate/automl/docs/evaluate?hl=zh-cn#bleu">https://cloud.google.com/translate/automl/docs/evaluate?hl=zh-cn#bleu</a> 很详细讲解：</p>
+<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/nlp/translate_model_inference_and_finetune/1.png" alt="image-20240328231303644"></p>
+<p>OK, 如果blue评估得分在50以上，翻译效果应该不错了；应该到了4,6级水平吧。。。</p>
+<h2 id="参考">参考</h2>
+<ul>
+<li>使用Transforms库进行翻译任务： <a href="https://huggingface.co/docs/transformers/tasks/translation">https://huggingface.co/docs/transformers/tasks/translation</a></li>
+<li><a href="https://github.com/facebookresearch/fairseq/tree/nllb">https://github.com/facebookresearch/fairseq/tree/nllb</a></li>
+<li><a href="https://ai.meta.com/blog/nllb-200-high-quality-machine-translation/">https://ai.meta.com/blog/nllb-200-high-quality-machine-translation/</a></li>
+</ul>
+    </div>
+
+    
+    
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/nlp/">NLP</a>
+          <a href="https://weedge.github.io/tags/lm/">LM</a>
+          <a href="https://weedge.github.io/tags/translate/">translate</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/doraemon/gemma_faiss_langchain_rag/">
+            <span class="next-text nav-default">使用Gemma LLM构建RAG应用程序</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/post/nlp/translate_model_inference_and_finetune/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:weege007@gmail.com" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/weedge" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://weibo.com/weedge" rel="me noopener" class="iconfont"
+      title="weibo"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M385.714286 733.714286q12-19.428571 6.285714-39.428571t-25.714286-28.571429q-19.428571-8-41.714286-0.571429t-34.285714 26.285714q-12.571429 19.428571-7.428571 39.142857t24.571429 28.857143 42.571429 1.428571 35.714286-27.142857zm53.714286-69.142857q4.571429-7.428571 2-15.142857t-10-10.571429q-8-2.857143-16.285714 2.857143t-12.285714 10.571429q-9.714286 17.714286 7.428571 25.714286 8 2.857143 16.571429 2.857143t12.571429-10.571429zm99.428571 61.142857q-25.714286 58.285714-90.285714 85.714286t-128 6.857143q-61.142857-19.428571-84.285714-72.285714t3.714286-107.142857q26.857143-53.142857 86.571429-79.428571t120.285714-10.857143q63.428571 16.571429 90.571429 68.285714t1.428571 108.857143zm178.285714-91.428571q-5.142857-54.857143-50.857143-97.142857t-119.142857-62.285714-156.857143-12q-127.428571 13.142857-211.142857 80.857143t-75.714286 151.142857q5.142857 54.857143 50.857143 97.142857t119.142857 62.285714 156.857143 12q127.428571-13.142857 211.142857-80.857143t75.714286-151.142857zm176 2.285714q0 38.857143-21.142857 79.714286t-62.285714 78.285714-96.285714 67.142857-129.142857 47.428571-154.571429 17.714286-157.142857-19.142857-137.428571-53.142857-98-86.285714-37.142857-114q0-65.714286 39.714286-140t112.857143-147.428571q96.571429-96.571429 195.142857-134.857143t140.857143 4q37.142857 36.571429 11.428571 119.428571-2.285714 8-0.571429 11.428571t5.714286 4 8.285714 2.857143 7.714286-2l3.428571-1.142857q79.428571-33.714286 140.571429-33.714286t87.428571 34.857143q25.714286 36 0 101.714286-1.142857 7.428571-2.571429 11.428571t2.571429 7.142857 6.857143 4.285714 9.714286 3.428571q32.571429 10.285714 58.857143 26.857143t45.714286 46.571429 19.428571 66.571429zm-42.285714-356.571429q24 26.857143 31.142857 62t-3.714286 67.142857q-4.571429 13.142857-16.857143 19.428571t-25.428571 2.285714q-13.142857-4.571429-19.428571-16.857143t-2.285714-25.428571q11.428571-36-13.714286-63.428571t-61.142857-20q-13.714286 2.857143-25.714286-4.571429t-14.285714-21.142857q-2.857143-13.714286 4.571429-25.428571t21.142857-14.571429q34.285714-7.428571 68 3.142857t57.714286 37.428571zm103.428571-93.142857q49.714286 54.857143 64.285714 127.142857t-7.714286 138q-5.142857 15.428571-19.428571 22.857143t-29.714286 2.285714-22.857143-19.428571-2.857143-29.714286q16-46.857143 5.714286-98.285714t-45.714286-90.285714q-35.428571-39.428571-84.571429-54.571429t-98.857143-4.857143q-16 3.428571-29.714286-5.428571t-17.142857-24.857143 5.428571-29.428571 24.857143-16.857143q70.285714-14.857143 139.428571 6.571429t118.857143 76.857143z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://weedge.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2013 -
+    2024
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        weedge
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//weedge.disqus.com/count.js" async></script>
+
+
+
+
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
+
+
+</body>
+</html>

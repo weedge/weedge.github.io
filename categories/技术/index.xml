@@ -6,7 +6,18 @@
     <description>Recent content in 技术 on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 26 Mar 2024 20:16:30 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 28 Mar 2024 21:51:52 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>翻译模型 inference 和 微调</title>
+      <link>https://weedge.github.io/post/nlp/translate_model_inference_and_finetune/</link>
+      <pubDate>Thu, 28 Mar 2024 21:51:52 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/nlp/translate_model_inference_and_finetune/</guid>
+      <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/nlp/translate_model_inference_and_finetune/1.png&#34; alt=&#34;image-20240328231303644&#34;&gt;&lt;/p&gt;
+&lt;p&gt;想把 HuggingFaceTB/cosmopedia 英文数据中的prompt和text 翻译成 中文， 然后看了下python库 &lt;a href=&#34;https://github.com/nidhaloff/deep-translator&#34;&gt;deep_translator&lt;/a&gt;的实现， 翻译调用的是三方接口集成库， 于是使用这个库封装的谷歌翻译接口来翻译，但是三方平台接口多会有限流和接口调用频率限制，即使在代码中有容错处理， 比如常规的sleep下再调用，不影响整理处理流程，但是整体处理时间受接口限制，即使用批处理也如此，这个在大规模数据处理中使用三方接口时，经常会遇到的问题，用的三方服务，如果不升级接口服务，在技术上不太好解决； 于是选择另外一种方案，看是否有开源的翻译模型，底层模型结构一般也是Transform架构 Encoder-Decoder model ，也称sequence-to-sequence model； 比如 谷歌的T5模型， 但是推理速度受硬件条件影响，比较慢，而且原始模型不支持英文翻译成中文。&lt;/p&gt;
+&lt;p&gt;然后看了下meta nllb 模型，专门用来处理翻译的模型，单个 AI 模型中支持 200 种语言，开源地址： &lt;a href=&#34;https://github.com/facebookresearch/fairseq/tree/nllb&#34;&gt;https://github.com/facebookresearch/fairseq/tree/nllb&lt;/a&gt; 模型相对现在的LLM参数量小一些，也在huggingface的Transforms库中集成 nllb-200-distilled-600M，直接可以load使用， 等等。。。 既然llm推理可以通过想llama.cpp通过加载ggml格式进行量化，在性能有少许折损的情况下降低推理成本，但是ggml gguf格式还不支持nllb模型权重文件(貌似llama.cpp只支持Transform Decoder模型结构)；那就直接用Transforms库来加载facebook/nllb-200-distilled-600M 模型来批量翻译试试看；后续还尝试使用 &lt;a href=&#34;https://huggingface.co/Helsinki-NLP/opus-mt-en-zh&#34;&gt;Helsinki-NLP/opus-mt-en-zh&lt;/a&gt; 模型，进行了简单对比。&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>使用Gemma LLM构建RAG应用程序</title>
       <link>https://weedge.github.io/post/doraemon/gemma_faiss_langchain_rag/</link>
@@ -311,19 +322,6 @@
 &lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Cosine_similarity&#34;&gt;余弦距离&lt;/a&gt;定义在 [0, 2] 范围内。为简单起见，我们将其映射到区间 [0, 1]，其中 0 和 1 分别表示最低和最高可能的相似度。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;</description>
-    </item>
-    
-    <item>
-      <title>译：相似性搜索，第 6 部分：LSH 森林的随机投影</title>
-      <link>https://weedge.github.io/post/oneday/similarity-search/6.random-projections-with-lsh-forest/</link>
-      <pubDate>Tue, 26 Sep 2023 21:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/oneday/similarity-search/6.random-projections-with-lsh-forest/</guid>
-      <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/random-projections-with-lsh-forest/0.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;了解如何对数据进行哈希处理并通过构造随机超平面来反映其相似性&lt;/strong&gt;&lt;/p&gt;
-&lt;h1 id=&#34;介绍&#34;&gt;介绍&lt;/h1&gt;
-&lt;p&gt;在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。&lt;/p&gt;
-&lt;p&gt;在&lt;a href=&#34;https://medium.com/towards-data-science/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203&#34;&gt;上一部分&lt;/a&gt;中，我们研究了 LSH 的主要范例，即将&lt;em&gt;输入向量转换为低维hash值，同时保留有关其相似性的信息&lt;/em&gt;。为了获取hash值（签名），使用了 minhash 函数。在本文中，我们将随机投影输入数据以获得类似的二进制向量。&lt;/p&gt;</description>
     </item>
     
   </channel>
