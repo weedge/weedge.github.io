@@ -988,7 +988,7 @@
 </ul>
 <p>这里没有使用T5来进行英文到中文的微调，因为T5模型本身不支持英文到中文翻译，需要基于T5模型结构，使用英文-中文数据集，去训练tokenizer，然后分好词之后喂给模型进行预训练，训练周期长；这里选择已有英文到中文的翻译模型<code>Helsinki-NLP/opus-mt-en-zh</code>进行微调，使用wmt19 英文-中文数据集来训练，每轮训练epoch 会计算对应的评估分数<code>compute_metrics</code>, BLEU的计算和翻译评估，可以看谷歌autoML Translation中的介绍： <a href="https://cloud.google.com/translate/automl/docs/evaluate?hl=zh-cn#bleu">https://cloud.google.com/translate/automl/docs/evaluate?hl=zh-cn#bleu</a> 很详细讲解：</p>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/nlp/translate_model_inference_and_finetune/1.png" alt="image-20240328231303644"></p>
-<p>OK, 如果blue评估得分在50以上，翻译效果应该不错了；应该到了4,6级水平吧。。。</p>
+<p>OK, 如果BLEU评估得分在50以上，翻译效果应该不错了；应该到了4,6级水平吧。。。</p>
 <p><strong>附操作笔记</strong>：</p>
 <ul>
 <li><a href="https://github.com/weedge/doraemon-nb/blob/main/translate.ipynb">https://github.com/weedge/doraemon-nb/blob/main/translate.ipynb</a></li>
