@@ -77,7 +77,7 @@
 想把 HuggingFaceTB/cosmopedia 英文数据中的prompt和text 翻译成 中文， 然后看了下python库 deep_translator的实现， 翻译调用的是三方接口集成库， 于是使用这个库封装的谷歌翻译接口来翻译，但是三方平台接口多会有限流和接口调用频率限制，即使在代码中有容错处理， 比如常规的sleep下再调用，不影响整理处理流程，但是整体处理时间受接口限制，即使用批处理也如此，这个在大规模数据处理中使用三方接口时，经常会遇到的问题，用的三方服务，如果不升级接口服务，在技术上不太好解决； 于是选择另外一种方案，看是否有开源的翻译模型，底层模型结构一般也是Transform架构 Encoder-Decoder model ，也称sequence-to-sequence model； 比如 谷歌的T5模型， 但是推理速度受硬件条件影响，比较慢，而且原始模型不支持英文翻译成中文。
 然后看了下meta nllb 模型，专门用来处理翻译的模型，单个 AI 模型中支持 200 种语言，开源地址： https://github.com/facebookresearch/fairseq/tree/nllb 模型相对现在的LLM参数量小一些，也在huggingface的Transforms库中集成 nllb-200-distilled-600M，直接可以load使用， 等等。。。 既然llm推理可以通过想llama.cpp通过加载ggml格式进行量化，在性能有少许折损的情况下降低推理成本，但是ggml gguf格式还不支持nllb模型权重文件(貌似llama.cpp只支持Transform Decoder模型结构)；那就直接用Transforms库来加载facebook/nllb-200-distilled-600M 模型来批量翻译试试看；后续还尝试使用 Helsinki-NLP/opus-mt-en-zh 模型，进行了简单对比。"><meta itemprop="datePublished" content="2024-03-28T21:51:52+08:00" />
 <meta itemprop="dateModified" content="2024-03-28T21:51:52+08:00" />
-<meta itemprop="wordCount" content="9071">
+<meta itemprop="wordCount" content="9271">
 <meta itemprop="keywords" content="NLP,LM,translate," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="翻译模型 inference 和 微调"/>
 <meta name="twitter:description" content="
@@ -716,7 +716,7 @@
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_dataset</span>
 
 <span class="c1">#raw_datasets = load_dataset(&#34;wmt19&#34;, &#34;zh-en&#34;,split=&#34;train[:1000]&#34;)</span>
-<span class="n">raw_datasets</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">&#34;wmt19&#34;</span><span class="p">,</span> <span class="s2">&#34;zh-en&#34;</span><span class="p">,</span><span class="n">split</span><span class="o">=</span><span class="s2">&#34;train[:100000]&#34;</span><span class="p">)</span>
+<span class="n">raw_datasets</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">&#34;wmt19&#34;</span><span class="p">,</span> <span class="s2">&#34;zh-en&#34;</span><span class="p">,</span><span class="n">split</span><span class="o">=</span><span class="s2">&#34;train[:1000000]&#34;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">raw_datasets</span><span class="p">)</span>
 
 <span class="c1"># 取样一部分用来训练测试</span>
@@ -946,6 +946,7 @@
 </code></pre></div><p>你现在可以将训练结果上传到Hub, 比如我的HF上的模型地址 <a href="https://huggingface.co/weege007/opus-mt-en-zh-finetuned-en-to-zh">https://huggingface.co/weege007/opus-mt-en-zh-finetuned-en-to-zh</a> ，只需执行此指令:</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">trainer.push_to_hub()
 </code></pre></div><p>训练的时候会上传训练好的 checkpoint 模型权重到模型hub库中， 最后一步是把生成的readme 和配置文件generation_config.json上传到 huggingface models hub 。</p>
+<p>通过： <a href="https://huggingface.co/weege007/opus-mt-en-zh-finetuned-en-to-zh/tensorboard">https://huggingface.co/weege007/opus-mt-en-zh-finetuned-en-to-zh/tensorboard</a>  查看训练过程loss等监控指标信息</p>
 <p>你现在可以与你的所有朋友、家人、最喜欢的宠物共享这个模型:他们都可以使用标识符<code>&quot;your-username/the-name-you-picked&quot;</code>来加载它，例如:</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoModelForSeq2SeqLM</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">automodelforseq2seqlm</span> <span class="o">.</span><span class="n">from_pre</span> <span class="o">-</span> <span class="n">trained</span><span class="p">(</span><span class="s2">&#34;weege007/opus-mt-en-zh-finetuned-en-to-zh&#34;</span><span class="p">)</span>
@@ -985,6 +986,7 @@
 <ul>
 <li>如果有机器硬件支持推理翻译加速，可以选用本地批量翻译的方式</li>
 <li>如果使用三方翻译接口，批量处理就会受制于接口的限制（限速，翻译文本长度，并发请求数等等）</li>
+<li>也上处理在单机情况下，如果有条件(大厂多有分布式计算平台可供提交，或者基于云服务花些钱搞定)，通过M/R 分布式并行处理数据，sink pipeline 对接到最终数据格式(parquet/arrow 列存)，这样可以方便类似bigquery(bigtable)的AP数据库load数据进行建表查询分析(udfs算子)；也可以方便后续机器学习平台(autoML)对接进行模型训练。</li>
 </ul>
 <p>这里没有使用T5来进行英文到中文的微调，因为T5模型本身不支持英文到中文翻译，需要基于T5模型结构，使用英文-中文数据集，去训练tokenizer，然后分好词之后喂给模型进行预训练，训练周期长；这里选择已有英文到中文的翻译模型<code>Helsinki-NLP/opus-mt-en-zh</code>进行微调，使用wmt19 英文-中文数据集来训练，每轮训练epoch 会计算对应的评估分数<code>compute_metrics</code>, BLEU的计算和翻译评估，可以看谷歌autoML Translation中的介绍： <a href="https://cloud.google.com/translate/automl/docs/evaluate?hl=zh-cn#bleu">https://cloud.google.com/translate/automl/docs/evaluate?hl=zh-cn#bleu</a> 很详细讲解：</p>
 <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/nlp/translate_model_inference_and_finetune/1.png" alt="image-20240328231303644"></p>
