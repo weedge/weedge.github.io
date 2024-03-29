@@ -1108,12 +1108,6 @@
   </url>
   
   <url>
-    <loc>https://weedge.github.io/post/io_uring/async_intro/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
     <loc>https://weedge.github.io/post/notions/database/cmu-database-history/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>

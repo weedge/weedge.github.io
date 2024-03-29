@@ -559,6 +559,33 @@
     &lt;span class=&#34;n&#34;&gt;push_to_hub&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;True&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
 &lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在这里，我们将评估设置为在每个epoch结束时完成，调整学习率，使用单元顶部定义的&lt;code&gt;batch_size&lt;/code&gt;并自定义权重衰减。由于&lt;code&gt;Seq2SeqTrainer&lt;/code&gt;将定期保存模型，并且我们的数据集非常大，我们告诉它最多保存三次。最后，我们使用&lt;code&gt;predict_with_generate&lt;/code&gt;选项(以正确地生成摘要)并激活混合精度训练(以更快一些)。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;附&lt;/strong&gt;：问chatGPT参数回答内容：(相对于查文档方便很多，如果公共数据如果能被chatGPT学习到，对于复杂问题检索是很方便的，没有的话需要外挂检索系统帮忙填充上下文来Q&amp;amp;A)&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-markdown&#34; data-lang=&#34;markdown&#34;&gt;这些参数是用于配置序列到序列（Seq2Seq）训练的相关设置。下面是各个参数的含义：
+
+&lt;span class=&#34;k&#34;&gt;1.&lt;/span&gt; &lt;span class=&#34;sb&#34;&gt;`output_dir`&lt;/span&gt;: 模型和训练过程中产生的文件的输出目录。模型训练完成后，训练的权重、日志文件等将保存在该目录下。
+
+&lt;span class=&#34;k&#34;&gt;2.&lt;/span&gt; &lt;span class=&#34;sb&#34;&gt;`evaluation_strategy`&lt;/span&gt;: 评估策略，指定模型何时进行评估。在这个例子中设置为 &lt;span class=&#34;sb&#34;&gt;`&amp;#34;epoch&amp;#34;`&lt;/span&gt;，表示每个训练轮次结束时进行一次评估。其他选项还包括 &lt;span class=&#34;sb&#34;&gt;`&amp;#34;steps&amp;#34;`&lt;/span&gt;（根据步数进行评估）和 &lt;span class=&#34;sb&#34;&gt;`&amp;#34;no&amp;#34;`&lt;/span&gt;（不进行评估）。
+
+&lt;span class=&#34;k&#34;&gt;3.&lt;/span&gt; &lt;span class=&#34;sb&#34;&gt;`learning_rate`&lt;/span&gt;: 学习率，控制模型参数更新的速度。在训练过程中，模型参数根据损失函数的梯度和学习率进行更新。
+
+&lt;span class=&#34;k&#34;&gt;4.&lt;/span&gt; &lt;span class=&#34;sb&#34;&gt;`per_device_train_batch_size`&lt;/span&gt;: 每个设备上的训练批次大小。指定模型在每个设备上同时处理的训练样本数。
+
+&lt;span class=&#34;k&#34;&gt;5.&lt;/span&gt; &lt;span class=&#34;sb&#34;&gt;`per_device_eval_batch_size`&lt;/span&gt;: 每个设备上的评估批次大小。类似于训练批次大小，但用于评估阶段。
+
+&lt;span class=&#34;k&#34;&gt;6.&lt;/span&gt; &lt;span class=&#34;sb&#34;&gt;`weight_decay`&lt;/span&gt;: 权重衰减（L2正则化）参数，用于控制模型参数的正则化程度，以减少过拟合。
+
+&lt;span class=&#34;k&#34;&gt;7.&lt;/span&gt; &lt;span class=&#34;sb&#34;&gt;`save_total_limit`&lt;/span&gt;: 最大保存模型检查点数量。当训练期间保存模型检查点时，这个参数指定了保留的检查点数量。
+
+&lt;span class=&#34;k&#34;&gt;8.&lt;/span&gt; &lt;span class=&#34;sb&#34;&gt;`num_train_epochs`&lt;/span&gt;: 训练的轮次数，即模型将遍历整个训练数据集的次数。
+
+&lt;span class=&#34;k&#34;&gt;9.&lt;/span&gt; &lt;span class=&#34;sb&#34;&gt;`predict_with_generate`&lt;/span&gt;: 是否使用生成方式进行预测。在序列到序列模型中，可以选择直接对目标序列进行生成预测，而不是采用传统的分类/回归预测方式。
+
+&lt;span class=&#34;k&#34;&gt;10.&lt;/span&gt; &lt;span class=&#34;sb&#34;&gt;`fp16`&lt;/span&gt;: 是否使用混合精度训练。混合精度训练利用半精度浮点数（16位）来加速模型训练过程，降低显存占用。
+
+&lt;span class=&#34;k&#34;&gt;11.&lt;/span&gt; &lt;span class=&#34;sb&#34;&gt;`push_to_hub`&lt;/span&gt;: 是否将模型推送到 Hugging Face 模型中心。如果设置为 &lt;span class=&#34;sb&#34;&gt;`True`&lt;/span&gt;，训练完成后，模型将被上传到 Hugging Face 模型中心，供其他用户使用和共享。
+
+这些参数可以根据具体任务和需求进行调整，以获得最佳的模型训练效果。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;：这些参数原理进一步了解的话，可以直接查看Transforms库对应源码，会有相关的论文给出。&lt;/p&gt;
 &lt;p&gt;最后一个参数设置一切，以便我们可以在训练期间定期将模型推送到&lt;a href=&#34;https://huggingface.co/models&#34;&gt;Hub&lt;/a&gt;。如果没有按照笔记本顶部的安装步骤操作，请删除它。如果你想将你的模型保存在本地的名称与它将被推送的存储库的名称不同，或者如果你想将你的模型推送到一个组织而不是你的名称空间下，使用&lt;code&gt;hub_model_id&lt;/code&gt;参数来设置仓库名称(它需要是完整的名称，包括你的命名空间:例如&lt;code&gt;weege007/opus-mt-en-zh-finetuned-en-to-zh&lt;/code&gt;)。&lt;/p&gt;
 &lt;p&gt;然后，我们需要一种特殊的数据整理器，它不仅会将输入填充到批数据的最大长度，还会将标签填充到最大长度:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;n&#34;&gt;data_collator&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;DataCollatorForSeq2Seq&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;tokenizer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;model&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;model&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
@@ -609,7 +636,7 @@
 &lt;p&gt;通过： &lt;a href=&#34;https://huggingface.co/weege007/opus-mt-en-zh-finetuned-en-to-zh/tensorboard&#34;&gt;https://huggingface.co/weege007/opus-mt-en-zh-finetuned-en-to-zh/tensorboard&lt;/a&gt;  查看训练过程loss等监控指标信息&lt;/p&gt;
 &lt;p&gt;你现在可以与你的所有朋友、家人、最喜欢的宠物共享这个模型:他们都可以使用标识符&lt;code&gt;&amp;quot;your-username/the-name-you-picked&amp;quot;&lt;/code&gt;来加载它，例如:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;transformers&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;AutoModelForSeq2SeqLM&lt;/span&gt;
-&lt;span class=&#34;n&#34;&gt;model&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;automodelforseq2seqlm&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;from_pre&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;trained&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;weege007/opus-mt-en-zh-finetuned-en-to-zh&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;model&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;AutoModelForSeq2SeqLM&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;from_pretrained&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;weege007/opus-mt-en-zh-finetuned-en-to-zh&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;使用微调训练好的模型进行推理翻译&#34;&gt;使用微调训练好的模型进行推理翻译&lt;/h3&gt;
 &lt;p&gt;很好，现在你已经对模型进行了微调，你可以使用它进行推理!&lt;/p&gt;
 &lt;p&gt;想出一些你想翻译成另一种语言的文本。&lt;/p&gt;
@@ -648,7 +675,7 @@
 &lt;li&gt;如果使用三方翻译接口，批量处理就会受制于接口的限制（限速，翻译文本长度，并发请求数等等）&lt;/li&gt;
 &lt;li&gt;也上处理在单机情况下，如果有条件(大厂多有分布式计算平台可供提交，或者基于云服务花些钱搞定)，通过M/R 分布式并行处理数据，sink pipeline 对接到最终数据格式(parquet/arrow 列存)，这样可以方便类似bigquery(bigtable)的AP数据库load数据进行建表查询分析(udfs算子)；也可以方便后续机器学习平台(autoML)对接进行模型训练。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;这里没有使用T5来进行英文到中文的微调，因为T5模型本身不支持英文到中文翻译，需要基于T5模型结构，使用英文-中文数据集，去训练tokenizer，然后分好词之后喂给模型进行预训练，训练周期长；这里选择已有英文到中文的翻译模型&lt;code&gt;Helsinki-NLP/opus-mt-en-zh&lt;/code&gt;进行微调，使用wmt19 英文-中文数据集来训练，每轮训练epoch 会计算对应的评估分数&lt;code&gt;compute_metrics&lt;/code&gt;, BLEU的计算和翻译评估，可以看谷歌autoML Translation中的介绍： &lt;a href=&#34;https://cloud.google.com/translate/automl/docs/evaluate?hl=zh-cn#bleu&#34;&gt;https://cloud.google.com/translate/automl/docs/evaluate?hl=zh-cn#bleu&lt;/a&gt; 很详细讲解：&lt;/p&gt;
+&lt;p&gt;这里没有使用T5来进行英文到中文的微调，因为T5模型本身不支持英文到中文翻译，需要基于T5模型结构，使用英文-中文数据集，去训练tokenizer，然后分好词之后喂给模型进行预训练，训练周期长(mt5暂时没有考虑)；这里选择已有英文到中文的翻译模型&lt;code&gt;Helsinki-NLP/opus-mt-en-zh&lt;/code&gt;进行微调，使用wmt19 英文-中文数据集来训练，每轮训练epoch 会计算对应的评估分数&lt;code&gt;compute_metrics&lt;/code&gt;, BLEU的计算和翻译评估，可以看谷歌autoML Translation中的介绍： &lt;a href=&#34;https://cloud.google.com/translate/automl/docs/evaluate?hl=zh-cn#bleu&#34;&gt;https://cloud.google.com/translate/automl/docs/evaluate?hl=zh-cn#bleu&lt;/a&gt; 很详细讲解：&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/nlp/translate_model_inference_and_finetune/1.png&#34; alt=&#34;image-20240328231303644&#34;&gt;&lt;/p&gt;
 &lt;p&gt;OK, 如果BLEU评估得分在50以上，翻译效果应该不错了；应该到了4,6级水平吧。。。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;附操作笔记&lt;/strong&gt;：&lt;/p&gt;
@@ -661,6 +688,7 @@
 &lt;li&gt;使用Transforms库进行翻译任务： &lt;a href=&#34;https://huggingface.co/docs/transformers/tasks/translation&#34;&gt;https://huggingface.co/docs/transformers/tasks/translation&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/facebookresearch/fairseq/tree/nllb&#34;&gt;https://github.com/facebookresearch/fairseq/tree/nllb&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://ai.meta.com/blog/nllb-200-high-quality-machine-translation/&#34;&gt;https://ai.meta.com/blog/nllb-200-high-quality-machine-translation/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/huggingface/transformers/tree/main/examples/pytorch/translation&#34;&gt;https://github.com/huggingface/transformers/tree/main/examples/pytorch/translation&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;</description>
       
     </item>
