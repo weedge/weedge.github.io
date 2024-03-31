@@ -6,7 +6,18 @@
     <description>Recent content in ML on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 08 Nov 2022 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/ml/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 28 Mar 2024 21:51:52 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/ml/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>翻译模型 inference 和 微调</title>
+      <link>https://weedge.github.io/post/nlp/translate_model_inference_and_finetune/</link>
+      <pubDate>Thu, 28 Mar 2024 21:51:52 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/nlp/translate_model_inference_and_finetune/</guid>
+      <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/nlp/translate_model_inference_and_finetune/1.png&#34; alt=&#34;image-20240328231303644&#34;&gt;&lt;/p&gt;
+&lt;p&gt;想把 HuggingFaceTB/cosmopedia 英文数据中的prompt和text 翻译成 中文， 然后看了下python库 &lt;a href=&#34;https://github.com/nidhaloff/deep-translator&#34;&gt;deep_translator&lt;/a&gt;的实现， 翻译调用的是三方接口集成库， 于是使用这个库封装的谷歌翻译接口来翻译，但是三方平台接口多会有限流和接口调用频率限制，即使在代码中有容错处理， 比如常规的sleep下再调用，不影响整理处理流程，但是整体处理时间受接口限制，即使用批处理也如此，这个在大规模数据处理中使用三方接口时，经常会遇到的问题，用的三方服务，如果不升级接口服务，在技术上不太好解决； 于是选择另外一种方案，看是否有开源的翻译模型，底层模型结构一般也是Transform架构 Encoder-Decoder model ，也称sequence-to-sequence model； 比如 谷歌的T5模型， 但是推理速度受硬件条件影响，比较慢，而且原始模型不支持英文翻译成中文。&lt;/p&gt;
+&lt;p&gt;然后看了下meta nllb 模型，专门用来处理翻译的模型，单个 AI 模型中支持 200 种语言，开源地址： &lt;a href=&#34;https://github.com/facebookresearch/fairseq/tree/nllb&#34;&gt;https://github.com/facebookresearch/fairseq/tree/nllb&lt;/a&gt; 模型相对现在的LLM参数量小一些，也在huggingface的Transforms库中集成 nllb-200-distilled-600M，直接可以load使用， 等等。。。 既然llm推理可以通过想llama.cpp通过加载ggml格式进行量化，在性能有少许折损的情况下降低推理成本，但是ggml gguf格式还不支持nllb模型权重文件(貌似llama.cpp只支持Transform Decoder模型结构)；那就直接用Transforms库来加载facebook/nllb-200-distilled-600M 模型来批量翻译试试看；后续还尝试使用 &lt;a href=&#34;https://huggingface.co/Helsinki-NLP/opus-mt-en-zh&#34;&gt;Helsinki-NLP/opus-mt-en-zh&lt;/a&gt; 模型，进行了简单对比。&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>让ML跑起来</title>
       <link>https://weedge.github.io/post/let-ml-go/</link>

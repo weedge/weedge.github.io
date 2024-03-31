@@ -16,7 +16,7 @@
   </url>
   
   <url>
-    <loc>https://weedge.github.io/tags/lm/</loc>
+    <loc>https://weedge.github.io/tags/ml/</loc>
     <lastmod>2024-03-28T21:51:52+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
@@ -731,13 +731,6 @@
   
   <url>
     <loc>https://weedge.github.io/tags/aws/</loc>
-    <lastmod>2022-11-08T10:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/tags/ml/</loc>
     <lastmod>2022-11-08T10:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
