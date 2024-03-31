@@ -77,7 +77,7 @@
 想把 HuggingFaceTB/cosmopedia 英文数据中的prompt和text 翻译成 中文， 然后看了下python库 deep_translator的实现， 翻译调用的是三方接口集成库， 于是使用这个库封装的谷歌翻译接口来翻译，但是三方平台接口多会有限流和接口调用频率限制，即使在代码中有容错处理， 比如常规的sleep下再调用，不影响整理处理流程，但是整体处理时间受接口限制，即使用批处理也如此，这个在大规模数据处理中使用三方接口时，经常会遇到的问题，用的三方服务，如果不升级接口服务，在技术上不太好解决； 于是选择另外一种方案，看是否有开源的翻译模型，底层模型结构一般也是Transform架构 Encoder-Decoder model ，也称sequence-to-sequence model； 比如 谷歌的T5模型， 但是推理速度受硬件条件影响，比较慢，而且原始模型不支持英文翻译成中文。
 然后看了下meta nllb 模型，专门用来处理翻译的模型，单个 AI 模型中支持 200 种语言，开源地址： https://github.com/facebookresearch/fairseq/tree/nllb 模型相对现在的LLM参数量小一些，也在huggingface的Transforms库中集成 nllb-200-distilled-600M，直接可以load使用， 等等。。。 既然llm推理可以通过想llama.cpp通过加载ggml格式进行量化，在性能有少许折损的情况下降低推理成本，但是ggml gguf格式还不支持nllb模型权重文件(貌似llama.cpp只支持Transform Decoder模型结构)；那就直接用Transforms库来加载facebook/nllb-200-distilled-600M 模型来批量翻译试试看；后续还尝试使用 Helsinki-NLP/opus-mt-en-zh 模型，进行了简单对比。"><meta itemprop="datePublished" content="2024-03-28T21:51:52+08:00" />
 <meta itemprop="dateModified" content="2024-03-28T21:51:52+08:00" />
-<meta itemprop="wordCount" content="10060">
+<meta itemprop="wordCount" content="10454">
 <meta itemprop="keywords" content="NLP,ML,translate," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="翻译模型 inference 和 微调"/>
 <meta name="twitter:description" content="
@@ -715,16 +715,20 @@
 <p>我们将使用<a href="https://github.com/huggingface/datasets">🤗Datasets</a>库下载数据并获得我们需要用于评估的指标(将我们的模型与基准进行比较)。这可以通过<code>load_dataset</code>和<code>load_metric</code>函数轻松实现。这里我们使用<a href="https://huggingface.co/datasets/wmt19">haggingface datasets WMT19数据集</a>的英语/中文(zh-en)部分 19M 条数据, 这里使用train 训练数据集的前100,0000条作为训练数据， 其中20%的数据用于测试。</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_dataset</span>
 
+<span class="n">raw_datasets</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">&#34;wmt19&#34;</span><span class="p">,</span> <span class="s2">&#34;zh-en&#34;</span><span class="p">)</span>
 <span class="c1">#raw_datasets = load_dataset(&#34;wmt19&#34;, &#34;zh-en&#34;,split=&#34;train[:1000]&#34;)</span>
-<span class="n">raw_datasets</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">&#34;wmt19&#34;</span><span class="p">,</span> <span class="s2">&#34;zh-en&#34;</span><span class="p">,</span><span class="n">split</span><span class="o">=</span><span class="s2">&#34;train[:1000000]&#34;</span><span class="p">)</span>
+<span class="c1">#raw_datasets = load_dataset(&#34;wmt19&#34;, &#34;zh-en&#34;,split=&#34;train[:1000000]&#34;)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">raw_datasets</span><span class="p">)</span>
 
 <span class="c1"># 取样一部分用来训练测试</span>
-<span class="n">raw_datasets</span> <span class="o">=</span> <span class="n">raw_datasets</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span><span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">raw_datasets</span><span class="p">)</span>
+<span class="n">train_datasets</span> <span class="o">=</span> <span class="n">raw_datasets</span><span class="p">[</span><span class="s2">&#34;train&#34;</span><span class="p">]</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span><span class="n">train_size</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span><span class="n">test_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">train_datasets</span><span class="p">[</span><span class="s2">&#34;validation&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">raw_datasets</span><span class="p">[</span><span class="s2">&#34;validation&#34;</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">train_datasets</span><span class="p">)</span>
 
 <span class="c1">#要访问一个实际的元素，首先需要选择一个切分，然后给出一个索引:</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">raw_datasets</span><span class="p">[</span><span class="s2">&#34;train&#34;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">train_datasets</span><span class="p">[</span><span class="s2">&#34;train&#34;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">train_datasets</span><span class="p">[</span><span class="s2">&#34;test&#34;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">train_datasets</span><span class="p">[</span><span class="s2">&#34;validation&#34;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
 </code></pre></div><p>为了对数据的形状有一个大致的了解，下面的函数将展示一些从数据集中随机选取的示例。</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">datasets</span>
 <span class="kn">import</span> <span class="nn">random</span>
@@ -746,47 +750,22 @@
             <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="n">typ</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
     <span class="n">display</span><span class="p">(</span><span class="n">HTML</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">to_html</span><span class="p">()))</span>
     
-<span class="n">show_random_elements</span><span class="p">(</span><span class="n">raw_datasets</span><span class="p">[</span><span class="s2">&#34;train&#34;</span><span class="p">])</span>
-</code></pre></div><p>加载metric， 是<code>datasets.Metric</code>的实例：</p>
+<span class="n">show_random_elements</span><span class="p">(</span><span class="n">train_datasets</span><span class="p">[</span><span class="s2">&#34;train&#34;</span><span class="p">])</span>
+<span class="n">show_random_elements</span><span class="p">(</span><span class="n">train_datasets</span><span class="p">[</span><span class="s2">&#34;test&#34;</span><span class="p">])</span>
+<span class="n">show_random_elements</span><span class="p">(</span><span class="n">train_datasets</span><span class="p">[</span><span class="s2">&#34;validation&#34;</span><span class="p">])</span>
+</code></pre></div><p>load_metric 返回<code>datasets.Metric</code>实例：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_metric</span>
 
 <span class="n">metric</span> <span class="o">=</span> <span class="n">load_metric</span><span class="p">(</span><span class="s2">&#34;sacrebleu&#34;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span>
 </code></pre></div><p>在Hugging Face的Datasets库中，<code>datasets.Metric</code>是一个用于评估模型性能的类。它提供了一种标准化的方式来计算和报告模型在特定任务上的性能指标，例如准确度、精确度、召回率或F1分数等。 通过使用<code>datasets.Metric</code>类，您可以确保您的评估过程与其他人的工作保持一致，并且可以轻松地与其他模型或结果进行比较。这个类封装了计算指标所需的所有逻辑，因此您只需要提供模型的预测结果和真实的标签，它就会为您计算出相应的性能指标。 此外，<code>datasets.Metric</code>类还支持多种不同的评估指标，并且可以轻松地扩展以支持更多的指标。这使得它成为一个非常灵活和强大的工具，适用于各种不同的自然语言处理任务和评估场景。</p>
-<p>您可以使用您的预测结果和标签调用其<code>compute</code>方法，这些预测结果和标签需要是解码后的字符串列表（标签为列表的列表）：</p>
-<p>在使用Hugging Face的Datasets库中的<code>datasets.Metric</code>类时，您可以利用其<code>compute</code>方法来计算模型的性能指标。为了进行这一计算，您需要提供模型的预测结果和真实的标签数据。
-预测结果应该是一个字符串列表，其中每个字符串代表一个样本的预测输出。对于标签，您需要提供一个列表的列表，因为通常一个样本可能有多个正确的标签（例如，在多标签分类任务中）。
-下面是一个简单的示例，展示了如何使用<code>compute</code>方法：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">Metric</span>
-
-<span class="c1"># 初始化Metric实例</span>
-<span class="n">metric</span> <span class="o">=</span> <span class="n">Metric</span><span class="p">(</span><span class="s2">&#34;bleu&#34;</span><span class="p">)</span>
-
-<span class="c1"># 假设predictions是模型的预测结果，labels是真实的标签</span>
-<span class="n">predictions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&#34;this is a prediction&#34;</span><span class="p">,</span> <span class="s2">&#34;another prediction&#34;</span><span class="p">,</span> <span class="s2">&#34;yet another prediction&#34;</span><span class="p">]</span>
-<span class="n">labels</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&#34;this is the true label&#34;</span><span class="p">,</span> <span class="s2">&#34;another true label&#34;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&#34;this is the true label&#34;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&#34;this is the true label&#34;</span><span class="p">,</span> <span class="s2">&#34;another true label&#34;</span><span class="p">,</span> <span class="s2">&#34;one more true label&#34;</span><span class="p">]]</span>
-
-<span class="c1"># 对于每个样本，调用compute方法进行计算</span>
-<span class="k">for</span> <span class="n">pred</span><span class="p">,</span> <span class="n">lab</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
-    <span class="n">score</span> <span class="o">=</span> <span class="n">metric</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">predictions</span><span class="o">=</span><span class="n">pred</span><span class="p">,</span> <span class="n">references</span><span class="o">=</span><span class="n">lab</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Score for this prediction: </span><span class="si">{</span><span class="n">score</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</code></pre></div><p>在这个示例中，我们首先创建了一个<code>Metric</code>实例，用于计算BLEU分数。然后，我们遍历预测结果和标签，对每个样本调用<code>compute</code>方法，并打印出计算得到的分数。
-这种方法使得评估过程变得简单而直接，同时确保了评估的一致性和准确性。通过这种方式，您可以轻松地评估模型在各种任务上的性能，并据此进行进一步的优化和调整。</p>
+<p>您可以使用您的预测结果和标签调用其<code>compute</code>方法，这些预测结果和标签需要是解码后的字符串列表（labels为列表的列表）：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">fake_preds</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&#34;hello there&#34;</span><span class="p">,</span> <span class="s2">&#34;general kenobi&#34;</span><span class="p">]</span>
 <span class="n">fake_labels</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&#34;hello there&#34;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&#34;general kenobi&#34;</span><span class="p">]]</span>
 <span class="n">metric</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">predictions</span><span class="o">=</span><span class="n">fake_preds</span><span class="p">,</span> <span class="n">references</span><span class="o">=</span><span class="n">fake_labels</span><span class="p">)</span>
-</code></pre></div><p>在训练过程中包含一个度量标准通常有助于评估模型的性能。您可以使用 🤗 <a href="https://huggingface.co/docs/evaluate/index">Evaluate</a> 库快速加载一个评估方法。对于这个任务，加载 <a href="https://huggingface.co/spaces/evaluate-metric/sacrebleu">SacreBLEU</a> 度量标准（查看 🤗 Evaluate <a href="https://huggingface.co/docs/evaluate/a_quick_tour">快速入门</a> 以了解如何加载和计算度量标准）; 更多参考：</p>
-<ul>
-<li>
-<p><a href="https://en.wikipedia.org/wiki/BLEU">https://en.wikipedia.org/wiki/BLEU</a></p>
-</li>
-<li>
-<p><a href="https://cloud.google.com/translate/automl/docs/evaluate?hl=zh-cn#bleu">https://cloud.google.com/translate/automl/docs/evaluate?hl=zh-cn#bleu</a></p>
-</li>
-<li>
-<p><a href="https://www.cs.cmu.edu/%7Ealavie/Presentations/MT-Evaluation-MT-Summit-Tutorial-19Sep11.pdf">https://www.cs.cmu.edu/%7Ealavie/Presentations/MT-Evaluation-MT-Summit-Tutorial-19Sep11.pdf</a></p>
-</li>
-</ul>
+</code></pre></div><p>在训练过程中包含一个度量标准通常有助于评估模型的性能。您可以使用 🤗 <a href="https://huggingface.co/docs/evaluate/index">Evaluate</a> 库快速加载一个评估方法。对于这个任务，加载 <a href="https://huggingface.co/spaces/evaluate-metric/sacrebleu">SacreBLEU</a> 度量标准（查看 🤗 Evaluate <a href="https://huggingface.co/docs/evaluate/a_quick_tour">快速入门</a> 以了解如何加载和计算度量标准）;</p>
+<p><strong>注</strong>：验证/测试循环负责评估模型的性能。对于翻译任务，经典的评估指标是 Kishore Papineni 等人在<a href="https://aclanthology.org/P02-1040.pdf">《BLEU: a Method for Automatic Evaluation of Machine Translation》</a>中提出的 <a href="https://en.wikipedia.org/wiki/BLEU">BLEU 值</a>，用于度量两个词语序列之间的一致性，但是其并不会衡量语义连贯性或者语法正确性。</p>
+<p>由于计算 BLEU 值需要输入分好词的文本，而不同的分词方式会对结果造成影响，因此现在更常用的评估指标是 <a href="https://github.com/mjpost/sacrebleu">SacreBLEU</a>，它对分词的过程进行了标准化。SacreBLEU 直接以未分词的文本作为输入，并且对于同一个输入可以接受多个目标作为参考。</p>
 <h3 id="预处理数据">预处理数据</h3>
 <p>在我们将这些文本输入模型之前，我们需要对它们进行预处理。这是通过🤗 Transformers的<code>Tokenizer</code>完成的，它将（正如其名称所示）对输入进行分词（包括将分词转换为预训练词汇表中对应的ID）并将其置于模型期望的格式中，同时生成模型所需的其他输入。</p>
 <p>为了完成所有这些工作，我们使用<code>AutoTokenizer.from_pretrained</code>方法实例化我们的分词器，这将确保：</p>
@@ -804,7 +783,19 @@
 </code></pre></div><p>默认情况下，上面的调用将使用🤗tokenizers库中的一个快速分词器(底层由<a href="https://github.com/huggingface/tokenizers">Rust封装支持</a> )。</p>
 <p>根据您选择的模型，您将在上述单元格返回的字典中看到不同的键。对于我们在这里要做的事情，它们并不重要（只需知道它们是我们稍后将实例化的模型所需的），如果您感兴趣，可以在<a href="https://huggingface.co/transformers/preprocessing.html">这个教程</a>中了解更多关于它们的信息。</p>
 <p>我们可以传递一个句子列表，而不仅仅是一个句子：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">tokenizer</span><span class="p">([</span><span class="s2">&#34;Hello, this one sentence!&#34;</span><span class="p">,</span> <span class="s2">&#34;This is another sentence.&#34;</span><span class="p">])</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">test_token</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">([</span><span class="s2">&#34;Hello, this one sentence!&#34;</span><span class="p">,</span> <span class="s2">&#34;This is another sentence.&#34;</span><span class="p">,</span><span class="s2">&#34;hello&#34;</span><span class="p">],</span><span class="n">return_tensors</span><span class="o">=</span><span class="s2">&#34;pt&#34;</span><span class="p">,</span><span class="n">padding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">input_ids</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">test_token</span><span class="p">)</span>
+</code></pre></div><p>在模型预测出的标签序列与答案标签序列之间计算损失来调整模型参数，因此我们同样需要将填充的 pad 字符设置为 -100，以便在使用交叉熵计算序列损失时将它们忽略：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">torch</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">test_token</span> <span class="o">==</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span><span class="p">,</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="n">test_token</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">test_token</span><span class="p">)</span>
+
+<span class="n">end_token_index</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">test_token</span> <span class="o">==</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token_id</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">end_token_index</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">end_idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">end_token_index</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span><span class="n">end_idx</span><span class="p">)</span>
+    <span class="n">test_token</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="n">end_idx</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">test_token</span><span class="p">)</span>
 </code></pre></div><p>为了准备我们模型的目标序列，我们需要在<code>as_target_tokenizer</code>上下文管理器中对它们进行分词。这样可以确保分词器使用与目标相对应的特殊标记：</p>
 <p>在进行机器翻译或其他序列到序列任务时，通常需要对目标序列（例如，翻译目标语言的句子）进行分词处理。为了确保目标序列的分词正确地使用了特殊标记（如开始、结束、分隔符等），我们可以使用<code>as_target_tokenizer</code>上下文管理器。
 下面是一个如何使用<code>as_target_tokenizer</code>来对目标序列进行分词的示例：</p>
@@ -820,6 +811,9 @@
 <span class="k">with</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">as_target_tokenizer</span><span class="p">():</span>
     <span class="c1"># 对目标序列进行分词</span>
     <span class="n">encoded_targets</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s2">&#34;pt&#34;</span><span class="p">)</span>
+    
+<span class="c1"># 后续transforms升级使用 text_target 参数</span>
+<span class="c1"># print(tokenizer(text_target=[&#34;Hello, this one sentence!&#34;, &#34;This is another sentence.&#34;],return_tensors=&#34;pt&#34;,padding=True,truncation=True))</span>
 
 <span class="c1"># 现在encoded_targets包含了分词后的目标序列，可以使用它们作为模型的目标输入</span>
 </code></pre></div><p>在这个例子中，我们首先加载了一个适合我们模型的分词器。然后，我们创建了一个包含目标序列的列表<code>targets</code>。通过使用<code>as_target_tokenizer</code>上下文管理器，我们确保了在对目标序列进行分词时，分词器使用了正确的特殊标记。
@@ -854,7 +848,9 @@
 <code>return_tensors=&quot;pt&quot;</code>参数表示我们希望返回的是PyTorch张量格式，这样我们就可以直接将预处理后的数据传递给PyTorch模型。
 最后，<code>preprocessed_samples</code>将包含预处理后的样本，它们已经转换成了模型所需的格式，可以直接用于模型的输入。通过这种方式，我们可以确保所有输入数据都符合模型的预期格式，并且处理了过长的输入，使得模型能够高效地处理它们。</p>
 <p>具体实现：</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">max_input_length</span> <span class="o">=</span> <span class="mi">512</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="n">max_input_length</span> <span class="o">=</span> <span class="mi">512</span>
 <span class="n">max_target_length</span> <span class="o">=</span> <span class="mi">512</span>
 <span class="n">source_lang</span> <span class="o">=</span> <span class="s2">&#34;en&#34;</span>
 <span class="n">target_lang</span> <span class="o">=</span> <span class="s2">&#34;zh&#34;</span>
@@ -862,18 +858,34 @@
 <span class="k">def</span> <span class="nf">preprocess_function</span><span class="p">(</span><span class="n">examples</span><span class="p">):</span>
     <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">ex</span><span class="p">[</span><span class="n">source_lang</span><span class="p">]</span> <span class="k">for</span> <span class="n">ex</span> <span class="ow">in</span> <span class="n">examples</span><span class="p">[</span><span class="s2">&#34;translation&#34;</span><span class="p">]]</span>
     <span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="n">ex</span><span class="p">[</span><span class="n">target_lang</span><span class="p">]</span> <span class="k">for</span> <span class="n">ex</span> <span class="ow">in</span> <span class="n">examples</span><span class="p">[</span><span class="s2">&#34;translation&#34;</span><span class="p">]]</span>
-    <span class="n">model_inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">max_input_length</span><span class="p">,</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">model_inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">max_input_length</span><span class="p">,</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">return_tensors</span><span class="o">=</span><span class="s2">&#34;pt&#34;</span><span class="p">)</span>
 
     <span class="c1"># Setup the tokenizer for targets</span>
     <span class="k">with</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">as_target_tokenizer</span><span class="p">():</span>
-        <span class="n">labels</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">max_target_length</span><span class="p">,</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="n">model_inputs</span><span class="p">[</span><span class="s2">&#34;labels&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="s2">&#34;input_ids&#34;</span><span class="p">]</span>
+        <span class="n">labels_input_ids</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">max_target_length</span><span class="p">,</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">return_tensors</span><span class="o">=</span><span class="s2">&#34;pt&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">input_ids</span>
+        <span class="n">end_token_index</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">labels_input_ids</span> <span class="o">==</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token_id</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">end_idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">end_token_index</span><span class="p">):</span>
+            <span class="n">labels_input_ids</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="n">end_idx</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span>
+        
+    <span class="n">model_inputs</span><span class="p">[</span><span class="s2">&#34;labels&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels_input_ids</span>
     <span class="k">return</span> <span class="n">model_inputs</span>
-
-<span class="n">preprocess_function</span><span class="p">(</span><span class="n">raw_datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">][:</span><span class="mi">2</span><span class="p">])</span>
 </code></pre></div><p>要将此函数应用于数据集中的所有句子对，我们只需使用之前创建的<code>dataset</code>对象的<code>map</code>方法。这将对<code>dataset</code>中所有划分的所有元素应用该函数，因此我们的训练、验证和测试数据将在一个命令中预处理。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">tokenized_datasets</span> <span class="o">=</span> <span class="n">raw_datasets</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">preprocess_function</span><span class="p">,</span> <span class="n">batched</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">tokenized_datasets</span> <span class="o">=</span> <span class="n">raw_datasets</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">preprocess_function</span><span class="p">,</span> <span class="n">batched</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">load_from_cache_file</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">remove_columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;translation&#34;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tokenized_datasets</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">DatasetDict({
+    train: Dataset({
+        features: [&#39;input_ids&#39;, &#39;attention_mask&#39;, &#39;labels&#39;],
+        num_rows: 100000
+    })
+    test: Dataset({
+        features: [&#39;input_ids&#39;, &#39;attention_mask&#39;, &#39;labels&#39;],
+        num_rows: 1000
+    })
+    validation: Dataset({
+        features: [&#39;input_ids&#39;, &#39;attention_mask&#39;, &#39;labels&#39;],
+        num_rows: 3981
+    })
+})
 </code></pre></div><p>更好的是，🤗数据集库会自动缓存结果，以避免下次运行笔记本时在这一步上花费时间。🤗数据集库通常足够智能，可以检测传递给map的函数何时发生了变化(因此需要不使用缓存数据)。例如，它会正确地检测你是否更改了第一个单元格中的任务并重新运行notebook。🤗数据集警告您，当它使用缓存文件时，您可以在调用<code>map</code>时传递<code>load_from_cache_file=False</code>，以不使用缓存文件，并强制再次应用预处理。</p>
 <p>注意，我们传入<code>batched=True</code>来将文本按批次编码在一起。这是为了充分利用前面加载的快速分词器的优势，它将使用多线程并发地处理一批文本。更多操作见NLP课程中的datasets库操作 <a href="https://huggingface.co/learn/nlp-course/chapter5/"><strong>Huggingface NLP course datasets lib</strong></a></p>
 <h3 id="微调模型">微调模型</h3>
@@ -881,7 +893,47 @@
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoModelForSeq2SeqLM</span><span class="p">,</span> <span class="n">DataCollatorForSeq2Seq</span><span class="p">,</span> <span class="n">Seq2SeqTrainingArguments</span><span class="p">,</span> <span class="n">Seq2SeqTrainer</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForSeq2SeqLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_checkpoint</span><span class="p">)</span>
-</code></pre></div><p>注意，我们没有像分类示例那样得到警告。这意味着我们使用了预训练模型的所有权重，在这种情况下没有随机初始化头部。</p>
+</code></pre></div><p>首先用wmt19本身的验证集来来测试下未微调的模型 BLEU得分，以下是使用 原始的 sacrebleu库中metrics BLEU来评估处理</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sacrebleu.metrics</span> <span class="kn">import</span> <span class="n">BLEU</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="n">bleu</span> <span class="o">=</span> <span class="n">BLEU</span><span class="p">()</span>
+
+<span class="c1">#应该使用批处理方式，验证数据集前100个进行评估</span>
+<span class="n">validation_examples</span> <span class="o">=</span> <span class="n">train_datasets</span><span class="p">[</span><span class="s1">&#39;validation&#39;</span><span class="p">][:</span><span class="mi">100</span><span class="p">]</span>
+<span class="n">batch_data</span><span class="o">=</span><span class="n">preprocess_function</span><span class="p">(</span><span class="n">validation_examples</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">batch_data</span><span class="p">[</span><span class="s2">&#34;input_ids&#34;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+<span class="n">generated_tokens</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">batch_data</span><span class="p">[</span><span class="s2">&#34;input_ids&#34;</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&#34;cuda&#34;</span><span class="p">),</span> <span class="n">max_new_tokens</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">do_sample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">top_k</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">top_p</span><span class="o">=</span><span class="mf">0.95</span><span class="p">)</span>
+<span class="n">label_tokens</span> <span class="o">=</span> <span class="n">batch_data</span><span class="p">[</span><span class="s2">&#34;labels&#34;</span><span class="p">]</span>
+        
+<span class="n">decoded_preds</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">generated_tokens</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">label_tokens</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">label_tokens</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="n">label_tokens</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span><span class="p">)</span>
+<span class="n">decoded_labels</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">label_tokens</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">preds</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">decoded_preds</span><span class="p">]</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="p">[[</span><span class="n">label</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">decoded_labels</span><span class="p">]</span>
+<span class="n">bleu_score</span> <span class="o">=</span> <span class="n">bleu</span><span class="o">.</span><span class="n">corpus_score</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span><span class="o">.</span><span class="n">score</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;BLEU: </span><span class="si">{</span><span class="n">bleu_score</span><span class="si">:</span><span class="s2">&gt;0.2f</span><span class="si">}</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">BLEU: 12.70
+</code></pre></div><p>在该数据集测试下分数不高</p>
+<p>可以直接使用HF的 evaluate库，通过加载验证数据集，对模型进行打分，具体操作见文档：https://huggingface.co/docs/evaluate/index，操作如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">pipeline</span>
+<span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_dataset</span>
+<span class="kn">from</span> <span class="nn">evaluate</span> <span class="kn">import</span> <span class="n">evaluator</span>
+<span class="kn">import</span> <span class="nn">evaluate</span>
+
+<span class="c1">#pipe = pipeline(&#34;translation&#34;, model=model_checkpoint, device=0)</span>
+<span class="c1">#data = raw_datasets[&#34;validation&#34;].shuffle().select(range(1000))</span>
+<span class="c1">#metric = load_metric(&#34;sacrebleu&#34;)</span>
+<span class="c1">#eval = evaluator(&#34;translation&#34;)</span>
+
+<span class="c1">#results = eval.compute(model_or_pipeline=model, data=train_datasets[&#34;validation&#34;], metric=metric)</span>
+
+<span class="c1">#print(results)</span>
+
+</code></pre></div><p><strong>注</strong>： <a href="https://huggingface.co/docs/evaluate/considerations">https://huggingface.co/docs/evaluate/considerations</a> 评估注意事项</p>
+<p>注意，我们没有像分类示例那样得到警告。这意味着我们使用了预训练模型的所有权重，在这种情况下没有随机初始化头部。</p>
 <p>要实例化一个<code>Seq2SeqTrainer</code>，我们还需要定义三件事。最重要的是<a href="https://huggingface.co/transformers/main_classes/trainer.html#transformers.Seq2SeqTrainingArguments"><code>Seq2SeqTrainingArguments</code></a>，这是一个包含所有自定义训练属性的类。它需要一个文件夹名，用于保存模型的检查点，其他所有参数都是可选的:</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">batch_size</span> <span class="o">=</span> <span class="mi">16</span>
 <span class="n">model_name</span> <span class="o">=</span> <span class="n">model_checkpoint</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&#34;/&#34;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -1007,7 +1059,30 @@
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1">#tokenizer.decode(outputs[0], skip_special_tokens=True)</span>
 <span class="c1">#tokenizer.decode(outputs[1], skip_special_tokens=True)</span>
 <span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</code></pre></div><h2 id="总结">总结</h2>
+</code></pre></div><p>重新评估下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sacrebleu.metrics</span> <span class="kn">import</span> <span class="n">BLEU</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="n">bleu</span> <span class="o">=</span> <span class="n">BLEU</span><span class="p">()</span>
+
+<span class="c1">#应该使用批处理方式，验证数据集前100个进行评估</span>
+<span class="n">validation_examples</span> <span class="o">=</span> <span class="n">train_datasets</span><span class="p">[</span><span class="s1">&#39;validation&#39;</span><span class="p">][:</span><span class="mi">100</span><span class="p">]</span>
+<span class="n">batch_data</span><span class="o">=</span><span class="n">preprocess_function</span><span class="p">(</span><span class="n">validation_examples</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">batch_data</span><span class="p">[</span><span class="s2">&#34;input_ids&#34;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+<span class="n">generated_tokens</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">batch_data</span><span class="p">[</span><span class="s2">&#34;input_ids&#34;</span><span class="p">],</span> <span class="n">max_new_tokens</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">do_sample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">top_k</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">top_p</span><span class="o">=</span><span class="mf">0.95</span><span class="p">)</span>
+<span class="n">label_tokens</span> <span class="o">=</span> <span class="n">batch_data</span><span class="p">[</span><span class="s2">&#34;labels&#34;</span><span class="p">]</span>
+        
+<span class="n">decoded_preds</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">generated_tokens</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">label_tokens</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">label_tokens</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="n">label_tokens</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span><span class="p">)</span>
+<span class="n">decoded_labels</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">label_tokens</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">preds</span> <span class="o">=</span> <span class="p">[</span><span class="n">pred</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">decoded_preds</span><span class="p">]</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="p">[[</span><span class="n">label</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">decoded_labels</span><span class="p">]</span>
+<span class="n">bleu_score</span> <span class="o">=</span> <span class="n">bleu</span><span class="o">.</span><span class="n">corpus_score</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span><span class="o">.</span><span class="n">score</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;BLEU: </span><span class="si">{</span><span class="n">bleu_score</span><span class="si">:</span><span class="s2">&gt;0.2f</span><span class="si">}</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
+</code></pre></div><p>BLEU: 23.64 ；从原来的BLEU: 12.70 提高到 23.64 ；为了方便快速测试， 这里仅仅用了10万训练集进行训练，1000测试集进行测试，100验证集用来评估；（整体训练集19M条训练集数据，3981条验证集数据）</p>
+<h2 id="总结">总结</h2>
 <p>facebook/nllb-200-distilled-600M 模型 翻译 效果一般，Helsinki-NLP/opus-mt-en-zh 整体效果还可以；以上翻译文本受文本长度限制，中文token可能由一个或者多个字组成(比如:&ldquo;一种&rdquo;)，需要对长文本进行切割，然后在批量翻译，最后在组合；</p>
 <p>在本地部署模型翻译的方式pass,需要加载参数大模型才能有好的翻译效果(和硬件无关，和模型推理有关)， 而且推理速度需要硬件GPU来加持，会有模型调参实现成本和计算成本在；</p>
 <ul>
@@ -1025,11 +1100,30 @@
 </ul>
 <h2 id="参考">参考</h2>
 <ul>
-<li>使用Transforms库进行翻译任务： <a href="https://huggingface.co/docs/transformers/tasks/translation">https://huggingface.co/docs/transformers/tasks/translation</a></li>
-<li><a href="https://github.com/facebookresearch/fairseq/tree/nllb">https://github.com/facebookresearch/fairseq/tree/nllb</a></li>
-<li><a href="https://ai.meta.com/blog/nllb-200-high-quality-machine-translation/">https://ai.meta.com/blog/nllb-200-high-quality-machine-translation/</a></li>
-<li><a href="https://github.com/huggingface/transformers/tree/main/examples/pytorch/translation">https://github.com/huggingface/transformers/tree/main/examples/pytorch/translation</a></li>
-<li><strong>zh2en</strong>: <a href="https://transformers.run/c3/2022-03-24-transformers-note-7/">https://transformers.run/c3/2022-03-24-transformers-note-7/</a></li>
+<li>
+<p>使用Transforms库进行翻译任务： <a href="https://huggingface.co/docs/transformers/tasks/translation">https://huggingface.co/docs/transformers/tasks/translation</a></p>
+</li>
+<li>
+<p><a href="https://github.com/facebookresearch/fairseq/tree/nllb">https://github.com/facebookresearch/fairseq/tree/nllb</a></p>
+</li>
+<li>
+<p><a href="https://ai.meta.com/blog/nllb-200-high-quality-machine-translation/">https://ai.meta.com/blog/nllb-200-high-quality-machine-translation/</a></p>
+</li>
+<li>
+<p><a href="https://github.com/huggingface/transformers/tree/main/examples/pytorch/translation">https://github.com/huggingface/transformers/tree/main/examples/pytorch/translation</a></p>
+</li>
+<li>
+<p><strong>zh2en</strong>: <a href="https://transformers.run/c3/2022-03-24-transformers-note-7/">https://transformers.run/c3/2022-03-24-transformers-note-7/</a></p>
+</li>
+<li>
+<p><a href="https://en.wikipedia.org/wiki/BLEU">https://en.wikipedia.org/wiki/BLEU</a></p>
+</li>
+<li>
+<p><a href="https://cloud.google.com/translate/automl/docs/evaluate?hl=zh-cn#bleu">https://cloud.google.com/translate/automl/docs/evaluate?hl=zh-cn#bleu</a></p>
+</li>
+<li>
+<p><a href="https://www.cs.cmu.edu/%7Ealavie/Presentations/MT-Evaluation-MT-Summit-Tutorial-19Sep11.pdf">https://www.cs.cmu.edu/%7Ealavie/Presentations/MT-Evaluation-MT-Summit-Tutorial-19Sep11.pdf</a></p>
+</li>
 </ul>
     </div>
 
