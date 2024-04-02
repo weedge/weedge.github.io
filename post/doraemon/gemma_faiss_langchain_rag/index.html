@@ -79,7 +79,7 @@
 随着大型语言模型的不断发展，构建 RAG（检索增强生成）应用程序的热潮与日俱增。谷歌推出了一个开源模型：Gemma。众所周知，RAG 代表了两种基本方法之间的融合: 基于检索的技术和生成模型。基于检索的技术涉及从广泛的知识库或语料库中获取相关信息以响应特定的查询。生成模型擅长利用训练数据中的见解从头开始创建新内容，从而精心制作原始文本或响应。
 目的：使用开源模型gemma来构建 RAG 管道并看看它的性能如何。"><meta itemprop="datePublished" content="2024-03-26T20:16:30+08:00" />
 <meta itemprop="dateModified" content="2024-03-26T20:16:30+08:00" />
-<meta itemprop="wordCount" content="7681">
+<meta itemprop="wordCount" content="7696">
 <meta itemprop="keywords" content="gemma,langchain,rag," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="使用Gemma LLM构建RAG应用程序"/>
 <meta name="twitter:description" content="
@@ -417,7 +417,7 @@
 <p>让我们开始并将该过程分为以下步骤：</p>
 <ol>
 <li>加载数据集：Cosmopedia</li>
-<li>拥抱脸部的嵌入生成</li>
+<li>huggingface的embeddings生成</li>
 <li>存储在 FAISS DB 中</li>
 <li>Gemma：介绍 SOTA 模型</li>
 <li>查询RAG管道</li>
@@ -469,7 +469,7 @@ data.head()
 <span class="n">data</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
 
 </code></pre></div><p>现在数据已加载，需要拆分数据内的文档。这里将文档分成大小为 1000 的块。这将有助于模型快速高效地工作。</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1">#直接加载切分, 数据量比较大，会OOM，最好通过一次加载1-3个文件每个文件带个300~400M左右</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1">#直接加载切分, 数据量比较大，会OOM，最好通过一次加载1-3个文件每个文件大概300~400M左右</span>
 <span class="n">text_splitter</span> <span class="o">=</span> <span class="n">RecursiveCharacterTextSplitter</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">chunk_overlap</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
 <span class="n">docs</span> <span class="o">=</span> <span class="n">text_splitter</span><span class="o">.</span><span class="n">split_documents</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 

@@ -77,7 +77,7 @@
 想把 HuggingFaceTB/cosmopedia 英文数据中的prompt和text 翻译成 中文， 然后看了下python库 deep_translator的实现， 翻译调用的是三方接口集成库， 于是使用这个库封装的谷歌翻译接口来翻译，但是三方平台接口多会有限流和接口调用频率限制，即使在代码中有容错处理， 比如常规的sleep下再调用，不影响整理处理流程，但是整体处理时间受接口限制，即使用批处理也如此，这个在大规模数据处理中使用三方接口时，经常会遇到的问题，用的三方服务，如果不升级接口服务，在技术上不太好解决； 于是选择另外一种方案，看是否有开源的翻译模型，底层模型结构一般也是Transform架构 Encoder-Decoder model ，也称sequence-to-sequence model； 比如 谷歌的T5模型， 但是推理速度受硬件条件影响，比较慢，而且原始模型不支持英文翻译成中文。
 然后看了下meta nllb 模型，专门用来处理翻译的模型，单个 AI 模型中支持 200 种语言，开源地址： https://github.com/facebookresearch/fairseq/tree/nllb 模型相对现在的LLM参数量小一些，也在huggingface的Transforms库中集成 nllb-200-distilled-600M，直接可以load使用， 等等。。。 既然llm推理可以通过想llama.cpp通过加载ggml格式进行量化，在性能有少许折损的情况下降低推理成本，但是ggml gguf格式还不支持nllb模型权重文件(貌似llama.cpp只支持Transform Decoder模型结构)；那就直接用Transforms库来加载facebook/nllb-200-distilled-600M 模型来批量翻译试试看；后续还尝试使用 Helsinki-NLP/opus-mt-en-zh 模型，进行了简单对比。"><meta itemprop="datePublished" content="2024-03-28T21:51:52+08:00" />
 <meta itemprop="dateModified" content="2024-03-28T21:51:52+08:00" />
-<meta itemprop="wordCount" content="10454">
+<meta itemprop="wordCount" content="10552">
 <meta itemprop="keywords" content="NLP,ML,translate," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="翻译模型 inference 和 微调"/>
 <meta name="twitter:description" content="
@@ -893,11 +893,11 @@
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoModelForSeq2SeqLM</span><span class="p">,</span> <span class="n">DataCollatorForSeq2Seq</span><span class="p">,</span> <span class="n">Seq2SeqTrainingArguments</span><span class="p">,</span> <span class="n">Seq2SeqTrainer</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForSeq2SeqLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_checkpoint</span><span class="p">)</span>
-</code></pre></div><p>首先用wmt19本身的验证集来来测试下未微调的模型 BLEU得分，以下是使用 原始的 sacrebleu库中metrics BLEU来评估处理</p>
+</code></pre></div><p>首先用wmt19本身的验证集来来测试下未微调的模型 BLEU得分，SacreBLEU 默认会采用 mteval-v13a.pl 分词器对文本进行分词，但是它无法处理中文、日文等非拉丁系语言。对于中文就需要设置参数 tokenize=&lsquo;zh&rsquo; 手动使用中文分词器，否则会计算出不正确的 BLEU 值，以下是使用 原始的 sacrebleu库中metrics BLEU来评估处理：</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sacrebleu.metrics</span> <span class="kn">import</span> <span class="n">BLEU</span>
 <span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
 
-<span class="n">bleu</span> <span class="o">=</span> <span class="n">BLEU</span><span class="p">()</span>
+<span class="n">bleu</span> <span class="o">=</span> <span class="n">BLEU</span><span class="p">(</span><span class="n">tokenize</span><span class="o">=</span><span class="s1">&#39;zh&#39;</span><span class="p">)</span>
 
 <span class="c1">#应该使用批处理方式，验证数据集前100个进行评估</span>
 <span class="n">validation_examples</span> <span class="o">=</span> <span class="n">train_datasets</span><span class="p">[</span><span class="s1">&#39;validation&#39;</span><span class="p">][:</span><span class="mi">100</span><span class="p">]</span>
@@ -1063,7 +1063,7 @@
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sacrebleu.metrics</span> <span class="kn">import</span> <span class="n">BLEU</span>
 <span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
 
-<span class="n">bleu</span> <span class="o">=</span> <span class="n">BLEU</span><span class="p">()</span>
+<span class="n">bleu</span> <span class="o">=</span> <span class="n">BLEU</span><span class="p">(</span><span class="n">tokenize</span><span class="o">=</span><span class="s1">&#39;zh&#39;</span><span class="p">)</span>
 
 <span class="c1">#应该使用批处理方式，验证数据集前100个进行评估</span>
 <span class="n">validation_examples</span> <span class="o">=</span> <span class="n">train_datasets</span><span class="p">[</span><span class="s1">&#39;validation&#39;</span><span class="p">][:</span><span class="mi">100</span><span class="p">]</span>
@@ -1097,6 +1097,7 @@
 <ul>
 <li><a href="https://github.com/weedge/doraemon-nb/blob/main/translate.ipynb">https://github.com/weedge/doraemon-nb/blob/main/translate.ipynb</a></li>
 <li><a href="https://github.com/weedge/doraemon-nb/blob/main/hf_train_my_translation_model.ipynb">https://github.com/weedge/doraemon-nb/blob/main/hf_train_my_translation_model.ipynb</a></li>
+<li><a href="https://github.com/weedge/doraemon-nb/blob/main/transformers_translate.ipynb">https://github.com/weedge/doraemon-nb/blob/main/transformers_translate.ipynb</a></li>
 </ul>
 <h2 id="参考">参考</h2>
 <ul>
@@ -1123,6 +1124,9 @@
 </li>
 <li>
 <p><a href="https://www.cs.cmu.edu/%7Ealavie/Presentations/MT-Evaluation-MT-Summit-Tutorial-19Sep11.pdf">https://www.cs.cmu.edu/%7Ealavie/Presentations/MT-Evaluation-MT-Summit-Tutorial-19Sep11.pdf</a></p>
+</li>
+<li>
+<p>When Scaling Meets LLM Finetuning - The Effect of Data, Model and Finetuning Method: <em><a href="https://arxiv.org/abs/2402.17193">https://arxiv.org/abs/2402.17193</a></em></p>
 </li>
 </ul>
     </div>

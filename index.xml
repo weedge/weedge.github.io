@@ -553,11 +553,11 @@
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;transformers&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;AutoModelForSeq2SeqLM&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;DataCollatorForSeq2Seq&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Seq2SeqTrainingArguments&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Seq2SeqTrainer&lt;/span&gt;
 
 &lt;span class=&#34;n&#34;&gt;model&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;AutoModelForSeq2SeqLM&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;from_pretrained&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;model_checkpoint&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;首先用wmt19本身的验证集来来测试下未微调的模型 BLEU得分，以下是使用 原始的 sacrebleu库中metrics BLEU来评估处理&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;首先用wmt19本身的验证集来来测试下未微调的模型 BLEU得分，SacreBLEU 默认会采用 mteval-v13a.pl 分词器对文本进行分词，但是它无法处理中文、日文等非拉丁系语言。对于中文就需要设置参数 tokenize=&amp;lsquo;zh&amp;rsquo; 手动使用中文分词器，否则会计算出不正确的 BLEU 值，以下是使用 原始的 sacrebleu库中metrics BLEU来评估处理：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;sacrebleu.metrics&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;BLEU&lt;/span&gt;
 &lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;tqdm&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;tqdm&lt;/span&gt;
 
-&lt;span class=&#34;n&#34;&gt;bleu&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;BLEU&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;bleu&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;BLEU&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;tokenize&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;zh&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
 
 &lt;span class=&#34;c1&#34;&gt;#应该使用批处理方式，验证数据集前100个进行评估&lt;/span&gt;
 &lt;span class=&#34;n&#34;&gt;validation_examples&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;train_datasets&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;validation&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;][:&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;100&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
@@ -723,7 +723,7 @@
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;sacrebleu.metrics&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;BLEU&lt;/span&gt;
 &lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;tqdm&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;tqdm&lt;/span&gt;
 
-&lt;span class=&#34;n&#34;&gt;bleu&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;BLEU&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;bleu&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;BLEU&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;tokenize&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;zh&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
 
 &lt;span class=&#34;c1&#34;&gt;#应该使用批处理方式，验证数据集前100个进行评估&lt;/span&gt;
 &lt;span class=&#34;n&#34;&gt;validation_examples&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;train_datasets&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;validation&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;][:&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;100&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
@@ -757,6 +757,7 @@
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/translate.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/translate.ipynb&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/hf_train_my_translation_model.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/hf_train_my_translation_model.ipynb&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/transformers_translate.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/transformers_translate.ipynb&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
 &lt;ul&gt;
@@ -784,6 +785,9 @@
 &lt;li&gt;
 &lt;p&gt;&lt;a href=&#34;https://www.cs.cmu.edu/%7Ealavie/Presentations/MT-Evaluation-MT-Summit-Tutorial-19Sep11.pdf&#34;&gt;https://www.cs.cmu.edu/%7Ealavie/Presentations/MT-Evaluation-MT-Summit-Tutorial-19Sep11.pdf&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;When Scaling Meets LLM Finetuning - The Effect of Data, Model and Finetuning Method: &lt;em&gt;&lt;a href=&#34;https://arxiv.org/abs/2402.17193&#34;&gt;https://arxiv.org/abs/2402.17193&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;/li&gt;
 &lt;/ul&gt;</description>
       
     </item>
@@ -804,7 +808,7 @@
 &lt;p&gt;让我们开始并将该过程分为以下步骤：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;加载数据集：Cosmopedia&lt;/li&gt;
-&lt;li&gt;拥抱脸部的嵌入生成&lt;/li&gt;
+&lt;li&gt;huggingface的embeddings生成&lt;/li&gt;
 &lt;li&gt;存储在 FAISS DB 中&lt;/li&gt;
 &lt;li&gt;Gemma：介绍 SOTA 模型&lt;/li&gt;
 &lt;li&gt;查询RAG管道&lt;/li&gt;
@@ -856,7 +860,7 @@ data.head()
 &lt;span class=&#34;n&#34;&gt;data&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;loader&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;load&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;现在数据已加载，需要拆分数据内的文档。这里将文档分成大小为 1000 的块。这将有助于模型快速高效地工作。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;c1&#34;&gt;#直接加载切分, 数据量比较大，会OOM，最好通过一次加载1-3个文件每个文件带个300~400M左右&lt;/span&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;c1&#34;&gt;#直接加载切分, 数据量比较大，会OOM，最好通过一次加载1-3个文件每个文件大概300~400M左右&lt;/span&gt;
 &lt;span class=&#34;n&#34;&gt;text_splitter&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;RecursiveCharacterTextSplitter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;chunk_size&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1000&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;chunk_overlap&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;150&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
 &lt;span class=&#34;n&#34;&gt;docs&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;text_splitter&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;split_documents&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;data&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
 
