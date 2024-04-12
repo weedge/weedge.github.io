@@ -70,8 +70,8 @@
 <meta itemprop="name" content="论文：Leave No Context Behind: Efficient Infinite Context Transformers with Infini-attention">
 <meta itemprop="description" content="论文：Leave No Context Behind: Efficient Infinite Context Transformers with Infini-attention"><meta itemprop="datePublished" content="2024-04-12T10:26:12+08:00" />
 <meta itemprop="dateModified" content="2024-04-12T10:26:12+08:00" />
-<meta itemprop="wordCount" content="12168">
-<meta itemprop="keywords" content="LLM,model,”transformer“," /><meta name="twitter:card" content="summary"/>
+<meta itemprop="wordCount" content="13036">
+<meta itemprop="keywords" content="LLM,model,transformer," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="论文：Leave No Context Behind: Efficient Infinite Context Transformers with Infini-attention"/>
 <meta name="twitter:description" content="论文：Leave No Context Behind: Efficient Infinite Context Transformers with Infini-attention"/>
 
@@ -391,7 +391,7 @@
     <li><a href="#2-方法">2 方法</a>
       <ul>
         <li><a href="#21-infini-attention">2.1 Infini-attention</a></li>
-        <li><a href="#22-记忆和有效上下文窗口memory-and-effective-context-window">2.2 记忆和有效上下文窗口(Memory and Effective Context Window)</a></li>
+        <li><a href="#22-内存和有效上下文窗口memory-and-effective-context-window">2.2 内存和有效上下文窗口(Memory and Effective Context Window)</a></li>
       </ul>
     </li>
     <li><a href="#3-实验">3 实验</a>
@@ -416,23 +416,47 @@
 
     
     <div class="post-content">
-      <p><strong>摘要</strong>： 本文介绍了一种有效的方法，将基于Transformer的大型语言模型（LLMs）扩展到无限长的输入，同时受到内存和计算的限制。我们提出的方法的关键组成部分是一种新的注意力技术，称为Infini-attention。Infini-attention将一种压缩内存集成到了传统的注意力机制中，并在单个Transformer块中构建了掩码局部注意力和长期线性注意力机制。我们通过在长上下文语言建模基准、1M序列长度的密码上下文块检索和500K长度的书籍摘要任务中使用1B和8B LLMs，展示了我们方法的有效性。我们的方法引入了最小的有界内存参数，并实现了LLMs的快速流式推理。</p>
+      <p><strong>摘要</strong>： 本文介绍了一种有效的方法，将基于Transformer的大型语言模型（LLMs）扩展到无限长的输入，同时受到内存和计算的限制。我们提出的方法的关键组成部分是一种新的注意力技术，称为Infini-attention。Infini-attention将一种压缩内存集成到了传统的注意力机制中，并在单个Transformer块中构建了掩码局部注意力和长期线性注意力机制。我们通过在长上下文语言建模基准、1M序列长度的口令(keypass)上下文块检索和500K长度的书籍摘要任务中使用1B和8B LLMs，展示了我们方法的有效性。我们的方法引入了最小的有界内存参数，并实现了LLMs的快速流式推理。</p>
 <p><strong>注</strong>：为解决大模型（LLMs）在处理超长输入序列时遇到的内存限制问题，本文作者提出了一种新型架构：Infini-Transformer，它可以在有限内存条件下，让基于Transformer的大语言模型（LLMs）高效处理无限长的输入序列。实验结果表明：Infini-Transformer在长上下文语言建模任务上超越了基线模型，内存最高可节约114倍。</p>
-<p>感觉有种外挂存储库(类似向量数据库)嵌入到模型结构中。</p>
-<p><strong>目的</strong>：通过翻译通读论文，了解Transformer相关优化模型结构论文思路，比如文中对比的 <a href="https://arxiv.org/abs/1901.02860">Transformer-XL</a> ，<a href="https://arxiv.org/abs/1911.05507">Compressive Transformer</a>，<a href="https://arxiv.org/abs/2207.06881">Recurrent Memory Transformer(RMT)</a> ， <a href="https://arxiv.org/abs/2203.08913">Memorizing Transformers</a>； 论文中提到的优化技术：Compressive Memory &amp; Linear attention 还可以整合到现到Spare MoE 相关的模型结构中，比如<a href="https://arxiv.org/abs/2101.03961">Switch Transformers</a> , <a href="https://arxiv.org/abs/2306.04640">ModuleFormer</a>中提到的MoE中，诶~是不是做做实验，困惑度(perplexity)/loss 效果不错的话是不是可以发个论文嘞~；Google大法下了个优化蛋，后面跟着一批组合优化蛋。法力无边，ღ( ´･ᴗ･` )比心~</p>
+<p>感觉有种外挂存储库(类似向量数据库)嵌入到模型结构中。比如： <a href="https://arxiv.org/abs/2203.08913">Memorizing Transformers</a> + <a href="https://github.com/lucidrains/memorizing-transformers-pytorch">code</a></p>
+<p><strong>目的</strong>：</p>
+<ul>
+<li>通过翻译通读论文，了解Transformer相关优化模型结构论文思路，比如文中对比的 <a href="https://arxiv.org/abs/1901.02860">Transformer-XL</a> ，<a href="https://arxiv.org/abs/1911.05507">Compressive Transformer</a>，<a href="https://arxiv.org/abs/2207.06881">Recurrent Memory Transformer(RMT)</a> ， <a href="https://arxiv.org/abs/2203.08913">Memorizing Transformers</a> + <a href="https://github.com/lucidrains/memorizing-transformers-pytorch">code</a>（使用基于向量检索的 KV 存储器，主要是在该论文的基础上实验），<a href="https://arxiv.org/abs/2305.14788">Adapting Language Models to Compress Contexts(AutoCompressors)</a>；还有一篇Jeff Dean主导的模型推理工程优化论文：<a href="https://arxiv.org/pdf/2211.05102.pdf">Efficiently scaling transformer inference</a>可以通读下 。</li>
+<li>Infini-Transformer论文中提到的优化技术：Compressive Memory  还可以整合到现到Sparse MoE 相关的模型结构中，比如<a href="https://arxiv.org/abs/2101.03961">Switch Transformers</a> , <a href="https://arxiv.org/abs/2306.04640">ModuleFormer</a>中提到的Sparse MoE中；诶~是不是做做实验，困惑度(perplexity)/loss 效果不错的话是不是可以发个论文嘞~；Google大法下了个优化蛋，后面跟着一批组合优化蛋。法力无边，ღ( ´･ᴗ･` )比心~</li>
+<li>借鉴在小模型上的实验方法和评估方法；希望低成本实现方案去复现下。</li>
+</ul>
+<p><strong>论文解读：</strong></p>
 <p>原论文地址： <a href="https://arxiv.org/pdf/2404.07143.pdf">https://arxiv.org/pdf/2404.07143.pdf</a></p>
+<p>论文中提到 Compressive Memory 来自：</p>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Sparse_distributed_memory">Sparse distributed memory (SDM)</a>
+<ul>
+<li>SDM 与原始attention的结合在GPT2模型结构中，可以看下这个视频：<a href="https://www.youtube.com/watch?v=THIIk7LR9_8">Attention Approximates Sparse Distributed Memory</a> + <a href="https://github.com/TrentBrick/attention-approximates-sdm">code</a></li>
+</ul>
+</li>
+<li><a href="https://papers.nips.cc/paper_files/paper/2019/file/182bd81ea25270b7d1c2fe8353d17fe6-Paper.pdf">Metalearned neural memory. Advances in Neural Information Processing Systems</a> | <a href="https://arxiv.org/abs/2011.07831">Learning associative inference using fast weight memory</a> + <a href="https://github.com/ischlag/Fast-Weight-Memory-public">code</a>；</li>
+</ul>
+<p>Infini-attention的优化借鉴Linear attetion机制 + 增量规则 =&gt; 更新规则（线性(Linear) + 增量(Delta)）：</p>
+<p><strong>更新规则(Update Rule)</strong>: 如果在KV 绑定已经存在于内存中，则保持关联矩阵不变，同时，仍跟踪与前一个更新规则相同的归一化项（线性）以保证数值稳定性</p>
+<ul>
+<li><a href="https://arxiv.org/pdf/1812.01243.pdf">Efficient Attention: Attention with Linear Complexities [v10]</a> + <a href="https://github.com/cmsflash/efficient-attention">code</a> + <a href="https://www.youtube.com/watch?v=_wnjhTM04NM">video</a> 中的线性注意力(Linear attention)机制；并利用相关方法中的稳定训练技术；</li>
+<li><a href="https://arxiv.org/abs/2006.16236">Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention</a> + <a href="https://linear-transformers.com/">website</a> 中的线性注意力(Linear attention)机制；更新规则和检索机制，主要是因为其简单性和竞争性能；</li>
+<li><a href="https://arxiv.org/abs/2009.14794">Rethinking Attention with Performers</a> + <a href="https://research.google/blog/rethinking-attention-with-performers/">blog</a> + <a href="https://github.com/google-research/google-research/blob/master/performer/fast_attention/README.md">code</a> + <a href="https://www.youtube.com/watch?v=xJrKIPwVwGM">video</a> 论文中未提到，但是感觉可以加入优化；</li>
+<li><a href="https://en.wikipedia.org/wiki/Delta_rule">Delta Rule</a>: 增量规则尝试通过首先检索现有值条目并将它们从新值中减去，然后应用关联绑定作为新的更新，稍微改进了内存更新</li>
+</ul>
+<p>论文作者： <a href="https://www.tsendeemts.com/">Tsendsuren Munkhdalai</a>  , 也是 <strong>Metalearned neural memory</strong> 和 <strong>Learning associative inference using fast weight memory (FWM)</strong> 的作者，沿用了以前的优化，与原始attention结构结合；在压缩内存中存储键和值状态的绑定，并使用查询向量进行检索。</p>
 <h2 id="1-引言">1 引言</h2>
-<p>记忆是智力的基石，它使得针对特定上下文的高效计算成为可能。然而，Transformer（Vaswani等人，2017年）和基于Transformer的大型语言模型（LLMs）（Brown等人，2020年；Touvron等人，2023年；Anil等人，2023年；Groeneveld等人，2024年）由于注意力机制的本质，具有受限的上下文依赖记忆。</p>
+<p>内存作为智能的基石，它使得针对特定上下文的高效计算成为可能。然而，Transformer（Vaswani等人，2017年）和基于Transformer的大型语言模型（LLMs）（Brown等人，2020年；Touvron等人，2023年；Anil等人，2023年；Groeneveld等人，2024年）由于注意力机制的本质，具有受限的上下文依赖内存。</p>
 <p>Transformer中的注意力机制在内存占用和计算时间上表现出二次方复杂度。例如，对于一个批量大小为512，上下文长度为2048的500B模型，注意力键值（KV）状态有3TB的内存占用（Pope等人，2023年）。实际上，将LLMs扩展到更长的序列（例如1M个标记）对于标准Transformer架构来说是一个挑战，而且随着上下文模型变得越来越长，其服务成本也越来越高。</p>
-<p>压缩记忆系统承诺比注意力机制更可扩展和高效，特别是对于极长序列（Kanerva，1988年；Munkhdalai等人，2019年）。与随输入序列长度增长的数组不同，压缩记忆主要通过改变其参数来存储和回忆信息，以实现有界的存储和计算成本。在压缩记忆中，通过改变其参数来添加新信息到记忆中，目标是稍后能够恢复这些信息。然而，目前的LLMs还没有看到一个有效的、实用的压缩记忆技术，该技术在简单性和质量之间取得了平衡。</p>
-<p>在这项工作中，我们介绍了一种新的方法，使得Transformer LLMs能够有效地处理无限长的输入，同时内存占用和计算资源有界。我们提出的方法的一个关键组成部分是一个新的注意力技术，称为Infini-attention（图1）。Infini-attention将压缩记忆整合到传统的注意力机制中，并在单个Transformer块中构建了掩蔽的局部注意力和长期的线性注意力机制。</p>
+<p>压缩内存(Compressive memory)系统承诺比注意力机制更可扩展和高效，特别是对于极长序列（Kanerva，1988年；Munkhdalai等人，2019年）。与随输入序列长度增长的数组不同，压缩内存主要通过改变其参数来存储和回忆信息，以实现有界的存储和计算成本。在压缩内存中，通过改变其参数来添加新信息到内存中，目标是稍后能够恢复这些信息。然而，目前的LLMs还没有看到一个有效的、实用的压缩内存技术，该技术在简单性和质量之间取得了平衡。</p>
+<p>在这项工作中，我们介绍了一种新的方法，使得Transformer LLMs能够有效地处理无限长的输入，同时内存占用和计算资源有界。我们提出的方法的一个关键组成部分是一个新的注意力技术，称为Infini-attention（图1）。Infini-attention将压缩内存整合到传统的注意力机制中，并在单个Transformer块中构建了掩蔽的局部注意力(Causal SDPA)和长期的线性注意力(Linear attention)机制。</p>
 <p><img src="https://arxiv.org/html/2404.07143v1/x1.png" alt=""></p>
 <p><em>图 1：Infini-attention 具有一个额外的压缩内存，使用线性注意力处理无限长的上下文。${KV}_{s-1}$  和 ${KV}_s$ 分别是当前和前一个输入片段的注意力键和值，而  $Q_s$ 是注意力查询。PE 表示位置嵌入。</em></p>
-<p>这种对Transformer注意力层的微妙但关键的修改，使得现有的LLMs能够通过持续的预训练和微调，自然地扩展到无限长的上下文。我们的Infini-attention重用了标准注意力计算的所有键、值和查询状态，用于长期记忆的巩固和检索。我们将注意力的旧KV状态存储在压缩记忆中，而不是像在标准注意力机制中那样丢弃它们。然后，我们在使用注意力查询状态处理后续序列时，从记忆中检索值。为了计算最终的上下文输出，Infini-attention聚合了长期记忆检索到的值和局部注意力上下文。</p>
+<p>这种对Transformer注意力层的微妙但关键的修改，使得现有的LLMs能够通过持续的预训练和微调，自然地扩展到无限长的上下文。我们的Infini-attention重用了标准注意力计算的所有键、值和查询状态，用于长期内存的巩固和检索。我们将注意力的旧KV状态存储在压缩内存中，而不是像在标准注意力机制中那样丢弃它们。然后，我们在使用注意力查询状态处理后续序列时，从内存中检索值。为了计算最终的上下文输出，Infini-attention聚合了长期内存检索到的值和局部注意力上下文。</p>
 <p>在我们的实验中，我们展示了我们的方法在长上下文语言建模基准测试中胜过了基线模型，同时在内存大小上具有114倍的理解比率。当使用100K序列长度进行训练时，模型达到了更低的困惑度(perplexity)。一个1B LLM自然扩展到1M序列长度，并在注入Infini-attention后解决了口令(passkey)检索任务。最后，我们展示了一个8B模型在持续预训练和任务微调后，使用Infini-attention在500K长度的书籍摘要任务上达到了新的SOTA结果。</p>
 <p>总之，我们的工作做出了以下贡献：</p>
 <ol>
-<li>我们引入了一个实用而强大的注意力机制Infini-attention，它具有长期压缩记忆和局部因果注意力，能够有效地建模长距离和短距离的上下文依赖关系。</li>
+<li>我们引入了一个实用而强大的注意力机制Infini-attention，它具有长期压缩内存和局部因果注意力，能够有效地建模长距离和短距离的上下文依赖关系。</li>
 <li>Infini-attention对标准的缩放点积注意力进行了最小的改变，并支持即插即用的持续预训练和长上下文适应。</li>
 <li>我们的方法使Transformer LLMs能够通过流式处理极长的输入，扩展到无限长的上下文，同时保持有界的内存和计算资源。</li>
 </ol>
@@ -440,9 +464,9 @@
 <p>图2比较了我们的模型Infini-Transformer和Transformer-XL（Dai等人，2019年）。与Transformer-XL类似，Infini-Transformer在一系列片段上操作。我们在每个片段内计算标准的因果点积注意力上下文。因此，点积注意力计算在某种意义上是局部的，它涵盖了当前片段S（N是片段长度），总共N个token。</p>
 <p><img src="https://arxiv.org/html/2404.07143v1/x2.png" alt=""></p>
 <p><em>图 2：Infini-Transformer（顶部）具有完整的上下文历史，而 Transformer-XL（底部）会丢弃旧的上下文，因为它只缓存了最后一个片段的 KV 状态。</em></p>
-<p>然而，局部注意力（Dai等人，2019年）在处理下一个片段时会丢弃前一个片段的注意力状态。在Infini-Transformers中，我们提出不仅不丢弃旧的KV注意力状态，而是重用它们来通过压缩记忆维持整个上下文历史。因此，Infini-Transformers的每个注意力层都具有全局压缩和局部细粒度状态。我们称这种高效的注意力机制为Infini-attention，如图1所示，并在以下各节中正式描述。</p>
+<p>然而，局部注意力（Dai等人，2019年）在处理下一个片段时会丢弃前一个片段的注意力状态。在Infini-Transformers中，我们提出不仅不丢弃旧的KV注意力状态，而是重用它们来通过压缩内存维持整个上下文历史。因此，Infini-Transformers的每个注意力层都具有全局压缩和局部细粒度状态。我们称这种高效的注意力机制为Infini-attention，如图1所示，并在以下各节中正式描述。</p>
 <h3 id="21-infini-attention">2.1 Infini-attention</h3>
-<p>如图1所示，我们的Infini-attention计算局部和全局上下文状态，并结合它们输出。与多头注意力（MHA）类似，它在每个注意力层中维护H个并行的压缩记忆（H是注意力头的数量），除了点积注意力外。</p>
+<p>如图1所示，我们的Infini-attention计算局部和全局上下文状态，并结合它们输出。与多头注意力（MHA）类似，它在每个注意力层中维护H个并行的压缩内存（H是注意力头的数量），除了点积注意力外。</p>
 <h4 id="211-缩放点积注意力">2.1.1 缩放点积注意力</h4>
 <p>多头缩放点积注意力（Vaswani等人，2017年），特别是其自注意力变体（Munkhdalai等人，2016年；Cheng等人，2016年），已成为LLMs的主要构建块。MHA的强大能力可以模拟上下文依赖的动态计算，并且其时间掩蔽的便利性在自回归生成模型中得到了广泛利用。</p>
 <p>在普通 MHA 中，一个单独的注意力头（head）从输入序列段（input segments）$X \in {\rm I!R}^{N \times d_{model}}$ 计算其注意力上下文 $A_{dot} \in {\rm I!R}^{N \times d_{value}}$，具体过程如下。首先，它计算注意力的查询（query）、键（key）和值（value）状态：
@@ -454,27 +478,27 @@ $$
 A_{dot} = \text{softmax}\left(\frac{Q K^T}{\sqrt{d_{model}}}\right) V.
 $$
 对于 MHA，我们并行地为每个序列元素计算 $H$ 个注意力上下文向量，沿着第二个维度将它们连接起来，最后将连接的向量投影到模型空间以获得注意力输出。</p>
-<h4 id="212-压缩式记忆compressive-memory">2.1.2 压缩式记忆（Compressive Memory）</h4>
-<p>在无限注意力（Infini-attention）中，与为压缩式记忆计算新的记忆条目不同，我们重复使用点积注意力计算中的查询（query）、键（key）和值（value）状态（$Q$、$K$ 和 $V$）。点积注意力和压缩记忆之间的状态共享和重用不仅实现了高效的即插即用长上下文适应，还加快了训练和推理速度。与之前的工作（Munkhdalai等人，2019年）类似，我们的目标是在压缩记忆中存储键和值状态的绑定，并使用查询向量进行检索。</p>
-<p>尽管文献中提出了不同形式的压缩记忆（Hopfield，1982年；Kanerva，1988年；Schlag等人，2019年；Munkhdalai等人，2019年），为了简单和计算效率，我们在这项工作中用关联矩阵（Schlag等人，2020年）参数化记忆。这种方法进一步允许我们将记忆更新和检索过程视为线性注意力机制（Shen等人，2018年），并利用相关方法中的稳定训练技术。特别是，我们采用了Katharopoulos等人（2020年）的更新规则和检索机制，主要是因为其简单性和竞争性能。</p>
-<p><strong>记忆检索(Memory retrieval)。</strong> 在无限注意力中，我们通过使用查询 $Q \in {\rm I!R}^{N \times d_{key}}$ 从记忆 $M_{s-1} \in {\rm I!R}^{d_{key} \times d_{value}}$ 中检索新的内容 $A_{mem} \in {\rm I!R}^{N \times d_{value}}$，计算如下：
+<h4 id="212-压缩式内存compressive-memory">2.1.2 压缩式内存（Compressive Memory）</h4>
+<p>在无限注意力（Infini-attention）中，与为压缩式内存计算新的内存条目不同，我们重复使用点积注意力计算中的查询（query）、键（key）和值（value）状态（$Q$、$K$ 和 $V$）。点积注意力和压缩内存之间的状态共享和重用不仅实现了高效的即插即用长上下文适应，还加快了训练和推理速度。与之前的工作（Munkhdalai等人，2019年）类似，我们的目标是在压缩内存中存储键和值状态的绑定，并使用查询向量进行检索。</p>
+<p>尽管文献中提出了不同形式的压缩内存（Hopfield，1982年；Kanerva，1988年；Schlag等人，2019年；Munkhdalai等人，2019年），为了简单和计算效率，我们在这项工作中用关联矩阵（Schlag等人，2020年）参数化内存。这种方法进一步允许我们将内存更新和检索过程视为线性注意力机制（Shen等人，2018年），并利用相关方法中的稳定训练技术。特别是，我们采用了Katharopoulos等人（2020年）的更新规则和检索机制，主要是因为其简单性和竞争性能。</p>
+<p><strong>内存检索(Memory retrieval)。</strong> 在无限注意力中，我们通过使用查询 $Q \in {\rm I!R}^{N \times d_{key}}$ 从内存 $M_{s-1} \in {\rm I!R}^{d_{key} \times d_{value}}$ 中检索新的内容 $A_{mem} \in {\rm I!R}^{N \times d_{value}}$，计算如下：
 $$
 A_{mem} =  \frac{\sigma({Q}) M_{s-1}}
 {{\sigma(Q)} z_{s-1}}.
 $$
 这里，$\sigma$ 和 $z_{s-1} \in {\rm I!R}^{d_{key}}$ 分别是非线性激活函数和归一化项。由于非线性和规范化方法的选择对训练稳定性至关重要，因此我们遵循Katharopoulos等人（2020年）记录所有键的总和作为归一化项$z_{s-1}$，并使用逐元素ELU + 1作为激活函数（Clevert等人，2015年）。</p>
-<p><strong>记忆更新(Memory update)。</strong> 一旦检索完成，我们使用新的 KV 条目更新记忆和归一化项，并获得下一个状态，如下所示：
+<p><strong>内存更新(Memory update)。</strong> 一旦检索完成，我们使用新的 KV 条目更新内存和归一化项，并获得下一个状态，如下所示：
 $$
 M_{s} \leftarrow M_{s-1} + \sigma(K)^T V \text{ 和 } z_{s} \leftarrow z_{s-1} + \sum_{t=1}^N \sigma(K_t).
 $$
-新的记忆状态 $M_{s}$ 和 $z_{s}$ 然后传递给下一个段 $S+1$，在每个注意力层中形成了一个递归。式中的右侧项 $\sigma(K)^T V $ 被称为关联绑定算子。</p>
-<p>受到增量规则的成功启发，我们还将其纳入了我们的无限注意力中。增量规则尝试通过首先检索现有值条目并将它们从新值中减去，然后应用关联绑定作为新的更新，稍微改进了记忆更新。
+新的内存状态 $M_{s}$ 和 $z_{s}$ 然后传递给下一个段 $S+1$，在每个注意力层中形成了一个递归。式中的右侧项 $\sigma(K)^T V $ 被称为关联绑定算子。</p>
+<p>受到增量规则(Delta Rule)的成功启发，我们还将其纳入了我们的无限注意力中。增量规则尝试通过首先检索现有值条目并将它们从新值中减去，然后应用关联绑定作为新的更新，稍微改进了内存更新。
 $$
 M_{s} \leftarrow M_{s-1} + \sigma(K)^T (V - \frac{\sigma({K}) M_{s-1}}
 {{\sigma(K)} z_{s-1}}).
 $$
-这个更新规则（线性 + 增量）在如果 KV 绑定已经存在于记忆中，则保持关联矩阵不变，同时仍然跟踪与前一个更新规则相同的归一化项（线性）以保证数值稳定性。</p>
-<p><strong>长期上下文注入(Long-term context injection)。</strong> 我们通过一个学习得到的门控标量 $\beta$ 聚合了局部注意力状态 $A_{dot}$ 和记忆检索的内容 $A_{mem}$：
+更新规则（线性(Linear) + 增量(Delta)）：如果在 KV 绑定已经存在于内存中，则保持关联矩阵不变，同时，仍跟踪与前一个更新规则相同的归一化项（线性）以保证数值稳定性。</p>
+<p><strong>长期上下文注入(Long-term context injection)。</strong> 我们通过一个学习得到的门控标量 $\beta$ 聚合了局部注意力状态 $A_{dot}$ 和内存检索的内容 $A_{mem}$：
 $$
 A = \textit{sigmoid} (\beta) \odot A_{mem} + (1 - \textit{sigmoid}(\beta)) \odot A_{dot}.
 $$
@@ -483,7 +507,7 @@ $$
 O = [A^1; \dotso A^H] W_O
 $$</p>
 <p>其中 $W_O \in {\rm I!R}^{H \times d_{value} \times d_{model}}$ 是可训练权重。</p>
-<h3 id="22-记忆和有效上下文窗口memory-and-effective-context-window">2.2 记忆和有效上下文窗口(Memory and Effective Context Window)</h3>
+<h3 id="22-内存和有效上下文窗口memory-and-effective-context-window">2.2 内存和有效上下文窗口(Memory and Effective Context Window)</h3>
 <table>
 <thead>
 <tr>
@@ -510,7 +534,7 @@ $$</p>
 <td style="text-align:left">Dot-product attention</td>
 </tr>
 <tr>
-<td style="text-align:left">Memorizing Transformers</td>
+<td style="text-align:left"><strong>Memorizing Transformers</strong></td>
 <td style="text-align:left">$(d_{key} + d_{value}) \times H \times N \times S$</td>
 <td style="text-align:left">$N \times S$</td>
 <td style="text-align:left">None</td>
@@ -531,7 +555,7 @@ $$</p>
 <td style="text-align:left">Soft-prompt input</td>
 </tr>
 <tr>
-<td style="text-align:left">Infini-Transformers</td>
+<td style="text-align:left"><strong>Infini-Transformers</strong></td>
 <td style="text-align:left">$d_{key} \times (d_{value} + 1) \times H \times l$</td>
 <td style="text-align:left">$N \times S$</td>
 <td style="text-align:left">Incremental(增量)</td>
@@ -539,17 +563,20 @@ $$</p>
 </tr>
 </tbody>
 </table>
-<p><em>表1:  列出了以前具有段级记忆的 Transformer 模型及其上下文-记忆印记和有效上下文长度，这些长度是根据模型参数和输入段长度定义的。对于每个模型，记忆大小和有效上下文长度的定义如下：$N$：输入段长度，$S$：段的数量，$l$：层数，$H$：注意力头的数量，$c$：压缩式 Transformer 记忆大小，$r$：压缩比率，$p$：软提示摘要向量的数量，$m$：摘要向量积累步骤数。</em></p>
-<p>我们的 Infini-Transformer 能够以有限的记忆印记实现无界上下文窗口。为了说明这一点，表1 列出了先前具有段级记忆的模型及其上下文-记忆印记和有效上下文长度，这些长度是根据模型参数和输入段长度定义的。Infini-Transformer 对于每个头部在单个层中存储压缩的上下文的内存复杂度为 $d_{key} \times d_{value} + d_{key}$，而对于其他模型，复杂度随着序列维度增长而增加 - 内存复杂度要么依赖于缓存大小（如 Transformer-XL~(Dai等，2019年)、Compressive Transformer~(Rae等，2019年)和Memorizing Transformers~(Wu等，2022年)），要么依赖于软提示大小（如 RTM~(Bulatov等，2022年) 和 AutoCompressors~(Ge等，2023年)）。</p>
-<p>Transformer-XL 在计算注意力时，除了当前状态外，还会对上一段缓存的 KV 状态进行注意力计算。由于这是在每一层都进行的操作，因此 Transformer-XL 将上下文窗口从 $N$ 扩展到 $N \times l$ 个标记，而额外的记忆印记为 $(d_{key} + d_{value}) \times H \times N \times l$。Compressive Transformer 在 Transformer-XL 的基础上增加了第二个缓存，并存储过去段激活的压缩表示。因此，它将 Transformer-XL 的上下文窗口扩展了 $c \times r \times l$，但仍具有较大的上下文-记忆复杂度。Memorizing Transformers 选择将整个 KV 状态作为输入序列的上下文存储。由于在这种情况下存储变得成本过高，因此它们将上下文计算限制为仅在单个层中进行。通过利用快速 kNN 检索器，Memorizing Transformers 构建一个覆盖整个序列历史的上下文窗口，长度为 $N \times S$，但存储成本增加了。我们的实验表明，在 Memorizing Transformers 的基础上，Infini-Transformer LM 可以实现超过 100 倍的压缩率，同时进一步改善了困惑度(perplexity)得分。</p>
-<p>RMT 和 AutoCompressors 允许潜在的无限上下文长度，因为它们将输入压缩成摘要向量，然后将它们作为额外的软提示输入传递给后续的段落。然而，在实践中，这些技术的成功程度高度依赖于软提示向量的大小。换句话说，为了使 AutoCompressors (Chevalier 等，2023年) 实现更好的性能，需要增加软提示（摘要）向量的数量，而这样做会导致内存和计算复杂度迅速增长，从而降低效率。也观察到在 AutoCompressors (Chevalier 等，2023年) 中需要一个高效的压缩目标来训练这种提示压缩技术 (Ge 等，2023年)。</p>
-<p><img src="https://arxiv.org/html/2404.07143v1/x3.png" alt=""></p>
-<p><em>图3：图中显示了在训练后出现的 Infini-attention 中的两种类型的头部：得分接近 0 或 1 的专用头部和得分接近 0.5 的混合头部。专用头部通过局部注意力机制处理上下文信息或从压缩式记忆中检索，而混合头部将当前上下文信息和长期记忆内容聚合到单个输出中。</em></p>
+<p><em>表1:  列出了以前具有段级内存的 Transformer 模型及其上下文-内存占用(footprint)和有效上下文长度，这些长度是根据模型参数和输入段长度定义的。对于每个模型，内存大小和有效上下文长度的定义如下：$N$：输入段长度，$S$：段的数量，$l$：层数，$H$：注意力头的数量，$c$：压缩式 Transformer 内存大小，$r$：压缩比率，$p$：软提示摘要向量(soft-prompt summary vectors)的数量，$m$：摘要向量积累步骤数。</em></p>
+<p>我们的 Infini-Transformer 能够以有限的内存占用实现无界上下文窗口。为了说明这一点，表1 列出了先前具有段级内存的模型及其上下文-内存占用和有效上下文长度，这些长度是根据模型参数和输入段长度定义的。Infini-Transformer 对于每个头部在单个层中存储压缩的上下文的内存复杂度为 $d_{key} \times d_{value} + d_{key}$，而对于其他模型，复杂度随着序列维度增长而增加 - 内存复杂度要么依赖于缓存大小（如 Transformer-XL~(Dai等，2019年)、Compressive Transformer~(Rae等，2019年)和Memorizing Transformers~(Wu等，2022年)），要么依赖于软提示大小（如 RTM~(Bulatov等，2022年) 和 AutoCompressors~(Ge等，2023年)）。</p>
+<p>Transformer-XL 在计算注意力时，除了当前状态外，还会对上一段缓存的 KV 状态进行注意力计算。由于这是在每一层都进行的操作，因此 Transformer-XL 将上下文窗口从 $N$ 扩展到 $N \times l$ 个标记，而额外的内存占用为 $(d_{key} + d_{value}) \times H \times N \times l$。Compressive Transformer 在 Transformer-XL 的基础上增加了第二个缓存，并存储过去段激活的压缩表示。因此，它将 Transformer-XL 的上下文窗口扩展了 $c \times r \times l$，但仍具有较大的上下文-内存复杂度。Memorizing Transformers 选择将整个 KV 状态作为输入序列的上下文存储。由于在这种情况下存储变得成本过高，因此它们将上下文计算限制为仅在单个层中进行。<strong>通过利用快速 kNN 检索器，Memorizing Transformers 构建一个覆盖整个序列历史的上下文窗口，长度为 $N \times S$，但存储成本增加了。我们的实验表明，在 Memorizing Transformers 的基础上，Infini-Transformer LM 可以实现超过 100 倍的压缩率，同时进一步改善了困惑度(perplexity)得分</strong>。</p>
+<p><strong>RMT 和 AutoCompressors 允许潜在的无限上下文长度，因为它们将输入压缩成摘要向量，然后将它们作为额外的软提示输入传递给后续的段落。然而，在实践中，这些技术的成功程度高度依赖于软提示向量的大小</strong>。换句话说，为了使 AutoCompressors (Chevalier 等，2023年) 实现更好的性能，需要增加软提示（摘要）向量的数量，而这样做会导致内存和计算复杂度迅速增长，从而降低效率。也观察到在 AutoCompressors (Chevalier 等，2023年) 中需要一个高效的压缩目标来训练这种提示压缩技术 (Ge 等，2023年)。</p>
 <h2 id="3-实验">3 实验</h2>
-<p>我们在涉及极长输入序列的基准数据集上评估了我们的 Infini-Transformer 模型：长上下文语言建模、100万长度密码块检索和50万长度书籍摘要任务。对于语言建模基准，我们从头开始训练我们的模型，而对于密码块和书籍摘要任务，我们持续预训练现有的 LLMs，以突出我们方法的插拔式长上下文适应能力。</p>
+<p>我们在涉及极长输入序列的基准数据集上评估了我们的 Infini-Transformer 模型：</p>
+<blockquote>
+<p>长上下文语言建模、100万长度口令(passkey)块检索和50万长度书籍摘要任务。</p>
+<p>对于长上下文语言建模基准，我们从头开始训练我们的模型；</p>
+<p>而对于口令(passkey)块和书籍摘要任务，我们持续预训练现有的 LLMs，以突出我们方法的插拔式长上下文适应能力。</p>
+</blockquote>
 <h3 id="31-长上下文语言建模">3.1 长上下文语言建模</h3>
 <p>我们在 PG19（Rae 等，2019年）和 Arxiv-math（Wu 等，2022年）基准数据集上训练和评估了小型的 Infini-Transformer 模型。我们的设置与 Memorizing Transformers（Wu 等，2022年）非常相似。具体来说，我们所有的模型都有 12 层，每层有 8 个注意力头，每个头的维度为 128，以及隐藏层为 4096 的 FFNs。</p>
-<p>我们将 Infini-attention 的段长度 $N$ 设置为 2048，对于所有的注意力层输入序列长度设置为 32768 进行训练。这样可以让 Infini-attention 在关于其压缩记忆状态的 16 个步骤上展开。对于 RMT 基线，我们进行了几次运行，摘要提示长度为 50、100 和 150，序列长度分别为 4096、8196 和 32768。当在长度为 8196 的序列上训练时，RMT 使用 100 个摘要向量时达到了最佳结果。</p>
+<p>我们将 Infini-attention 的段长度 $N$ 设置为 2048，对于所有的注意力层输入序列长度设置为 32768 进行训练。这样可以让 Infini-attention 在关于其压缩内存状态的 16 个步骤上展开。对于 RMT 基线，我们进行了几次运行，摘要提示长度为 50、100 和 150，序列长度分别为 4096、8196 和 32768。当在长度为 8196 的序列上训练时，RMT 使用 100 个摘要向量时达到了最佳结果。</p>
 <table>
 <thead>
 <tr>
@@ -604,10 +631,12 @@ $$</p>
 </tr>
 </tbody>
 </table>
-<p><em>表2：长上下文语言建模结果以平均单词级困惑度进行比较。Comp. 表示压缩比。Infini-Transformer 模型优于记忆变压器（Memorizing Transformers），其存储器长度为 65K，并实现了114倍的压缩比。</em></p>
+<p><em>表2：长上下文语言建模结果以平均单词级困惑度进行比较。Comp. 表示压缩比。Infini-Transformer 模型优于内存变压器（Memorizing Transformers），其存储器长度为 65K，并实现了114倍的压缩比。</em></p>
 <p>语言建模实验的主要结果总结在表2中。我们的 Infini-Transformer 在保持比 Memorizing Transformers（Wu 等，2022年）模型参数少 114 倍的情况下，优于 Transformer-XL（Dai 等，2019年）和 Memorizing Transformers 的基准模型，后者使用基于向量检索的 KV 存储器，在其第9层具有长度为 65K 的存储器。</p>
 <p><strong>100K长度训练。</strong> 我们进一步将训练序列长度从32K增加到100K，并在 Arxiv-math 数据集上对模型进行了训练。100K的训练进一步将困惑度分数降低到 <strong>2.21</strong> 和 <strong>2.20</strong> 分别对于 $Linear$ 和 $Linear + Delta$ 模型。</p>
-<p><strong>门控分数可视化(Gating score visualization)。</strong> 图3 展示了每一层中所有注意力头的压缩记忆的门控分数 $\textit{sigmoid}(\beta)$。在训练后，Infini-attention 中出现了两种类型的头：门控分数接近 0 或 1 的专用头和分数接近 0.5 的混合头。专用头通过局部注意力计算处理上下文信息或从压缩记忆中检索，而混合头将当前上下文信息和长期记忆内容合并到一个输出中。有趣的是，每一层至少有一个短程头，允许输入信号向前传播直至输出层。我们还观察到在正向计算过程中长期和短期内容的检索交错进行。</p>
+<p><strong>门控分数可视化(Gating score visualization)。</strong> 图3 展示了每一层中所有注意力头的压缩内存的门控分数 $\textit{sigmoid}(\beta)$。在训练后，Infini-attention 中出现了两种类型的头：门控分数接近 0 或 1 的专用头和分数接近 0.5 的混合头。专用头通过局部注意力计算处理上下文信息或从压缩内存中检索，而混合头将当前上下文信息和长期内存内容合并到一个输出中。有趣的是，每一层至少有一个短程头，允许输入信号向前传播直至输出层。我们还观察到在正向计算过程中长期和短期内容的检索交错进行。</p>
+<p><img src="https://arxiv.org/html/2404.07143v1/x3.png" alt=""></p>
+<p><em>图3：图中显示了训练后，在Infini-attention中出现了两种类型的注意力头：具有接近0或1的门控分数(gating score)的专用头和接近0.5的混合头。专用头通过局部注意力机制处理上下文信息或从压缩内存中检索，而混合头将当前上下文信息和长期(long-term)内存内容聚合到单个输出中。</em></p>
 <h3 id="32-llm-持续预训练">3.2 LLM 持续预训练</h3>
 <p>我们对现有 LLM 进行了轻量级的持续预训练，以适应长上下文。预训练数据包括 PG19 和 Arxiv-math 语料库以及长度超过 4K 令牌的 C4 文本（Raffel等人，2020）。我们的实验中，段长度 $N$ 设定为 2K。</p>
 <p><strong>1M 口令(passkey)检索基准测试</strong>。我们将一个 10 亿参数的 LLM 中的普通 MHA 替换为 Infini-attention，并继续对长度为 4K 的输入进行预训练。模型在进行 1M 口令(passkey)检索任务 fine-tune 之前，以批量大小为 64 进行了 30K 步的训练。</p>
@@ -743,9 +772,9 @@ $$</p>
 <p>压缩的输入表示可以视为过去序列片段的摘要（Rae等人，2019；Chevalier等人，2023）。沿着这个方向，更近期的工作已经利用Transformer LLM 本身来压缩输入序列，以实现高效的长上下文建模（Bulatov等人，2022；Chevalier等人，2023；Ge等人，2023；Mu等人，2024）。然而，先前的段级压缩方法，包括压缩Transformer（Rae等人，2019），仍会丢弃旧段的内存条目，以释放空间给新段，从而将上下文窗口限制为最近的段。这与我们的Infini-attention相反，后者以递归方式对固定数量的内存参数进行增量内存更新。</p>
 <p><strong>长上下文持续预训练(Long-context continual pre-training)。</strong> 有一系列工作在扩展点乘注意力层的基础上继续对LLM 进行训练，以处理长上下文（Xiong等人，2023；Fu等人，2024）。这些注意力扩展包括将稀疏性纳入注意力层（Chen等人，2023；Ratner等人，2022；Mohtashami等人，2024），以及操纵位置编码（Chen等人，2023；Peng等人，2023）。虽然基于位置编码的方法，如位置插值技术（Chen等人，2023），可以是数据高效的，因为它们只调整了注意力层中的位置偏差，但它们在推理方面仍然昂贵。</p>
 <p>注意机制也容易出现注意力聚焦问题（Xiao等人，2023）和迷失在中间问题（Liu等人，2024）。因此，它们在上下文长度超出训练中观察到的长度时往往会遇到困难。提出的Infini-attention通过启用固定的本地注意力窗口，以段级流式计算长序列，解决了这些问题。我们的Infini-Transformers在训练32K甚至5K长度序列时，成功地推广到了100万长度的输入范围。</p>
-<p><strong>高效的注意力(Efficient attention)。</strong> 高效的注意力技术试图通过近似或系统级优化来改善点乘注意力的效率。不同形式的高效注意力近似已经探索了多个方向，包括基于稀疏性的（Child等人，2019；Beltagy等人，2020；Sukhbaatar等人，2021；Ding等人，2023）和线性注意力近似（Shen和Tao，2018；Katharopoulos和Fleuret，2020；Schlag等人，2021）。在这些方法中，线性注意力变种与关联记忆矩阵（Schlag等人，2020；Schlag等人，2021）和元学习神经内存（Munkhdalai和Yu，2019）密切相关，其中KV 绑定（Smolensky，1990）存储在快速权重（Hinton等人，1987；Schmidhuber，1992；Ba和Hinton，2016）中，这些权重根据新的上下文信息进行修改。最近，通过利用特定硬件架构来使精确的注意力计算更加高效，提出了系统级优化技术（Dao等人，2022；Liu等人，2023）。</p>
+<p><strong>高效的注意力(Efficient attention)。</strong> 高效的注意力技术试图通过近似或系统级优化来改善点乘注意力的效率。不同形式的高效注意力近似已经探索了多个方向，包括基于稀疏性的（Child等人，2019；Beltagy等人，2020；Sukhbaatar等人，2021；Ding等人，2023）和线性注意力近似（Shen和Tao，2018；Katharopoulos和Fleuret，2020；Schlag等人，2021）。在这些方法中，线性注意力变种与关联内存矩阵（Schlag等人，2020；Schlag等人，2021）和元学习神经内存（Munkhdalai和Yu，2019）密切相关，其中KV 绑定（Smolensky，1990）存储在快速权重（Hinton等人，1987；Schmidhuber，1992；Ba和Hinton，2016）中，这些权重根据新的上下文信息进行修改。最近，通过利用特定硬件架构来使精确的注意力计算更加高效，提出了系统级优化技术（Dao等人，2022；Liu等人，2023）。</p>
 <h2 id="5-结论">5 结论</h2>
-<p>有效的记忆系统不仅对于理解LLM中的长上下文至关重要，而且对于推理、规划、持续适应新知识甚至学习如何学习也是至关重要的。本文介绍了将压缩内存模块紧密集成到普通点乘注意力层中。这对注意力层的微妙但关键修改使LLM能够在有界的内存和计算资源下处理无限长的上下文。我们展示了我们的方法可以自然地扩展到百万长度的输入序列范围，同时在长上下文语言建模基准测试和书籍摘要任务上胜过了基线。我们还展示了我们方法的有希望的长度泛化能力。fine-tune在长度为5K的序列上的1B模型解决了1M长度的问题。</p>
+<p>有效的内存系统不仅对于理解LLM中的长上下文至关重要，而且对于推理、规划、持续适应新知识甚至学习如何学习也是至关重要的。本文介绍了将压缩内存模块紧密集成到普通点乘注意力层中。这对注意力层的微妙但关键修改使LLM能够在有界的内存和计算资源下处理无限长的上下文。我们展示了我们的方法可以自然地扩展到百万长度的输入序列范围，同时在长上下文语言建模基准测试和书籍摘要任务上胜过了基线。我们还展示了我们方法的有希望的长度泛化能力。fine-tune在长度为5K的序列上的1B模型解决了1M长度的问题。</p>
 <h2 id="references">References</h2>
 <ol>
 <li>
@@ -948,7 +977,7 @@ There and ack again. (repeat y times) What is the pass key? The pass key is
       <div class="post-tags">
           <a href="https://weedge.github.io/tags/llm/">LLM</a>
           <a href="https://weedge.github.io/tags/model/">model</a>
-          <a href="https://weedge.github.io/tags/transformer/">”transformer“</a>
+          <a href="https://weedge.github.io/tags/transformer/">transformer</a>
           
         </div>
 

@@ -13,11 +13,35 @@
       <pubDate>Fri, 12 Apr 2024 10:26:12 +0800</pubDate>
       
       <guid>https://weedge.github.io/post/paper/transformer/infini_attention/</guid>
-      <description>&lt;p&gt;&lt;strong&gt;摘要&lt;/strong&gt;： 本文介绍了一种有效的方法，将基于Transformer的大型语言模型（LLMs）扩展到无限长的输入，同时受到内存和计算的限制。我们提出的方法的关键组成部分是一种新的注意力技术，称为Infini-attention。Infini-attention将一种压缩内存集成到了传统的注意力机制中，并在单个Transformer块中构建了掩码局部注意力和长期线性注意力机制。我们通过在长上下文语言建模基准、1M序列长度的密码上下文块检索和500K长度的书籍摘要任务中使用1B和8B LLMs，展示了我们方法的有效性。我们的方法引入了最小的有界内存参数，并实现了LLMs的快速流式推理。&lt;/p&gt;
+      <description>&lt;p&gt;&lt;strong&gt;摘要&lt;/strong&gt;： 本文介绍了一种有效的方法，将基于Transformer的大型语言模型（LLMs）扩展到无限长的输入，同时受到内存和计算的限制。我们提出的方法的关键组成部分是一种新的注意力技术，称为Infini-attention。Infini-attention将一种压缩内存集成到了传统的注意力机制中，并在单个Transformer块中构建了掩码局部注意力和长期线性注意力机制。我们通过在长上下文语言建模基准、1M序列长度的口令(keypass)上下文块检索和500K长度的书籍摘要任务中使用1B和8B LLMs，展示了我们方法的有效性。我们的方法引入了最小的有界内存参数，并实现了LLMs的快速流式推理。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;：为解决大模型（LLMs）在处理超长输入序列时遇到的内存限制问题，本文作者提出了一种新型架构：Infini-Transformer，它可以在有限内存条件下，让基于Transformer的大语言模型（LLMs）高效处理无限长的输入序列。实验结果表明：Infini-Transformer在长上下文语言建模任务上超越了基线模型，内存最高可节约114倍。&lt;/p&gt;
-&lt;p&gt;感觉有种外挂存储库(类似向量数据库)嵌入到模型结构中。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;目的&lt;/strong&gt;：通过翻译通读论文，了解Transformer相关优化模型结构论文思路，比如文中对比的 &lt;a href=&#34;https://arxiv.org/abs/1901.02860&#34;&gt;Transformer-XL&lt;/a&gt; ，&lt;a href=&#34;https://arxiv.org/abs/1911.05507&#34;&gt;Compressive Transformer&lt;/a&gt;，&lt;a href=&#34;https://arxiv.org/abs/2207.06881&#34;&gt;Recurrent Memory Transformer(RMT)&lt;/a&gt; ， &lt;a href=&#34;https://arxiv.org/abs/2203.08913&#34;&gt;Memorizing Transformers&lt;/a&gt;； 论文中提到的优化技术：Compressive Memory &amp;amp; Linear attention 还可以整合到现到Spare MoE 相关的模型结构中，比如&lt;a href=&#34;https://arxiv.org/abs/2101.03961&#34;&gt;Switch Transformers&lt;/a&gt; , &lt;a href=&#34;https://arxiv.org/abs/2306.04640&#34;&gt;ModuleFormer&lt;/a&gt;中提到的MoE中，诶~是不是做做实验，困惑度(perplexity)/loss 效果不错的话是不是可以发个论文嘞~；Google大法下了个优化蛋，后面跟着一批组合优化蛋。法力无边，ღ( ´･ᴗ･` )比心~&lt;/p&gt;
-&lt;p&gt;原论文地址： &lt;a href=&#34;https://arxiv.org/pdf/2404.07143.pdf&#34;&gt;https://arxiv.org/pdf/2404.07143.pdf&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;感觉有种外挂存储库(类似向量数据库)嵌入到模型结构中。比如： &lt;a href=&#34;https://arxiv.org/abs/2203.08913&#34;&gt;Memorizing Transformers&lt;/a&gt; + &lt;a href=&#34;https://github.com/lucidrains/memorizing-transformers-pytorch&#34;&gt;code&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;目的&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;通过翻译通读论文，了解Transformer相关优化模型结构论文思路，比如文中对比的 &lt;a href=&#34;https://arxiv.org/abs/1901.02860&#34;&gt;Transformer-XL&lt;/a&gt; ，&lt;a href=&#34;https://arxiv.org/abs/1911.05507&#34;&gt;Compressive Transformer&lt;/a&gt;，&lt;a href=&#34;https://arxiv.org/abs/2207.06881&#34;&gt;Recurrent Memory Transformer(RMT)&lt;/a&gt; ， &lt;a href=&#34;https://arxiv.org/abs/2203.08913&#34;&gt;Memorizing Transformers&lt;/a&gt; + &lt;a href=&#34;https://github.com/lucidrains/memorizing-transformers-pytorch&#34;&gt;code&lt;/a&gt;（使用基于向量检索的 KV 存储器，主要是在该论文的基础上实验），&lt;a href=&#34;https://arxiv.org/abs/2305.14788&#34;&gt;Adapting Language Models to Compress Contexts(AutoCompressors)&lt;/a&gt;；还有一篇Jeff Dean主导的模型推理工程优化论文：&lt;a href=&#34;https://arxiv.org/pdf/2211.05102.pdf&#34;&gt;Efficiently scaling transformer inference&lt;/a&gt;可以通读下 。&lt;/li&gt;
+&lt;li&gt;Infini-Transformer论文中提到的优化技术：Compressive Memory  还可以整合到现到Sparse MoE 相关的模型结构中，比如&lt;a href=&#34;https://arxiv.org/abs/2101.03961&#34;&gt;Switch Transformers&lt;/a&gt; , &lt;a href=&#34;https://arxiv.org/abs/2306.04640&#34;&gt;ModuleFormer&lt;/a&gt;中提到的Sparse MoE中；诶~是不是做做实验，困惑度(perplexity)/loss 效果不错的话是不是可以发个论文嘞~；Google大法下了个优化蛋，后面跟着一批组合优化蛋。法力无边，ღ( ´･ᴗ･` )比心~&lt;/li&gt;
+&lt;li&gt;借鉴在小模型上的实验方法和评估方法；希望低成本实现方案去复现下。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;论文解读：&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;原论文地址： &lt;a href=&#34;https://arxiv.org/pdf/2404.07143.pdf&#34;&gt;https://arxiv.org/pdf/2404.07143.pdf&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;论文中提到 Compressive Memory 来自：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Sparse_distributed_memory&#34;&gt;Sparse distributed memory (SDM)&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;SDM 与原始attention的结合在GPT2模型结构中，可以看下这个视频：&lt;a href=&#34;https://www.youtube.com/watch?v=THIIk7LR9_8&#34;&gt;Attention Approximates Sparse Distributed Memory&lt;/a&gt; + &lt;a href=&#34;https://github.com/TrentBrick/attention-approximates-sdm&#34;&gt;code&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://papers.nips.cc/paper_files/paper/2019/file/182bd81ea25270b7d1c2fe8353d17fe6-Paper.pdf&#34;&gt;Metalearned neural memory. Advances in Neural Information Processing Systems&lt;/a&gt; | &lt;a href=&#34;https://arxiv.org/abs/2011.07831&#34;&gt;Learning associative inference using fast weight memory&lt;/a&gt; + &lt;a href=&#34;https://github.com/ischlag/Fast-Weight-Memory-public&#34;&gt;code&lt;/a&gt;；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Infini-attention的优化借鉴Linear attetion机制 + 增量规则 =&amp;gt; 更新规则（线性(Linear) + 增量(Delta)）：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;更新规则(Update Rule)&lt;/strong&gt;: 如果在KV 绑定已经存在于内存中，则保持关联矩阵不变，同时，仍跟踪与前一个更新规则相同的归一化项（线性）以保证数值稳定性&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/pdf/1812.01243.pdf&#34;&gt;Efficient Attention: Attention with Linear Complexities [v10]&lt;/a&gt; + &lt;a href=&#34;https://github.com/cmsflash/efficient-attention&#34;&gt;code&lt;/a&gt; + &lt;a href=&#34;https://www.youtube.com/watch?v=_wnjhTM04NM&#34;&gt;video&lt;/a&gt; 中的线性注意力(Linear attention)机制；并利用相关方法中的稳定训练技术；&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2006.16236&#34;&gt;Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention&lt;/a&gt; + &lt;a href=&#34;https://linear-transformers.com/&#34;&gt;website&lt;/a&gt; 中的线性注意力(Linear attention)机制；更新规则和检索机制，主要是因为其简单性和竞争性能；&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2009.14794&#34;&gt;Rethinking Attention with Performers&lt;/a&gt; + &lt;a href=&#34;https://research.google/blog/rethinking-attention-with-performers/&#34;&gt;blog&lt;/a&gt; + &lt;a href=&#34;https://github.com/google-research/google-research/blob/master/performer/fast_attention/README.md&#34;&gt;code&lt;/a&gt; + &lt;a href=&#34;https://www.youtube.com/watch?v=xJrKIPwVwGM&#34;&gt;video&lt;/a&gt; 论文中未提到，但是感觉可以加入优化；&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Delta_rule&#34;&gt;Delta Rule&lt;/a&gt;: 增量规则尝试通过首先检索现有值条目并将它们从新值中减去，然后应用关联绑定作为新的更新，稍微改进了内存更新&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;论文作者： &lt;a href=&#34;https://www.tsendeemts.com/&#34;&gt;Tsendsuren Munkhdalai&lt;/a&gt;  , 也是 &lt;strong&gt;Metalearned neural memory&lt;/strong&gt; 和 &lt;strong&gt;Learning associative inference using fast weight memory (FWM)&lt;/strong&gt; 的作者，沿用了以前的优化，与原始attention结构结合；在压缩内存中存储键和值状态的绑定，并使用查询向量进行检索。&lt;/p&gt;</description>
     </item>
     
     <item>
