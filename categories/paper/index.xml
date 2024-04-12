@@ -6,7 +6,20 @@
     <description>Recent content in paper on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 08 Mar 2024 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/paper/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 12 Apr 2024 10:26:12 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/paper/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>论文：Leave No Context Behind: Efficient Infinite Context Transformers with Infini-attention</title>
+      <link>https://weedge.github.io/post/paper/transformer/infini_attention/</link>
+      <pubDate>Fri, 12 Apr 2024 10:26:12 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/paper/transformer/infini_attention/</guid>
+      <description>&lt;p&gt;&lt;strong&gt;摘要&lt;/strong&gt;： 本文介绍了一种有效的方法，将基于Transformer的大型语言模型（LLMs）扩展到无限长的输入，同时受到内存和计算的限制。我们提出的方法的关键组成部分是一种新的注意力技术，称为Infini-attention。Infini-attention将一种压缩内存集成到了传统的注意力机制中，并在单个Transformer块中构建了掩码局部注意力和长期线性注意力机制。我们通过在长上下文语言建模基准、1M序列长度的密码上下文块检索和500K长度的书籍摘要任务中使用1B和8B LLMs，展示了我们方法的有效性。我们的方法引入了最小的有界内存参数，并实现了LLMs的快速流式推理。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;：为解决大模型（LLMs）在处理超长输入序列时遇到的内存限制问题，本文作者提出了一种新型架构：Infini-Transformer，它可以在有限内存条件下，让基于Transformer的大语言模型（LLMs）高效处理无限长的输入序列。实验结果表明：Infini-Transformer在长上下文语言建模任务上超越了基线模型，内存最高可节约114倍。&lt;/p&gt;
+&lt;p&gt;感觉有种外挂存储库(类似向量数据库)嵌入到模型结构中。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;目的&lt;/strong&gt;：通过翻译通读论文，了解Transformer相关优化模型结构论文思路，比如文中对比的 &lt;a href=&#34;https://arxiv.org/abs/1901.02860&#34;&gt;Transformer-XL&lt;/a&gt; ，&lt;a href=&#34;https://arxiv.org/abs/1911.05507&#34;&gt;Compressive Transformer&lt;/a&gt;，&lt;a href=&#34;https://arxiv.org/abs/2207.06881&#34;&gt;Recurrent Memory Transformer(RMT)&lt;/a&gt; ， &lt;a href=&#34;https://arxiv.org/abs/2203.08913&#34;&gt;Memorizing Transformers&lt;/a&gt;； 论文中提到的优化技术：Compressive Memory &amp;amp; Linear attention 还可以整合到现到Spare MoE 相关的模型结构中，比如&lt;a href=&#34;https://arxiv.org/abs/2101.03961&#34;&gt;Switch Transformers&lt;/a&gt; , &lt;a href=&#34;https://arxiv.org/abs/2306.04640&#34;&gt;ModuleFormer&lt;/a&gt;中提到的MoE中，诶~是不是做做实验，困惑度(perplexity)/loss 效果不错的话是不是可以发个论文嘞~；Google大法下了个优化蛋，后面跟着一批组合优化蛋。法力无边，ღ( ´･ᴗ･` )比心~&lt;/p&gt;
+&lt;p&gt;原论文地址： &lt;a href=&#34;https://arxiv.org/pdf/2404.07143.pdf&#34;&gt;https://arxiv.org/pdf/2404.07143.pdf&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>论文：Retrieval-Augmented Generation for Large Language Models: A Survey [v4]</title>
       <link>https://weedge.github.io/post/paper/rag/rag-for-llms-a-survey/</link>

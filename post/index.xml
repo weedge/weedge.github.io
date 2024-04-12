@@ -6,7 +6,20 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Thu, 28 Mar 2024 21:51:52 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 12 Apr 2024 10:26:12 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>论文：Leave No Context Behind: Efficient Infinite Context Transformers with Infini-attention</title>
+      <link>https://weedge.github.io/post/paper/transformer/infini_attention/</link>
+      <pubDate>Fri, 12 Apr 2024 10:26:12 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/paper/transformer/infini_attention/</guid>
+      <description>&lt;p&gt;&lt;strong&gt;摘要&lt;/strong&gt;： 本文介绍了一种有效的方法，将基于Transformer的大型语言模型（LLMs）扩展到无限长的输入，同时受到内存和计算的限制。我们提出的方法的关键组成部分是一种新的注意力技术，称为Infini-attention。Infini-attention将一种压缩内存集成到了传统的注意力机制中，并在单个Transformer块中构建了掩码局部注意力和长期线性注意力机制。我们通过在长上下文语言建模基准、1M序列长度的密码上下文块检索和500K长度的书籍摘要任务中使用1B和8B LLMs，展示了我们方法的有效性。我们的方法引入了最小的有界内存参数，并实现了LLMs的快速流式推理。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;：为解决大模型（LLMs）在处理超长输入序列时遇到的内存限制问题，本文作者提出了一种新型架构：Infini-Transformer，它可以在有限内存条件下，让基于Transformer的大语言模型（LLMs）高效处理无限长的输入序列。实验结果表明：Infini-Transformer在长上下文语言建模任务上超越了基线模型，内存最高可节约114倍。&lt;/p&gt;
+&lt;p&gt;感觉有种外挂存储库(类似向量数据库)嵌入到模型结构中。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;目的&lt;/strong&gt;：通过翻译通读论文，了解Transformer相关优化模型结构论文思路，比如文中对比的 &lt;a href=&#34;https://arxiv.org/abs/1901.02860&#34;&gt;Transformer-XL&lt;/a&gt; ，&lt;a href=&#34;https://arxiv.org/abs/1911.05507&#34;&gt;Compressive Transformer&lt;/a&gt;，&lt;a href=&#34;https://arxiv.org/abs/2207.06881&#34;&gt;Recurrent Memory Transformer(RMT)&lt;/a&gt; ， &lt;a href=&#34;https://arxiv.org/abs/2203.08913&#34;&gt;Memorizing Transformers&lt;/a&gt;； 论文中提到的优化技术：Compressive Memory &amp;amp; Linear attention 还可以整合到现到Spare MoE 相关的模型结构中，比如&lt;a href=&#34;https://arxiv.org/abs/2101.03961&#34;&gt;Switch Transformers&lt;/a&gt; , &lt;a href=&#34;https://arxiv.org/abs/2306.04640&#34;&gt;ModuleFormer&lt;/a&gt;中提到的MoE中，诶~是不是做做实验，困惑度(perplexity)/loss 效果不错的话是不是可以发个论文嘞~；Google大法下了个优化蛋，后面跟着一批组合优化蛋。法力无边，ღ( ´･ᴗ･` )比心~&lt;/p&gt;
+&lt;p&gt;原论文地址： &lt;a href=&#34;https://arxiv.org/pdf/2404.07143.pdf&#34;&gt;https://arxiv.org/pdf/2404.07143.pdf&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>翻译模型 inference 和 微调</title>
       <link>https://weedge.github.io/post/nlp/translate_model_inference_and_finetune/</link>
@@ -302,20 +315,6 @@
 &lt;li&gt;GPU 加速向量搜索索引与 CPU 上最新技术的性能比较&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;本系列的第二篇文章深入探讨了每一个 GPU 加速指数，并简要解释了算法的工作原理以及微调其行为的重要参数摘要。想要了解更多信息，请访问 &lt;a href=&#34;https://developer.nvidia.cn/zh-cn/blog/accelerating-vector-search-fine-tuning-gpu-index-algorithms/&#34;&gt;加速向量搜索：微调 GPU 索引算法&lt;/a&gt;。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>译：利用 GPU 上的大规模并行hashmap最大限度地提高性能</title>
-      <link>https://weedge.github.io/post/gpu/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/</link>
-      <pubDate>Thu, 02 Nov 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/gpu/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/</guid>
-      <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;数十年的计算机科学历史一直致力于设计有效存储和检索信息的解决方案。hashmap（或hashtable）是一种流行的信息存储数据结构，因为它们可以保证元素插入和检索的恒定时间。&lt;/p&gt;
-&lt;p&gt;然而，尽管hashmap很流行，但很少在 GPU 加速计算的背景下进行讨论。虽然 GPU 以其大量线程和计算能力而闻名，但其极高的内存带宽可以加速许多数据结构（例如hashmap）。&lt;/p&gt;
-&lt;p&gt;这篇文章将介绍哈hashmap的基础知识以及它们的内存访问模式如何使其非常适合 GPU 加速。我们将介绍&lt;a href=&#34;https://github.com/NVIDIA/cuCollections&#34;&gt;cuCollections&lt;/a&gt;，这是一个用于并发数据结构（包括hashmap）的新开源 CUDA C++ 库。&lt;/p&gt;
-&lt;p&gt;最后，如果有兴趣在应用程序中使用 GPU 加速的哈希表，我们提供了多列关系连接算法的示例实现case。RAPIDS cuDF 集成了 GPU 哈希表，这有助于为数据科学工作负载实现令人难以置信的加速。要了解更多信息，请参阅GitHub 上的&lt;a href=&#34;https://github.com/rapidsai/cudf&#34;&gt;rapidsai/cudf&lt;/a&gt;; 以及使用示例case &lt;a href=&#34;https://medium.com/rapids-ai/accelerating-tf-idf-for-natural-language-processing-with-dask-and-rapids-6f6e416429df&#34;&gt;使用 Dask 和 RAPIDS 加速 TF-IDF 进行自然语言处理&lt;/a&gt;。&lt;/p&gt;
-&lt;p&gt;还可以将 cuCollections 用于表格数据处理之外的许多用例，例如推荐系统、流压缩、图形算法、基因组学和稀疏线性代数运算。请参阅&lt;a href=&#34;https://blogs.nvidia.com/blog/2022/08/04/pinterest-gpu-acceleration-recommenders/&#34;&gt;Pinterest 通过切换推荐系统的 GPU 加速将主页订阅参与度提高 16%&lt;/a&gt;了解更多信息。&lt;/p&gt;</description>
     </item>
     
   </channel>
