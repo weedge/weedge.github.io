@@ -10,70 +10,70 @@
   
   <url>
     <loc>https://weedge.github.io/categories/</loc>
-    <lastmod>2024-04-12T10:26:12+08:00</lastmod>
+    <lastmod>2024-04-12T20:26:12+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://weedge.github.io/tags/llm/</loc>
-    <lastmod>2024-04-12T10:26:12+08:00</lastmod>
+    <lastmod>2024-04-12T20:26:12+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://weedge.github.io/tags/model/</loc>
-    <lastmod>2024-04-12T10:26:12+08:00</lastmod>
+    <lastmod>2024-04-12T20:26:12+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://weedge.github.io/categories/paper/</loc>
-    <lastmod>2024-04-12T10:26:12+08:00</lastmod>
+    <lastmod>2024-04-12T20:26:12+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://weedge.github.io/post/</loc>
-    <lastmod>2024-04-12T10:26:12+08:00</lastmod>
+    <lastmod>2024-04-12T20:26:12+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://weedge.github.io/tags/</loc>
-    <lastmod>2024-04-12T10:26:12+08:00</lastmod>
+    <lastmod>2024-04-12T20:26:12+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>https://weedge.github.io/tags/transformer/</loc>
-    <lastmod>2024-04-12T10:26:12+08:00</lastmod>
+    <loc>https://weedge.github.io/tags/transformers/</loc>
+    <lastmod>2024-04-12T20:26:12+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/</loc>
-    <lastmod>2024-04-12T10:26:12+08:00</lastmod>
+    <lastmod>2024-04-12T20:26:12+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://weedge.github.io/</loc>
-    <lastmod>2024-04-12T10:26:12+08:00</lastmod>
+    <lastmod>2024-04-12T20:26:12+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://weedge.github.io/post/paper/transformer/infini_attention/</loc>
-    <lastmod>2024-04-12T10:26:12+08:00</lastmod>
+    <lastmod>2024-04-12T20:26:12+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -325,6 +325,13 @@
   
   <url>
     <loc>https://weedge.github.io/tags/oneday/</loc>
+    <lastmod>2023-12-04T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/transformer/</loc>
     <lastmod>2023-12-04T10:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
