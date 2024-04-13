@@ -112,7 +112,7 @@ $ V_a = V_m \odot g + V_c \odot (1 - g) $
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2305.16300&#34;&gt;Landmark Attention&lt;/a&gt; + &lt;a href=&#34;https://github.com/epfml/landmark-attention&#34;&gt;code&lt;/a&gt; : 稀疏性纳入注意力层, 了解思路；&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Delta_rule&#34;&gt;Delta Rule&lt;/a&gt;: 增量规则尝试通过首先检索现有值条目并将它们从新值中减去，然后应用关联绑定作为新的更新，稍微改进了内存更新&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;论文作者： &lt;a href=&#34;https://www.tsendeemts.com/&#34;&gt;Tsendsuren Munkhdalai&lt;/a&gt;  , 也是 &lt;strong&gt;Metalearned neural memory&lt;/strong&gt; 和 &lt;strong&gt;Learning associative inference using fast weight memory (FWM)&lt;/strong&gt; 的作者，沿用了以前的优化，与原始attention结构结合；在压缩内存中存储键和值状态的绑定，并使用查询向量进行检索。&lt;/p&gt;
+&lt;p&gt;论文作者： &lt;a href=&#34;https://www.tsendeemts.com/&#34;&gt;Tsendsuren Munkhdalai&lt;/a&gt;  , 也是 &lt;strong&gt;Metalearned neural memory&lt;/strong&gt; 和 &lt;strong&gt;Learning associative inference using fast weight memory (FWM)&lt;/strong&gt; 的作者，沿用了以前的优化(作者以前在微软发的论文)，与原始attention结构结合；在压缩内存中存储键和值状态的绑定，并使用查询向量进行检索。其他两位作者是&lt;a href=&#34;bard.google.com&#34;&gt;google bart&lt;/a&gt;(现在的gemini模型)项目负责研究主管人员。&lt;/p&gt;
 &lt;h2 id=&#34;1-引言&#34;&gt;1 引言&lt;/h2&gt;
 &lt;p&gt;内存作为智能的基石，它使得针对特定上下文的高效计算成为可能。然而，Transformer（Vaswani等人，2017年）和基于Transformer的大型语言模型（LLMs）（Brown等人，2020年；Touvron等人，2023年；Anil等人，2023年；Groeneveld等人，2024年）由于注意力机制的本质，具有受限的上下文依赖内存。&lt;/p&gt;
 &lt;p&gt;Transformer中的注意力机制在内存占用和计算时间上表现出二次方复杂度。例如，对于一个批量大小为512，上下文长度为2048的500B模型，注意力键值（KV）状态有3TB的内存占用（Pope等人，2023年）。实际上，将LLMs扩展到更长的序列（例如1M个标记）对于标准Transformer架构来说是一个挑战，而且随着上下文模型变得越来越长，其服务成本也越来越高。&lt;/p&gt;
