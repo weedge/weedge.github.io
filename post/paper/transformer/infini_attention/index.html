@@ -70,7 +70,7 @@
 <meta itemprop="name" content="解读论文：Leave No Context Behind: Efficient Infinite Context Transformers with Infini-attention">
 <meta itemprop="description" content="解读论文：Leave No Context Behind: Efficient Infinite Context Transformers with Infini-attention"><meta itemprop="datePublished" content="2024-04-12T10:26:12+08:00" />
 <meta itemprop="dateModified" content="2024-04-12T20:26:12+08:00" />
-<meta itemprop="wordCount" content="14266">
+<meta itemprop="wordCount" content="14302">
 <meta itemprop="keywords" content="LLM,model,transformers," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="解读论文：Leave No Context Behind: Efficient Infinite Context Transformers with Infini-attention"/>
 <meta name="twitter:description" content="解读论文：Leave No Context Behind: Efficient Infinite Context Transformers with Infini-attention"/>
@@ -463,6 +463,7 @@ $ V_a = V_m \odot g + V_c \odot (1 - g) $
 <p>Infini-attention的优化借鉴Linear attetion机制 + 增量规则 =&gt; 更新规则（线性(Linear) + 增量(Delta)）：</p>
 <p><strong>更新规则(Update Rule)</strong>: 如果在KV 绑定已经存在于内存中，则保持关联矩阵不变，同时，仍跟踪与前一个更新规则相同的归一化项（线性）以保证数值稳定性</p>
 <ul>
+<li><a href="https://spaces.ac.cn/archives/7546">Linear attention的探索：Attention必须有个Softmax吗？</a></li>
 <li><a href="https://arxiv.org/pdf/1812.01243.pdf">Efficient Attention: Attention with Linear Complexities [v10]</a> + <a href="https://github.com/cmsflash/efficient-attention">code</a> + <a href="https://www.youtube.com/watch?v=_wnjhTM04NM">video</a> 中的线性注意力(Linear attention)机制；并利用相关方法中的稳定训练技术；</li>
 <li><a href="https://arxiv.org/abs/2006.16236">Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention</a> + <a href="https://linear-transformers.com/">website</a> 中的线性注意力(Linear attention)机制；更新规则和检索机制，主要是因为其简单性和竞争性能；</li>
 <li><a href="https://arxiv.org/abs/2009.14794">Rethinking Attention with Performers</a> + <a href="https://research.google/blog/rethinking-attention-with-performers/">blog</a> + <a href="https://github.com/google-research/google-research/blob/master/performer/fast_attention/README.md">code</a> + <a href="https://www.youtube.com/watch?v=xJrKIPwVwGM">video</a> 论文中未提到，但是感觉可以加入优化；</li>
