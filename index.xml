@@ -59,7 +59,7 @@
       
       <guid>https://weedge.github.io/post/paper/transformer/delight/</guid>
       
-        <description>&lt;p&gt;在看apple 最近发布的OpenEM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： &lt;a href=&#34;https://machinelearning.apple.com/research/openelm&#34;&gt;&lt;strong&gt;OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework&lt;/strong&gt;&lt;/a&gt;），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。&lt;/p&gt;
+        <description>&lt;p&gt;在看apple 最近发布的OpenELM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： &lt;a href=&#34;https://machinelearning.apple.com/research/openelm&#34;&gt;&lt;strong&gt;OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework&lt;/strong&gt;&lt;/a&gt;），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。&lt;/p&gt;
 &lt;p&gt;论文主作者：&lt;a href=&#34;https://sacmehta.github.io/&#34;&gt;Sachin Mehta &lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;论文地址：https://arxiv.org/pdf/2008.00623&lt;/p&gt;
 &lt;p&gt;论文代码： &lt;a href=&#34;https://github.com/sacmehta/delight&#34;&gt;https://github.com/sacmehta/delight&lt;/a&gt; （基于当时facebook的 &lt;a href=&#34;https://github.com/facebookresearch/fairseq&#34;&gt;fairseq&lt;/a&gt; seq2seq工具库开发）&lt;/p&gt;
@@ -83,7 +83,7 @@
 &lt;/thead&gt;
 &lt;tbody&gt;
 &lt;tr&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;em&gt;图1. (a, b)标准Transformer块与DeLighT块之间的块级别比较。在DeLighT中，计算注意力的操作数量减少了一半，而FFN中的参数数量（和操作）减少了$16\times$。具有可学习参数的变换（Linear(天空蓝) 和 DeLighT(地上草绿色)）显示为彩色。线性变换的形状指示其操作（扩展、减少等）。(c, d) 将DeFINE变换与DeLighT进行了比较。与DeFINE变换相比，DeLighT使用了更多组的组线性变换（group linear transformations GLTs）来学习更宽的表示，并减少了参数数量。不同颜色用于显示GLTs中的组。为简单起见，（d）中未显示特征洗牌。&lt;/em&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;&lt;em&gt;图1. (a, b)标准Transformer块与DeLighT块之间的块级别比较。在DeLighT中，计算注意力的操作数量减少了一半，而FFN中的参数数量（和操作）减少了$16\times$。具有可学习参数的变换（Linear(天空蓝) 和 DeLighT(地上草绿色)）显示为彩色。线性变换的形状指示其操作（扩展、减少等）。(c, d) 将DeFINE变换与DeLighT进行了比较。与DeFINE变换相比，DeLighT使用了更多组的组线性变换（group linear transformations GLTs）来学习更宽的权重，并减少了参数数量。不同颜色用于显示GLTs中的组。为简单起见，（d）中未显示特征洗牌。&lt;/em&gt;&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
@@ -109,7 +109,7 @@ $$&lt;/p&gt;
 &lt;p&gt;在DeLighT中，第$l$个GLT的组数计算为：
 $$
 \begin{equation}
-g^l = \left\{
+g^l = \left{
 \begin{array}{lr}
 \text{min}(2^{l-1}, g_{max}), &amp;amp; 1 \leq l \leq \lceil{N/2}\rceil \\
 g^{N-l}, &amp;amp; \text{Otherwise}
@@ -152,7 +152,7 @@ $$
 &lt;/thead&gt;
 &lt;tbody&gt;
 &lt;tr&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;em&gt;图3： &lt;strong&gt;块级缩放(block-wise scaling)&lt;/strong&gt; 有效地分配参数和操作到各个块中，导致接近输入的DeLighT块更浅更窄，接近输出的DeLighT块更深更宽。在（b）中，具有统一缩放（$N=N_{min}=N_{max}=8$）和块级缩放（$N_{min}=4$，$N_{max}=8$）的DeLighT网络拥有约16.7百万个参数并执行35亿次操作（针对序列长度$n=30$计算），然而，具有块级缩放的DeLighT网络交付了更好的困惑度，提高了2个点。&lt;/em&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;&lt;em&gt;图3： &lt;strong&gt;块级缩放(block-wise scaling)&lt;/strong&gt; 有效地分配参数和操作到各个块中，导致接近输入的DeLighT块更浅更窄，接近输出的DeLighT块更深更宽。在（b）中，具有统一缩放（$N=N_{min}=N_{max}=8$）和块级缩放（$N_{min}=4$，$N_{max}=8$）的DeLighT网络拥有约16.7百万个参数并执行35亿次操作（针对序列长度$n=30$计算）,然而具有块级缩放的DeLighT网络交付了更好的困惑度，提高了2个点。&lt;/em&gt;&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
@@ -1019,7 +1019,7 @@ $$&lt;/p&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;&lt;strong&gt;DeLighT变换的位置&lt;/strong&gt;：我们在WikiText-103验证集上研究了DeLighT变换的三种配置：（1）DeLighT变换后跟单头注意力和轻量级FFN，（2）单头注意力后跟DeLighT变换，以及（3）单头注意力后跟DeLighT变换和轻量级FFN。对于相似数量的参数，我们发现（2）和（3）显著降低了（1）的性能。这表明更深和更宽的表示有助于学习更好的上下文表示；使我们能够用单头注意力替代多头注意力。&lt;/p&gt;
-&lt;p&gt;扩展DeLighT：图12展示了在变化DeLighT变换的配置参数（$N_{min}$={4, 6}, $N_{max}$={8, 12}, $w_m$={2, 3, 4}, and $d_m$={256, 384, 512}）后获得的DeLighT模型的结果。我们可以看到，同时保持其他配置参数不变（例如，$N_{min}$, $N_{max}$, 和 $w_m$），只扩展一个配置参数（例如，$d_m$）就能一致地提高性能。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;扩展DeLighT&lt;/strong&gt;：图12展示了在变化DeLighT变换的配置参数（$N_{min}$={4, 6}, $N_{max}$={8, 12}, $w_m$={2, 3, 4}, and $d_m$={256, 384, 512}）后获得的DeLighT模型的结果。我们可以看到，同时保持其他配置参数不变（例如，$N_{min}$, $N_{max}$, 和 $w_m$），只扩展一个配置参数（例如，$d_m$）就能一致地提高性能。&lt;/p&gt;
 &lt;table&gt;
 &lt;thead&gt;
 &lt;tr&gt;
@@ -1039,7 +1039,8 @@ $$&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;torch&lt;/span&gt;
 
 &lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;glt_function&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;n_groups&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;weights&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bias&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;None&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
-    &lt;span class=&#34;s1&#34;&gt;&amp;#39;&amp;#39;&amp;#39;&amp;#39;:param x: 输入张量，大小为 [B x N]，其中B是批量大小，N是输入维度
+    &lt;span class=&#34;s1&#34;&gt;&amp;#39;&amp;#39;&amp;#39;&amp;#39;
+&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;    :param x: 输入张量，大小为 [B x N]，其中B是批量大小，N是输入维度
 &lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;    :param n_groups: GLT中的组数
 &lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;    :param weights: glt权重 [g x N/g x M/g]
 &lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;    :param bias: GLT偏置（可选），大小为 [g x 1 x M/g]

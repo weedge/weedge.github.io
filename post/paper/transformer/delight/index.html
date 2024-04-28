@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="在看apple 最近发布的OpenEM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。
+  <meta name="description" content="在看apple 最近发布的OpenELM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。
 论文主作者：Sachin Mehta 
 论文地址：https://arxiv.org/pdf/2008.00623
 论文代码： https://github.com/sacmehta/delight （基于当时facebook的 fairseq seq2seq工具库开发）
@@ -68,7 +68,7 @@
 
 
 <meta property="og:title" content="论文解读 DeLighT: Very Deep and Light-weight Transformers" />
-<meta property="og:description" content="在看apple 最近发布的OpenEM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。
+<meta property="og:description" content="在看apple 最近发布的OpenELM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。
 论文主作者：Sachin Mehta 
 论文地址：https://arxiv.org/pdf/2008.00623
 论文代码： https://github.com/sacmehta/delight （基于当时facebook的 fairseq seq2seq工具库开发）
@@ -81,7 +81,7 @@
 <meta property="article:modified_time" content="2024-04-28T10:26:23+08:00" />
 
 <meta itemprop="name" content="论文解读 DeLighT: Very Deep and Light-weight Transformers">
-<meta itemprop="description" content="在看apple 最近发布的OpenEM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。
+<meta itemprop="description" content="在看apple 最近发布的OpenELM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。
 论文主作者：Sachin Mehta 
 论文地址：https://arxiv.org/pdf/2008.00623
 论文代码： https://github.com/sacmehta/delight （基于当时facebook的 fairseq seq2seq工具库开发）
@@ -89,10 +89,10 @@
 摘要
 我们介绍了一种深度且轻量级的Transformer，名为DeLighT，它在参数数量显著减少的情况下，提供了与标准基于Transformer的模型相似或更好的性能。DeLighT更有效地在每个Transformer块内部（通过DeLighT变换）以及跨块（通过块级缩放）分配参数，允许输入端使用较浅较窄的DeLighT块，输出端使用较宽较深的DeLighT块。总体而言，DeLighT网络比标准Transformer模型深2.5到4倍，但参数和运算量更少。在基准机器翻译和语言建模任务上的实验表明，DeLighT在平均参数数量减少2到3倍的情况下，达到或提高了基线Transformer的性能。"><meta itemprop="datePublished" content="2024-04-28T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2024-04-28T10:26:23+08:00" />
-<meta itemprop="wordCount" content="20991">
+<meta itemprop="wordCount" content="20992">
 <meta itemprop="keywords" content="LLM,model,transformers,block-wise scaling," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="论文解读 DeLighT: Very Deep and Light-weight Transformers"/>
-<meta name="twitter:description" content="在看apple 最近发布的OpenEM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。
+<meta name="twitter:description" content="在看apple 最近发布的OpenELM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。
 论文主作者：Sachin Mehta 
 论文地址：https://arxiv.org/pdf/2008.00623
 论文代码： https://github.com/sacmehta/delight （基于当时facebook的 fairseq seq2seq工具库开发）
@@ -443,7 +443,7 @@
 
     
     <div class="post-content">
-      <p>在看apple 最近发布的OpenEM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： <a href="https://machinelearning.apple.com/research/openelm"><strong>OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework</strong></a>），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。</p>
+      <p>在看apple 最近发布的OpenELM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： <a href="https://machinelearning.apple.com/research/openelm"><strong>OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework</strong></a>），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。</p>
 <p>论文主作者：<a href="https://sacmehta.github.io/">Sachin Mehta </a></p>
 <p>论文地址：https://arxiv.org/pdf/2008.00623</p>
 <p>论文代码： <a href="https://github.com/sacmehta/delight">https://github.com/sacmehta/delight</a> （基于当时facebook的 <a href="https://github.com/facebookresearch/fairseq">fairseq</a> seq2seq工具库开发）</p>
@@ -467,7 +467,7 @@
 </thead>
 <tbody>
 <tr>
-<td style="text-align:center"><em>图1. (a, b)标准Transformer块与DeLighT块之间的块级别比较。在DeLighT中，计算注意力的操作数量减少了一半，而FFN中的参数数量（和操作）减少了$16\times$。具有可学习参数的变换（Linear(天空蓝) 和 DeLighT(地上草绿色)）显示为彩色。线性变换的形状指示其操作（扩展、减少等）。(c, d) 将DeFINE变换与DeLighT进行了比较。与DeFINE变换相比，DeLighT使用了更多组的组线性变换（group linear transformations GLTs）来学习更宽的表示，并减少了参数数量。不同颜色用于显示GLTs中的组。为简单起见，（d）中未显示特征洗牌。</em></td>
+<td style="text-align:center"><em>图1. (a, b)标准Transformer块与DeLighT块之间的块级别比较。在DeLighT中，计算注意力的操作数量减少了一半，而FFN中的参数数量（和操作）减少了$16\times$。具有可学习参数的变换（Linear(天空蓝) 和 DeLighT(地上草绿色)）显示为彩色。线性变换的形状指示其操作（扩展、减少等）。(c, d) 将DeFINE变换与DeLighT进行了比较。与DeFINE变换相比，DeLighT使用了更多组的组线性变换（group linear transformations GLTs）来学习更宽的权重，并减少了参数数量。不同颜色用于显示GLTs中的组。为简单起见，（d）中未显示特征洗牌。</em></td>
 </tr>
 </tbody>
 </table>
@@ -493,7 +493,7 @@ $$</p>
 <p>在DeLighT中，第$l$个GLT的组数计算为：
 $$
 \begin{equation}
-g^l = \left\{
+g^l = \left{
 \begin{array}{lr}
 \text{min}(2^{l-1}, g_{max}), &amp; 1 \leq l \leq \lceil{N/2}\rceil \\
 g^{N-l}, &amp; \text{Otherwise}
@@ -536,7 +536,7 @@ $$
 </thead>
 <tbody>
 <tr>
-<td style="text-align:center"><em>图3： <strong>块级缩放(block-wise scaling)</strong> 有效地分配参数和操作到各个块中，导致接近输入的DeLighT块更浅更窄，接近输出的DeLighT块更深更宽。在（b）中，具有统一缩放（$N=N_{min}=N_{max}=8$）和块级缩放（$N_{min}=4$，$N_{max}=8$）的DeLighT网络拥有约16.7百万个参数并执行35亿次操作（针对序列长度$n=30$计算），然而，具有块级缩放的DeLighT网络交付了更好的困惑度，提高了2个点。</em></td>
+<td style="text-align:center"><em>图3： <strong>块级缩放(block-wise scaling)</strong> 有效地分配参数和操作到各个块中，导致接近输入的DeLighT块更浅更窄，接近输出的DeLighT块更深更宽。在（b）中，具有统一缩放（$N=N_{min}=N_{max}=8$）和块级缩放（$N_{min}=4$，$N_{max}=8$）的DeLighT网络拥有约16.7百万个参数并执行35亿次操作（针对序列长度$n=30$计算）,然而具有块级缩放的DeLighT网络交付了更好的困惑度，提高了2个点。</em></td>
 </tr>
 </tbody>
 </table>
@@ -1403,7 +1403,7 @@ $$</p>
 </tbody>
 </table>
 <p><strong>DeLighT变换的位置</strong>：我们在WikiText-103验证集上研究了DeLighT变换的三种配置：（1）DeLighT变换后跟单头注意力和轻量级FFN，（2）单头注意力后跟DeLighT变换，以及（3）单头注意力后跟DeLighT变换和轻量级FFN。对于相似数量的参数，我们发现（2）和（3）显著降低了（1）的性能。这表明更深和更宽的表示有助于学习更好的上下文表示；使我们能够用单头注意力替代多头注意力。</p>
-<p>扩展DeLighT：图12展示了在变化DeLighT变换的配置参数（$N_{min}$={4, 6}, $N_{max}$={8, 12}, $w_m$={2, 3, 4}, and $d_m$={256, 384, 512}）后获得的DeLighT模型的结果。我们可以看到，同时保持其他配置参数不变（例如，$N_{min}$, $N_{max}$, 和 $w_m$），只扩展一个配置参数（例如，$d_m$）就能一致地提高性能。</p>
+<p><strong>扩展DeLighT</strong>：图12展示了在变化DeLighT变换的配置参数（$N_{min}$={4, 6}, $N_{max}$={8, 12}, $w_m$={2, 3, 4}, and $d_m$={256, 384, 512}）后获得的DeLighT模型的结果。我们可以看到，同时保持其他配置参数不变（例如，$N_{min}$, $N_{max}$, 和 $w_m$），只扩展一个配置参数（例如，$d_m$）就能一致地提高性能。</p>
 <table>
 <thead>
 <tr>
@@ -1423,7 +1423,8 @@ $$</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">torch</span>
 
 <span class="k">def</span> <span class="nf">glt_function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n_groups</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="s1">&#39;&#39;&#39;&#39;:param x: 输入张量，大小为 [B x N]，其中B是批量大小，N是输入维度
+    <span class="s1">&#39;&#39;&#39;&#39;
+</span><span class="s1">    :param x: 输入张量，大小为 [B x N]，其中B是批量大小，N是输入维度
 </span><span class="s1">    :param n_groups: GLT中的组数
 </span><span class="s1">    :param weights: glt权重 [g x N/g x M/g]
 </span><span class="s1">    :param bias: GLT偏置（可选），大小为 [g x 1 x M/g]

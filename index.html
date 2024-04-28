@@ -363,7 +363,7 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <p>在看apple 最近发布的OpenEM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： <a href="https://machinelearning.apple.com/research/openelm"><strong>OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework</strong></a>），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。</p>
+      <p>在看apple 最近发布的OpenELM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： <a href="https://machinelearning.apple.com/research/openelm"><strong>OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework</strong></a>），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。</p>
 <p>论文主作者：<a href="https://sacmehta.github.io/">Sachin Mehta </a></p>
 <p>论文地址：https://arxiv.org/pdf/2008.00623</p>
 <p>论文代码： <a href="https://github.com/sacmehta/delight">https://github.com/sacmehta/delight</a> （基于当时facebook的 <a href="https://github.com/facebookresearch/fairseq">fairseq</a> seq2seq工具库开发）</p>
