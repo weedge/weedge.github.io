@@ -109,7 +109,7 @@ $$&lt;/p&gt;
 &lt;p&gt;在DeLighT中，第$l$个GLT的组数计算为：
 $$
 \begin{equation}
-g^l = \left{
+g^l = \left\{
 \begin{array}{lr}
 \text{min}(2^{l-1}, g_{max}), &amp;amp; 1 \leq l \leq \lceil{N/2}\rceil \\
 g^{N-l}, &amp;amp; \text{Otherwise}
