@@ -342,6 +342,45 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/gpu/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/">译：利用 GPU 上的大规模并行hashmap最大限度地提高性能</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2023-11-02" class="post-time">
+        2023-11-02
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <p><img src="https://github.com/weedge/mypic/raw/master/oneday/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/1.png" alt="img"></p>
+<p>数十年的计算机科学历史一直致力于设计有效存储和检索信息的解决方案。hashmap（或hashtable）是一种流行的信息存储数据结构，因为它们可以保证元素插入和检索的恒定时间。</p>
+<p>然而，尽管hashmap很流行，但很少在 GPU 加速计算的背景下进行讨论。虽然 GPU 以其大量线程和计算能力而闻名，但其极高的内存带宽可以加速许多数据结构（例如hashmap）。</p>
+<p>这篇文章将介绍哈hashmap的基础知识以及它们的内存访问模式如何使其非常适合 GPU 加速。我们将介绍<a href="https://github.com/NVIDIA/cuCollections">cuCollections</a>，这是一个用于并发数据结构（包括hashmap）的新开源 CUDA C++ 库。</p>
+<p>最后，如果有兴趣在应用程序中使用 GPU 加速的哈希表，我们提供了多列关系连接算法的示例实现case。RAPIDS cuDF 集成了 GPU 哈希表，这有助于为数据科学工作负载实现令人难以置信的加速。要了解更多信息，请参阅GitHub 上的<a href="https://github.com/rapidsai/cudf">rapidsai/cudf</a>; 以及使用示例case <a href="https://medium.com/rapids-ai/accelerating-tf-idf-for-natural-language-processing-with-dask-and-rapids-6f6e416429df">使用 Dask 和 RAPIDS 加速 TF-IDF 进行自然语言处理</a>。</p>
+<p>还可以将 cuCollections 用于表格数据处理之外的许多用例，例如推荐系统、流压缩、图形算法、基因组学和稀疏线性代数运算。请参阅<a href="https://blogs.nvidia.com/blog/2022/08/04/pinterest-gpu-acceleration-recommenders/">Pinterest 通过切换推荐系统的 GPU 加速将主页订阅参与度提高 16%</a>了解更多信息。</p>
+    </div>
+    <div class="read-more">
+      <a href="/post/gpu/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/oneday/similarity-search/7.lsh-compositions/">译：相似性搜索，第 7 部分：LSH 组合</a>
     </h1>
     
@@ -594,47 +633,6 @@
     </div>
     <div class="read-more">
       <a href="/post/oneday/similarity-search/2.product-quantization/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/oneday/similarity-search/1.knn-inverted-file-index/">译：相似性搜索，第 1 部分：kNN 和倒排文件索引</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-09-24" class="post-time">
-        2023-09-24
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p><img src="https://github.com/weedge/mypic/raw/master/oneday/knn-inverted-file-index/0.png" alt=""></p>
-<p><strong>相似性搜索</strong>(similarity-search)是给定一个查询，目标是在所有数据库文档中找到与其最相似的文档。本章介绍 kNN 的相似性搜索及其使用倒排文件的加速。</p>
-<h1 id="介绍">介绍</h1>
-<p>在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。通常，文档或项目以文本或图像的形式表示。然而，机器学习算法不能直接处理原始文本或图像，这就是为什么文档和项目通常被预处理并存储为数字向量的原因。</p>
-<p>有时向量的每个分量都可以存储语义。在这种情况下，这些表示也称为<strong>嵌入</strong>。这样的嵌入可以有数百个维度，数量可以达到数百万个！由于数量如此庞大，任何信息检索系统都必须能够快速检测相关文档。</p>
-<blockquote>
-<p>在机器学习中，向量也称为<strong>对象</strong>或<strong>点</strong>。</p>
-</blockquote>
-    </div>
-    <div class="read-more">
-      <a href="/post/oneday/similarity-search/1.knn-inverted-file-index/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>

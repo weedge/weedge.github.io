@@ -6,7 +6,22 @@
     <description>Recent content in model on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 12 Apr 2024 10:26:12 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/model/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 28 Apr 2024 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/model/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>论文解读 DeLighT: Very Deep and Light-weight Transformers</title>
+      <link>https://weedge.github.io/post/paper/transformer/delight/</link>
+      <pubDate>Sun, 28 Apr 2024 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/paper/transformer/delight/</guid>
+      <description>&lt;p&gt;在看apple 最近发布的OpenEM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： &lt;a href=&#34;https://machinelearning.apple.com/research/openelm&#34;&gt;&lt;strong&gt;OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework&lt;/strong&gt;&lt;/a&gt;），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。&lt;/p&gt;
+&lt;p&gt;论文主作者：&lt;a href=&#34;https://sacmehta.github.io/&#34;&gt;Sachin Mehta &lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;论文地址：https://arxiv.org/pdf/2008.00623&lt;/p&gt;
+&lt;p&gt;论文代码： &lt;a href=&#34;https://github.com/sacmehta/delight&#34;&gt;https://github.com/sacmehta/delight&lt;/a&gt; （基于当时facebook的 &lt;a href=&#34;https://github.com/facebookresearch/fairseq&#34;&gt;fairseq&lt;/a&gt; seq2seq工具库开发）&lt;/p&gt;
+&lt;p&gt;该论文研究是在作者以前的DeFINE: DEep Factorized INput Token Embeddings for Neural Sequence Modeling 进行改进，模型结构引入更多的GLTs，来学习更宽的权重，并且减少了参数数量。&lt;/p&gt;
+&lt;h2 id=&#34;摘要&#34;&gt;&lt;strong&gt;摘要&lt;/strong&gt;&lt;/h2&gt;
+&lt;p&gt;我们介绍了一种深度且轻量级的Transformer，名为DeLighT，它在参数数量显著减少的情况下，提供了与标准基于Transformer的模型相似或更好的性能。DeLighT更有效地在每个Transformer块内部（通过DeLighT变换）以及跨块（通过块级缩放）分配参数，允许输入端使用较浅较窄的DeLighT块，输出端使用较宽较深的DeLighT块。总体而言，DeLighT网络比标准Transformer模型深2.5到4倍，但参数和运算量更少。在基准机器翻译和语言建模任务上的实验表明，DeLighT在平均参数数量减少2到3倍的情况下，达到或提高了基线Transformer的性能。&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>解读论文：Leave No Context Behind: Efficient Infinite Context Transformers with Infini-attention</title>
       <link>https://weedge.github.io/post/paper/transformer/infini_attention/</link>

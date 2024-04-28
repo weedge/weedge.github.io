@@ -1,0 +1,1708 @@
+<!DOCTYPE html>
+<html lang="zh-cn" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>论文解读 DeLighT: Very Deep and Light-weight Transformers - 时间飘过</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="weedge" />
+  <meta name="description" content="在看apple 最近发布的OpenEM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。
+论文主作者：Sachin Mehta 
+论文地址：https://arxiv.org/pdf/2008.00623
+论文代码： https://github.com/sacmehta/delight （基于当时facebook的 fairseq seq2seq工具库开发）
+该论文研究是在作者以前的DeFINE: DEep Factorized INput Token Embeddings for Neural Sequence Modeling 进行改进，模型结构引入更多的GLTs，来学习更宽的权重，并且减少了参数数量。
+摘要 我们介绍了一种深度且轻量级的Transformer，名为DeLighT，它在参数数量显著减少的情况下，提供了与标准基于Transformer的模型相似或更好的性能。DeLighT更有效地在每个Transformer块内部（通过DeLighT变换）以及跨块（通过块级缩放）分配参数，允许输入端使用较浅较窄的DeLighT块，输出端使用较宽较深的DeLighT块。总体而言，DeLighT网络比标准Transformer模型深2.5到4倍，但参数和运算量更少。在基准机器翻译和语言建模任务上的实验表明，DeLighT在平均参数数量减少2到3倍的情况下，达到或提高了基线Transformer的性能。
+" />
+
+  <meta name="keywords" content="工作, 技术, 生活" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.91.0" />
+
+
+<link rel="canonical" href="https://weedge.github.io/post/paper/transformer/delight/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css" integrity="sha256-&#43;ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
+
+<meta property="og:title" content="论文解读 DeLighT: Very Deep and Light-weight Transformers" />
+<meta property="og:description" content="在看apple 最近发布的OpenEM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。
+论文主作者：Sachin Mehta 
+论文地址：https://arxiv.org/pdf/2008.00623
+论文代码： https://github.com/sacmehta/delight （基于当时facebook的 fairseq seq2seq工具库开发）
+该论文研究是在作者以前的DeFINE: DEep Factorized INput Token Embeddings for Neural Sequence Modeling 进行改进，模型结构引入更多的GLTs，来学习更宽的权重，并且减少了参数数量。
+摘要
+我们介绍了一种深度且轻量级的Transformer，名为DeLighT，它在参数数量显著减少的情况下，提供了与标准基于Transformer的模型相似或更好的性能。DeLighT更有效地在每个Transformer块内部（通过DeLighT变换）以及跨块（通过块级缩放）分配参数，允许输入端使用较浅较窄的DeLighT块，输出端使用较宽较深的DeLighT块。总体而言，DeLighT网络比标准Transformer模型深2.5到4倍，但参数和运算量更少。在基准机器翻译和语言建模任务上的实验表明，DeLighT在平均参数数量减少2到3倍的情况下，达到或提高了基线Transformer的性能。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/paper/transformer/delight/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2024-04-28T10:26:23+08:00" />
+<meta property="article:modified_time" content="2024-04-28T10:26:23+08:00" />
+
+<meta itemprop="name" content="论文解读 DeLighT: Very Deep and Light-weight Transformers">
+<meta itemprop="description" content="在看apple 最近发布的OpenEM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。
+论文主作者：Sachin Mehta 
+论文地址：https://arxiv.org/pdf/2008.00623
+论文代码： https://github.com/sacmehta/delight （基于当时facebook的 fairseq seq2seq工具库开发）
+该论文研究是在作者以前的DeFINE: DEep Factorized INput Token Embeddings for Neural Sequence Modeling 进行改进，模型结构引入更多的GLTs，来学习更宽的权重，并且减少了参数数量。
+摘要
+我们介绍了一种深度且轻量级的Transformer，名为DeLighT，它在参数数量显著减少的情况下，提供了与标准基于Transformer的模型相似或更好的性能。DeLighT更有效地在每个Transformer块内部（通过DeLighT变换）以及跨块（通过块级缩放）分配参数，允许输入端使用较浅较窄的DeLighT块，输出端使用较宽较深的DeLighT块。总体而言，DeLighT网络比标准Transformer模型深2.5到4倍，但参数和运算量更少。在基准机器翻译和语言建模任务上的实验表明，DeLighT在平均参数数量减少2到3倍的情况下，达到或提高了基线Transformer的性能。"><meta itemprop="datePublished" content="2024-04-28T10:26:23+08:00" />
+<meta itemprop="dateModified" content="2024-04-28T10:26:23+08:00" />
+<meta itemprop="wordCount" content="20991">
+<meta itemprop="keywords" content="LLM,model,transformers,block-wise scaling," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="论文解读 DeLighT: Very Deep and Light-weight Transformers"/>
+<meta name="twitter:description" content="在看apple 最近发布的OpenEM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。
+论文主作者：Sachin Mehta 
+论文地址：https://arxiv.org/pdf/2008.00623
+论文代码： https://github.com/sacmehta/delight （基于当时facebook的 fairseq seq2seq工具库开发）
+该论文研究是在作者以前的DeFINE: DEep Factorized INput Token Embeddings for Neural Sequence Modeling 进行改进，模型结构引入更多的GLTs，来学习更宽的权重，并且减少了参数数量。
+摘要
+我们介绍了一种深度且轻量级的Transformer，名为DeLighT，它在参数数量显著减少的情况下，提供了与标准基于Transformer的模型相似或更好的性能。DeLighT更有效地在每个Transformer块内部（通过DeLighT变换）以及跨块（通过块级缩放）分配参数，允许输入端使用较浅较窄的DeLighT块，输出端使用较宽较深的DeLighT块。总体而言，DeLighT网络比标准Transformer模型深2.5到4倍，但参数和运算量更少。在基准机器翻译和语言建模任务上的实验表明，DeLighT在平均参数数量减少2到3倍的情况下，达到或提高了基线Transformer的性能。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [["$", "$"]],
+    },
+    displayMath: [
+      ["$$", "$$"],
+      ["\[\[", "\]\]"],
+    ],
+    svg: {
+      fontCache: "global",
+    },
+  };
+</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script
+  id="MathJax-script"
+  async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+></script>
+
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">时间飘过</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/perf-book-cn/zh/" rel="noopener" target="_blank">
+              《现代CPU性能分析与优化》
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      时间飘过
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/perf-book-cn/zh/" rel="noopener" target="_blank">
+              《现代CPU性能分析与优化》
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">论文解读 DeLighT: Very Deep and Light-weight Transformers</h1>
+      
+      <div class="post-meta">
+        <time datetime="2024-04-28" class="post-time">
+          2024-04-28
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E5%AD%A6%E6%9C%AF/"> 学术 </a>
+            <a href="https://weedge.github.io/categories/paper/"> paper </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#摘要"><strong>摘要</strong></a></li>
+    <li><a href="#1-引言">1 <strong>引言</strong></a></li>
+    <li><a href="#2-相关工作"><strong>2 相关工作</strong></a></li>
+    <li><a href="#3-delight-深度轻量级transformer">3 DeLighT: 深度轻量级Transformer</a>
+      <ul>
+        <li><a href="#31-delight">3.1 DeLighT</a></li>
+        <li><a href="#32-delight-blocklayer">3.2 DeLighT Block/Layer</a></li>
+        <li><a href="#33-blocklayer-wise-scaling">3.3 Block/Layer wise scaling</a></li>
+      </ul>
+    </li>
+    <li><a href="#4-实验结果">4 实验结果</a>
+      <ul>
+        <li><a href="#41-机器翻译machine-translation">4.1 机器翻译(machine translation)</a></li>
+        <li><a href="#42-语言建模language-modeling">4.2 语言建模(language modeling)</a></li>
+      </ul>
+    </li>
+    <li><a href="#5-计算效率的分析与讨论">5 计算效率的分析与讨论</a></li>
+    <li><a href="#6-结论">6 结论</a></li>
+    <li><a href="#参考文献">参考文献</a></li>
+    <li><a href="#附录a-delight架构用于语言建模和机器翻译"><strong>附录A DeLighT架构用于语言建模和机器翻译</strong></a></li>
+    <li><a href="#附录b-带有输入混合器连接的组线性变换"><strong>附录B 带有输入混合器连接的组线性变换</strong></a></li>
+    <li><a href="#附录c-delight中的乘加操作"><strong>附录C DeLighT中的乘加操作</strong></a></li>
+    <li><a href="#附录-d-wikitext-103-数据集的消融ablation研究"><strong>附录 D WikiText-103 数据集的消融(ablation)研究</strong></a></li>
+    <li><a href="#附录e-组线性变换的源代码"><strong>附录E 组线性变换的源代码</strong></a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <p>在看apple 最近发布的OpenEM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： <a href="https://machinelearning.apple.com/research/openelm"><strong>OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework</strong></a>），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。</p>
+<p>论文主作者：<a href="https://sacmehta.github.io/">Sachin Mehta </a></p>
+<p>论文地址：https://arxiv.org/pdf/2008.00623</p>
+<p>论文代码： <a href="https://github.com/sacmehta/delight">https://github.com/sacmehta/delight</a> （基于当时facebook的 <a href="https://github.com/facebookresearch/fairseq">fairseq</a> seq2seq工具库开发）</p>
+<p>该论文研究是在作者以前的DeFINE: DEep Factorized INput Token Embeddings for Neural Sequence Modeling 进行改进，模型结构引入更多的GLTs，来学习更宽的权重，并且减少了参数数量。</p>
+<h2 id="摘要"><strong>摘要</strong></h2>
+<p>我们介绍了一种深度且轻量级的Transformer，名为DeLighT，它在参数数量显著减少的情况下，提供了与标准基于Transformer的模型相似或更好的性能。DeLighT更有效地在每个Transformer块内部（通过DeLighT变换）以及跨块（通过块级缩放）分配参数，允许输入端使用较浅较窄的DeLighT块，输出端使用较宽较深的DeLighT块。总体而言，DeLighT网络比标准Transformer模型深2.5到4倍，但参数和运算量更少。在基准机器翻译和语言建模任务上的实验表明，DeLighT在平均参数数量减少2到3倍的情况下，达到或提高了基线Transformer的性能。</p>
+<h2 id="1-引言">1 <strong>引言</strong></h2>
+<p>基于注意力的Transformer网络（Vaswani et al., 2017）广泛用于序列建模任务，包括语言建模和机器翻译。为了提高性能，模型通常通过增加隐藏层的维度（变得更宽）或堆叠更多的Transformer块（变得更深）来进行扩展。例如，T5（Raffel et al., 2019）使用了65K的维度，而GPT-3（Brown et al., 2020）使用了96个Transformer块。然而，这种扩展显著增加了网络参数的数量（例如，T5和GPT-3分别拥有110亿和1750亿参数），并使学习过程复杂化，即这些模型要么需要非常大的训练语料库（Raffel et al., 2019; Devlin et al., 2019; Brown et al., 2020），要么需要仔细的正则化（Hinton et al., 2012; Wan et al., 2013; Merity et al., 2018a）。在本文中，我们介绍了一种新的参数高效注意力基础架构，可以轻松地扩展为宽和深。
+我们的深度轻量级Transformer架构，DeLighT，扩展了Vaswani et al.（2017）的Transformer架构，并在参数和运算量显著减少的情况下提供了相似或更好的性能。DeLighT的核心是DeLighT变换，它使用Mehta et al.（2018）的组线性变换（GLTs）和扩展-缩减策略，有效地变化DeLighT块的宽度和深度。由于GLTs本质上是局部的，DeLighT变换使用特征洗牌，类似于卷积网络（Zhang et al., 2018）中的通道洗牌，以在不同组之间共享信息。这种宽和深的表示促进了用单头注意力和轻量级前馈层替代Transformer中的多头注意力和前馈层，从而减少了总网络参数和运算量。重要的是，与Transformer不同，DeLighT变换将深度和宽度与输入大小解耦，允许我们通过在输入端使用较浅较窄的DeLighT块，在输出端使用较深较宽的DeLighT块，更有效地跨块分配参数。
+我们证明了DeLighT模型在两个常见的序列建模任务上，即（i）机器翻译和（ii）语言建模，实现了与Transformer模型相似或更好的性能，同时显著减少了参数和运算量。在资源较少的WMT’16 En-Ro机器翻译数据集上，DeLighT使用2.8倍更少的参数达到了Transformer的性能。在资源充足的WMT’14 En-Fr数据集上，DeLighT以1.8倍更少的参数提供了比基线Transformer更好的性能（+0.4 BLEU分数）。同样，在语言建模方面，DeLighT在WikiText-103数据集上与Transformer-XL（Dai et al., 2019）的性能相当，但参数数量减少了1.5倍。</p>
+<h2 id="2-相关工作"><strong>2 相关工作</strong></h2>
+<p><strong>改进Transformer(Improving transformers)</strong>：已经引入了几种方法来改进Transformer架构。第一条研究线索解决了在长输入序列上计算自注意力的挑战（Child et al., 2019; Kitaev et al., 2020; Beltagy et al., 2020）。这些方法可以与我们的架构结合使用。第二条研究线索集中在解释多头注意力（Raganato and Tiedemann, 2018; Brunner et al., 2020）。他们表明，增加Transformer头的数量可能会导致冗余表示（Voita et al., 2019a; Michel et al., 2019），并且使用具有预定义模式的固定注意力头（Raganato et al., 2020）或合成注意力矩阵（Tay et al., 2020）可以提高性能。第三条研究线索集中在通过学习更好的表示来改进Transformer（Wu et al., 2019; 2020; So et al., 2019）。这些工作旨在通过使用不同的变换来提高Transformer的表达能力——例如，使用卷积（Wu et al., 2019; Gehring et al., 2017）、门控线性单元（Dauphin et al., 2017）或多分支特征提取器（So et al., 2019; Wu et al., 2020）。我们的工作属于这一类。与之前的工作不同，我们展示了如何有效地在块级别使用DeLighT变换以及跨块使用块级缩放来分配参数。</p>
+<p><strong>模型缩放(Model scaling)</strong>：模型缩放是提高序列模型性能的标准方法（Vaswani et al., 2017; Raffel et al., 2019; Lan et al., 2020; Devlin et al., 2019; Shoeybi et al., 2019; Tan and Le, 2019; Brown et al., 2020）。在宽度缩放中增加模型维度（Vaswani et al., 2017; Devlin et al., 2019），而在深度缩放中堆叠更多的块（例如，Transformer块）（Shoeybi et al., 2019; Brown et al., 2020; Wang et al., 2019）。在这两种情况（及其组合）中，网络中每个块内的参数是相同的，这可能导致次优解决方案。为了进一步提高序列模型的性能，本文引入了块级缩放，允许不同大小的块并有效地在网络中分配参数。我们的结果表明，（1）输入端的DeLighT块较浅较窄，输出端的DeLighT块较深较宽，能提供最佳性能，以及（2）与单独的模型缩放相比，结合块级缩放的模型缩放实现了更好的性能。我们注意到，卷积神经网络（CNNs）也在输入端学习较浅较窄的表示，在输出端学习较深较宽的表示。与CNNs（例如，He et al. 2016的ResNet）在每个卷积层执行固定数量的操作不同，所提出的块级缩放在每层和块中使用可变数量的操作。</p>
+<p><strong>改进序列模型(Improving sequence models)</strong>：最近还有大量关于改进序列模型的相关方法的工作，包括（1）使用更好的Token级表示提高准确性——例如，使用BPE（Sennrich et al., 2016）、自适应输入（Baevski and Auli, 2019）和输出（Grave et al., 2017a），以及DeFINE（Mehta et al., 2020），以及（2）提高效率——例如，使用压缩（Chen et al., 2018; Sun et al., 2020）、剪枝（Han et al., 2016; Voita et al., 2019b）和蒸馏（Hinton et al., 2015; Sanh et al., 2019）。与我们的工作最接近的是DeFINE变换，它也使用扩展-缩减策略学习表示。DeFINE变换（图1c）和DeLighT变换（图1d）之间的关键区别在于，DeLighT变换在扩展和缩减层中更有效地分配参数。与DeFINE不同，后者在组线性变换中使用较少的组来学习更宽的表示，DeLighT变换使用更多的组以更少的参数学习更宽的表示。DeLighT变换实现了与DeFINE变换相当的性能，但参数数量显著减少。</p>
+<h2 id="3-delight-深度轻量级transformer">3 DeLighT: 深度轻量级Transformer</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><img src="https://github.com/weedge/mypic/raw/master/paper/transformer/DeLighT/1.png" alt="image-20240428123509253"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>图1. (a, b)标准Transformer块与DeLighT块之间的块级别比较。在DeLighT中，计算注意力的操作数量减少了一半，而FFN中的参数数量（和操作）减少了$16\times$。具有可学习参数的变换（Linear(天空蓝) 和 DeLighT(地上草绿色)）显示为彩色。线性变换的形状指示其操作（扩展、减少等）。(c, d) 将DeFINE变换与DeLighT进行了比较。与DeFINE变换相比，DeLighT使用了更多组的组线性变换（group linear transformations GLTs）来学习更宽的表示，并减少了参数数量。不同颜色用于显示GLTs中的组。为简单起见，（d）中未显示特征洗牌。</em></td>
+</tr>
+</tbody>
+</table>
+<p>标准的Transformer块（图1a）由多头注意力组成，使用查询-键-值分解来建模序列标记之间的关系，并且由一个前馈网络（FFN）来学习更宽的表示。多头注意力通过对输入应用三个投影来获取查询$\mathbf{Q}$、键$\mathbf{K}$和值$\mathbf{V}$，每个投影由$h$个线性层（或头）组成，将$d_m$维输入映射到$d_h$维空间，其中$d_h=d_m/h$是头的维度。FFN由两个线性层组成，其中第一个将维度从$d_m$扩展到$d_f$，第二个将维度从$d_f$减少到$d_m$。Transformer块的深度为4，包括（1）用于query、key和value的三个并行分支，（2）将多个头的输出组合的融合层，以及（3）FFN中的两个顺序线性层。一般来说，基于Transformer的网络通过顺序堆叠Transformer块来增加网络的容量和深度。</p>
+<p>本文扩展了Transformer架构，引入了一个深度轻量级的Transformer，DeLighT。我们的模型使用深度轻量级的扩展-减少变换，DeLighT（第3.1节），有效地实现了学习更宽的表示。它还允许用单头注意力和轻量级FFN（第3.2节）替换多头注意力和前馈网络（FFN）层。DeLighT将注意力维度与深度和宽度解耦，使我们能够使用块级别缩放而不是均匀堆叠Transformer块来有效地学习表示（第3.3节）。</p>
+<h3 id="31-delight">3.1 DeLighT</h3>
+<p>DeLighT将一个$d_m$维输入向量映射到一个高维空间（扩展），然后使用Mehta等人（2018）的$N$ 层组变换将其减少到一个$d_o$维输出向量（缩减），如图1 d所示。在这些扩展和缩减阶段，DeLighT变换使用组线性变换（GLTs），因为它们通过从输入的特定部分派生输出来学习局部表示，并且比线性变换更高效。为了学习全局表示，DeLighT变换使用特征洗牌，在组线性变换中不同组之间共享信息，类似于卷积网络中的通道洗牌（Zhang等人，2018）。</p>
+<p>增加Transformer的表达能力和容量的标准方法是增加输入维度$d_m$。然而，线性增加$d_m$也会线性增加标准Transformer块中多头注意力的操作数量（$\mathcal{O}(n^2 d_m)$，其中$n$是序列长度）（图1 a）。相比之下，为了增加DeLighT块的表达能力和容量，我们通过扩展和减少阶段增加其中间DeLighT变换的深度和宽度。这使得我们可以使用较小的维度计算注意力，从而减少操作数量。</p>
+<p>形式上，DeLighT由五个配置参数控制：（1）GLT层数$N$，（2）宽度倍增器$w_m$，（3）输入维度$d_m$，（4）输出维度$d_o$，以及（5）GLT中的最大组数$g_{max}$。在扩展阶段，DeLighT使用$\lceil \frac{N}{2} \rceil$层将$d_m$维输入线性投影到高维空间$d_{max}=w_m d_m$。在减少阶段，DeLighT使用剩余的$N - \lceil \frac{N}{2} \rceil$ GLT层将$d_{max}$维向量线性投影到$d_o$维空间。数学上，我们定义每个GLT层$l$的输出$\mathbf{Y}$为：</p>
+<p>$$
+\begin{equation}
+\mathbf{Y}^l = \left\{
+\begin{array}{ll}
+\mathcal{F} \left(\mathbf{X}, \mathbf{W}^l, \mathbf{b}^l, g^l\right), &amp; l = 1 \\
+\mathcal{F} \left( \mathcal{H}\left(\mathbf{X}, \mathbf{Y}^{l-1}\right), \mathbf{W}^l,  \mathbf{b}^l, g^l\right), &amp;  \text{Otherwise}
+\end{array}
+\right.
+\label{eq:glt}
+\end{equation}
+$$</p>
+<p>其中 $\mathbf{W}^l = \lbrace \mathbf{W}^l_1, \cdots, \mathbf{W}^l_{g^l}\rbrace$  和 $\mathbf{b}^l = \lbrace \mathbf{b}^l_1, \cdots, \mathbf{b}^l_{g^l}\rbrace$ 是第$l$层GLT的可学习权重和偏置，其中$g^l$是第$l$层GLT的组数。简言之，$\mathcal{F}$函数接受输入$\mathbf{X}$（或$\mathcal{H}\left(\mathbf{X}, \mathbf{Y}^{l-1}\right)$）并将其分成$g^l$个不重叠的组，使得$\mathbf{X} = \lbrace\mathbf{X}_1,\cdots,\mathbf{X}_{g^l}\rbrace$ 。</p>
+<p>然后，$\mathcal{F}$ 函数线性地变换每个$\mathbf{X}_i$，得到输出$\mathbf{Y}^l_i = \mathbf{X}_i \mathbf{W}_i^l + \mathbf{b}_i^l$。每个组的输出$\mathbf{Y}^l_i$然后被串联起来，产生输出$\mathbf{Y}^l$。函数$\mathcal{H}$首先对$\mathbf{Y}^{l-1}$中每个组的输出进行洗牌，然后使用Mehta等人（2020）的输入混合器连接将其与输入$\mathbf{X}$组合起来，以避免梯度消失问题。图2 可视化了DeLighT变换中的扩展阶段，其中包括组线性变换、特征洗牌和输入混合器连接。</p>
+<p>在DeLighT中，第$l$个GLT的组数计算为：
+$$
+\begin{equation}
+g^l = \left\{
+\begin{array}{lr}
+\text{min}(2^{l-1}, g_{max}), &amp; 1 \leq l \leq \lceil{N/2}\rceil \\
+g^{N-l}, &amp; \text{Otherwise}
+\end{array}
+\right.
+\end{equation}
+$$
+在我们的实验中，我们使用$g_{max} = \lceil \frac{d_m}{32} \rceil$，以便每个组至少有32个输入元素。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><img src="https://github.com/weedge/mypic/raw/master/paper/transformer/DeLighT/2.png" alt="image-20240428132940873"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>图2.示例说明了DeLighT变换中的扩展阶段，该阶段使用GLTs、特征洗牌和输入混合器连接，以有效地学习更深和更宽的表示。为了说明，我们使用了相同的输入和输出维度。</em></td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-delight-blocklayer">3.2 DeLighT Block/Layer</h3>
+<p>图1 b展示了我们如何将DeLighT集成到Transformer块中以提高其效率。首先将$d_m$维输入馈送到DeLighT中，产生$d_o$维输出，其中$d_o &lt; d_m$。然后将这些$d_o$维输出馈送到单头注意力中，接着是一个轻量级FFN来建模它们之间的关系。</p>
+<p><strong>DeLighT层和单头注意力(DeLighT layer and single head attention)</strong>： 假设我们有一个长度为$n$的输入标记序列，每个标记的维度为$d_m$。首先将这$n$个$d_m$维输入馈送到DeLighT中，产生$n$个$d_o$维输出，其中$d_o &lt; d_m$。然后使用三个线性层同时对这些$n$个$d_o$维输出进行投影，得到$d_o$维的查询$\mathbf{Q}$、键$\mathbf{K}$和值$\mathbf{V}$。然后我们使用缩放点积注意力（公式3）对这些n个Token之间的上下文关系进行建模。为了启用残差连接（He等人，2016），这个注意力操作的$d_o$维输出被线性投影到一个$d_m$维的空间。
+$$
+\begin{equation}
+\text{Attention}(\mathbf{K}, \mathbf{Q}, \mathbf{V}) = \text{softmax}\left(\frac{\mathbf{Q}\mathbf{K}^T}{\sqrt{d_o}}\right) \mathbf{V}
+\label{eq:espda}
+\end{equation}
+$$
+我们假设DeLighT学习更宽的表示的能力使我们能够用单头注意力替换多头注意力。标准Transformer中计算注意力的计算成本为$\mathcal{O}(d_m n^2)$，而DeLighT块中为$\mathcal{O}(d_o n^2)$，其中$d_o &lt; d_m$。因此，DeLighT块将计算注意力的成本减少了一个因子$d_m/d_o$。在我们的实验中，我们使用$d_o=d_m/2$，因此与Transformer架构相比，需要$2\times$更少的乘加操作。</p>
+<p><strong>轻量级(Light-weight) FFN</strong> ：与Transformer中的FFN类似，这个块也由两个线性层组成。由于DeLighT块已经通过DeLighT集成了更宽的表示，它允许我们反转Transformer中FFN层的功能。第一层将输入的维度从$d_m$减少到$d_m/r$，而第二层将维度从$d_m/r$扩展到$d_m$，其中$r$是缩减因子（见图1b）。我们的轻量级FFN通过因子$r d_f/d_m$减少了FFN中的参数和操作数量。在标准Transformer中，FFN的维度扩展了4倍（Transformer-base使用$d_m$=512和$d_f$=2048，而Transformer-large使用$d_m$=1024和$d_f$=4096）。 在我们的实验中，我们使用$r=4$。因此，轻量级FFN将FFN中的参数数量减少了$16\times$。</p>
+<p><strong>block/layer深度</strong>：DeLighT块堆叠了（1）<strong>具有 $N$个GLT的DeLighT</strong> ，（2）三个并行的用于Key、Query和Value的线性层，（3）一个投影层，和（4）轻量级FFN的两个线性层。因此，DeLighT块的深度为$N+4$。与标准Transformer块（深度为4）相比，DeLighT块更深。</p>
+<h3 id="33-blocklayer-wise-scaling">3.3 Block/Layer wise scaling</h3>
+<p>提高序列模型性能的标准方法包括增加模型维度（宽度缩放）、堆叠更多的块（深度缩放）或两者兼有。然而，这种缩放在小型数据集上并不是非常有效。例如，当在WMT’16 En-Ro语料库上将Transformer-Base（$d_m$ = 512）网络替换为Transformer-Large（$d_m$ = 1024）时，参数数量增加了大约4倍，而性能并没有显著变化（BLEU：34.28 vs. 34.35）。我们假设这是因为模型宽度和深度的缩放是在块之间均匀分配参数，这可能导致学习冗余参数。为了创建深而宽的网络，我们将模型缩放扩展到块级（见图3）。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><img src="https://github.com/weedge/mypic/raw/master/paper/transformer/DeLighT/3.png" alt="image-20240428134732165"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>图3： <strong>块级缩放(block-wise scaling)</strong> 有效地分配参数和操作到各个块中，导致接近输入的DeLighT块更浅更窄，接近输出的DeLighT块更深更宽。在（b）中，具有统一缩放（$N=N_{min}=N_{max}=8$）和块级缩放（$N_{min}=4$，$N_{max}=8$）的DeLighT网络拥有约16.7百万个参数并执行35亿次操作（针对序列长度$n=30$计算），然而，具有块级缩放的DeLighT网络交付了更好的困惑度，提高了2个点。</em></td>
+</tr>
+</tbody>
+</table>
+<p><strong>缩放DeLighT块</strong>： DeLighT块使用DeLighT学习深度和宽度可变的表示，其深度和宽度由两个配置参数控制：GLT层的数量$N$和宽度乘数$w_m$（图3a）。这些配置参数允许我们独立于输入$d_m$和输出$d_o$维度增加DeLighT块内的可学习参数数量。这种校准在标准Transformer块中是不可能的，因为它们的表达能力和容量是输入的函数（输入维度=头数$\times$头维度）。在这里，我们介绍了块级别的缩放，它创建了一个具有可变大小DeLighT块的网络，将浅层和窄层的DeLighT块分配给输入附近，而将深层和宽层的DeLighT块分配给输出附近。</p>
+<p>为此，我们引入了两个网络范围的配置参数：最小$N_{min}$和最大$N_{max}$ GLT的数量。对于第$b$个DeLighT块，我们使用线性缩放计算如下公式中的GLT数量$N^b$和宽度乘数$w_m^b$。通过这种缩放，每个DeLighT块具有不同的深度和宽度（见图3a）。
+$$
+N^{b} = N_{min} + \frac{(N_{max} - N_{min})\ b}{\mathcal{B}-1}, \quad w_m^{b} =  w_m + \frac{(N_{max} - N_{min})\ b}{N_{min}(\mathcal{B}-1)}, \quad 0 \le b \le \mathcal{B}-1
+$$
+这里，$\mathcal{B}$表示网络中DeLighT块的数量。我们在GLT层数$N$和宽度乘数$w_m$上添加上标$b$，以表示这些参数是针对第$b$个块的。</p>
+<p><strong>网络深度</strong>： Transformer块的深度是固定的，即4。因此，先前的工作（Raffel et al., 2019; Brown et al., 2020; Wang et al., 2019）已经将基于Transformer的网络的深度与Transformer块的数量联系起来。在DeLighT中，我们提出了一种不同的视角来学习更深层次的表示，其中每个块的大小是可变的。为了计算网络深度，我们使用不同领域（包括计算机视觉，例如He等人2016年的ResNet，以及理论机器学习，例如Telgarsky, 2016）的标准定义。这些工作将网络深度定义为连续可学习层的数量（例如，卷积、线性或组线性）。类似地，具有$\mathcal{B}$个块的DeLighT和Transformer网络的深度分别为$\sum_{b=0}^{\mathcal{B}-1} (N^b + 4)$和$4\mathcal{B}$。</p>
+<h2 id="4-实验结果">4 实验结果</h2>
+<p>我们在两个标准的序列建模任务上评估了DeLighT的性能：（1）机器翻译（第4.1节）和（2）语言建模（第4.2节）。</p>
+<h3 id="41-机器翻译machine-translation">4.1 机器翻译(machine translation)</h3>
+<p><strong>数据集和评估</strong>：我们在四个数据集上对DeLighT模型进行了基准测试：（1）IWSLT’14 德语-英语（De-En），（2）WMT’16 英语-罗马尼亚语（En-Ro），（3）WMT’14 英语-德语（WMT’14 En-De），以及（4）WMT’14 英语-法语（WMT’14 En-Fr）。对于IWSLT’14 De-En数据集，我们复制了Wu等人（2019）和Edunov等人（2018）的设置，使用160K/7K/7K句子对进行训练、验证和测试，以及大约10K个令牌的联合BPE词汇表。对于WMT’14 En-De数据集，我们遵循了Vaswani等人（2017）的设置。数据集包含3.9M/39K/3K句子对，分别用于训练、验证和测试，以及44K的联合BPE词汇表大小。对于WMT’14 En-Fr数据集，我们复制了Gehring等人（2017）的设置，使用36M/27K/3K句子对进行训练、验证和测试，以及44K的联合BPE词汇表大小（我们使用的是与Tensor2Tensor库（Vaswani等人，2018）兼容的训练和验证数据，以便与最近的工作（例如，进化Transformer）进行公平比较）。性能是根据测试集上的BLEU分数（Papineni等人，2002）（分数越高越好）来评估的。我们遵循Wu等人（2019）的束搜索相关超参数设置。</p>
+<p><strong>架构</strong>：我们采用了Vaswani等人（2017）的对称编码器-解码器架构，并使用了正弦位置编码。编码器和解码器都包含了$\mathcal{B}$个DeLighT块。解码器块与编码器块相同（见图1b），不同之处在于它们在轻量级FFN之前有一个额外的源-目标单头注意力单元。在源-目标单头注意力单元中，键和值是对编码器输出的投影（详细内容见附录A）。在我们的实验中，我们对WMT’16 En-Ro、WMT’14 En-De和WMT’14 En-Fr使用了$w_m=2$, $N_{min}=4$, 和 $N_{max}=8$ ；这导致了222层深的DeLighT网络。对于IWSLT’14 De-En，我们使用了$w_m=1$, $N_{min}=3$, 和 $N_{max}=9$；这导致了289层深的网络。为了简化，我们设置了$\mathcal{B}=N_{max}$。我们使用了一个可学习的查找表，将词汇表中的每个Token映射到一个128维的向量。我们使用Fairseq（Ott等人，2019）实现了我们的模型，并使用了他们提供的脚本进行数据预处理、训练和评估。</p>
+<p><strong>训练</strong>：对于IWSLT’14 De-En模型，我们遵循了Wu等人（2019）的设置，并在单个NVIDIA GTX 1080 GPU上，以4K令牌的批量大小对所有模型进行了50K次迭代的训练。对于WMT’16 En-Ro，我们遵循了Ghazvininejad等人（2019）的训练设置，并在16个NVIDIA Tesla V100 GPU上进行了100K次迭代的训练，有效批量大小为64K令牌。对于WMT’14 En-De和WMT’14 En-Fr，我们遵循了Wu等人（2019）的训练设置，并在16个V100 GPU上分别进行了30K和50K次迭代的训练。我们使用Adam（Kingma和Ba，2015）在训练期间最小化交叉熵损失，并使用了标签平滑值为0.1。为了公平比较，我们训练基线Transformer模型时使用了相同的训练设置。</p>
+<h4 id="411-结果">4.1.1 结果</h4>
+<p><strong>与基线Transformer的比较</strong>：表1比较了DeLighT与Vaswani等人（2017）在不同语料库上的基线Transformer的性能。DeLighT在不同语料库上都以更少的参数实现了更好的或相似的性能。具体来说，在资源较少（WMT’16 En-Ro）和资源丰富（WMT’14 En-De &amp; WMT’14 En-Fr）的语料库上，DeLighT分别以2.8倍和1.8倍更少的参数实现了相似或更好的性能。当参数数量增加时，DeLighT的性能超过了Transformer。例如，在WMT’14 En-Fr数据集上，DeLighT比Transformer深3.7倍，提高了1.3个BLEU分数，但参数数量少了1300万，操作数量少了30亿（见表2）。</p>
+<h4 id="小型语料库结果">小型语料库结果</h4>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th>WMT’14 En-De</th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>WMT’14 En-Fr</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>模型</td>
+<td>参数数量</td>
+<td>比率</td>
+<td>BLEU</td>
+<td>BLEU变化</td>
+<td></td>
+<td>参数数量</td>
+<td>比率</td>
+<td>BLEU</td>
+<td>BLEU变化</td>
+</tr>
+<tr>
+<td>Transformer (Vaswani et al., 2017)</td>
+<td>&ndash;</td>
+<td>&ndash;</td>
+<td>34.4$^\dagger$</td>
+<td>&ndash;</td>
+<td></td>
+<td>62 M</td>
+<td>&ndash;</td>
+<td>34.3$^\ddagger$</td>
+<td>&ndash;</td>
+</tr>
+<tr>
+<td>Transformer (我们的实现)</td>
+<td>42 M</td>
+<td>$1.0\times$</td>
+<td>34.3</td>
+<td>&ndash;</td>
+<td></td>
+<td>62 M</td>
+<td>$1.0\times$</td>
+<td>34.3</td>
+<td>&ndash;</td>
+</tr>
+<tr>
+<td>DeLighT</td>
+<td>14 M</td>
+<td>$0.3\times$</td>
+<td>33.8</td>
+<td>-0.5</td>
+<td></td>
+<td>22 M</td>
+<td>$0.35\times$</td>
+<td>34.3</td>
+<td>0.0</td>
+</tr>
+<tr>
+<td>DeLighT</td>
+<td>30 M</td>
+<td>$0.7\times$</td>
+<td><strong>35.3</strong></td>
+<td><strong>+1.0</strong></td>
+<td></td>
+<td>53 M</td>
+<td>$0.85\times$</td>
+<td><strong>34.7</strong></td>
+<td><strong>+0.4</strong></td>
+</tr>
+</tbody>
+</table>
+<h4 id="大型语料库结果">大型语料库结果</h4>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th>WMT’14 En-De</th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>WMT’14 En-Fr</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>模型</td>
+<td>参数数量</td>
+<td>比率</td>
+<td>BLEU</td>
+<td>BLEU变化</td>
+<td></td>
+<td>参数数量</td>
+<td>比率</td>
+<td>BLEU</td>
+<td>BLEU变化</td>
+</tr>
+<tr>
+<td>Transformer (Vaswani et al., 2017)</td>
+<td>62 M</td>
+<td>&ndash;</td>
+<td>27.3</td>
+<td>&ndash;</td>
+<td></td>
+<td>&ndash;</td>
+<td>62 M</td>
+<td>38.1</td>
+<td>&ndash;</td>
+</tr>
+<tr>
+<td>Transformer (我们的实现)</td>
+<td>67 M</td>
+<td>$1.0\times$</td>
+<td>27.7</td>
+<td>&ndash;</td>
+<td></td>
+<td>67 M</td>
+<td>$1.0\times$</td>
+<td>39.2</td>
+<td>&ndash;</td>
+</tr>
+<tr>
+<td>DeLighT</td>
+<td>37 M</td>
+<td>$0.55\times$</td>
+<td>27.6</td>
+<td>-0.1</td>
+<td></td>
+<td>37 M</td>
+<td>$0.55\times$</td>
+<td>39.6</td>
+<td>+0.4</td>
+</tr>
+<tr>
+<td>DeLighT</td>
+<td>54 M</td>
+<td>$0.80\times$</td>
+<td><strong>28.0</strong></td>
+<td><strong>+0.3</strong></td>
+<td></td>
+<td>54 M</td>
+<td>$0.80\times$</td>
+<td><strong>40.5</strong></td>
+<td><strong>+1.3</strong></td>
+</tr>
+</tbody>
+</table>
+<p>表1：<strong>与基线Transformer在机器翻译语料库上的比较</strong>。DeLighT模型需要显著较少的参数来达到类似的性能。这里，$^\dagger$和$^\ddagger$分别表示Wu et al. (2019) 和 Ghazvininejad et al. (2019),中报告的最佳Transformer基线。</p>
+<hr>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>深度</th>
+<th>参数数量</th>
+<th>MAC数</th>
+<th>BLEU</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Transformer</td>
+<td>60</td>
+<td>67 M</td>
+<td>11.1 B</td>
+<td>39.2</td>
+</tr>
+<tr>
+<td>DeLighT</td>
+<td>222</td>
+<td>37 M</td>
+<td>5.6 B</td>
+<td>39.6</td>
+</tr>
+<tr>
+<td>DeLighT</td>
+<td>222</td>
+<td>54 M</td>
+<td>8.1 B</td>
+<td>40.5</td>
+</tr>
+</tbody>
+</table>
+<p>表2：与Transformer相比，DeLighT网络是深度、轻量级且高效的。BLEU分数是在WMT’14 En-Fr数据集上报告的。为了计算网络深度，我们统计了网络中顺序层的数量（第3.3节）。我们使用了20个源Token和20个目标Token来计算乘加操作（MACs）。详细信息见附录C。</p>
+<hr>
+<p>特别值得关注的是在WMT'14 En-De语料库上（如图4），DeLighT与Vaswani等人（2017年）的基准Transformer以及其神经搜索变体——So等人（2019年）的Evolved Transformer在两种不同参数设置下的性能比较。<strong>对于小型模型（小于1千万参数），DeLighT模型提供了更好的性能，并且要达到与这些模型相同的性能水平，DeLighT模型需要更少的参数</strong>。</p>
+<table>
+<thead>
+<tr>
+<th><img src="https://github.com/weedge/mypic/raw/master/paper/transformer/DeLighT/4.png" alt="image-20240428183808019"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><em>图4：在WMT'14 En-De语料库上，DeLighT与Transformer和Evolved Transformer在两种不同设置下的比较：（1）参数数量相同，（2）性能相同。</em></td>
+</tr>
+</tbody>
+</table>
+<p><strong>与最先进方法的比较</strong>：大多数最先进的方法都在WMT’14 En-De上评估了性能，一些也在IWSLT’14 De-En上进行了评估。表3比较了DeLighT与这些语料库上最先进方法的性能。DeLighT实现了与现有方法相似或更好的性能。重要的是要注意，现有方法通过不同的设计选择改进了基线Transformer——例如，不对称的编码器-解码器结构（Wang et al., 2019）和神经架构搜索（So et al., 2019）。我们相信，DeLighT将来也会从这些设计选择中受益。</p>
+<table>
+<thead>
+<tr>
+<th>IWSLT’14 De-En</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>模型</td>
+<td>参数数量</td>
+<td>BLEU</td>
+</tr>
+<tr>
+<td>Transformers  (Vaswani et al., 2017)</td>
+<td>42 M</td>
+<td>34.3</td>
+</tr>
+<tr>
+<td>Variational Attention (Deng et al., 2018)</td>
+<td>&ndash;</td>
+<td>33.1</td>
+</tr>
+<tr>
+<td>Dynamic convolutions (Vaswani et al., 2017)</td>
+<td>43 M</td>
+<td>35.2</td>
+</tr>
+<tr>
+<td>Lite Transformer$^\ddagger$ (Wu et al., 2020)</td>
+<td>&ndash;</td>
+<td>33.6</td>
+</tr>
+<tr>
+<td>DeLighT(我们的模型)</td>
+<td>30 M</td>
+<td>35.3</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>WMT’14 En-De</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>模型</td>
+<td>参数数量</td>
+<td>BLEU</td>
+</tr>
+<tr>
+<td>Transformer (Vaswani et al., 2017)</td>
+<td>62 M</td>
+<td>27.3</td>
+</tr>
+<tr>
+<td>DLCL (Wang et al., 2019)</td>
+<td>62 M</td>
+<td>27.3</td>
+</tr>
+<tr>
+<td>Evolved Transformer $^\dagger$ (So et al., 2019)</td>
+<td>46 M</td>
+<td>27.7</td>
+</tr>
+<tr>
+<td>Lite Transformer$^\ddagger$ (Wu et al., 2020)</td>
+<td>&ndash;</td>
+<td>26.5</td>
+</tr>
+<tr>
+<td>DeLighT(我们的模型)</td>
+<td>37 M</td>
+<td>27.6</td>
+</tr>
+</tbody>
+</table>
+<p>表3：与机器翻译语料库上的最新方法进行比较。DeLighT模型在参数较少的情况下提供了与最新模型相似或更好的性能。这里，$^\dagger$表示网络使用神经架构搜索（NAS），$^\ddagger$ 表示未报告完整的网络参数。</p>
+<p><strong>DeLighT模型的扩展</strong>：图5 显示了随着网络参数增加，DeLighT模型的性能提高；表明它们能够在不同语料库上学习表示，包括资源较少的语料库。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><img src="https://github.com/weedge/mypic/raw/master/paper/transformer/DeLighT/5.png" alt="image-20240428184459900"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">图5: <strong>DeLighT模型的规模扩展</strong>。随着网络参数数量的增加，DeLighT在不同语料库（包括低资源语料库WMT'16 En-Ro）上的性能都有所提高。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-语言建模language-modeling">4.2 语言建模(language modeling)</h3>
+<p><strong>数据集和评估</strong>：我们在WikiText-103数据集上进行评估（Merity et al., 2017），该数据集有103M/217K/245K个Token用于训练、验证和测试。它有一个大约260K个Token的词级词汇表。按照最近的工作（Baevski和Auli，2019；Dai等人，2019），我们在测试集上以困惑度（越低越好）报告性能。</p>
+<p><strong>架构</strong>：我们使用Baevski和Auli（2019）的基于Transformer的解码器架构，带有B个DeLighT块。我们使用$w_m$=$2$, $N_{min}$=$4$, 和 $N_{max}$=$12$。我们使用自适应输入（Baevski和Auli，2019）作为查找表，并将自适应输出（Grave et al., 2017a）作为分类层，具有一个头（头维度为128）和两个尾部（尾部维度分别为64和32）。我们还共享了输入和输出层之间的权重。</p>
+<p><strong>训练</strong>：我们遵循Baevski和Auli（2019）的训练设置，只是我们所有的模型都在8个NVIDIA Tesla V100 GPU上进行了100K次迭代的训练，上下文长度为512，有效批量大小为64K令牌。我们使用Adam进行训练，并在测试期间使用480的上下文长度。</p>
+<p><strong>结果</strong>：表4b比较了DeLighT与之前方法在WikiText-103上的性能。表4a绘制了DeLighT和Transformer-XL（Dai et al., 2019）的困惑度随参数数量变化的图表——后者超过了其他基于Transformer的实现（例如，Baevski和Auli 2019）。两个表格都表明，DeLighT以更少的参数提供了比最先进的方法（包括Transformer-XL）更好的性能，并且使用了更短的上下文长度，表明DeLighT变换有助于学习强大的上下文关系。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><img src="https://github.com/weedge/mypic/raw/master/paper/transformer/DeLighT/6.png" alt="image-20240428193117942"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>表4：在WikiText-103数据集上的结果。与Transformer-XL相比，DeLighT在参数较少的情况下提供了相似或更好的性能（更低的困惑度）。† 对于Transformer-XL，我们使用官方源代码复现结果。对于使用上下文长度为480评估Transformer-XL，我们在官方评估脚本中将mem_len超参数设置为480。</em></td>
+</tr>
+</tbody>
+</table>
+<h2 id="5-计算效率的分析与讨论">5 计算效率的分析与讨论</h2>
+<p><strong>训练时间和内存消耗</strong>：表5比较了DeLighT与基线Transformer在训练时间和内存消耗方面的情况。为了进行公平比较，我们实现了一个没有NVIDIA专用CUDA内核的Transformer单元，并在16个NVIDIA V100 GPU上对全精度网络进行了30K次迭代的训练。Transformer和DeLighT模型的训练时间分别约为37小时和23小时，GPU内存消耗分别约为12.5 GB和14.5 GB（R1 vs. R2）。当我们启用APEX库3为多头注意力提供的专用CUDA内核时，Transformer模型的训练时间从37小时减少到16小时，而我们没有观察到内存消耗的显著变化。受到这一观察结果的启发，我们为GLT中的分组和反分组函数实现了专用的CUDA内核（见附录E）。这些更改使得DeLighT的训练时间和GPU内存消耗分别减少了约4小时和3 GB。我们强调，分组、线性变换、特征洗牌和反分组可以通过单个CUDA内核高效实现。未来，我们期望为这些操作提供专用的CUDA内核，这将进一步减少内存消耗以及训练/推理时间。</p>
+<table>
+<thead>
+<tr>
+<th>Row #</th>
+<th>Model</th>
+<th># Params (百万)</th>
+<th>BLEU (WMT'14 En-Fr)</th>
+<th>训练时间</th>
+<th>内存 (GB)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1</td>
+<td>Transformer (未优化)</td>
+<td>67 M</td>
+<td>39.2</td>
+<td>37小时</td>
+<td>12.5</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>DeLighT(未优化)</td>
+<td>54 M</td>
+<td>40.5</td>
+<td>23小时</td>
+<td>14.5</td>
+</tr>
+<tr>
+<td>R3</td>
+<td>Transformer (使用<a href="https://github.com/NVIDIA/apex">Apex</a>优化)</td>
+<td>67 M</td>
+<td>39.2</td>
+<td>16小时</td>
+<td>11.9</td>
+</tr>
+<tr>
+<td>R4</td>
+<td>DeLighT(使用优化的分组)</td>
+<td>54 M</td>
+<td>40.5</td>
+<td>19小时</td>
+<td>11.5</td>
+</tr>
+</tbody>
+</table>
+<p><em>表5：与基线Transformer在训练速度和内存消耗方面的比较。在R4中，我们仅为分组和取消分组功能实现了CUDA内核（见附录E）。我们预计DeLighT将更有效率，因为它有一个专用的CUDA内核用于分组、转换、特征洗牌和取消分组。内存消耗是在一台单个的NVIDIA GP100 GPU（16GB内存）上测量的，每个批次最多有4096个标记，并且没有任何梯度积累。</em></p>
+<hr>
+<p><strong>正则化</strong>：表6显示，DeLighT在参数数量较少的情况下，与基线Transformer相比，需要更少的正则化就能达到相似的性能。这表明，使用更好的变换函数学习表示可以减少对dropout的需求。</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Dropout</th>
+<th>BLEU</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Transformer (62 M)</td>
+<td>0.10</td>
+<td>27.3</td>
+</tr>
+<tr>
+<td>Transformer (62 M)</td>
+<td>0.30</td>
+<td>27.7</td>
+</tr>
+<tr>
+<td>DeLighT(37 M)</td>
+<td>0.05</td>
+<td>27.6</td>
+</tr>
+</tbody>
+</table>
+<p><em>表6：与基线Transformer相比，DeLighT需要更少的正则化（数据集：WMT'14 En-De）</em></p>
+<h2 id="6-结论">6 结论</h2>
+<p>本文介绍了一种深度且轻量级的Transformer架构，DeLighT，它在DeLighT块内部以及跨DeLighT块有效地分配参数。与最先进的Transformer模型相比，DeLighT模型（1）深度且轻量级，并且（2）提供了相似或更好的性能。未来，我们计划将DeLighT应用于其他任务，包括语言模型预训练、问答和语言生成。</p>
+<p><strong>致谢</strong>：本研究得到了ONR N00014-18-1-2826、DARPA N6600119-2-403、NSF (IIS-1616112, IIS1252835)以及Allen杰出研究者奖的支持。作者还要感谢华盛顿大学UW-NLP和H2Lab的成员提供的宝贵反馈和评论。</p>
+<h2 id="参考文献">参考文献</h2>
+<ol>
+<li>
+<p>Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Łukasz Kaiser, 和 Illia Polosukhin. &ldquo;Attention is all you need.&rdquo; 在《神经信息处理系统进展》中，第5998–6008页，2017年。</p>
+</li>
+<li>
+<p>Colin Raffel, Noam Shazeer, Adam Roberts, Katherine Lee, Sharan Narang, Michael Matena, Yanqi Zhou, Wei Li, 和 Peter J. Liu. &ldquo;Exploring the limits of transfer learning with a unified text-to-text transformer.&rdquo; arXiv预印本 arXiv:1910.10683, 2019.</p>
+</li>
+<li>
+<p>Tom B. Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, Sandhini Agarwal, Ariel Herbert-Voss, Gretchen Krueger, Tom Henighan, Rewon Child, Aditya Ramesh, Daniel M. Ziegler, Jeffrey Wu, Clemens Winter, Christopher Hesse, Mark Chen, Eric Sigler, Mateusz Litwin, Scott Gray, Benjamin Chess, Jack Clark, Christopher Berner, Sam McCandlish, Alec Radford, Ilya Sutskever, 和 Dario Amodei. &ldquo;Language models are few-shot learners.&rdquo; arXiv预印本 arXiv:2005.14165, 2020.</p>
+</li>
+<li>
+<p>Jacob Devlin, Ming-Wei Chang, Kenton Lee, 和 Kristina Toutanova. &ldquo;BERT: Pre-training of deep bidirectional transformers for language understanding.&rdquo; 在《北美计算语言学协会2019年会议论文集：人类语言技术》中，第1卷（长论文和短论文），2019年。</p>
+</li>
+<li>
+<p>Geoffrey E. Hinton, Nitish Srivastava, Alex Krizhevsky, Ilya Sutskever, 和 Ruslan R. Salakhutdinov. &ldquo;Improving neural networks by preventing co-adaptation of feature detectors.&rdquo; arXiv预印本 arXiv:1207.0580, 2012.</p>
+</li>
+<li>
+<p>Li Wan, Matthew Zeiler, Sixin Zhang, Yann LeCun, 和 Rob Fergus. &ldquo;Regularization of neural networks using dropconnect.&rdquo; 在《国际机器学习会议》中，第1058–1066页，2013.</p>
+</li>
+<li>
+<p>Stephen Merity, Nitish Shirish Keskar, 和 Richard Socher. &ldquo;Regularizing and optimizing LSTM language models.&rdquo; 在《学习表示国际会议》中，2018a. URL: <a href="https://openreview.net/forum?id=SyyGPP0TZ">https://openreview.net/forum?id=SyyGPP0TZ</a>.</p>
+</li>
+<li>
+<p>Sachin Mehta, Rik Koncel-Kedziorski, Mohammad Rastegari, 和 Hannaneh Hajishirzi. &ldquo;Pyramidal recurrent unit for language modeling.&rdquo; 在《自然语言处理的实证方法会议》中，2018年。</p>
+</li>
+<li>
+<p>Xiangyu Zhang, Xinyu Zhou, Mengxiao Lin, 和 Jian Sun. &ldquo;Shufflenet: An extremely efficient convolutional neural network for mobile devices.&rdquo; 在《IEEE计算机视觉与模式识别会议》中，第6848–6856页，2018.</p>
+</li>
+<li>
+<p>Zihang Dai, Zhilin Yang, Yiming Yang, Jaime Carbonell, Quoc V. Le, 和 Ruslan Salakhutdinov. &ldquo;Transformer-xl: Attentive language models beyond a fixed-length context.&rdquo; 在《计算语言学协会》中，2019年。</p>
+</li>
+<li>
+<p>Rewon Child, Scott Gray, Alec Radford, 和 Ilya Sutskever. &ldquo;Generating long sequences with sparse transformers.&rdquo; arXiv预印本 arXiv:1904.10509, 2019.</p>
+</li>
+<li>
+<p>Nikita Kitaev, Lukasz Kaiser, 和 Anselm Levskaya. &ldquo;Reformer: The efficient transformer.&rdquo; 在《学习表示国际会议》中，2020年。</p>
+</li>
+<li>
+<p>Iz Beltagy, Matthew E. Peters, 和 Arman Cohan. &ldquo;Longformer: The long-document transformer.&rdquo; arXiv:2004.05150, 2020.</p>
+</li>
+<li>
+<p>Alessandro Raganato 和 Jörg Tiedemann. &ldquo;An analysis of encoder representations in transformer-based machine translation.&rdquo; 在《2018 EMNLP BlackboxNLP: Analyzing and Interpreting Neural Networks for NLP》研讨会论文集中，2018年。</p>
+</li>
+<li>
+<p>Gino Brunner, Yang Liu, Damian Pascual, Oliver Richter, Massimiliano Ciaramita, 和 Roger Wattenhofer. &ldquo;On identifiability in transformers.&rdquo; 在《学习表示国际会议》中，2020年. URL: <a href="https://openreview.net/forum?id=BJg1f6EFDB">https://openreview.net/forum?id=BJg1f6EFDB</a>.</p>
+</li>
+<li>
+<p>Elena Voita, Rico Sennrich, 和 Ivan Titov. &ldquo;The bottom-up evolution of representations in the transformer: A study with machine translation and language modeling objectives.&rdquo; 在《2019年自然语言处理和计算语言学第九届国际联合会议（EMNLP-IJCNLP）》论文集中，2019a。</p>
+</li>
+<li>
+<p>Paul Michel, Omer Levy, 和 Graham Neubig. &ldquo;Are sixteen heads really better than one?&rdquo; 在《神经信息处理系统进展》中，第14014–14024页，2019年。</p>
+</li>
+<li>
+<p>Alessandro Raganato, Yves Scherrer, 和 Jörg Tiedemann. &ldquo;Fixed encoder self-attention patterns in transformer-based machine translation.&rdquo; arXiv预印本 arXiv:2002.10260, 2020.</p>
+</li>
+<li>
+<p>Yi Tay, Dara Bahri, Donald Metzler, Da-Cheng Juan, Zhe Zhao, 和 Che Zheng. &ldquo;Synthesizer: Rethinking self-attention in transformer models.&rdquo; arXiv预印本 arXiv:2005.00743, 2020.</p>
+</li>
+<li>
+<p>Felix Wu, Angela Fan, Alexei Baevski, Yann Dauphin, 和 Michael Auli. &ldquo;Pay less attention with lightweight and dynamic convolutions.&rdquo; 在《学习表示国际会议》中，2019年。</p>
+</li>
+<li>
+<p>Zhanghao Wu, Zhijian Liu, Ji Lin, Yujun Lin, 和 Song Han. &ldquo;Lite transformer with long-short range attention.&rdquo; 在《学习表示国际会议》中，2020年。</p>
+</li>
+<li>
+<p>David So, Quoc Le, 和 Chen Liang. &ldquo;The evolved transformer.&rdquo; 在《第36届国际机器学习会议论文集》中，第5877–5886页，2019年。</p>
+</li>
+<li>
+<p>Jonas Gehring, Michael Auli, David Grangier, Denis Yarats, 和 Yann N. Dauphin. &ldquo;Convolutional sequence to sequence learning.&rdquo; 在《第34届国际机器学习会议论文集-第70卷》中，第1243–1252页。JMLR. org, 2017.</p>
+</li>
+<li>
+<p>Yann N. Dauphin, Angela Fan, Michael Auli, 和 David Grangier. &ldquo;Language modeling with gated convolutional networks.&rdquo; 在《第34届国际机器学习会议论文集-第70卷》中，第933–941页。JMLR. org, 2017.</p>
+</li>
+<li>
+<p>Zhenzhong Lan, Mingda Chen, Sebastian Goodman, Kevin Gimpel, Piyush Sharma, 和 Radu Soricut. &ldquo;Albert: A lite bert for self-supervised learning of language representations.&rdquo; 在《学习表示国际会议》中，2020年。</p>
+</li>
+<li>
+<p>Mohammad Shoeybi, Mostofa Patwary, Raul Puri, Patrick LeGresley, Jared Casper, 和 Bryan Catanzaro. &ldquo;Megatron-lm: Training multi-billion parameter language models using gpu model parallelism.&rdquo; arXiv预印本 arXiv:1909.08053, 2019.</p>
+</li>
+<li>
+<p>Mingxing Tan 和 Quoc V. Le. &ldquo;Efficientnet: Rethinking model scaling for convolutional neural networks.&rdquo; 在Kamalika Chaudhuri和Ruslan Salakhutdinov编辑的《第36届国际机器学习会议论文集》中，第9-15页，2019年6月9-15日，加利福尼亚州长滩，美国。</p>
+</li>
+<li>
+<p>Qiang Wang, Bei Li, Tong Xiao, Jingbo Zhu, Changliang Li, Derek F. Wong, 和 Lidia S. Chao. &ldquo;Learning deep transformer models for machine translation.&rdquo; 在《第57届计算语言学协会年会论文集》中，2019年。</p>
+</li>
+<li>
+<p>Kaiming He, Xiangyu Zhang, Shaoqing Ren, 和 Jian Sun. &ldquo;Deep residual learning for image recognition.&rdquo; 在《IEEE计算机视觉与模式识别会议》中，第770–778页，2016年。</p>
+</li>
+<li>
+<p>Rico Sennrich, Barry Haddow, 和 Alexandra Birch. &ldquo;Neural machine translation of rare words with subword units.&rdquo; 在《第54届计算语言学协会年会论文集》第1卷（长论文）中，8月2016年。</p>
+</li>
+<li>
+<p>Alexei Baevski 和 Michael Auli. &ldquo;Adaptive input representations for neural language modeling.&rdquo; 在《学习表示国际会议》中，2019年。</p>
+</li>
+<li>
+<p>Édouard Grave, Armand Joulin, Moustapha Cissé, David Grangier, 和 Hervé Jégou. &ldquo;Efficient softmax approximation for GPUs.&rdquo; 在《国际机器学习会议》中，2017a。</p>
+</li>
+<li>
+<p>Sachin Mehta, Rik Koncel-Kedziorski, Mohammad Rastegari, 和 Hannaneh Hajishirzi. &ldquo;DeFINE: Deep Factorized Input Token Embeddings for Neural Sequence Modeling.&rdquo; 在《学习表示国际会议》中，2020年。</p>
+</li>
+<li>
+<p>Patrick Chen, Si Si, Yang Li, Ciprian Chelba, 和 Cho-Jui Hsieh. &ldquo;Groupreduce: Block-wise low-rank approximation for neural language model shrinking.&rdquo; 在《神经信息处理系统进展》中，2018年。</p>
+</li>
+<li>
+<p>Zhiqing Sun, Hongkun Yu, Xiaodan Song, Renjie Liu, Yiming Yang, 和 Denny Zhou. &ldquo;Mobilebert: a compact task-agnostic bert for resource-limited devices.&rdquo; 在《计算语言学协会（ACL）》中，2020年。</p>
+</li>
+<li>
+<p>Song Han, Huizi Mao, 和 William J. Dally. &ldquo;Deep compression: Compressing deep neural networks with pruning, trained quantization and huffman coding.&rdquo; 在《表示学习国际会议》中，2016年。</p>
+</li>
+<li>
+<p>Elena Voita, David Talbot, Fedor Moiseev, Rico Sennrich, 和 Ivan Titov. &ldquo;Analyzing multi-head self-attention: Specialized heads do the heavy lifting, the rest can be pruned.&rdquo; 在《第57届计算语言学协会年会论文集》中，2019b。</p>
+</li>
+<li>
+<p>Geoffrey Hinton, Oriol Vinyals, 和 Jeff Dean. &ldquo;Distilling the knowledge in a neural network.&rdquo; 在NIPS深度学习和表示学习研讨会中，2015。</p>
+</li>
+<li>
+<p>Victor Sanh, Lysandre Debut, Julien Chaumond, 和 Thomas Wolf. &ldquo;Distilbert, a distilled version of bert: smaller, faster, cheaper and lighter.&rdquo; 在第5届能源效率机器学习与认知计算NeurIPS研讨会中，2019。</p>
+</li>
+<li>
+<p>Matus Telgarsky. &ldquo;Benefits of depth in neural networks.&rdquo; COLT, 2016.</p>
+</li>
+<li>
+<p>Sergey Edunov, Myle Ott, Michael Auli, David Grangier, 和 Marc’Aurelio Ranzato. &ldquo;Classical structured prediction losses for sequence to sequence learning.&rdquo; 在《北美计算语言学协会2018年会议论文集：人类语言技术》第1卷（长论文）中，2018年。</p>
+</li>
+<li>
+<p>Ashish Vaswani, Samy Bengio, Eugene Brevdo, Francois Chollet, Aidan N. Gomez, Stephan Gouws, Llion Jones, Łukasz Kaiser, Nal Kalchbrenner, Niki Parmar, Ryan Sepassi, Noam Shazeer, 和 Jakob Uszkoreit. &ldquo;Tensor2tensor for neural machine translation.&rdquo; CoRR, abs/1803.07416, 2018. URL: <a href="http://arxiv.org/abs/1803.07416">http://arxiv.org/abs/1803.07416</a>.</p>
+</li>
+<li>
+<p>Kishore Papineni, Salim Roukos, Todd Ward, 和 Wei-Jing Zhu. &ldquo;BLEU: a method for automatic evaluation of machine translation.&rdquo; 在计算语言学协会第40届年会论文集中，第311–318页，计算语言学协会，2002。</p>
+</li>
+<li>
+<p>Myle Ott, Sergey Edunov, Alexei Baevski, Angela Fan, Sam Gross, Nathan Ng, David Grangier, 和 Michael Auli. &ldquo;Fairseq: A fast, extensible toolkit for sequence modeling.&rdquo; 在NAACL-HLT 2019: Demonstrations会议论文集中，2019年。</p>
+</li>
+<li>
+<p>Marjan Ghazvininejad, Omer Levy, Yinhan Liu, 和 Luke Zettlemoyer. &ldquo;Mask-predict: Parallel decoding of conditional masked language models.&rdquo; 在2019年自然语言处理和计算语言学第九届国际联合会议（EMNLP-IJCNLP）论文集中，第6114–6123页，2019年。</p>
+</li>
+<li>
+<p>Diederik P. Kingma 和 Jimmy Ba. &ldquo;Adam: A method for stochastic optimization.&rdquo; 在学习表示国际会议中，2015年。</p>
+</li>
+</ol>
+<h2 id="附录a-delight架构用于语言建模和机器翻译"><strong>附录A DeLighT架构用于语言建模和机器翻译</strong></h2>
+<p>DeLighT架构用于语言建模和机器翻译的示意图展示在图6中。对于语言建模，我们遵循了Baevski和Auli（2019）的架构；而对于机器翻译，我们遵循了Vaswani等人（2017）的架构。</p>
+<p>**语言建模：**图6a展示了语言建模的架构。该架构堆叠了$\mathcal{B}$个DeLighT块，每个块的配置是使用块级缩放确定的。每个块有三个子层。第一层是DeLighT变换，它在高维空间中学习表示。第二层是单头注意力，它编码上下文关系。第三层是位置感知的轻量级前馈网络。与Vaswani等人（2017）相似，我们采用了残差连接（He等人，2016）。与先前的工作（Baevski和Auli，2019；Dai等人，2019）一样，我们使用绑定的自适应输入（Baevski和Auli，2019）和自适应softmax（Grave等人，2017a）将Token映射到向量和将向量映射到Token。</p>
+<p>**机器翻译：**图6b展示了机器翻译的架构。编码器堆叠了B个DeLighT块，每个块的配置也是使用块级缩放确定的。与语言建模类似，每个编码器块也有三个子层。第一层是DeLighT变换，它在高维空间中学习表示。第二层是单头注意力，它编码上下文关系。第三层是位置感知的轻量级前馈网络。与Vaswani等人（2017）相似，我们采用了残差连接（He等人，2016）。我们使用可学习的查找表将Token映射为向量。与编码器类似，解码器也堆叠了$\mathcal{B}$个块。解码器块与编码器块相同，不同之处在于它们在轻量级FFN之前有一个额外的源-目标单头注意力单元。源-目标单头注意力单元中的键和值是对编码器输出的投影。我们使用标准的可学习查找表将Token映射为向量，并使用线性分类层将向量映射为Token。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><img src="https://github.com/weedge/mypic/raw/master/paper/transformer/DeLighT/7.png" alt="image-20240428195422419"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>图6：使用DeLighT进行序列建模。这里，绿色六边形代表了DeLighT转换。</em></td>
+</tr>
+</tbody>
+</table>
+<h2 id="附录b-带有输入混合器连接的组线性变换"><strong>附录B 带有输入混合器连接的组线性变换</strong></h2>
+<p>组线性转换（group linear transformation GLT）$\mathcal{F}$ 将一个 $d_m$ 维输入 $\mathbf{X}$ 分成 $g$ 个不重叠的组，使得 $\mathbf{X} = \text{Concat}(\mathbf{X}_1, \cdots, \mathbf{X}_g)$，其中 $\mathbf{X}_i$ 是一个 $\frac{d_m}{g}$ 维的向量。然后，使用 $g$ 个线性变换 $\mathbf{W}_i \in \mathbf{R}^{\frac{d_m}{g} \times \frac{d_o}{g}}$ 同时对 $\mathbf{X}_i$ 进行变换，得到 $g$ 个输出 $\mathbf{Y}_i = \mathbf{X}_i \mathbf{W}_i$。然后，将 $\mathbf{Y}_i$ 进行串联以产生最终的 $d_o$ 维输出 $\mathbf{Y} = \text{Concat}(\mathbf{Y}_1, \cdots, \mathbf{Y}_g)$。</p>
+<p>图7a展示了DeLighT变换扩展阶段中GLT的一个例子。为了说明，我们在这个例子中使用了相同的维度。回想一下，当我们在扩展阶段深入时，组的数量会增加。在这个例子中，第一层有一组，第二层有两组，第三层有四组。GLT学习特定于组的表示，并且是局部的。为了允许GLT学习全局表示，我们使用了特征洗牌。图7b展示了带有特征洗牌的GLT的一个例子。此外，仅通过堆叠线性或组线性（无论是否带有特征洗牌）来训练深度神经网络是具有挑战性的，因为梯度消失问题。He等人（2016）引入的残差连接缓解了这个问题，并有助于训练深度神经网络。然而，当输入和输出维度不同时（例如，在DeLighT变换的扩展和缩减阶段），就不能使用这样的连接。为了稳定训练并学习更深层次的表示，我们使用了Mehta等人（2020）的输入混合器连接。图7c展示了带有特征洗牌和输入混合器连接的GLT的一个例子。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><img src="https://github.com/weedge/mypic/raw/master/paper/transformer/DeLighT/8.png" alt="image-20240428195422419"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>图 7：本图展示了DeLighT转换中使用的不同变体的组线性转换(group linear transformations GLTs)。</em></td>
+</tr>
+</tbody>
+</table>
+<h2 id="附录c-delight中的乘加操作"><strong>附录C DeLighT中的乘加操作</strong></h2>
+<p>DeLighT块是使用线性变换、组线性变换（GLTs）和缩放点积注意力构建的。网络中的总乘加操作（MACs）数量是这些单独操作的累积。</p>
+<p>让 $n$ 表示源token的数量，$m$ 表示目标token的数量，$d_m$ 表示输入维度，$d_o$ 表示输出维度，$g$ 表示 GLT 中的组数。下面描述了每个操作计算 MAC 数的过程。</p>
+<p><strong>组线性变换（GLT）</strong>：GLT $\mathcal{F}$ 有 $g$ 个可学习矩阵 $\mathbf{W}_i \in \mathbf{R}^{\frac{d_m}{g} \times \frac{d_o}{g}}$。因此，GLT 学习了 $\frac{d_md_o}{g}$ 个参数，并执行了 $\frac{d_md_o}{g}$ 个 MAC 操作，将 $d_m$ 维输入转换为 $d_o$ 维输出。遵循标准做法，例如 He等人（2016）的 ResNet，我们将加法和乘法视为一次操作而不是两次操作，因为这些操作可以在最新的硬件中融合。</p>
+<p>重要的是，当 $g=1$ 时，GLT 与线性变换相同。</p>
+<p><strong>DeLighT中的自注意力</strong>：DeLighT中的缩放点积自注意力定义为：
+$$
+\begin{equation}
+\text{Attention}(\mathbf{K}, \mathbf{Q}, \mathbf{V}) = \text{softmax}\left(\frac{\mathbf{Q}\mathbf{K}^T}{\sqrt{d_o}}\right) \mathbf{V}
+\end{equation}
+$$</p>
+<p>其中$\mathbf{Q} \in \mathbb{R}^{n \times d_o}$, $\mathbf{K} \in \mathbb{R}^{n \times d_o}$, $\mathbf{V} \in \mathbb{R}^{n \times d_o}$分别表示查询、键和值。</p>
+<p>注意机制涉及两个点积。第一个点积是在 $\mathbf{Q}$ 和 $\mathbf{K}$ 之间进行的，而第二个点积是在第一个点积的输出和 $\mathbf{V}$ 之间进行的。两个点积都需要 $d_on^2$ 个乘加操作（MACs）。因此，计算缩放点积自注意力的总MAC数量为 $2d_on^2$。</p>
+<p>在源-目标注意力中（比如在机器翻译中），$\mathbf{K}$ 和 $\mathbf{V}$ 来自源（编码器），而 $\mathbf{Q}$ 逐步解码（一次一个令牌）。因此，给定 $n$ 个源令牌，解码 $m$ 个目标令牌所需的MAC数量为 $\sum\limits_{k=1}^{m} 2knd_o$</p>
+<h2 id="附录-d-wikitext-103-数据集的消融ablation研究"><strong>附录 D WikiText-103 数据集的消融(ablation)研究</strong></h2>
+<p>表7 研究了 WikiText-103 数据集上 DeLighT块参数的影响，即 (1) GLT 的最小数量 $N_{min}$，(2) GLT 的最大数量 $N_{max}$，(3) 宽度倍增器 $w_m$，以及 (4) 模型维度 $d_m$（见图 1b）。图8、图9 和图10 显示了DeLighT、特征洗牌和轻量级 FFN 的影响。表 8 显示了DeLighT在 DeLighT块中位置的影响，而图12 显示了缩放 DeLighT网络的效果。我们选择了 WikiText-103 数据集进行消融研究，因为与其他数据集相比，它的词汇量非常大（267K 对比 30-40K），这使得我们能够测试在大词汇量的情况下的能力。性能以验证集上的困惑度（越低越好）来报告。在我们的消融(ablation)研究中，我们使用了与第 4.2 节相同的训练设置，只是我们只训练了 50K 次迭代。</p>
+<p>**DeLighT 块：**总的来说，表7 显示了使用DeLighT和块级缩放(block-wise scaling)来缩放深度和宽度的效果。我们得出以下观察结果：</p>
+<ol>
+<li>块级缩放（R4，R5）相比统一缩放（R1-R3）提供了更好的性能。例如，具有 $N_{min}=4$ 和 $N_{max}=8$ 的 DeLighT（R4）比具有 $N_{min}=8$ 和 $N_{max}=8$ 的 DeLighT更浅 $1.25\times$，但性能更好，而且参数和操作数量相似。缩放 $w_m$ 可以提高性能（R2 vs. R3），但改进幅度明显低于块级缩放模型（R3 vs. R5）。这表明跨块的参数的非均匀分布使网络能够学习更好的表示。</li>
+<li>不同的 $N_{max}$ 和 $N_{min}$ 之间的比率产生不同的结果。当比率大于或等于两倍时，我们观察到性能显著提升。例如，当我们将 $\frac{N_{max}}{N_{min}}$ 从 2 缩放到 3 时（R6 vs. R8），困惑度提高了约 5 个点，而网络参数仅适度增加。另一方面，当 $\frac{N_{max}}{N_{min}}$ 接近 1 时（R6 vs. R7），性能变化不明显。这可能是因为跨块的参数分配接近于均匀（Eq. \ref{eq:mw}）。这与我们之前的观察一致。</li>
+<li>在输入附近学习更深更宽的表示，以及在输出附近学习更浅更窄的表示，可以实现更好的性能。例如，当我们将 $N_{max}$ 从 8 缩放到 12 并且 $N_{min}=4$ 时（R6，R8），与具有 $N_{min}=6$ 的模型相比，DeLighT以相似数量的参数交付了更好的性能（R7，R9）。这可能是因为当 $N_{min}=4$ 时，$N_{max}$ 和 $N_{min}$ 的比率较高，有助于更有效地分配每个块的参数。</li>
+<li>在输入附近学习更深更宽的表示，而在输出附近学习更浅更窄的表示会损害性能（R13 vs. R16）。</li>
+<li>使用 $w_m$ 和 $d_m$ 缩放宽度可以提高性能（R10-R15），但它们的影响是不同的。例如，当我们将 $w_m$ 和 $d_m$ 缩放两倍时，与 $w_m$ 相比，参数和操作数量的增加速度更快。 DeLighT以不同的方式学习更宽的表示可能在选择应用程序特定模型时很有用。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Row #</th>
+<th>$N_{min}$</th>
+<th>$N_{max}$</th>
+<th>$w_m$</th>
+<th>$d_m$</th>
+<th>Depth</th>
+<th>Parameters</th>
+<th>MACs</th>
+<th>Perplexity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1</td>
+<td>4</td>
+<td>4</td>
+<td>2</td>
+<td>256</td>
+<td>43</td>
+<td>14.1 M</td>
+<td>2.96 B</td>
+<td>56.19</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>8</td>
+<td>8</td>
+<td>2</td>
+<td>256</td>
+<td>115</td>
+<td>16.6 M</td>
+<td>3.49 B</td>
+<td>48.58</td>
+</tr>
+<tr>
+<td>R3</td>
+<td>8</td>
+<td>8</td>
+<td>4</td>
+<td>256</td>
+<td>115</td>
+<td>22.1 M</td>
+<td>4.64 B</td>
+<td>45.10</td>
+</tr>
+<tr>
+<td>R4</td>
+<td>4</td>
+<td>8</td>
+<td>2</td>
+<td>256</td>
+<td>92</td>
+<td>16.7 M</td>
+<td>3.51 B</td>
+<td>46.30</td>
+</tr>
+<tr>
+<td>R5</td>
+<td><strong>4</strong></td>
+<td><strong>12</strong></td>
+<td><strong>2</strong></td>
+<td><strong>256</strong></td>
+<td>158</td>
+<td>21.0 M</td>
+<td>4.41 B</td>
+<td>41.18</td>
+</tr>
+<tr>
+<td>R6</td>
+<td>4</td>
+<td>8</td>
+<td>2</td>
+<td>256</td>
+<td>92</td>
+<td>16.7 M</td>
+<td>3.51 B</td>
+<td>46.30</td>
+</tr>
+<tr>
+<td>R7</td>
+<td>6</td>
+<td>8</td>
+<td>2</td>
+<td>256</td>
+<td>102</td>
+<td>16.5 M</td>
+<td>3.46 B</td>
+<td>46.68</td>
+</tr>
+<tr>
+<td>R8</td>
+<td><strong>4</strong></td>
+<td><strong>12</strong></td>
+<td><strong>2</strong></td>
+<td><strong>256</strong></td>
+<td>158</td>
+<td>21.0 M</td>
+<td>4.41 B</td>
+<td>41.18</td>
+</tr>
+<tr>
+<td>R9</td>
+<td>6</td>
+<td>12</td>
+<td>2</td>
+<td>256</td>
+<td>172</td>
+<td>20.0 M</td>
+<td>4.20 B</td>
+<td>42.26</td>
+</tr>
+<tr>
+<td>R10</td>
+<td><strong>4</strong></td>
+<td><strong>12</strong></td>
+<td><strong>2</strong></td>
+<td><strong>256</strong></td>
+<td>158</td>
+<td>21.0 M</td>
+<td>4.41 B</td>
+<td>41.18</td>
+</tr>
+<tr>
+<td>R11</td>
+<td>4</td>
+<td>12</td>
+<td>3</td>
+<td>256</td>
+<td>158</td>
+<td>23.8 M</td>
+<td>4.99 B</td>
+<td>39.92</td>
+</tr>
+<tr>
+<td>R12</td>
+<td>4</td>
+<td>12</td>
+<td>4</td>
+<td>256</td>
+<td>158</td>
+<td>27.1 M</td>
+<td>5.69 B</td>
+<td>39.10</td>
+</tr>
+<tr>
+<td>R13</td>
+<td><strong>4</strong></td>
+<td><strong>12</strong></td>
+<td><strong>2</strong></td>
+<td><strong>256</strong></td>
+<td>158</td>
+<td>21.0 M</td>
+<td>4.41 B</td>
+<td>41.18</td>
+</tr>
+<tr>
+<td>R14</td>
+<td>4</td>
+<td>12</td>
+<td>2</td>
+<td>384</td>
+<td>158</td>
+<td>29.9 M</td>
+<td>6.28 B</td>
+<td>35.14</td>
+</tr>
+<tr>
+<td>R15</td>
+<td>4</td>
+<td>12</td>
+<td>2</td>
+<td>512</td>
+<td>158</td>
+<td>43.8 M</td>
+<td>9.20 B</td>
+<td>30.81</td>
+</tr>
+<tr>
+<td>R16</td>
+<td>12</td>
+<td>4</td>
+<td>2</td>
+<td>256</td>
+<td>158</td>
+<td>21.0 M</td>
+<td>4.41 B</td>
+<td>43.10</td>
+</tr>
+</tbody>
+</table>
+<p><em>表7 展示了对DeLighT块的不同方面进行的消融研究，包括统一缩放与块级缩放、深度缩放和宽度缩放。部分突出显示的行具有相同的配置（重复以说明结果）。我们的实验设置类似于第 4节，但我们将模型训练了 50K 次迭代。乘法和加法操作（MACs）是针对 20 个时间步进行计算的。</em></p>
+<p><strong>DeLighT变换的影响</strong>：我们将DeLighT块中的DeLighT变换替换为（1）DeFINE变换和（2）线性层堆叠。图8显示，与DeFINE单元和线性层相比，DeLighT变换以显著更少的参数提供了相似的性能。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><img src="https://github.com/weedge/mypic/raw/master/paper/transformer/DeLighT/9.png" alt="image-20240428220057115"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>图 8: 不同变换的影响。DeLighT 变换比 DeFINE 和线性变换更具参数效率。更低的困惑度值意味着更好的性能。</em></td>
+</tr>
+</tbody>
+</table>
+<p><strong>特征洗牌</strong>：图9显示特征洗牌通过1-2个困惑度点提高了DeLighT的性能。这里，我们使用了与R13-R15（表7）相同的设置。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><img src="https://github.com/weedge/mypic/raw/master/paper/transformer/DeLighT/10.png" alt="image-20240428215843596"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>图 9: 特征重排的影响。特征重排使我们能够从全局信息中学习表示，并提高了性能。更低的困惑度值意味着更好的性能。</em></td>
+</tr>
+</tbody>
+</table>
+<p><strong>轻量级FFN</strong>：图10展示了变化轻量级FFN中缩减因子r的影响。我们使用了与R13（表7）相同的设置。我们没有观察到性能有任何显著下降，直到$r = 4$。当r大于4时，我们看到了性能的下降（困惑度增加了约2点）。在这种情况下，轻量级FFN的内部维度非常小，影响了性能。值得注意的是，当$r = 2^{-2}$时，轻量级FFN的性能与$r = 2^{-2}$时相同，但参数数量少了1.28倍。在$r = 2^{-2}$时，轻量级FFN与Vaswani等人（2017）中的FFN相同。这表明DeLighT变换能够高效地在高维空间中学习表示，使我们能够减轻FFN的计算负担。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><img src="https://github.com/weedge/mypic/raw/master/paper/transformer/DeLighT/11.png" alt="image-20240428215610711"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>图 10: 轻量级FFN中减少因子$r$的影响。DeLighT变换在高维空间中有效学习表示的能力使我们能够减少FFN的计算负担。更低的困惑度值意味着更好的性能。</em></td>
+</tr>
+</tbody>
+</table>
+<p>我们还测试了去除轻量级FFN，虽然它减少了$\sim$0.5-1 M的参数，但性能下降了约2-3个困惑度点。</p>
+<p><strong>均匀缩放与块级缩放</strong>：图11比较了DeLighT在均匀缩放和块级缩放下的性能。对于给定的模型维度dm，具有块级缩放的DeLighT模型提供了更好的性能。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><img src="https://github.com/weedge/mypic/raw/master/paper/transformer/DeLighT/12.png" alt="image-20240428215259755"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>图 11:  均匀(uniform)尺度与分块(block-wise)尺度对比。(a)对比了均匀尺度和分块尺度方法。(b)比较了WikiText-103数据集上DeLighT与均匀尺度和分块尺度方法的结果。带有分块尺度的DeLighT网络在不同设置下提供更好的性能。更低的困惑度值意味着更好的性能。</em></td>
+</tr>
+</tbody>
+</table>
+<p><strong>DeLighT变换的位置</strong>：我们在WikiText-103验证集上研究了DeLighT变换的三种配置：（1）DeLighT变换后跟单头注意力和轻量级FFN，（2）单头注意力后跟DeLighT变换，以及（3）单头注意力后跟DeLighT变换和轻量级FFN。对于相似数量的参数，我们发现（2）和（3）显著降低了（1）的性能。这表明更深和更宽的表示有助于学习更好的上下文表示；使我们能够用单头注意力替代多头注意力。</p>
+<p>扩展DeLighT：图12展示了在变化DeLighT变换的配置参数（$N_{min}$={4, 6}, $N_{max}$={8, 12}, $w_m$={2, 3, 4}, and $d_m$={256, 384, 512}）后获得的DeLighT模型的结果。我们可以看到，同时保持其他配置参数不变（例如，$N_{min}$, $N_{max}$, 和 $w_m$），只扩展一个配置参数（例如，$d_m$）就能一致地提高性能。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><img src="https://github.com/weedge/mypic/raw/master/paper/transformer/DeLighT/13.png" alt="image-20240428215036835"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>图 12: DeLighT的规模扩展。在保持其他配置参数恒定（例如，$N_{\text{min}}$、$N_{\text{max}}$、$w_m$）的情况下，扩展一个配置参数（例如 dm）始终会提高性能。每个柱子顶部的数字表示网络参数（以百万为单位）。更低的困惑度值意味着更好的性能。</em></td>
+</tr>
+</tbody>
+</table>
+<p>这项工作通过手动调整参数 $N_{\text{min}}$、$N_{\text{max}}$、$w_m$ 和 $d_m$，探究它们之间的关系。我们相信，采用更加原理性的方法，例如 Tan 和 Le (2019) 提出的复合缩放方法，建立这些参数之间的关系，将会产生更有效和准确的模型。</p>
+<h2 id="附录e-组线性变换的源代码"><strong>附录E 组线性变换的源代码</strong></h2>
+<p>在PyTorch中实现组线性变换（Group Linear Transformation, GLT）的源代码如下所示。为了在GLT中高效地实现分组功能，我们用专用的CUDA内核替换了PyTorch中简单的reshape和transpose操作，从而减少了内存占用并加快了训练速度。</p>
+<p><strong>列表1: &ldquo;在Pytorch中GLT的简单实现&rdquo;</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="k">def</span> <span class="nf">glt_function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n_groups</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="s1">&#39;&#39;&#39;&#39;:param x: 输入张量，大小为 [B x N]，其中B是批量大小，N是输入维度
+</span><span class="s1">    :param n_groups: GLT中的组数
+</span><span class="s1">    :param weights: glt权重 [g x N/g x M/g]
+</span><span class="s1">    :param bias: GLT偏置（可选），大小为 [g x 1 x M/g]
+</span><span class="s1">    :return: 输出张量，大小为 [B x M]
+</span><span class="s1">    &#39;&#39;&#39;</span>
+    <span class="n">bsz</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># 分组函数：将 [B x N] 张量转换为 [g x B x N/g]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">bsz</span><span class="p">,</span> <span class="n">n_groups</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [B x N] --&gt; [B x g x N/g]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># 转置，使组成为第一个维度</span>
+
+    <span class="c1"># 变换函数：将 N/g 维空间变换为 M/g 维空间</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">bmm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>  <span class="c1"># 与权重相乘</span>
+
+    <span class="c1"># 如果提供了偏置，则添加偏置</span>
+    <span class="k">if</span> <span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">bias</span><span class="p">)</span>
+
+    <span class="c1"># 重新分组函数：将 [g x B x M/g] 张量转换回 [B x M]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># 再次转置，使批量大小成为第一个维度</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">bsz</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [B x g x M/g] --&gt; [B x M]</span>
+    <span class="k">return</span> <span class="n">x</span>
+</code></pre></div><p><strong>列表2: &ldquo;CUDA中的分组内核&rdquo;</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="cm">/* 分组内核：将输入从 [B x N] 转换为 [g x B x N/g] */</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">scalar_t</span><span class="o">&gt;</span>
+<span class="n">__global__</span> <span class="kt">void</span> <span class="n">grouping_kernel_forward</span><span class="p">(</span><span class="k">const</span> <span class="n">scalar_t</span><span class="o">*</span> <span class="n">input</span><span class="p">,</span>
+                                         <span class="k">const</span> <span class="kt">int</span> <span class="n">groups</span><span class="p">,</span>
+                                         <span class="k">const</span> <span class="kt">int</span> <span class="n">total_elements</span><span class="p">,</span>
+                                         <span class="k">const</span> <span class="kt">int</span> <span class="n">input_features</span><span class="p">,</span>
+                                         <span class="k">const</span> <span class="kt">int</span> <span class="n">group_features</span><span class="p">,</span>
+                                         <span class="k">const</span> <span class="kt">int</span> <span class="n">batch_size</span><span class="p">,</span>
+                                         <span class="n">scalar_t</span><span class="o">*</span> <span class="n">output</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">const</span> <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="n">IMUL</span><span class="p">(</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">blockDim</span><span class="p">.</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">index</span> <span class="o">&gt;=</span> <span class="n">total_elements</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">const</span> <span class="kt">int</span> <span class="n">b_idx</span> <span class="o">=</span> <span class="n">index</span> <span class="o">/</span> <span class="n">group_features</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">int</span> <span class="n">g_f_idx</span> <span class="o">=</span> <span class="n">index</span> <span class="o">%</span> <span class="n">group_features</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">in_offset</span><span class="p">,</span> <span class="n">out_offset</span><span class="p">;</span>
+    <span class="cp">#pragma unroll
+</span><span class="cp"></span>    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">g</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">g</span> <span class="o">&lt;</span> <span class="n">groups</span><span class="p">;</span> <span class="n">g</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">in_offset</span> <span class="o">=</span> <span class="p">(</span><span class="n">b_idx</span> <span class="o">*</span> <span class="n">input_features</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">g</span> <span class="o">*</span> <span class="n">group_features</span><span class="p">)</span> <span class="o">+</span> <span class="n">g_f_idx</span><span class="p">;</span>
+        <span class="n">out_offset</span> <span class="o">=</span> <span class="p">((</span><span class="n">g</span> <span class="o">*</span> <span class="n">batch_size</span> <span class="o">+</span> <span class="n">b_idx</span><span class="p">)</span> <span class="o">*</span> <span class="n">group_features</span><span class="p">)</span> <span class="o">+</span> <span class="n">g_f_idx</span><span class="p">;</span>
+        <span class="n">output</span><span class="p">[</span><span class="n">out_offset</span><span class="p">]</span> <span class="o">=</span> <span class="n">input</span><span class="p">[</span><span class="n">in_offset</span><span class="p">];</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+    </div>
+
+    
+    
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/llm/">LLM</a>
+          <a href="https://weedge.github.io/tags/model/">model</a>
+          <a href="https://weedge.github.io/tags/transformers/">transformers</a>
+          <a href="https://weedge.github.io/tags/block-wise-scaling/">block-wise scaling</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/paper/transformer/infini_attention/">
+            <span class="next-text nav-default">解读论文：Leave No Context Behind: Efficient Infinite Context Transformers with Infini-attention</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/post/paper/transformer/delight/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:weege007@gmail.com" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/weedge" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://weibo.com/weedge" rel="me noopener" class="iconfont"
+      title="weibo"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M385.714286 733.714286q12-19.428571 6.285714-39.428571t-25.714286-28.571429q-19.428571-8-41.714286-0.571429t-34.285714 26.285714q-12.571429 19.428571-7.428571 39.142857t24.571429 28.857143 42.571429 1.428571 35.714286-27.142857zm53.714286-69.142857q4.571429-7.428571 2-15.142857t-10-10.571429q-8-2.857143-16.285714 2.857143t-12.285714 10.571429q-9.714286 17.714286 7.428571 25.714286 8 2.857143 16.571429 2.857143t12.571429-10.571429zm99.428571 61.142857q-25.714286 58.285714-90.285714 85.714286t-128 6.857143q-61.142857-19.428571-84.285714-72.285714t3.714286-107.142857q26.857143-53.142857 86.571429-79.428571t120.285714-10.857143q63.428571 16.571429 90.571429 68.285714t1.428571 108.857143zm178.285714-91.428571q-5.142857-54.857143-50.857143-97.142857t-119.142857-62.285714-156.857143-12q-127.428571 13.142857-211.142857 80.857143t-75.714286 151.142857q5.142857 54.857143 50.857143 97.142857t119.142857 62.285714 156.857143 12q127.428571-13.142857 211.142857-80.857143t75.714286-151.142857zm176 2.285714q0 38.857143-21.142857 79.714286t-62.285714 78.285714-96.285714 67.142857-129.142857 47.428571-154.571429 17.714286-157.142857-19.142857-137.428571-53.142857-98-86.285714-37.142857-114q0-65.714286 39.714286-140t112.857143-147.428571q96.571429-96.571429 195.142857-134.857143t140.857143 4q37.142857 36.571429 11.428571 119.428571-2.285714 8-0.571429 11.428571t5.714286 4 8.285714 2.857143 7.714286-2l3.428571-1.142857q79.428571-33.714286 140.571429-33.714286t87.428571 34.857143q25.714286 36 0 101.714286-1.142857 7.428571-2.571429 11.428571t2.571429 7.142857 6.857143 4.285714 9.714286 3.428571q32.571429 10.285714 58.857143 26.857143t45.714286 46.571429 19.428571 66.571429zm-42.285714-356.571429q24 26.857143 31.142857 62t-3.714286 67.142857q-4.571429 13.142857-16.857143 19.428571t-25.428571 2.285714q-13.142857-4.571429-19.428571-16.857143t-2.285714-25.428571q11.428571-36-13.714286-63.428571t-61.142857-20q-13.714286 2.857143-25.714286-4.571429t-14.285714-21.142857q-2.857143-13.714286 4.571429-25.428571t21.142857-14.571429q34.285714-7.428571 68 3.142857t57.714286 37.428571zm103.428571-93.142857q49.714286 54.857143 64.285714 127.142857t-7.714286 138q-5.142857 15.428571-19.428571 22.857143t-29.714286 2.285714-22.857143-19.428571-2.857143-29.714286q16-46.857143 5.714286-98.285714t-45.714286-90.285714q-35.428571-39.428571-84.571429-54.571429t-98.857143-4.857143q-16 3.428571-29.714286-5.428571t-17.142857-24.857143 5.428571-29.428571 24.857143-16.857143q70.285714-14.857143 139.428571 6.571429t118.857143 76.857143z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://weedge.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2013 -
+    2024
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        weedge
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//weedge.disqus.com/count.js" async></script>
+
+
+
+
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
+
+
+</body>
+</html>

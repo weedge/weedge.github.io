@@ -6,11 +6,20 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 12 Apr 2024 10:26:12 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 28 Apr 2024 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>block-wise scaling</title>
+      <link>https://weedge.github.io/tags/block-wise-scaling/</link>
+      <pubDate>Sun, 28 Apr 2024 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/block-wise-scaling/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>LLM</title>
       <link>https://weedge.github.io/tags/llm/</link>
-      <pubDate>Fri, 12 Apr 2024 10:26:12 +0800</pubDate>
+      <pubDate>Sun, 28 Apr 2024 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/llm/</guid>
       <description></description>
@@ -19,7 +28,7 @@
     <item>
       <title>model</title>
       <link>https://weedge.github.io/tags/model/</link>
-      <pubDate>Fri, 12 Apr 2024 10:26:12 +0800</pubDate>
+      <pubDate>Sun, 28 Apr 2024 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/model/</guid>
       <description></description>
@@ -28,7 +37,7 @@
     <item>
       <title>transformers</title>
       <link>https://weedge.github.io/tags/transformers/</link>
-      <pubDate>Fri, 12 Apr 2024 10:26:12 +0800</pubDate>
+      <pubDate>Sun, 28 Apr 2024 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/transformers/</guid>
       <description></description>
@@ -175,15 +184,6 @@
       <pubDate>Sat, 30 Dec 2023 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/inference-optimization/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>oneday</title>
-      <link>https://weedge.github.io/tags/oneday/</link>
-      <pubDate>Mon, 04 Dec 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/oneday/</guid>
       <description></description>
     </item>
     

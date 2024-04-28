@@ -342,6 +342,47 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/paper/transformer/delight/">论文解读 DeLighT: Very Deep and Light-weight Transformers</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2024-04-28" class="post-time">
+        2024-04-28
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E5%AD%A6%E6%9C%AF/"> 学术 </a>
+          <a href="https://weedge.github.io/categories/paper/"> paper </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <p>在看apple 最近发布的OpenEM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： <a href="https://machinelearning.apple.com/research/openelm"><strong>OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework</strong></a>），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。</p>
+<p>论文主作者：<a href="https://sacmehta.github.io/">Sachin Mehta </a></p>
+<p>论文地址：https://arxiv.org/pdf/2008.00623</p>
+<p>论文代码： <a href="https://github.com/sacmehta/delight">https://github.com/sacmehta/delight</a> （基于当时facebook的 <a href="https://github.com/facebookresearch/fairseq">fairseq</a> seq2seq工具库开发）</p>
+<p>该论文研究是在作者以前的DeFINE: DEep Factorized INput Token Embeddings for Neural Sequence Modeling 进行改进，模型结构引入更多的GLTs，来学习更宽的权重，并且减少了参数数量。</p>
+<h2 id="摘要"><strong>摘要</strong></h2>
+<p>我们介绍了一种深度且轻量级的Transformer，名为DeLighT，它在参数数量显著减少的情况下，提供了与标准基于Transformer的模型相似或更好的性能。DeLighT更有效地在每个Transformer块内部（通过DeLighT变换）以及跨块（通过块级缩放）分配参数，允许输入端使用较浅较窄的DeLighT块，输出端使用较宽较深的DeLighT块。总体而言，DeLighT网络比标准Transformer模型深2.5到4倍，但参数和运算量更少。在基准机器翻译和语言建模任务上的实验表明，DeLighT在平均参数数量减少2到3倍的情况下，达到或提高了基线Transformer的性能。</p>
+    </div>
+    <div class="read-more">
+      <a href="/post/paper/transformer/delight/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/paper/transformer/infini_attention/">解读论文：Leave No Context Behind: Efficient Infinite Context Transformers with Infini-attention</a>
     </h1>
     
@@ -350,7 +391,7 @@
         2024-04-12
       </time>
       <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/%E5%AD%A6%E6%9C%AF/"> 学术 </a>
           <a href="https://weedge.github.io/categories/paper/"> paper </a>
           
         </div>
@@ -563,55 +604,6 @@
     </div>
     <div class="read-more">
       <a href="/post/paper/rag/rag-for-llms-a-survey/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/cpu/memory_profiling/">译：内存分析</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2024-03-03" class="post-time">
-        2024-03-03
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/performance-analysis/"> performance analysis </a>
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h3 id="内存分析简介">内存分析简介</h3>
-<p>在这个系列的<a href="https://easyperf.net/blog/2024/02/12/Memory-Profiling-Part1">原文博客文章</a>中，你将学习如何收集有关程序与内存交互的高层次信息。这个过程通常被称为<em>内存分析</em>。内存分析帮助你理解应用程序随时间变化的内存使用情况，并帮助你构建程序行为的正确心理模型。以下是它可以回答的一些问题：</p>
-<ul>
-<li>程序的总内存消耗是多少，以及它随时间如何变化？</li>
-<li>程序何时何地进行堆分配？</li>
-<li>哪些代码位置分配了最大量的内存？</li>
-<li>程序每秒访问多少内存？</li>
-</ul>
-<p>当开发者谈论内存消耗时，他们通常指的是堆使用情况。实际上，堆是大多数应用程序中最大的内存消费者，因为它容纳了所有动态分配的对象。但堆并不是唯一的内存消费者。为了完整性，让我们提及其他内存消费者：</p>
-<ul>
-<li>栈：应用程序中帧栈使用的内存。应用程序中的每个线程都有自己的栈内存空间。通常，栈的大小只有几MB，如果超出限制，应用程序将崩溃。总的栈内存消耗与系统中运行的线程数量成正比。</li>
-<li>代码：用于存储应用程序及其库的代码（指令）的内存。在大多数情况下，它对内存消耗的贡献不大，但也有例外。例如，Clang C++编译器和Chrome浏览器拥有庞大的代码库，它们的二进制文件中有数十MB的代码段。</li>
-</ul>
-<p>接下来，我们将介绍<em>内存使用(memory usage)<em>和</em>内存足迹(memory footprint)<em>或者翻译成</em>内存占用</em>这两个术语，并看看如何对它们进行分析。</p>
-<p><strong>注：</strong> 主要是通过工具分析内存使用情况，尽量利用局部性原理：时间局部性和空间局部性，提高性能。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/cpu/memory_profiling/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
