@@ -89,7 +89,7 @@
 摘要
 我们介绍了一种深度且轻量级的Transformer，名为DeLighT，它在参数数量显著减少的情况下，提供了与标准基于Transformer的模型相似或更好的性能。DeLighT更有效地在每个Transformer块内部（通过DeLighT变换）以及跨块（通过块级缩放）分配参数，允许输入端使用较浅较窄的DeLighT块，输出端使用较宽较深的DeLighT块。总体而言，DeLighT网络比标准Transformer模型深2.5到4倍，但参数和运算量更少。在基准机器翻译和语言建模任务上的实验表明，DeLighT在平均参数数量减少2到3倍的情况下，达到或提高了基线Transformer的性能。"><meta itemprop="datePublished" content="2024-04-28T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2024-04-28T10:26:23+08:00" />
-<meta itemprop="wordCount" content="20992">
+<meta itemprop="wordCount" content="21039">
 <meta itemprop="keywords" content="LLM,model,transformers,block-wise scaling," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="论文解读 DeLighT: Very Deep and Light-weight Transformers"/>
 <meta name="twitter:description" content="在看apple 最近发布的OpenELM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。
@@ -434,7 +434,7 @@
     <li><a href="#附录a-delight架构用于语言建模和机器翻译"><strong>附录A DeLighT架构用于语言建模和机器翻译</strong></a></li>
     <li><a href="#附录b-带有输入混合器连接的组线性变换"><strong>附录B 带有输入混合器连接的组线性变换</strong></a></li>
     <li><a href="#附录c-delight中的乘加操作"><strong>附录C DeLighT中的乘加操作</strong></a></li>
-    <li><a href="#附录-d-wikitext-103-数据集的消融ablation研究"><strong>附录 D WikiText-103 数据集的消融(ablation)研究</strong></a></li>
+    <li><a href="#附录d-wikitext-103-数据集的消融ablation研究"><strong>附录D WikiText-103 数据集的消融(ablation)研究</strong></a></li>
     <li><a href="#附录e-组线性变换的源代码"><strong>附录E 组线性变换的源代码</strong></a></li>
   </ul>
 </nav>
@@ -472,13 +472,12 @@
 </tbody>
 </table>
 <p>标准的Transformer块（图1a）由多头注意力组成，使用查询-键-值分解来建模序列标记之间的关系，并且由一个前馈网络（FFN）来学习更宽的表示。多头注意力通过对输入应用三个投影来获取查询$\mathbf{Q}$、键$\mathbf{K}$和值$\mathbf{V}$，每个投影由$h$个线性层（或头）组成，将$d_m$维输入映射到$d_h$维空间，其中$d_h=d_m/h$是头的维度。FFN由两个线性层组成，其中第一个将维度从$d_m$扩展到$d_f$，第二个将维度从$d_f$减少到$d_m$。Transformer块的深度为4，包括（1）用于query、key和value的三个并行分支，（2）将多个头的输出组合的融合层，以及（3）FFN中的两个顺序线性层。一般来说，基于Transformer的网络通过顺序堆叠Transformer块来增加网络的容量和深度。</p>
-<p>本文扩展了Transformer架构，引入了一个深度轻量级的Transformer，DeLighT。我们的模型使用深度轻量级的扩展-减少变换，DeLighT（第3.1节），有效地实现了学习更宽的表示。它还允许用单头注意力和轻量级FFN（第3.2节）替换多头注意力和前馈网络（FFN）层。DeLighT将注意力维度与深度和宽度解耦，使我们能够使用块级别缩放而不是均匀堆叠Transformer块来有效地学习表示（第3.3节）。</p>
+<p>本文扩展了Transformer架构，引入了一个深度轻量级的Transformer，DeLighT。我们的模型使用深度轻量级的扩展-减少变换，DeLighT（第3.1节），有效地实现了学习更宽的表示(representations)。它还允许用单头注意力和轻量级FFN（第3.2节）替换多头注意力和前馈网络（FFN）层。DeLighT将注意力维度与深度和宽度解耦，使我们能够使用块级别缩放而不是均匀堆叠Transformer块来有效地学习表示（第3.3节）。</p>
 <h3 id="31-delight">3.1 DeLighT</h3>
 <p>DeLighT将一个$d_m$维输入向量映射到一个高维空间（扩展），然后使用Mehta等人（2018）的$N$ 层组变换将其减少到一个$d_o$维输出向量（缩减），如图1 d所示。在这些扩展和缩减阶段，DeLighT变换使用组线性变换（GLTs），因为它们通过从输入的特定部分派生输出来学习局部表示，并且比线性变换更高效。为了学习全局表示，DeLighT变换使用特征洗牌，在组线性变换中不同组之间共享信息，类似于卷积网络中的通道洗牌（Zhang等人，2018）。</p>
 <p>增加Transformer的表达能力和容量的标准方法是增加输入维度$d_m$。然而，线性增加$d_m$也会线性增加标准Transformer块中多头注意力的操作数量（$\mathcal{O}(n^2 d_m)$，其中$n$是序列长度）（图1 a）。相比之下，为了增加DeLighT块的表达能力和容量，我们通过扩展和减少阶段增加其中间DeLighT变换的深度和宽度。这使得我们可以使用较小的维度计算注意力，从而减少操作数量。</p>
 <p>形式上，DeLighT由五个配置参数控制：（1）GLT层数$N$，（2）宽度倍增器$w_m$，（3）输入维度$d_m$，（4）输出维度$d_o$，以及（5）GLT中的最大组数$g_{max}$。在扩展阶段，DeLighT使用$\lceil \frac{N}{2} \rceil$层将$d_m$维输入线性投影到高维空间$d_{max}=w_m d_m$。在减少阶段，DeLighT使用剩余的$N - \lceil \frac{N}{2} \rceil$ GLT层将$d_{max}$维向量线性投影到$d_o$维空间。数学上，我们定义每个GLT层$l$的输出$\mathbf{Y}$为：</p>
 <p>$$
-\begin{equation}
 \mathbf{Y}^l = \left\{
 \begin{array}{ll}
 \mathcal{F} \left(\mathbf{X}, \mathbf{W}^l, \mathbf{b}^l, g^l\right), &amp; l = 1 \\
@@ -486,7 +485,6 @@
 \end{array}
 \right.
 \label{eq:glt}
-\end{equation}
 $$</p>
 <p>其中 $\mathbf{W}^l = \lbrace \mathbf{W}^l_1, \cdots, \mathbf{W}^l_{g^l}\rbrace$  和 $\mathbf{b}^l = \lbrace \mathbf{b}^l_1, \cdots, \mathbf{b}^l_{g^l}\rbrace$ 是第$l$层GLT的可学习权重和偏置，其中$g^l$是第$l$层GLT的组数。简言之，$\mathcal{F}$函数接受输入$\mathbf{X}$（或$\mathcal{H}\left(\mathbf{X}, \mathbf{Y}^{l-1}\right)$）并将其分成$g^l$个不重叠的组，使得$\mathbf{X} = \lbrace\mathbf{X}_1,\cdots,\mathbf{X}_{g^l}\rbrace$ 。</p>
 <p>然后，$\mathcal{F}$ 函数线性地变换每个$\mathbf{X}_i$，得到输出$\mathbf{Y}^l_i = \mathbf{X}_i \mathbf{W}_i^l + \mathbf{b}_i^l$。每个组的输出$\mathbf{Y}^l_i$然后被串联起来，产生输出$\mathbf{Y}^l$。函数$\mathcal{H}$首先对$\mathbf{Y}^{l-1}$中每个组的输出进行洗牌，然后使用Mehta等人（2020）的输入混合器连接将其与输入$\mathbf{X}$组合起来，以避免梯度消失问题。图2 可视化了DeLighT变换中的扩展阶段，其中包括组线性变换、特征洗牌和输入混合器连接。</p>
@@ -510,7 +508,7 @@ $$
 </thead>
 <tbody>
 <tr>
-<td style="text-align:center"><em>图2.示例说明了DeLighT变换中的扩展阶段，该阶段使用GLTs、特征洗牌和输入混合器连接，以有效地学习更深和更宽的表示。为了说明，我们使用了相同的输入和输出维度。</em></td>
+<td style="text-align:center"><em>图2.示例说明了DeLighT变换中的扩展阶段，该阶段使用GLTs、特征洗牌和输入混合器连接，以有效地学习更深和更宽的表示(representations)。为了说明，我们使用了相同的输入和输出维度。</em></td>
 </tr>
 </tbody>
 </table>
@@ -523,7 +521,7 @@ $$
 \label{eq:espda}
 \end{equation}
 $$
-我们假设DeLighT学习更宽的表示的能力使我们能够用单头注意力替换多头注意力。标准Transformer中计算注意力的计算成本为$\mathcal{O}(d_m n^2)$，而DeLighT块中为$\mathcal{O}(d_o n^2)$，其中$d_o &lt; d_m$。因此，DeLighT块将计算注意力的成本减少了一个因子$d_m/d_o$。在我们的实验中，我们使用$d_o=d_m/2$，因此与Transformer架构相比，需要$2\times$更少的乘加操作。</p>
+我们假设DeLighT学习更宽的表示(representations)的能力使我们能够用单头注意力替换多头注意力。标准Transformer中计算注意力的计算成本为$\mathcal{O}(d_m n^2)$，而DeLighT块中为$\mathcal{O}(d_o n^2)$，其中$d_o &lt; d_m$。因此，DeLighT块将计算注意力的成本减少了一个因子$d_m/d_o$。在我们的实验中，我们使用$d_o=d_m/2$，因此与Transformer架构相比，需要$2\times$更少的乘加操作。</p>
 <p><strong>轻量级(Light-weight) FFN</strong> ：与Transformer中的FFN类似，这个块也由两个线性层组成。由于DeLighT块已经通过DeLighT集成了更宽的表示，它允许我们反转Transformer中FFN层的功能。第一层将输入的维度从$d_m$减少到$d_m/r$，而第二层将维度从$d_m/r$扩展到$d_m$，其中$r$是缩减因子（见图1b）。我们的轻量级FFN通过因子$r d_f/d_m$减少了FFN中的参数和操作数量。在标准Transformer中，FFN的维度扩展了4倍（Transformer-base使用$d_m$=512和$d_f$=2048，而Transformer-large使用$d_m$=1024和$d_f$=4096）。 在我们的实验中，我们使用$r=4$。因此，轻量级FFN将FFN中的参数数量减少了$16\times$。</p>
 <p><strong>block/layer深度</strong>：DeLighT块堆叠了（1）<strong>具有 $N$个GLT的DeLighT</strong> ，（2）三个并行的用于Key、Query和Value的线性层，（3）一个投影层，和（4）轻量级FFN的两个线性层。因此，DeLighT块的深度为$N+4$。与标准Transformer块（深度为4）相比，DeLighT块更深。</p>
 <h3 id="33-blocklayer-wise-scaling">3.3 Block/Layer wise scaling</h3>
@@ -1145,9 +1143,9 @@ $$</p>
 <p>其中$\mathbf{Q} \in \mathbb{R}^{n \times d_o}$, $\mathbf{K} \in \mathbb{R}^{n \times d_o}$, $\mathbf{V} \in \mathbb{R}^{n \times d_o}$分别表示查询、键和值。</p>
 <p>注意机制涉及两个点积。第一个点积是在 $\mathbf{Q}$ 和 $\mathbf{K}$ 之间进行的，而第二个点积是在第一个点积的输出和 $\mathbf{V}$ 之间进行的。两个点积都需要 $d_on^2$ 个乘加操作（MACs）。因此，计算缩放点积自注意力的总MAC数量为 $2d_on^2$。</p>
 <p>在源-目标注意力中（比如在机器翻译中），$\mathbf{K}$ 和 $\mathbf{V}$ 来自源（编码器），而 $\mathbf{Q}$ 逐步解码（一次一个令牌）。因此，给定 $n$ 个源令牌，解码 $m$ 个目标令牌所需的MAC数量为 $\sum\limits_{k=1}^{m} 2knd_o$</p>
-<h2 id="附录-d-wikitext-103-数据集的消融ablation研究"><strong>附录 D WikiText-103 数据集的消融(ablation)研究</strong></h2>
+<h2 id="附录d-wikitext-103-数据集的消融ablation研究"><strong>附录D WikiText-103 数据集的消融(ablation)研究</strong></h2>
 <p>表7 研究了 WikiText-103 数据集上 DeLighT块参数的影响，即 (1) GLT 的最小数量 $N_{min}$，(2) GLT 的最大数量 $N_{max}$，(3) 宽度倍增器 $w_m$，以及 (4) 模型维度 $d_m$（见图 1b）。图8、图9 和图10 显示了DeLighT、特征洗牌和轻量级 FFN 的影响。表 8 显示了DeLighT在 DeLighT块中位置的影响，而图12 显示了缩放 DeLighT网络的效果。我们选择了 WikiText-103 数据集进行消融研究，因为与其他数据集相比，它的词汇量非常大（267K 对比 30-40K），这使得我们能够测试在大词汇量的情况下的能力。性能以验证集上的困惑度（越低越好）来报告。在我们的消融(ablation)研究中，我们使用了与第 4.2 节相同的训练设置，只是我们只训练了 50K 次迭代。</p>
-<p>**DeLighT 块：**总的来说，表7 显示了使用DeLighT和块级缩放(block-wise scaling)来缩放深度和宽度的效果。我们得出以下观察结果：</p>
+<p><strong>DeLighT 块</strong>：总的来说，表7 显示了使用DeLighT和块级缩放(block-wise scaling)来缩放深度和宽度的效果。我们得出以下观察结果：</p>
 <ol>
 <li>块级缩放（R4，R5）相比统一缩放（R1-R3）提供了更好的性能。例如，具有 $N_{min}=4$ 和 $N_{max}=8$ 的 DeLighT（R4）比具有 $N_{min}=8$ 和 $N_{max}=8$ 的 DeLighT更浅 $1.25\times$，但性能更好，而且参数和操作数量相似。缩放 $w_m$ 可以提高性能（R2 vs. R3），但改进幅度明显低于块级缩放模型（R3 vs. R5）。这表明跨块的参数的非均匀分布使网络能够学习更好的表示。</li>
 <li>不同的 $N_{max}$ 和 $N_{min}$ 之间的比率产生不同的结果。当比率大于或等于两倍时，我们观察到性能显著提升。例如，当我们将 $\frac{N_{max}}{N_{min}}$ 从 2 缩放到 3 时（R6 vs. R8），困惑度提高了约 5 个点，而网络参数仅适度增加。另一方面，当 $\frac{N_{max}}{N_{min}}$ 接近 1 时（R6 vs. R7），性能变化不明显。这可能是因为跨块的参数分配接近于均匀（Eq. \ref{eq:mw}）。这与我们之前的观察一致。</li>
