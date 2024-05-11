@@ -342,6 +342,83 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/multimoding/voices/open_voice_extra_se_and_convert/">论文解读 OpenVoice: Versatile Instant Voice Cloning</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2024-05-11" class="post-time">
+        2024-05-11
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/tts/"> TTS </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <p>使用meloTTS 本文生成的音频</p>
+
+
+
+<figure >
+  <audio controls class="player" preload="">
+    <source src="https://media.githubusercontent.com/media/weedge/paper-speaker/main/multimoding/voices/open_voice_inference/zh-tts.wav" type="audio/mpeg">
+  </audio>
+  
+  
+</figure>
+
+<p>使用openVoice clone 自己的声音 阅读本文内容 
+
+
+<figure >
+  <audio controls class="player" preload="">
+    <source src="https://media.githubusercontent.com/media/weedge/paper-speaker/main/multimoding/voices/open_voice_inference/clone-me-zh-tts.wav" type="audio/mpeg">
+  </audio>
+  
+  
+</figure>
+</p>
+<blockquote>
+<p>文件直接上传在github中, 暂未走cdn, 缓存比较慢，可下载播放， 下载地址： <a href="http://github.com/weedge/paper-speaker/tree/main/multimoding/voices/open_voice_inference">http://github.com/weedge/paper-speaker/tree/main/multimoding/voices/open_voice_inference</a></p>
+</blockquote>
+<hr>
+<p>openVoiceV2 tone color clone: base TTS + extra tone color + convert</p>
+<p>Base TTS: use meloTTS , 支持TTS模型训练，以及load Pre-Trained ckpt 进行TTS,  在 <a href="https://github.com/jaywalnut310/vits">VITS</a>基础上支持多种语言；</p>
+<p>论文地址：<a href="https://arxiv.org/abs/2312.01479">OpenVoice: Versatile Instant Voice Cloning</a></p>
+<p>论文主作者：Zengyi Qin (同时是JetMoE的作者，站在巨人的肩膀上创新)</p>
+<p>公开的权重：</p>
+<ul>
+<li>OpenVoice: <a href="https://huggingface.co/myshell-ai/OpenVoice">https://huggingface.co/myshell-ai/OpenVoice</a></li>
+<li>OpenVoiceV2: <a href="https://huggingface.co/myshell-ai/OpenVoiceV2">https://huggingface.co/myshell-ai/OpenVoiceV2</a></li>
+</ul>
+<p>源码：</p>
+<ul>
+<li><a href="https://github.com/myshell-ai/OpenVoice">https://github.com/myshell-ai/OpenVoice</a></li>
+<li><a href="https://github.com/myshell-ai/MeloTTS">https://github.com/myshell-ai/MeloTTS</a></li>
+</ul>
+<p>训练： MSML dataset 和 训练过程 未公开</p>
+<p><strong>附操作笔记</strong>： <a href="https://github.com/weedge/doraemon-nb/blob/main/myshell_ai_OpenVoiceV2.ipynb">https://github.com/weedge/doraemon-nb/blob/main/myshell_ai_OpenVoiceV2.ipynb</a></p>
+    </div>
+    <div class="read-more">
+      <a href="/post/multimoding/voices/open_voice_extra_se_and_convert/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/paper/transformer/delight/">论文解读 DeLighT: Very Deep and Light-weight Transformers</a>
     </h1>
     
@@ -565,45 +642,6 @@
     </div>
     <div class="read-more">
       <a href="/post/doraemon/redis_gcp_rag_stack/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/paper/rag/rag-for-llms-a-survey/">论文：Retrieval-Augmented Generation for Large Language Models: A Survey [v4]</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2024-03-08" class="post-time">
-        2024-03-08
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/rag/"> RAG </a>
-          <a href="https://weedge.github.io/categories/llm/"> LLM </a>
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          <a href="https://weedge.github.io/categories/paper/"> paper </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p>大型语言模型（LLMs）展示了显著的能力，但面临着幻觉、过时知识和不透明、不可追踪的推理过程等挑战。检索增强生成（RAG）已经成为一个有前途的解决方案，通过整合外部数据库的知识。这增强了模型的准确性和可信度，特别适用于知识密集型任务，并允许持续的知识更新和领域特定信息的整合。RAG通过将LLMs的内在知识与庞大、动态的外部数据库资源相结合，产生了协同效应。这篇综述论文详细考察了RAG范式的发展，包括朴素RAG、高级RAG和模块化RAG。它对RAG框架的三方基础进行了细致的了解，其中包括检索、生成和增强技术。该论文强调嵌入(embedding)在每个关键组成部分的最先进技术，并提对RAG系统进展的深入研究了解。此外，该论文介绍了评估RAG模型的指标和基准，以及最新的评估框架。最后，该论文讲了一些研究前景，包括未来挑战、多模态的扩展以及RAG基础设施及其生态系统的进展<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>。</p>
-<p>论文地址:  <a href="https://arxiv.org/pdf/2312.10997.pdf">Retrieval-Augmented Generation for Large Language Models: A Survey</a> |  <a href="https://github.com/Tongji-KGLLM/RAG-Survey/blob/main/assets/RAG_Slide_ENG.pdf">PPT</a></p>
-<p>注： 主要是了解RAG的发展过程(召回率)，以及对相关子模块领域的现阶段了解，如果感兴趣，通过索引到论文引用处进一步了解。(提高看相应论文的准确率)</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/paper/rag/rag-for-llms-a-survey/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>

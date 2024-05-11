@@ -9,14 +9,77 @@
   </url>
   
   <url>
-    <loc>https://weedge.github.io/tags/block-wise-scaling/</loc>
-    <lastmod>2024-04-28T10:26:23+08:00</lastmod>
+    <loc>https://weedge.github.io/categories/</loc>
+    <lastmod>2024-05-11T10:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
-    <loc>https://weedge.github.io/categories/</loc>
+    <loc>https://weedge.github.io/tags/multimoding/</loc>
+    <lastmod>2024-05-11T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/openvoice/</loc>
+    <lastmod>2024-05-11T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/</loc>
+    <lastmod>2024-05-11T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/</loc>
+    <lastmod>2024-05-11T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/categories/tts/</loc>
+    <lastmod>2024-05-11T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/voice/</loc>
+    <lastmod>2024-05-11T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/</loc>
+    <lastmod>2024-05-11T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/</loc>
+    <lastmod>2024-05-11T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/post/multimoding/voices/open_voice_extra_se_and_convert/</loc>
+    <lastmod>2024-05-11T10:26:23+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://weedge.github.io/tags/block-wise-scaling/</loc>
     <lastmod>2024-04-28T10:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
@@ -44,20 +107,6 @@
   </url>
   
   <url>
-    <loc>https://weedge.github.io/post/</loc>
-    <lastmod>2024-04-28T10:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/tags/</loc>
-    <lastmod>2024-04-28T10:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
     <loc>https://weedge.github.io/tags/transformers/</loc>
     <lastmod>2024-04-28T10:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
@@ -66,13 +115,6 @@
   
   <url>
     <loc>https://weedge.github.io/categories/%E5%AD%A6%E6%9C%AF/</loc>
-    <lastmod>2024-04-28T10:26:23+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/</loc>
     <lastmod>2024-04-28T10:26:23+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
@@ -108,13 +150,6 @@
   
   <url>
     <loc>https://weedge.github.io/tags/translate/</loc>
-    <lastmod>2024-03-28T21:51:52+08:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/</loc>
     <lastmod>2024-03-28T21:51:52+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>

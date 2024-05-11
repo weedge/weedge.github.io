@@ -6,7 +6,58 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sun, 28 Apr 2024 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 11 May 2024 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>论文解读 OpenVoice: Versatile Instant Voice Cloning</title>
+      <link>https://weedge.github.io/post/multimoding/voices/open_voice_extra_se_and_convert/</link>
+      <pubDate>Sat, 11 May 2024 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/multimoding/voices/open_voice_extra_se_and_convert/</guid>
+      <description>&lt;p&gt;使用meloTTS 本文生成的音频&lt;/p&gt;
+
+
+
+&lt;figure &gt;
+  &lt;audio controls class=&#34;player&#34; preload=&#34;&#34;&gt;
+    &lt;source src=&#34;https://media.githubusercontent.com/media/weedge/paper-speaker/main/multimoding/voices/open_voice_inference/zh-tts.wav&#34; type=&#34;audio/mpeg&#34;&gt;
+  &lt;/audio&gt;
+  
+  
+&lt;/figure&gt;
+
+&lt;p&gt;使用openVoice clone 自己的声音 阅读本文内容 
+
+
+&lt;figure &gt;
+  &lt;audio controls class=&#34;player&#34; preload=&#34;&#34;&gt;
+    &lt;source src=&#34;https://media.githubusercontent.com/media/weedge/paper-speaker/main/multimoding/voices/open_voice_inference/clone-me-zh-tts.wav&#34; type=&#34;audio/mpeg&#34;&gt;
+  &lt;/audio&gt;
+  
+  
+&lt;/figure&gt;
+&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;文件直接上传在github中, 暂未走cdn, 缓存比较慢，可下载播放， 下载地址： &lt;a href=&#34;http://github.com/weedge/paper-speaker/tree/main/multimoding/voices/open_voice_inference&#34;&gt;http://github.com/weedge/paper-speaker/tree/main/multimoding/voices/open_voice_inference&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;hr&gt;
+&lt;p&gt;openVoiceV2 tone color clone: base TTS + extra tone color + convert&lt;/p&gt;
+&lt;p&gt;Base TTS: use meloTTS , 支持TTS模型训练，以及load Pre-Trained ckpt 进行TTS,  在 &lt;a href=&#34;https://github.com/jaywalnut310/vits&#34;&gt;VITS&lt;/a&gt;基础上支持多种语言；&lt;/p&gt;
+&lt;p&gt;论文地址：&lt;a href=&#34;https://arxiv.org/abs/2312.01479&#34;&gt;OpenVoice: Versatile Instant Voice Cloning&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;论文主作者：Zengyi Qin (同时是JetMoE的作者，站在巨人的肩膀上创新)&lt;/p&gt;
+&lt;p&gt;公开的权重：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;OpenVoice: &lt;a href=&#34;https://huggingface.co/myshell-ai/OpenVoice&#34;&gt;https://huggingface.co/myshell-ai/OpenVoice&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;OpenVoiceV2: &lt;a href=&#34;https://huggingface.co/myshell-ai/OpenVoiceV2&#34;&gt;https://huggingface.co/myshell-ai/OpenVoiceV2&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;源码：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/myshell-ai/OpenVoice&#34;&gt;https://github.com/myshell-ai/OpenVoice&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/myshell-ai/MeloTTS&#34;&gt;https://github.com/myshell-ai/MeloTTS&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;训练： MSML dataset 和 训练过程 未公开&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;附操作笔记&lt;/strong&gt;： &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/myshell_ai_OpenVoiceV2.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/myshell_ai_OpenVoiceV2.ipynb&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>论文解读 DeLighT: Very Deep and Light-weight Transformers</title>
       <link>https://weedge.github.io/post/paper/transformer/delight/</link>
@@ -297,23 +348,6 @@
 &lt;p&gt;虽然 GPU 在执行矩阵乘法方面效率很高，但随着数据量的增加，计算成本变得令人望而却步。然而，许多应用程序不需要精确的结果，而是可以为了更快的搜索而牺牲一些准确性。当不需要精确的结果时，近似最近邻 (ANN) 方法通常可以减少搜索期间必须执行的距离计算的数量。&lt;/p&gt;
 &lt;p&gt;本文主要介绍了 IVF-Flat，这是 NVIDIA &lt;a href=&#34;https://developer.nvidia.cn/zh-cn/blog/reusable-computational-patterns-for-machine-learning-and-data-analytics-with-rapids-raft/&#34;&gt;RAPIDS RAFT&lt;/a&gt; 中的一种方法。IVF-Flat 方法使用原始（即Flat）向量的倒排索引 (IVF)。此算法提供了简单的调整手段，以减少整体搜索空间并在准确性和速度之间进行权衡。&lt;/p&gt;
 &lt;p&gt;为了帮助了解如何使用 IVF-Flat，我们讨论了该算法的工作原理，并演示了&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/pylibraft_api/neighbors/#ivf-flat&#34;&gt;Python&lt;/a&gt;和&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_flat/&#34;&gt;C++ APIs&lt;/a&gt;我们介绍了索引构建的设置参数，并提供了如何配置 GPU 加速的 IVF-Flat搜索的技巧。这些步骤也可以在示例中遵循&lt;a href=&#34;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/notebooks/ivf_flat_example.ipynb&#34;&gt;Python notebook&lt;/a&gt;和&lt;a href=&#34;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/cpp/template/src/ivf_flat_example.cu&#34;&gt;C++ project&lt;/a&gt;.最后，我们演示了 GPU 加速的向量搜索比 CPU 搜索快一个数量级。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>译：加速向量搜索：微调 GPU 索引算法</title>
-      <link>https://weedge.github.io/post/gpu/2.accelerating-vector-search-fine-tuning-gpu-index-algorithms/</link>
-      <pubDate>Fri, 03 Nov 2023 14:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/gpu/2.accelerating-vector-search-fine-tuning-gpu-index-algorithms/</guid>
-      <description>&lt;p&gt;这个 &lt;a href=&#34;https://developer.nvidia.cn/zh-cn/blog/accelerating-vector-search-using-gpu-accelerated-indexes-with-rapids-raft/&#34;&gt;系列的第一篇文章&lt;/a&gt; 介绍了向量搜索索引，解释了它们在实现广泛的重要应用中所起的作用，并使用了 &lt;a href=&#34;https://github.com/rapidsai/raft&#34;&gt;RAFT&lt;/a&gt; 库。&lt;/p&gt;
-&lt;p&gt;在这篇文章中，我们深入探讨第 1 部分中提到的每种 GPU 加速索引方法，并简要解释了算法的工作原理，以及总结重要的微调参数。&lt;/p&gt;
-&lt;p&gt;然后，我们通过一个简单的端到端示例，用预训练的大型语言模型演示 RAFT 在问答问题上的 Python API，并在涉及同时传递给搜索算法的不同查询向量数量的几个不同场景下，将 RAFT 的算法与 HNSW 的性能进行比较。&lt;/p&gt;
-&lt;p&gt;内容如下：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;可与 GPU 一起使用的向量搜索索引算法概述&lt;/li&gt;
-&lt;li&gt;一个端到端的例子演示了使用 Python 在 GPU 上运行向量搜索是多么容易&lt;/li&gt;
-&lt;li&gt;GPU 上的向量搜索与 CPU 上当前最先进的 HNSW 方法的性能比较&lt;/li&gt;
-&lt;/ul&gt;</description>
     </item>
     
   </channel>

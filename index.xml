@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sun, 28 Apr 2024 10:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 11 May 2024 10:26:23 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -49,6 +49,549 @@
 &lt;li&gt;“&lt;strong&gt;万物之始，大道至简，衍化至繁&lt;/strong&gt;” – 老子《道德经》&lt;/li&gt;
 &lt;/ol&gt;
 </description>
+      
+    </item>
+    
+    <item>
+      <title>论文解读 OpenVoice: Versatile Instant Voice Cloning</title>
+      <link>https://weedge.github.io/post/multimoding/voices/open_voice_extra_se_and_convert/</link>
+      <pubDate>Sat, 11 May 2024 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/multimoding/voices/open_voice_extra_se_and_convert/</guid>
+      
+        <description>&lt;p&gt;使用meloTTS 本文生成的音频&lt;/p&gt;
+
+
+
+&lt;figure &gt;
+  &lt;audio controls class=&#34;player&#34; preload=&#34;&#34;&gt;
+    &lt;source src=&#34;https://media.githubusercontent.com/media/weedge/paper-speaker/main/multimoding/voices/open_voice_inference/zh-tts.wav&#34; type=&#34;audio/mpeg&#34;&gt;
+  &lt;/audio&gt;
+  
+  
+&lt;/figure&gt;
+
+&lt;p&gt;使用openVoice clone 自己的声音 阅读本文内容 
+
+
+&lt;figure &gt;
+  &lt;audio controls class=&#34;player&#34; preload=&#34;&#34;&gt;
+    &lt;source src=&#34;https://media.githubusercontent.com/media/weedge/paper-speaker/main/multimoding/voices/open_voice_inference/clone-me-zh-tts.wav&#34; type=&#34;audio/mpeg&#34;&gt;
+  &lt;/audio&gt;
+  
+  
+&lt;/figure&gt;
+&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;文件直接上传在github中, 暂未走cdn, 缓存比较慢，可下载播放， 下载地址： &lt;a href=&#34;http://github.com/weedge/paper-speaker/tree/main/multimoding/voices/open_voice_inference&#34;&gt;http://github.com/weedge/paper-speaker/tree/main/multimoding/voices/open_voice_inference&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;hr&gt;
+&lt;p&gt;openVoiceV2 tone color clone: base TTS + extra tone color + convert&lt;/p&gt;
+&lt;p&gt;Base TTS: use meloTTS , 支持TTS模型训练，以及load Pre-Trained ckpt 进行TTS,  在 &lt;a href=&#34;https://github.com/jaywalnut310/vits&#34;&gt;VITS&lt;/a&gt;基础上支持多种语言；&lt;/p&gt;
+&lt;p&gt;论文地址：&lt;a href=&#34;https://arxiv.org/abs/2312.01479&#34;&gt;OpenVoice: Versatile Instant Voice Cloning&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;论文主作者：Zengyi Qin (同时是JetMoE的作者，站在巨人的肩膀上创新)&lt;/p&gt;
+&lt;p&gt;公开的权重：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;OpenVoice: &lt;a href=&#34;https://huggingface.co/myshell-ai/OpenVoice&#34;&gt;https://huggingface.co/myshell-ai/OpenVoice&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;OpenVoiceV2: &lt;a href=&#34;https://huggingface.co/myshell-ai/OpenVoiceV2&#34;&gt;https://huggingface.co/myshell-ai/OpenVoiceV2&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;源码：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/myshell-ai/OpenVoice&#34;&gt;https://github.com/myshell-ai/OpenVoice&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/myshell-ai/MeloTTS&#34;&gt;https://github.com/myshell-ai/MeloTTS&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;训练： MSML dataset 和 训练过程 未公开&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;附操作笔记&lt;/strong&gt;： &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/myshell_ai_OpenVoiceV2.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/myshell_ai_OpenVoiceV2.ipynb&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;抽取音色：&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/weedge/914e71c22aaaca90db1660fb5c5fe645.js&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;clone音色转换：&lt;/p&gt;
+&lt;script type=&#34;application/javascript&#34; src=&#34;https://gist.github.com/weedge/7b8393990adfa205afbede4d1c8615ec.js&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;&lt;strong&gt;Tips&lt;/strong&gt;: 使用cpu转换的时间比较长，比如本文音色转换时间大概需要1个小时，如果是在线场景，像app.myshell.ai 在线转换的场景中，限制输入文本的最大长度为300，而且也会定义转换的超时时间，防止过度消耗计算资源。如果是离线场景pipeline，可以采用m/r框架来分布式处理音频文件转换。（这个是后续修改加入，音频文件未生成）； 如果对于文章经常更新的场景，需要重新生成文章音频文件，这个是比较消耗资源，暂未找到一种diff方案增量更新音频。&lt;/p&gt;
+&lt;h2 id=&#34;0-摘要&#34;&gt;0 摘要&lt;/h2&gt;
+&lt;p&gt;我们介绍了 OpenVoice，这是一种多功能的即时语音克隆方法，只需来自参考说话者的短音频剪辑即可复制其声音并生成多种语言的语音。OpenVoice 在以下领域中代表了重大进展：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;1) 灵活的语音风格控制。&lt;/strong&gt; OpenVoice 能够对语音风格进行精细的控制，包括情感、口音、节奏、停顿和语调，除了复制参考说话者的音色外。这些语音风格不是直接从参考说话者的风格复制和受到限制的。以往的方法缺乏在克隆后灵活操纵语音风格的能力。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;2) 零样本跨语言语音克隆。&lt;/strong&gt; OpenVoice 实现了零样本跨语言语音克隆，适用于未包含在大规模说话者训练集中的语言。与以往的方法不同，以往的方法通常需要为所有语言提供广泛的大规模说话者多语言（MSML）数据集，而 OpenVoice 可以在没有针对该语言的任何大规模说话者训练数据的情况下将语音克隆到新语言中。OpenVoice 还具有&lt;strong&gt;计算效率高&lt;/strong&gt;的特点，成本比商业可用的甚至性能较差的 API 低几十倍。为了促进该领域的进一步研究，我们已经将源代码和训练模型公开。我们还在我们的演示网站提供了定性结果。在其公开发布之前，我们内部版本的 OpenVoice 在 2023 年 5 月至 10 月之间被全球用户数千万次使用，作为 MyShell.ai 的后端服务。&lt;/p&gt;
+&lt;h2 id=&#34;1-介绍&#34;&gt;1 介绍&lt;/h2&gt;
+&lt;p&gt;在文本转语音（TTS）合成中，即时语音克隆（IVC）意味着 TTS 模型可以在给定短音频样本的情况下克隆任何参考说话者的声音，而无需对参考说话者进行额外的训练。它也被称为零样本 TTS。IVC 使用户能够灵活定制生成的语音，在各种实际应用中展现出巨大的价值，例如媒体内容创作、定制聊天机器人以及人与计算机或大型语言模型之间的多模式交互。&lt;/p&gt;
+&lt;p&gt;在 IVC 方面已经进行了大量的研究工作。自回归方法的例子包括 VALLE&lt;sup id=&#34;fnref:1&#34;&gt;&lt;a href=&#34;#fn:1&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;1&lt;/a&gt;&lt;/sup&gt; 和 XTTS&lt;sup id=&#34;fnref:2&#34;&gt;&lt;a href=&#34;#fn:2&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;2&lt;/a&gt;&lt;/sup&gt;，它们从参考音频中提取声学标记或说话者嵌入作为自回归模型的条件。然后，自回归模型按顺序生成声学标记，然后将其解码为原始音频波形。尽管这些方法可以克隆音色，但它们不允许用户灵活地操纵其他重要的风格参数，如情感、口音、节奏、停顿和语调。而且，自回归模型相对计算成本高，推理速度相对较慢。非自回归方法的例子包括 YourTTS&lt;sup id=&#34;fnref:3&#34;&gt;&lt;a href=&#34;#fn:3&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;3&lt;/a&gt;&lt;/sup&gt;和最近开发的 Voicebox&lt;sup id=&#34;fnref:4&#34;&gt;&lt;a href=&#34;#fn:4&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;4&lt;/a&gt;&lt;/sup&gt;，它们展示了显著更快的推理速度，但仍无法提供除音色以外的风格参数的灵活控制。现有方法的另一个共同缺点是，它们通常需要大量的 MSML 数据集才能实现跨语言语音克隆。这种组合数据要求可能会限制它们包含新语言的灵活性。此外，由于科技巨头的语音克隆研究&lt;sup id=&#34;fnref:4&#34;&gt;&lt;a href=&#34;#fn:4&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;4&lt;/a&gt;&lt;/sup&gt;&lt;sup id=&#34;fnref:1&#34;&gt;&lt;a href=&#34;#fn:1&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;1&lt;/a&gt;&lt;/sup&gt; 大多是闭源的，因此研究界没有便捷的方式站在他们的肩膀上，推动该领域的进展。&lt;/p&gt;
+&lt;p&gt;我们介绍了 OpenVoice，这是一种灵活的即时语音克隆方法，针对该领域的以下关键问题：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;除了克隆音色外，如何灵活控制其他重要的风格参数，如情感、口音、节奏、停顿和语调？这些特征对于生成上下文自然的语音和对话非常重要，而不是单调地叙述输入文本。先前的方法&lt;sup id=&#34;fnref:3&#34;&gt;&lt;a href=&#34;#fn:3&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;3&lt;/a&gt;&lt;/sup&gt;&lt;sup id=&#34;fnref:2&#34;&gt;&lt;a href=&#34;#fn:2&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;2&lt;/a&gt;&lt;/sup&gt;&lt;sup id=&#34;fnref:1&#34;&gt;&lt;a href=&#34;#fn:1&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;1&lt;/a&gt;&lt;/sup&gt;只能克隆参考说话者的单调音色和风格，但不允许灵活操纵风格。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;如何以简单的方式实现零样本跨语言语音克隆。我们提出了两个零样本能力方面的重要问题，这些问题并不是先前研究所解决的：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;如果参考说话者的语言不在 MSML 数据集中，模型是否能够克隆其语音？&lt;/li&gt;
+&lt;li&gt;如果生成的语音的语言不在 MSML 数据集中，模型是否能够克隆参考声音并生成该语言的语音？
+在先前的研究中&lt;sup id=&#34;fnref:5&#34;&gt;&lt;a href=&#34;#fn:5&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;5&lt;/a&gt;&lt;/sup&gt;&lt;sup id=&#34;fnref:4&#34;&gt;&lt;a href=&#34;#fn:4&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;4&lt;/a&gt;&lt;/sup&gt;，参考说话者的语言和模型生成的语言都应在 MSML 数据集中大量存在。但如果两者都不存在呢？&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;如何在不降低质量的情况下实现超快速的实时推理速度，这对于大规模商业生产环境至关重要。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;为了解决前两个问题，OpenVoice 被设计为尽可能地解耦语音中的组件。语言、音色和其他重要的语音特征的生成被独立地分开，使得可以灵活操纵单个语音风格和语言类型。这是在不标记任何语音风格的 MSML 训练集中实现的。我们想澄清一点，&lt;strong&gt;本研究中的零样本跨语言任务与 VALLE-X 中的任务不同&lt;sup id=&#34;fnref:5&#34;&gt;&lt;a href=&#34;#fn:5&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;5&lt;/a&gt;&lt;/sup&gt;&lt;/strong&gt;。在 VALLE-X 中，所有语言的数据都需要包含在 MSML 训练集中，模型无法推广到 MSML 训练集之外的未见过的语言。相比之下，OpenVoice 设计为推广到完全未见过的 MSML 训练集之外的语言。第三个问题默认被解决，因为解耦的结构降低了对模型大小和计算复杂度的要求。我们不需要一个大型模型来学习所有东西。此外，我们避免了自回归或扩散组件以加快推理速度。&lt;/p&gt;
+&lt;p&gt;我们在此公开发布之前的 OpenVoice 内部版本已在 2023 年 5 月至 10 月期间全球用户使用了数千万次。它为 MyShell.ai 的即时语音克隆后端提供支持，并在该平台上见证了数百倍的用户增长。为了促进该领域的研究进展，我们详细解释了该技术，并公开提供了源代码和模型权重。&lt;/p&gt;
+&lt;h2 id=&#34;2-方法&#34;&gt;2 方法&lt;/h2&gt;
+&lt;p&gt;技术方法 &lt;strong&gt;简单&lt;/strong&gt; 实现但效果惊人。我们首先介绍 OpenVoice 背后的直觉，然后详细说明模型结构和训练过程。&lt;/p&gt;
+&lt;h3 id=&#34;21-直觉&#34;&gt;2.1 直觉&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;难点&lt;/strong&gt; 。很明显，同时克隆任何说话者的音色，实现对所有其他风格的灵活控制，并且用很少的工作量添加新语言可能会非常具有挑战性。这需要大量的组合数据集，其中受控参数相交，并且只在一个属性上有差异的数据对，并且有良好标记，以及一个相对较大容量的模型来拟合数据集。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;简单的部分&lt;/strong&gt; 。我们还注意到，在常规的单说话者 TTS 中，只要不需要语音克隆，就相对容易添加对其他风格参数的控制和添加新语言。例如，记录一个包含 10K 个带有标记的情感和语调的短音频样本的单说话者数据集足以训练出一个提供对情感和语调进行控制的单说话者 TTS 模型。通过在数据集中包含另一个说话者，添加新语言或口音也很简单。&lt;/p&gt;
+&lt;p&gt;OpenVoice 背后的直觉是将 IVC 任务解耦为单独的子任务，其中每个子任务比耦合任务更容易实现。音色克隆与所有其他风格参数和语言的控制完全解耦。&lt;strong&gt;我们提议使用基础说话者 TTS 模型来控制风格参数和语言，并使用音色转换器将参考音色体现到生成的语音中&lt;/strong&gt;。&lt;/p&gt;
+&lt;h3 id=&#34;22-模型结构&#34;&gt;2.2 模型结构&lt;/h3&gt;
+&lt;p&gt;我们在图1 中说明了模型结构。OpenVoice 的两个主要组件是基础说话者 TTS 模型和音色转换器。基础说话者 TTS 模型是单说话者或多说话者模型，允许对风格参数（例如情感、口音、节奏、停顿和语调）、口音和语言进行控制。由该模型生成的语音传递给音色转换器，该转换器将基础说话者的音色改变为参考说话者的音色。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/multimoding/voices/open_voice_inference/1.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;图1: OpenVoice 框架示意图。我们使用一个基础说话者模型来控制风格和语言，并使用一个转换器将参考说话者的音色体现到语音中。&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;基础说话者 TTS 模型。&lt;/strong&gt; 基础说话者 TTS 模型的选择非常灵活。例如，VITS&lt;sup id=&#34;fnref:6&#34;&gt;&lt;a href=&#34;#fn:6&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;6&lt;/a&gt;&lt;/sup&gt; 模型可以修改为在其文本编码器和持续预测器中接受风格和语言嵌入。其他选择，如 InstructTTS&lt;sup id=&#34;fnref:7&#34;&gt;&lt;a href=&#34;#fn:7&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;7&lt;/a&gt;&lt;/sup&gt;  也可以接受风格提示。也可以使用商业可用（且价格低廉）的模型，如 Microsoft TTS，该模型接受指定情感、停顿和发音的语音合成标记语言（SSML）。甚至可以跳过基础说话者 TTS 模型，自己按照所需的风格和语言阅读文本。在我们的 OpenVoice 实现中，默认使用了 VITS&lt;sup id=&#34;fnref:6&#34;&gt;&lt;a href=&#34;#fn:6&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;6&lt;/a&gt;&lt;/sup&gt;  模型，但其他选择完全可行。我们将基础模型的输出表示为 $\mathbf{X}(L_I, S_I, C_I)$，其中三个参数分别表示语言、风格和音色。类似地，来自参考说话者的语音音频表示为 $\mathbf{X}(L_O, S_O, C_O)$。&lt;/p&gt;
+&lt;p&gt;附 vits 模型结构：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/multimoding/voices/open_voice_inference/2.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;音色转换器。&lt;/strong&gt; 音色转换器是一个编码器-解码器结构，中间带有可逆正规化流&lt;sup id=&#34;fnref:8&#34;&gt;&lt;a href=&#34;#fn:8&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;8&lt;/a&gt;&lt;/sup&gt; 。编码器是一个 1D 卷积神经网络，接受 $\mathbf{X}(L_I, S_I, C_I)$ 的短时傅里叶变换频谱作为输入。所有卷积都是单步长的。编码器输出的特征图表示为 $\mathbf{Y}(L_I, S_I, C_I)$。音色提取器是一个简单的 2D 卷积神经网络，操作输入语音的梅尔频谱图，并输出一个单一的特征向量，编码了音色信息。我们将其应用于 $\mathbf{X}(L_I, S_I, C_I)$ 以获得向量 $\mathbf{v}(C_I)$，然后将其应用于 $\mathbf{X}(L_O, S_O, C_O)$ 以获得向量 $\mathbf{v}(C_O)$。&lt;/p&gt;
+&lt;p&gt;正规化流层将 $\mathbf{Y}(L_I, S_I, C_I)$ 和 $\mathbf{v}(C_I)$ 作为输入，并输出消除音色信息但保留所有其他风格属性的特征表示 $\mathbf{Z}(L_I, S_I)$。&lt;strong&gt;特征 $\mathbf{Z}(L_I, S_I)$ 沿着时间维度与国际音标（IPA  International Phonetic Alphabet）&lt;sup id=&#34;fnref:9&#34;&gt;&lt;a href=&#34;#fn:9&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;9&lt;/a&gt;&lt;/sup&gt; 对齐&lt;/strong&gt;。关于如何学习这样的特征表示的详细信息将在下一节中解释。然后，我们以逆方向应用正规化流层，将 $\mathbf{Z}(L_I, S_I)$ 和 $\mathbf{v}(C_O)$ 作为输入，并输出 $\mathbf{Y}(L_I, S_I, C_O)$。这是一个关键步骤，参考说话者的音色 $C_O$ 被体现到特征图中。然后，$\mathbf{Y}(L_I, S_I, C_O)$ 通过包含一堆转置 1D 卷积的 HiFi-Gan&lt;sup id=&#34;fnref:10&#34;&gt;&lt;a href=&#34;#fn:10&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;10&lt;/a&gt;&lt;/sup&gt; 解码为原始波形 $\mathbf{X}(L_I, S_I, C_O)$。我们的 OpenVoice 实现中的整个模型都是前向传递的，没有任何自回归组件。音色转换器在概念上类似于语音转换&lt;sup id=&#34;fnref:11&#34;&gt;&lt;a href=&#34;#fn:11&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;11&lt;/a&gt;&lt;/sup&gt; &lt;sup id=&#34;fnref:12&#34;&gt;&lt;a href=&#34;#fn:12&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;12&lt;/a&gt;&lt;/sup&gt; ，但在功能、模型结构和训练目标上有所不同。音色转换器中的流层在结构上类似于基于流的 TTS 方法&lt;sup id=&#34;fnref:6&#34;&gt;&lt;a href=&#34;#fn:6&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;6&lt;/a&gt;&lt;/sup&gt; &lt;sup id=&#34;fnref:13&#34;&gt;&lt;a href=&#34;#fn:13&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;13&lt;/a&gt;&lt;/sup&gt; ，但具有不同的功能和训练目标。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;替代方法和缺点。&lt;/strong&gt; 尽管有替代方法&lt;sup id=&#34;fnref:14&#34;&gt;&lt;a href=&#34;#fn:14&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;14&lt;/a&gt;&lt;/sup&gt; &lt;sup id=&#34;fnref:15&#34;&gt;&lt;a href=&#34;#fn:15&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;15&lt;/a&gt;&lt;/sup&gt; &lt;sup id=&#34;fnref:11&#34;&gt;&lt;a href=&#34;#fn:11&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;11&lt;/a&gt;&lt;/sup&gt;  可以提取 $\mathbf{Z}(L_I, S_I)$，但我们经验性地发现所提出的方法实现了最佳的音频质量。可以使用 HuBERT&lt;sup id=&#34;fnref:14&#34;&gt;&lt;a href=&#34;#fn:14&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;14&lt;/a&gt;&lt;/sup&gt;  提取离散或连续的声学单元&lt;sup id=&#34;fnref:11&#34;&gt;&lt;a href=&#34;#fn:11&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;11&lt;/a&gt;&lt;/sup&gt;   来消除音色信息，但我们发现这种方法也会消除输入语音的情感和口音。当输入是未见过的语言时，这种方法也存在保留语素自然发音的问题。我们还研究了另一种方法&lt;sup id=&#34;fnref:15&#34;&gt;&lt;a href=&#34;#fn:15&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;15&lt;/a&gt;&lt;/sup&gt; ，它通过仔细构建信息瓶颈仅保留语音内容，但我们观察到这种方法无法完全消除音色。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;新颖性的备注。&lt;/strong&gt; OpenVoice 并不打算&lt;em&gt;发明&lt;/em&gt;模型结构中的子模块。基础说话者 TTS 模型和音色转换器都从现有工作&lt;sup id=&#34;fnref:13&#34;&gt;&lt;a href=&#34;#fn:13&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;13&lt;/a&gt;&lt;/sup&gt; &lt;sup id=&#34;fnref:6&#34;&gt;&lt;a href=&#34;#fn:6&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;6&lt;/a&gt;&lt;/sup&gt;  中借鉴了模型结构。OpenVoice 的贡献是 &lt;strong&gt;将声音风格和语言控制与音色克隆分离&lt;/strong&gt; 的解耦框架。这非常简单，但非常有效，特别是当想要控制风格、口音或泛化到新语言时。如果要在类似于 XTTS&lt;sup id=&#34;fnref:2&#34;&gt;&lt;a href=&#34;#fn:2&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;2&lt;/a&gt;&lt;/sup&gt;  的耦合框架上实现相同的控制，可能需要大量的数据和计算，而且流利地讲每种语言也相对困难。在 OpenVoice 中，只要单说话者 TTS 说得流利，克隆的语音就会流利。将声音风格和语言的生成与音色的生成分离是 OpenVoice 的核心理念。我们还在我们的选择中提供了使用音色转换器中的流层的见解，以及在我们的实验部分中选择通用音素系统(&lt;strong&gt;IPA: International Phonetic Alphabet&lt;/strong&gt;)在语言泛化中的重要性。&lt;/p&gt;
+&lt;h3 id=&#34;23-训练-training&#34;&gt;2.3 训练 training&lt;/h3&gt;
+&lt;p&gt;为了训练基础说话者 TTS 模型，我们从两位英语说话者（美国口音和英国口音）、一位中文说话者和一位日语说话者收集了音频样本。总共有 30K 个句子，平均句子长度为 7 秒。英语和中文数据具有情感分类标签。我们修改了 VITS&lt;sup id=&#34;fnref:6&#34;&gt;&lt;a href=&#34;#fn:6&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;6&lt;/a&gt;&lt;/sup&gt;  模型，将情感分类嵌入、语言分类嵌入和说话者 id 输入到文本编码器、持续预测器和流层中。训练遵循 VITS 作者提供的标准流程&lt;sup id=&#34;fnref:6&#34;&gt;&lt;a href=&#34;#fn:6&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;6&lt;/a&gt;&lt;/sup&gt; 。训练后的模型能够通过切换不同的基础说话者来改变口音和语言，并以不同的情感朗读输入文本。我们还尝试了额外的训练数据，并确认节奏、停顿和语调可以像情感一样学习。&lt;/p&gt;
+&lt;p&gt;为了训练音色转换器，我们从 20K 个人员收集了 300K 个音频样本。大约 18 万个样本是英语，6 万个样本是中文，6 万个样本是日语。这就是我们所谓的 MSML 数据集。音色转换器的训练目标是双重的。首先，我们要求编码器-解码器产生自然声音。在训练期间，我们直接将编码器的输出馈送到解码器，并使用原始波形进行监督，使用梅尔频谱损失和 HiFi-GAN&lt;sup id=&#34;fnref:10&#34;&gt;&lt;a href=&#34;#fn:10&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;10&lt;/a&gt;&lt;/sup&gt;  损失对生成的波形进行评估。我们不会在这里详细说明，因为先前的文献&lt;sup id=&#34;fnref:10&#34;&gt;&lt;a href=&#34;#fn:10&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;10&lt;/a&gt;&lt;/sup&gt; &lt;sup id=&#34;fnref:6&#34;&gt;&lt;a href=&#34;#fn:6&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;6&lt;/a&gt;&lt;/sup&gt; 已经很好地解释了这一点。&lt;/p&gt;
+&lt;p&gt;其次，我们要求流层尽可能多地消除音色信息。在训练期间，对于每个音频样本，其文本被转换为&lt;strong&gt;国际音标（IPA）中的音素&lt;/strong&gt;的序列&lt;sup id=&#34;fnref:9&#34;&gt;&lt;a href=&#34;#fn:9&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;9&lt;/a&gt;&lt;/sup&gt; ，每个音素由一个可学习的向量嵌入表示。向量嵌入的序列被传递到一个 Transformer&lt;sup id=&#34;fnref:16&#34;&gt;&lt;a href=&#34;#fn:16&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;16&lt;/a&gt;&lt;/sup&gt;  编码器，以产生文本内容的特征表示。将这个特征表示表示为 $\mathbf{L}\in\mathbb{R}^{c\times l}$，其中 $c$ 是特征通道数，$l$ 是输入文本中的音素数。音频波形经过编码器和流层处理，产生特征表示 $\mathbf{Z}\in\mathbb{R}^{c\times t}$，其中 $t$ 是特征沿时间维度的长度。然后，我们使用动态时间规整&lt;sup id=&#34;fnref:17&#34;&gt;&lt;a href=&#34;#fn:17&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;17&lt;/a&gt;&lt;/sup&gt; &lt;sup id=&#34;fnref:18&#34;&gt;&lt;a href=&#34;#fn:18&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;18&lt;/a&gt;&lt;/sup&gt; （另一种是单调规整&lt;sup id=&#34;fnref:13&#34;&gt;&lt;a href=&#34;#fn:13&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;13&lt;/a&gt;&lt;/sup&gt; &lt;sup id=&#34;fnref:6&#34;&gt;&lt;a href=&#34;#fn:6&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;6&lt;/a&gt;&lt;/sup&gt; ）将 $\mathbf{L}$ 与 $\mathbf{Z}$ 沿着时间维度对齐，产生 $\mathbf{\bar{L}}\in \mathbb{R}^{c\times t}$，并最小化 $\mathbf{\bar{L}}$ 和 $\mathbf{Z}$ 之间的 KL 散度。由于 $\mathbf{\bar{L}}$ 不包含任何音色信息，最小化目标会鼓励流层从输出 $\mathbf{Z}$ 中消除音色信息。流层被音色编码器的音色信息所条件化，这进一步帮助流层确定需要消除的信息。此外，我们没有为流层提供任何风格或语言信息来进行条件化，这防止了流层除音色外的信息。由于流层是可逆的，将它们条件化为一个新的音色信息并运行其逆过程可以将新的音色添加回特征表示中，然后将其解码为带有新音色的原始波形。&lt;/p&gt;
+&lt;h2 id=&#34;3-实验-experiment&#34;&gt;3 实验 Experiment&lt;/h2&gt;
+&lt;p&gt;评估语音克隆的准确性存在几个客观上的困难。首先，不同的研究（例如 &lt;sup id=&#34;fnref:4&#34;&gt;&lt;a href=&#34;#fn:4&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;4&lt;/a&gt;&lt;/sup&gt; 、&lt;sup id=&#34;fnref:3&#34;&gt;&lt;a href=&#34;#fn:3&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;3&lt;/a&gt;&lt;/sup&gt; ）通常具有不同的训练和测试集。数字比较可能从本质上是不公平的。即使他们的指标如平均意见分数可以通过众包评估，测试集的多样性和难度也会显著影响结果。例如，如果测试集中许多样本都是神经语音，集中在人类语音分布的平均值上，那么大多数方法都相对容易实现良好的语音克隆结果。第二，不同的研究通常具有不同的训练集，规模和多样性会对结果产生重大影响。第三，不同的研究可能在其核心功能上有不同的关注点。OpenVoice 主要旨在音色克隆、对语音风格的灵活控制，并使跨语言语音克隆即使没有新语言的海量说话者数据也变得简单。这与以前关于语音克隆或零-shot TTS 的工作的目标不同。因此，我们主要关注分析 OpenVoice 本身的定性性能，并公开了相关研究人员自由评估的音频样本。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;准确的音色克隆。&lt;/strong&gt; 我们构建了一个参考说话者的测试集，选择了名人、游戏角色和匿名个体。测试集涵盖了广泛的语音分布，包括具有表现力的独特语音和人类语音分布中的中性样本。使用任何 4 个基础说话者和任何参考说话者，OpenVoice 都能准确克隆参考音色，并以多种语言和口音生成语音。我们邀请读者访问该网站 &lt;a href=&#34;https://research.myshell.ai/open-voice/accurate-tone-color-cloning&#34;&gt;https://research.myshell.ai/open-voice/accurate-tone-color-cloning&lt;/a&gt; 获取定性结果。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;对语音风格的灵活控制。&lt;/strong&gt; 提出的框架能够灵活控制语音风格的前提是音色转换器能够仅修改音色并保留所有其他风格和语音属性。为了确认这一点，我们使用了我们的基础说话者模型和 Microsoft TTS with SSML 来生成一个包含 1K 个样本的具有多种风格（情感、口音、节奏、停顿和语调）的语音语料库作为基础语音。转换为参考音色后，我们观察到所有风格都被很好地保留。在极少数情况下，情感会略微中性化，我们发现解决这个问题的一种方法是用同一基础说话者的具有不同情感的多个句子的平均向量替换该特定句子的音色嵌入向量。这样做会给流层提供较少的情感信息，以便它们不会消除情感。由于音色转换器能够保留基础声音的所有风格，通过简单操作基础说话者 TTS 模型来控制语音风格变得非常简单。定性结果可在此网站上公开获得 &lt;a href=&#34;https://research.myshell.ai/open-voice/flexible-voice-style-control&#34;&gt;https://research.myshell.ai/open-voice/flexible-voice-style-control&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;轻松的跨语言语音克隆。&lt;/strong&gt; OpenVoice 实现了几乎零-shot 的跨语言语音克隆，而不需要使用新语言的海量说话者数据。它确实需要语言的基础说话者，可以通过现成的模型和数据集轻松实现。在我们的网站 &lt;a href=&#34;https://research.myshell.ai/open-voice/zero-shot-cross-lingual-voice-cloning&#34;&gt;https://research.myshell.ai/open-voice/zero-shot-cross-lingual-voice-cloning&lt;/a&gt; 上，我们提供了丰富的样本，展示了所提出方法的跨语言语音克隆能力。跨语言能力有两个方面：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;当参考说话者的语言在 MSML 数据集中看不到时，模型能够准确克隆参考说话者的音色。&lt;/li&gt;
+&lt;li&gt;当生成语音的语言在 MSML 数据集中看不到时，模型能够克隆参考声音并以该语言说话，只要基础说话者 TTS 支持该语言。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;低成本快速推理。&lt;/strong&gt; 由于 OpenVoice 是一个前向结构，没有任何自回归组件，它具有非常高的推理速度。我们的实验表明，略微优化的 OpenVoice 版本（包括基础说话者模型和音色转换器）能够在单个 A10G GPU 上实现 $12\times$ 的实时性能，这意味着生成一秒语音只需 85ms。通过详细的 GPU 使用分析，我们估计上限约为 $40\times$ 的实时性能，但我们将这一改进留作将来的工作。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;IPA 的重要性。&lt;/strong&gt; 我们发现将 IPA 用作音素词典对于音色转换器执行跨语言语音克隆至关重要。正如我们在第2.3节中详细说明的那样，在训练音色转换器时，首先将文本转换为 IPA 中的一系列音素，然后每个音素由一个可学习的向量嵌入表示。嵌入序列通过变压器层编码，并与流层的输出计算损失，旨在消除音色信息。IPA 本身是一个跨语言统一的音素词典，这使得流层能够产生语言中性的表示。即使我们向音色转换器输入具有看不见语言的语音，它仍能顺利处理音频。我们还尝试过其他类型的音素词典，但生成的音色转换器往往会在未知语言中发音不准确。虽然输入音频是正确的，但输出音频很可能有问题，听起来不像是母语人士。&lt;/p&gt;
+&lt;h2 id=&#34;4-讨论&#34;&gt;4 讨论&lt;/h2&gt;
+&lt;p&gt;OpenVoice 展示了出色的实例语音克隆能力，并在语音风格和语言方面比以前的方法更加灵活。该方法背后的直觉是，只要我们不要求模型具有克隆参考说话者音色的能力，训练基础说话者 TTS 模型来控制语音风格和语言相对容易。因此，我们建议将音色克隆与其余语音风格和语言分离，我们认为这是 OpenVoice 的基本设计原则。为了促进未来的研究，我们公开了源代码和模型权重。&lt;/p&gt;
+&lt;h2 id=&#34;附模型结构-配置和模块&#34;&gt;附：模型结构-配置和模块&lt;/h2&gt;
+&lt;p&gt;Config:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+  &lt;span class=&#34;nt&#34;&gt;&amp;#34;_version_&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;v2&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+  &lt;span class=&#34;nt&#34;&gt;&amp;#34;data&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;sampling_rate&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;22050&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;filter_length&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1024&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;hop_length&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;256&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;win_length&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1024&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;n_speakers&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;
+  &lt;span class=&#34;p&#34;&gt;},&lt;/span&gt;
+  &lt;span class=&#34;nt&#34;&gt;&amp;#34;model&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;zero_g&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;true&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;inter_channels&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;192&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;hidden_channels&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;192&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;filter_channels&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;768&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;n_heads&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;n_layers&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;6&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;kernel_size&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;p_dropout&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mf&#34;&gt;0.1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;resblock&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;1&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;resblock_kernel_sizes&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;
+      &lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+      &lt;span class=&#34;mi&#34;&gt;7&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+      &lt;span class=&#34;mi&#34;&gt;11&lt;/span&gt;
+    &lt;span class=&#34;p&#34;&gt;],&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;resblock_dilation_sizes&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;
+      &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;
+        &lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+        &lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+        &lt;span class=&#34;mi&#34;&gt;5&lt;/span&gt;
+      &lt;span class=&#34;p&#34;&gt;],&lt;/span&gt;
+      &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;
+        &lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+        &lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+        &lt;span class=&#34;mi&#34;&gt;5&lt;/span&gt;
+      &lt;span class=&#34;p&#34;&gt;],&lt;/span&gt;
+      &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;
+        &lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+        &lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+        &lt;span class=&#34;mi&#34;&gt;5&lt;/span&gt;
+      &lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
+    &lt;span class=&#34;p&#34;&gt;],&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;upsample_rates&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;
+      &lt;span class=&#34;mi&#34;&gt;8&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+      &lt;span class=&#34;mi&#34;&gt;8&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+      &lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+      &lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;
+    &lt;span class=&#34;p&#34;&gt;],&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;upsample_initial_channel&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;512&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;upsample_kernel_sizes&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;
+      &lt;span class=&#34;mi&#34;&gt;16&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+      &lt;span class=&#34;mi&#34;&gt;16&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+      &lt;span class=&#34;mi&#34;&gt;4&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+      &lt;span class=&#34;mi&#34;&gt;4&lt;/span&gt;
+    &lt;span class=&#34;p&#34;&gt;],&lt;/span&gt;
+    &lt;span class=&#34;nt&#34;&gt;&amp;#34;gin_channels&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;256&lt;/span&gt;
+  &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;hr&gt;
+&lt;p&gt;整体推理过程 和 音色转换过程如图代码所示：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/multimoding/voices/open_voice_inference/3.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;Reference encoder: ReferenceEncoder (当模型配置为n_speakers==0的时候使用)&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;  (ref_enc): ReferenceEncoder(
+    (convs): ModuleList(
+      (0): Conv2d(1, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+      (1): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+      (2): Conv2d(32, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+      (3): Conv2d(64, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+      (4): Conv2d(64, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+      (5): Conv2d(128, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+    )
+    (gru): GRU(1152, 128, batch_first=True)
+    (proj): Linear(in_features=128, out_features=256, bias=True)
+    (layernorm): LayerNorm((513,), eps=1e-05, elementwise_affine=True)
+  )
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;forward:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;forward&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;inputs&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;mask&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;None&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;N&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;inputs&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;size&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+    &lt;span class=&#34;n&#34;&gt;out&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;inputs&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;view&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;N&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;spec_channels&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;# [N, 1, Ty, n_freqs]&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;layernorm&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;is&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;not&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;None&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;out&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;layernorm&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;out&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+    &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;conv&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;convs&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;out&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;conv&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;out&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+        &lt;span class=&#34;c1&#34;&gt;# out = wn(out)&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;out&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;F&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;relu&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;out&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;# [N, 128, Ty//2^K, n_mels//2^K]&lt;/span&gt;
+
+    &lt;span class=&#34;n&#34;&gt;out&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;out&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;transpose&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;# [N, Ty//2^K, 128, n_mels//2^K]&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;T&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;out&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;size&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;N&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;out&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;size&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;out&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;out&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;contiguous&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;view&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;N&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;# [N, Ty//2^K, 128*n_mels//2^K]&lt;/span&gt;
+
+    &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;gru&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;flatten_parameters&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;memory&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;out&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;gru&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;out&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;# out --- [1, N, 128]&lt;/span&gt;
+
+    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;proj&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;out&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;squeeze&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;hr&gt;
+&lt;p&gt;encoder: PosteriorEncoder&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;  (enc_q): PosteriorEncoder(
+    (pre): Conv1d(513, 192, kernel_size=(1,), stride=(1,))
+    (enc): WN(
+      (in_layers): ModuleList(
+        (0-15): 16 x Conv1d(192, 384, kernel_size=(5,), stride=(1,), padding=(2,))
+      )
+      (res_skip_layers): ModuleList(
+        (0-14): 15 x Conv1d(192, 384, kernel_size=(1,), stride=(1,))
+        (15): Conv1d(192, 192, kernel_size=(1,), stride=(1,))
+      )
+      (drop): Dropout(p=0, inplace=False)
+      (cond_layer): Conv1d(256, 6144, kernel_size=(1,), stride=(1,))
+    )
+    (proj): Conv1d(192, 384, kernel_size=(1,), stride=(1,))
+  )
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;forward:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;forward&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x_lengths&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;g&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;None&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;tau&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mf&#34;&gt;1.0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;x_mask&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;torch&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;unsqueeze&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;commons&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;sequence_mask&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x_lengths&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;size&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)),&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;to&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dtype&lt;/span&gt;
+    &lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;pre&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x_mask&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;enc&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x_mask&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;g&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;g&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;stats&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;proj&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x_mask&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;m&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;logs&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;torch&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;split&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;stats&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;out_channels&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;dim&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;z&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;m&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;torch&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;randn_like&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;m&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;tau&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;torch&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;exp&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;logs&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x_mask&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;z&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;m&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;logs&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x_mask&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;hr&gt;
+&lt;p&gt;flow: ResidualCouplingBlock&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;  (flow): ResidualCouplingBlock(
+    (flows): ModuleList(
+      (0): ResidualCouplingLayer(
+        (pre): Conv1d(96, 192, kernel_size=(1,), stride=(1,))
+        (enc): WN(
+          (in_layers): ModuleList(
+            (0-3): 4 x Conv1d(192, 384, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+          (res_skip_layers): ModuleList(
+            (0-2): 3 x Conv1d(192, 384, kernel_size=(1,), stride=(1,))
+            (3): Conv1d(192, 192, kernel_size=(1,), stride=(1,))
+          )
+          (drop): Dropout(p=0, inplace=False)
+          (cond_layer): Conv1d(256, 1536, kernel_size=(1,), stride=(1,))
+        )
+        (post): Conv1d(192, 96, kernel_size=(1,), stride=(1,))
+      )
+      (1): Flip()
+      (2): ResidualCouplingLayer(
+        (pre): Conv1d(96, 192, kernel_size=(1,), stride=(1,))
+        (enc): WN(
+          (in_layers): ModuleList(
+            (0-3): 4 x Conv1d(192, 384, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+          (res_skip_layers): ModuleList(
+            (0-2): 3 x Conv1d(192, 384, kernel_size=(1,), stride=(1,))
+            (3): Conv1d(192, 192, kernel_size=(1,), stride=(1,))
+          )
+          (drop): Dropout(p=0, inplace=False)
+          (cond_layer): Conv1d(256, 1536, kernel_size=(1,), stride=(1,))
+        )
+        (post): Conv1d(192, 96, kernel_size=(1,), stride=(1,))
+      )
+      (3): Flip()
+      (4): ResidualCouplingLayer(
+        (pre): Conv1d(96, 192, kernel_size=(1,), stride=(1,))
+        (enc): WN(
+          (in_layers): ModuleList(
+            (0-3): 4 x Conv1d(192, 384, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+          (res_skip_layers): ModuleList(
+            (0-2): 3 x Conv1d(192, 384, kernel_size=(1,), stride=(1,))
+            (3): Conv1d(192, 192, kernel_size=(1,), stride=(1,))
+          )
+          (drop): Dropout(p=0, inplace=False)
+          (cond_layer): Conv1d(256, 1536, kernel_size=(1,), stride=(1,))
+        )
+        (post): Conv1d(192, 96, kernel_size=(1,), stride=(1,))
+      )
+      (5): Flip()
+      (6): ResidualCouplingLayer(
+        (pre): Conv1d(96, 192, kernel_size=(1,), stride=(1,))
+        (enc): WN(
+          (in_layers): ModuleList(
+            (0-3): 4 x Conv1d(192, 384, kernel_size=(5,), stride=(1,), padding=(2,))
+          )
+          (res_skip_layers): ModuleList(
+            (0-2): 3 x Conv1d(192, 384, kernel_size=(1,), stride=(1,))
+            (3): Conv1d(192, 192, kernel_size=(1,), stride=(1,))
+          )
+          (drop): Dropout(p=0, inplace=False)
+          (cond_layer): Conv1d(256, 1536, kernel_size=(1,), stride=(1,))
+        )
+        (post): Conv1d(192, 96, kernel_size=(1,), stride=(1,))
+      )
+      (7): Flip()
+    )
+  )
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;forward:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;forward&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x_mask&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;g&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;None&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;reverse&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;False&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;not&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;reverse&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+        &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;flow&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;flows&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+            &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;_&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;flow&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x_mask&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;g&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;g&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;reverse&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;reverse&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;else&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+        &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;flow&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;reversed&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;flows&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+            &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;flow&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x_mask&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;g&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;g&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;reverse&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;reverse&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;hr&gt;
+&lt;p&gt;decoder: Generator (HIFI-GAN Generator)&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;  (dec): Generator(
+    (conv_pre): Conv1d(192, 512, kernel_size=(7,), stride=(1,), padding=(3,))
+    (ups): ModuleList(
+      (0): ConvTranspose1d(512, 256, kernel_size=(16,), stride=(8,), padding=(4,))
+      (1): ConvTranspose1d(256, 128, kernel_size=(16,), stride=(8,), padding=(4,))
+      (2): ConvTranspose1d(128, 64, kernel_size=(4,), stride=(2,), padding=(1,))
+      (3): ConvTranspose1d(64, 32, kernel_size=(4,), stride=(2,), padding=(1,))
+    )
+    (resblocks): ModuleList(
+      (0): ResBlock1(
+        (convs1): ModuleList(
+          (0): Conv1d(256, 256, kernel_size=(3,), stride=(1,), padding=(1,))
+          (1): Conv1d(256, 256, kernel_size=(3,), stride=(1,), padding=(3,), dilation=(3,))
+          (2): Conv1d(256, 256, kernel_size=(3,), stride=(1,), padding=(5,), dilation=(5,))
+        )
+        (convs2): ModuleList(
+          (0-2): 3 x Conv1d(256, 256, kernel_size=(3,), stride=(1,), padding=(1,))
+        )
+      )
+      (1): ResBlock1(
+        (convs1): ModuleList(
+          (0): Conv1d(256, 256, kernel_size=(7,), stride=(1,), padding=(3,))
+          (1): Conv1d(256, 256, kernel_size=(7,), stride=(1,), padding=(9,), dilation=(3,))
+          (2): Conv1d(256, 256, kernel_size=(7,), stride=(1,), padding=(15,), dilation=(5,))
+        )
+        (convs2): ModuleList(
+          (0-2): 3 x Conv1d(256, 256, kernel_size=(7,), stride=(1,), padding=(3,))
+        )
+      )
+      (2): ResBlock1(
+        (convs1): ModuleList(
+          (0): Conv1d(256, 256, kernel_size=(11,), stride=(1,), padding=(5,))
+          (1): Conv1d(256, 256, kernel_size=(11,), stride=(1,), padding=(15,), dilation=(3,))
+          (2): Conv1d(256, 256, kernel_size=(11,), stride=(1,), padding=(25,), dilation=(5,))
+        )
+        (convs2): ModuleList(
+          (0-2): 3 x Conv1d(256, 256, kernel_size=(11,), stride=(1,), padding=(5,))
+        )
+      )
+      (3): ResBlock1(
+        (convs1): ModuleList(
+          (0): Conv1d(128, 128, kernel_size=(3,), stride=(1,), padding=(1,))
+          (1): Conv1d(128, 128, kernel_size=(3,), stride=(1,), padding=(3,), dilation=(3,))
+          (2): Conv1d(128, 128, kernel_size=(3,), stride=(1,), padding=(5,), dilation=(5,))
+        )
+        (convs2): ModuleList(
+          (0-2): 3 x Conv1d(128, 128, kernel_size=(3,), stride=(1,), padding=(1,))
+        )
+      )
+      (4): ResBlock1(
+        (convs1): ModuleList(
+          (0): Conv1d(128, 128, kernel_size=(7,), stride=(1,), padding=(3,))
+          (1): Conv1d(128, 128, kernel_size=(7,), stride=(1,), padding=(9,), dilation=(3,))
+          (2): Conv1d(128, 128, kernel_size=(7,), stride=(1,), padding=(15,), dilation=(5,))
+        )
+        (convs2): ModuleList(
+          (0-2): 3 x Conv1d(128, 128, kernel_size=(7,), stride=(1,), padding=(3,))
+        )
+      )
+      (5): ResBlock1(
+        (convs1): ModuleList(
+          (0): Conv1d(128, 128, kernel_size=(11,), stride=(1,), padding=(5,))
+          (1): Conv1d(128, 128, kernel_size=(11,), stride=(1,), padding=(15,), dilation=(3,))
+          (2): Conv1d(128, 128, kernel_size=(11,), stride=(1,), padding=(25,), dilation=(5,))
+        )
+        (convs2): ModuleList(
+          (0-2): 3 x Conv1d(128, 128, kernel_size=(11,), stride=(1,), padding=(5,))
+        )
+      )
+      (6): ResBlock1(
+        (convs1): ModuleList(
+          (0): Conv1d(64, 64, kernel_size=(3,), stride=(1,), padding=(1,))
+          (1): Conv1d(64, 64, kernel_size=(3,), stride=(1,), padding=(3,), dilation=(3,))
+          (2): Conv1d(64, 64, kernel_size=(3,), stride=(1,), padding=(5,), dilation=(5,))
+        )
+        (convs2): ModuleList(
+          (0-2): 3 x Conv1d(64, 64, kernel_size=(3,), stride=(1,), padding=(1,))
+        )
+      )
+      (7): ResBlock1(
+        (convs1): ModuleList(
+          (0): Conv1d(64, 64, kernel_size=(7,), stride=(1,), padding=(3,))
+          (1): Conv1d(64, 64, kernel_size=(7,), stride=(1,), padding=(9,), dilation=(3,))
+          (2): Conv1d(64, 64, kernel_size=(7,), stride=(1,), padding=(15,), dilation=(5,))
+        )
+        (convs2): ModuleList(
+          (0-2): 3 x Conv1d(64, 64, kernel_size=(7,), stride=(1,), padding=(3,))
+        )
+      )
+      (8): ResBlock1(
+        (convs1): ModuleList(
+          (0): Conv1d(64, 64, kernel_size=(11,), stride=(1,), padding=(5,))
+          (1): Conv1d(64, 64, kernel_size=(11,), stride=(1,), padding=(15,), dilation=(3,))
+          (2): Conv1d(64, 64, kernel_size=(11,), stride=(1,), padding=(25,), dilation=(5,))
+        )
+        (convs2): ModuleList(
+          (0-2): 3 x Conv1d(64, 64, kernel_size=(11,), stride=(1,), padding=(5,))
+        )
+      )
+      (9): ResBlock1(
+        (convs1): ModuleList(
+          (0): Conv1d(32, 32, kernel_size=(3,), stride=(1,), padding=(1,))
+          (1): Conv1d(32, 32, kernel_size=(3,), stride=(1,), padding=(3,), dilation=(3,))
+          (2): Conv1d(32, 32, kernel_size=(3,), stride=(1,), padding=(5,), dilation=(5,))
+        )
+        (convs2): ModuleList(
+          (0-2): 3 x Conv1d(32, 32, kernel_size=(3,), stride=(1,), padding=(1,))
+        )
+      )
+      (10): ResBlock1(
+        (convs1): ModuleList(
+          (0): Conv1d(32, 32, kernel_size=(7,), stride=(1,), padding=(3,))
+          (1): Conv1d(32, 32, kernel_size=(7,), stride=(1,), padding=(9,), dilation=(3,))
+          (2): Conv1d(32, 32, kernel_size=(7,), stride=(1,), padding=(15,), dilation=(5,))
+        )
+        (convs2): ModuleList(
+          (0-2): 3 x Conv1d(32, 32, kernel_size=(7,), stride=(1,), padding=(3,))
+        )
+      )
+      (11): ResBlock1(
+        (convs1): ModuleList(
+          (0): Conv1d(32, 32, kernel_size=(11,), stride=(1,), padding=(5,))
+          (1): Conv1d(32, 32, kernel_size=(11,), stride=(1,), padding=(15,), dilation=(3,))
+          (2): Conv1d(32, 32, kernel_size=(11,), stride=(1,), padding=(25,), dilation=(5,))
+        )
+        (convs2): ModuleList(
+          (0-2): 3 x Conv1d(32, 32, kernel_size=(11,), stride=(1,), padding=(5,))
+        )
+      )
+    )
+    (conv_post): Conv1d(32, 1, kernel_size=(7,), stride=(1,), padding=(3,), bias=False)
+    (cond): Conv1d(256, 512, kernel_size=(1,), stride=(1,))
+  )
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;forward:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;forward&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;g&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;None&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;conv_pre&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;g&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;is&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;not&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;None&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;cond&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;g&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+    &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;i&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;range&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;num_upsamples&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;F&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;leaky_relu&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;modules&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;LRELU_SLOPE&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ups&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;i&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;](&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;xs&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;None&lt;/span&gt;
+        &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;j&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;range&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;num_kernels&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+            &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;xs&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;is&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;None&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+                &lt;span class=&#34;n&#34;&gt;xs&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;resblocks&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;i&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;num_kernels&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;j&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;](&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+            &lt;span class=&#34;k&#34;&gt;else&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+                &lt;span class=&#34;n&#34;&gt;xs&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+=&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;resblocks&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;i&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;num_kernels&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;j&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;](&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;xs&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;/&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;num_kernels&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;F&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;leaky_relu&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;conv_post&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;torch&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;tanh&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;HIFI-GAN generator 结构&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/multimoding/voices/open_voice_inference/4.jpg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;section class=&#34;footnotes&#34; role=&#34;doc-endnotes&#34;&gt;
+&lt;hr&gt;
+&lt;ol&gt;
+&lt;li id=&#34;fn:1&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;C. Wang, S. Chen, Y. Wu, Z. Zhang, L. Zhou, S. Liu, Z. Chen, Y. Liu, H. Wang, J. Li, et al. Neural codec language models are zero-shot text to speech synthesizers. arXiv preprint arXiv:2301.02111, 2023.&amp;#160;&lt;a href=&#34;#fnref:1&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&#34;fn:2&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;CoquiAI. Xtts taking text-to-speech to the next level. Technical Blog, 2023.&amp;#160;&lt;a href=&#34;#fnref:2&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&#34;fn:3&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;E. Casanova, J. Weber, C. D. Shulby, A. C. Junior, E. Gölge, and M. A. Ponti. Yourtts: Towards zero-shot multi-speaker tts and zero-shot voice conversion for everyone. In International Conference on Machine Learning, pages 2709–2720. PMLR, 2022.&amp;#160;&lt;a href=&#34;#fnref:3&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&#34;fn:4&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;M. Le, A. Vyas, B. Shi, B. Karrer, L. Sari, R. Moritz, M. Williamson, V. Manohar, Y. Adi, J. Mahadeokar, et al. Voicebox: Text-guided multilingual universal speech generation at scale. arXiv preprint arXiv:2306.15687, 2023.&amp;#160;&lt;a href=&#34;#fnref:4&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&#34;fn:5&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;Z. Zhang, L. Zhou, C. Wang, S. Chen, Y. Wu, S. Liu, Z. Chen, Y. Liu, H. Wang, J. Li, et al. Speak foreign languages with your own voice: Cross-lingual neural codec language modeling. arXiv preprint arXiv:2303.03926, 2023.&amp;#160;&lt;a href=&#34;#fnref:5&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&#34;fn:6&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;J. Kim, J. Kong, and J. Son. Conditional variational autoencoder with adversarial learning for end-to-end text-to-speech. In International Conference on Machine Learning, pages 5530–5540. PMLR, 2021.&amp;#160;&lt;a href=&#34;#fnref:6&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&#34;fn:7&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;D. Yang, S. Liu, R. Huang, G. Lei, C. Weng, H. Meng, and D. Yu. Instructtts: Modelling expressive tts in discrete latent space with natural language style prompt. arXiv preprint arXiv:2301.13662, 2023.&amp;#160;&lt;a href=&#34;#fnref:7&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&#34;fn:8&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;D. Rezende and S. Mohamed. Variational inference with normalizing flows. In International conference on machine learning, pages 1530–1538. PMLR, 2015.&amp;#160;&lt;a href=&#34;#fnref:8&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&#34;fn:9&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;I. P. Association. Handbook of the International Phonetic Association: A guide to the use of the International Phonetic Alphabet. Cambridge University Press, 1999.&amp;#160;&lt;a href=&#34;#fnref:9&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&#34;fn:10&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;J. Kong, J. Kim, and J. Bae. HiFi-GAN: Generative adversarial networks for efficient and high fidelity speech synthesis. Advances in Neural Information Processing Systems, 33:17022–17033, 2020.&amp;#160;&lt;a href=&#34;#fnref:10&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&#34;fn:11&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;B. van Niekerk, M.-A. Carbonneau, J. Zaïdi, M. Baas, H. Seuté, and H. Kamper. A comparison of discrete and soft speech units for improved voice conversion. In ICASSP 2022-2022 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), pages 6562–6566. IEEE, 2022.&amp;#160;&lt;a href=&#34;#fnref:11&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&#34;fn:12&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;A. Polyak, Y. Adi, J. Copet, E. Kharitonov, K. Lakhotia, W.-N. Hsu, A. Mohamed, and E. Dupoux. Speech resynthesis from discrete disentangled self-supervised representations. arXiv preprint arXiv:2104.00355, 2021.&amp;#160;&lt;a href=&#34;#fnref:12&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&#34;fn:13&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;J. Kim, S. Kim, J. Kong, and S. Yoon. Glow-tts: A generative flow for text-to-speech via monotonic alignment search. Advances in Neural Information Processing Systems, 33:8067–8077, 2020.&amp;#160;&lt;a href=&#34;#fnref:13&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&#34;fn:14&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;W.-N. Hsu, B. Bolte, Y.-H. H. Tsai, K. Lakhotia, R. Salakhutdinov, and A. Mohamed. HuBERT: Self-supervised speech representation learning by masked prediction of hidden units. IEEE/ACM Transactions on Audio, Speech, and Language Processing, 29:3451–3460, 2021.&amp;#160;&lt;a href=&#34;#fnref:14&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&#34;fn:15&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;J. Li, W. Tu, and L. Xiao. Freevc: Towards high-quality text-free one-shot voice conversion. In ICASSP 2023-2023 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), pages 1–5. IEEE, 2023.&amp;#160;&lt;a href=&#34;#fnref:15&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&#34;fn:16&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, Ł. Kaiser, and I. Polosukhin. Attention is all you need. Advances in neural information processing systems, 30, 2017.&amp;#160;&lt;a href=&#34;#fnref:16&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&#34;fn:17&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;P. Senin. Dynamic time warping algorithm review. Information and Computer Science Department University of Hawaii at Manoa Honolulu, USA, 855(1-23):40, 2008.&amp;#160;&lt;a href=&#34;#fnref:17&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&#34;fn:18&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;M. Müller. Dynamic time warping. Information retrieval for music and motion, pages 69–84, 2007.&amp;#160;&lt;a href=&#34;#fnref:18&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/section&gt;</description>
       
     </item>
     
@@ -14928,232 +15471,6 @@ make_strings_column    0.5ms
 &lt;li&gt;&lt;a href=&#34;https://developer.nvidia.com/blog/mastering-string-transformations-in-rapids-libcudf/&#34;&gt;https://developer.nvidia.com/blog/mastering-string-transformations-in-rapids-libcudf/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://docs.rapids.ai/api/libcudf/nightly/index.html&#34;&gt;https://docs.rapids.ai/api/libcudf/nightly/index.html&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/rapidsai/cudf/tree/HEAD/cpp/examples/strings&#34;&gt;https://github.com/rapidsai/cudf/tree/HEAD/cpp/examples/strings&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>译：加速向量搜索：RAPIDS RAFT IVF-Flat 近似算法</title>
-      <link>https://weedge.github.io/post/gpu/3.accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/</link>
-      <pubDate>Fri, 03 Nov 2023 15:00:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/gpu/3.accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/</guid>
-      
-        <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;执行详尽的精确 k 最近邻 (kNN) 搜索，也称为&lt;em&gt;暴力搜索(brute-force search)&lt;/em&gt;，成本高昂，并且它不能很好地扩展到更大的数据集。在向量搜索期间，暴力搜索需要计算每个查询向量和数据库向量之间的距离。对于常用的欧几里德和余弦距离，计算任务等同于大型矩阵乘法。&lt;/p&gt;
-&lt;p&gt;虽然 GPU 在执行矩阵乘法方面效率很高，但随着数据量的增加，计算成本变得令人望而却步。然而，许多应用程序不需要精确的结果，而是可以为了更快的搜索而牺牲一些准确性。当不需要精确的结果时，近似最近邻 (ANN) 方法通常可以减少搜索期间必须执行的距离计算的数量。&lt;/p&gt;
-&lt;p&gt;本文主要介绍了 IVF-Flat，这是 NVIDIA &lt;a href=&#34;https://developer.nvidia.cn/zh-cn/blog/reusable-computational-patterns-for-machine-learning-and-data-analytics-with-rapids-raft/&#34;&gt;RAPIDS RAFT&lt;/a&gt; 中的一种方法。IVF-Flat 方法使用原始（即Flat）向量的倒排索引 (IVF)。此算法提供了简单的调整手段，以减少整体搜索空间并在准确性和速度之间进行权衡。&lt;/p&gt;
-&lt;p&gt;为了帮助了解如何使用 IVF-Flat，我们讨论了该算法的工作原理，并演示了&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/pylibraft_api/neighbors/#ivf-flat&#34;&gt;Python&lt;/a&gt;和&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_flat/&#34;&gt;C++ APIs&lt;/a&gt;我们介绍了索引构建的设置参数，并提供了如何配置 GPU 加速的 IVF-Flat搜索的技巧。这些步骤也可以在示例中遵循&lt;a href=&#34;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/notebooks/ivf_flat_example.ipynb&#34;&gt;Python notebook&lt;/a&gt;和&lt;a href=&#34;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/cpp/template/src/ivf_flat_example.cu&#34;&gt;C++ project&lt;/a&gt;.最后，我们演示了 GPU 加速的向量搜索比 CPU 搜索快一个数量级。&lt;/p&gt;
-&lt;h2 id=&#34;ivf-flat-算法&#34;&gt;IVF-Flat 算法&lt;/h2&gt;
-&lt;p&gt;IVF 方法通过将数据集向量分组为簇(cluster)并将搜索限制在每个查询的一些最近簇来加速向量搜索(图 1)。&lt;/p&gt;
-&lt;p&gt;在 IVF-Flat 算法中，只搜索几个簇(而不是整个数据集)是实际的近似值。使用此近似值，可能会错过分配给未搜索的簇的一些近邻，但它极大地缩短了搜索时间。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/2.png&#34; alt=&#34;Two diagrams show a) dataset points grouped into clusters and b) a subset of the clusters highlighted.&#34;&gt;&lt;em&gt;图 1.分为簇的数据集(左)，且搜索仅限于查询附近的簇(右)&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;在搜索数据集之前，必须构建索引，这是一种存储高效搜索所需信息的结构。对于 IVF-Flat，索引存储簇的描述：其中心坐标和属于簇的向量列表。此列表是倒排列表，也称为倒排文件，这就是 IVF 的首字母缩写词。&lt;/p&gt;
-&lt;p&gt;在讨论倒排文件后，我们将在以下部分演示如何构建索引并解释如何执行搜索。&lt;/p&gt;
-&lt;h3 id=&#34;ivf-含义&#34;&gt;IVF 含义&lt;/h3&gt;
-&lt;p&gt;为完整起见，以下是一些历史语境。倒排&lt;em&gt;文件&lt;/em&gt;(或倒排索引)来自信息检索字段。&lt;/p&gt;
-&lt;p&gt;以几个简单的文本文档为例。如果要搜索包含给定单词的文档，&lt;a href=&#34;https://en.wikipedia.org/wiki/Search_engine_indexing#The_forward_index&#34;&gt; forward index&lt;/a&gt;会存储每个文档的单词列表。必须明确阅读每个文档才能找到相关的文档。&lt;/p&gt;
-&lt;p&gt;相比之下，&lt;a href=&#34;https://en.wikipedia.org/wiki/Inverted_index&#34;&gt;倒排索引&lt;/a&gt;包含了可以搜索的所有单词的字典，并且对于每个单词，都有一个该单词所在的文档索引列表。这就是所谓的倒排列表（倒排文件），可以将搜索限制在选定的列表中。&lt;/p&gt;
-&lt;p&gt;如今，文本数据通常表示为向量嵌入(embedding)。IVF-Flat 方法定义了簇中心，这些中心类似于前面示例中的词典。对于每个簇中心，都有属于该簇的向量索引列表，并且搜索速度加快，因为只需检查选定的簇。&lt;/p&gt;
-&lt;h2 id=&#34;索引构建&#34;&gt;索引构建&lt;/h2&gt;
-&lt;p&gt;索引构建主要是对数据集进行聚类运算。ivf_flat可以使用以下代码示例在 Python 中创建索引：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;pylibraft.neighbors&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;
- 
-&lt;span class=&#34;n&#34;&gt;build_params&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;IndexParams&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
-        &lt;span class=&#34;n&#34;&gt;n_lists&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1024&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-        &lt;span class=&#34;n&#34;&gt;metric&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;sqeuclidean&amp;#34;&lt;/span&gt;
-    &lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
- 
-&lt;span class=&#34;n&#34;&gt;index&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;build&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;build_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在 C++中，有以下语法：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c++&#34; data-lang=&#34;c++&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;raft/neighbors/ivf_flat.cuh&amp;gt; &lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;using&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;namespace&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;neighbors&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
-&lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;device_resources&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
- 
-&lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;index_params&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;index_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
-&lt;span class=&#34;n&#34;&gt;index_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;n_lists&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1024&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
-&lt;span class=&#34;n&#34;&gt;index_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;metric&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;distance&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;DistanceType&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;L2Expanded&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
- 
-&lt;span class=&#34;k&#34;&gt;auto&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;index&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;build&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;index_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-&lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;make_const_mdspan&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;view&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()));&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;创建索引的最重要超参数是n_lists其中会指明要使用的簇数量。还可以指定距离计算指标。&lt;/p&gt;
-&lt;h2 id=&#34;搜索&#34;&gt;搜索&lt;/h2&gt;
-&lt;p&gt;构建索引后，搜索很简单。在 Python 中，以下调用返回两个数组：相邻数组的索引及其与查询向量的距离：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;n&#34;&gt;distances&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;indices&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;search&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SearchParams&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;n_probes&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;50&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;index&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;queries&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;k&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;C++中的等效调用需要预先分配输出数组：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c++&#34; data-lang=&#34;c++&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;topk&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
-&lt;span class=&#34;k&#34;&gt;auto&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;neighbors&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;make_device_matrix&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int64_t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int64_t&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;n_queries&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;topk&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
-&lt;span class=&#34;k&#34;&gt;auto&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;distances&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;make_device_matrix&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;float&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int64_t&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;n_queries&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;topk&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
- 
-&lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;search_params&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;search_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
-&lt;span class=&#34;n&#34;&gt;search_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;n_probes&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;50&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
- 
-&lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;search&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-                &lt;span class=&#34;n&#34;&gt;search_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-                &lt;span class=&#34;n&#34;&gt;index&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-                &lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;make_const_mdspan&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;queries&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;view&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()),&lt;/span&gt;
-                &lt;span class=&#34;n&#34;&gt;neighbors&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;view&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(),&lt;/span&gt;
-                &lt;span class=&#34;n&#34;&gt;distances&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;view&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;());&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在这里，可以搜索k=10每个查询的近邻。参数 n_probes 会告知每个查询要搜索(或探测)的簇数量，并确定搜索的准确性。&lt;/p&gt;
-&lt;p&gt;仅通过测试 n_probes 对于每个查询的簇，可以省略分配给簇的一些近邻，簇的中心距离查询点更远。搜索质量通常以*召回率，*这是实际最近 k 近邻在所有返回近邻中的百分比。&lt;/p&gt;
-&lt;p&gt;在内部，搜索分两个步骤执行(图 2)：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;粗略搜索选择 n_probes 每个查询的附近簇。&lt;/li&gt;
-&lt;li&gt;精细搜索将查询向量与选定簇中的所有数据集向量进行比较。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/3.png&#34; alt=&#34;Diagram of clusters represented by their centers with the clusters highlighted that are closest to the queries. Selected clusters shown with the individual points within these clusters.&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;图 2.两步搜索：通过比较查询与簇中心来选择附近的簇(左)，并比较选定簇中的所有向量与相应的查询(右)&lt;/em&gt;&lt;/p&gt;
-&lt;h3 id=&#34;粗略搜索&#34;&gt;粗略搜索&lt;/h3&gt;
-&lt;p&gt;粗略搜索使用簇中心和查询向量之间的精确 kNN 搜索完成。选择最近的簇中心，&lt;code&gt;n_probes&lt;/code&gt; 个簇粗略搜索相对便宜，因为簇数量远小于数据集大小(例如，1 亿个向量的簇数量为 1 万个)。&lt;/p&gt;
-&lt;h3 id=&#34;精细搜索&#34;&gt;精细搜索&lt;/h3&gt;
-&lt;p&gt;对于 IVF-Flat，精细搜索也是精确搜索。但每个查询都有自己的一组要搜索(要探测)的簇，并且计算查询向量与被探测簇中所有向量之间的距离。&lt;/p&gt;
-&lt;p&gt;对于小批量，在查询点周围搜索的区域不会重叠。因此，问题结构变为批量矩阵向量乘法 (GEMV) 运算。此运算受内存带宽限制，GPU 显存的大带宽大大加速了此步骤。&lt;/p&gt;
-&lt;p&gt;选中每个探测簇的 top-k 近邻，结果是&lt;code&gt;n_probes * k&lt;/code&gt; 个近邻候选。&lt;/p&gt;
-&lt;h2 id=&#34;调整索引构建参数&#34;&gt;调整索引构建参数&lt;/h2&gt;
-&lt;p&gt;在前面的部分中，概述了索引构建和搜索。下面详细介绍了如何设置索引构建的参数。&lt;/p&gt;
-&lt;p&gt;索引构建包含两个阶段：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;训练或计算簇（构建）&lt;/strong&gt;：平衡的分层 k-means 算法会对训练数据进行聚类。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;将数据集向量添加到索引(扩展)&lt;/strong&gt;：将数据集向量分配给其簇，并将其添加到相应簇的向量列表中。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;簇数量&#34;&gt;簇数量&lt;/h3&gt;
-&lt;p&gt;参数 &lt;code&gt;n_list&lt;/code&gt; 对训练和搜索期间的整体性能有着深远的影响：它定义了索引数据所划分的簇数量。设置n_lists=sqrt (n_samples)是一个很好的起点(&lt;code&gt;n_samples&lt;/code&gt;是数据集中的向量数)。&lt;/p&gt;
-&lt;p&gt;为确保高效利用 GPU 资源，簇的平均大小(即&lt;code&gt;n_samples/n_lists&lt;/code&gt;)应在至少 1K 个向量的范围内，以保持单个流多处理器 (SM) 的繁忙状态。&lt;/p&gt;
-&lt;h3 id=&#34;使用自动数据子采样构建索引&#34;&gt;使用自动数据子采样构建索引&lt;/h3&gt;
-&lt;p&gt;K-means 聚类是计算密集型的。为加速索引构建，对数据集进行子采样。使用参数&lt;code&gt;kmeans_trainset_fraction=0.1&lt;/code&gt;这意味着将十分之一的数据集用于训练簇中心。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;n&#34;&gt;build_params&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;IndexParams&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
-        &lt;span class=&#34;n&#34;&gt;n_lists&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1024&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-        &lt;span class=&#34;n&#34;&gt;metric&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;sqeuclidean&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-        &lt;span class=&#34;n&#34;&gt;kmeans_trainset_fraction&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mf&#34;&gt;0.1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-        &lt;span class=&#34;n&#34;&gt;kmeans_n_iters&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;20&lt;/span&gt;
-    &lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在训练期间，参数 kmeans_n_iters 将直接传递给 k-means 算法。将其设置为适用于大多数数据集的合理默认值 20.但是，此参数只是聚类算法的建议。在幕后，它通常在“平衡”阶段执行更多迭代，以确保簇具有相似的大小。&lt;/p&gt;
-&lt;h3 id=&#34;使用用于聚类的特定训练数据构建索引&#34;&gt;使用用于聚类的特定训练数据构建索引&lt;/h3&gt;
-&lt;p&gt;在前面的示例中，只需调用ivf_flat.build执行聚类并将整个数据集添加到索引中。或者，可以调用ivf_flat.build无需将向量添加到索引中即可训练向量(通过设置add_data_on_build=False).这允许精确控制用于训练索引的向量。随后，ivf_flat.extend可用于向索引中添加向量。&lt;/p&gt;
-&lt;p&gt;如下 Python 代码示例所示：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;n&#34;&gt;n_train&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;10000&lt;/span&gt;
-&lt;span class=&#34;n&#34;&gt;train_set&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;cp&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;random&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;choice&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;shape&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;],&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;n_train&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;replace&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;False&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),:]&lt;/span&gt;
- 
-&lt;span class=&#34;n&#34;&gt;build_params&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;IndexParams&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
-        &lt;span class=&#34;n&#34;&gt;n_lists&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1024&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-        &lt;span class=&#34;n&#34;&gt;metric&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;sqeuclidean&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-        &lt;span class=&#34;n&#34;&gt;kmeans_trainset_fraction&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-        &lt;span class=&#34;n&#34;&gt;kmeans_n_iters&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;20&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-        &lt;span class=&#34;n&#34;&gt;add_data_on_build&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;False&lt;/span&gt;
-    &lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
- 
-&lt;span class=&#34;n&#34;&gt;index&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;build&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;build_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;train_set&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;extend&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;index&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;cp&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;arange&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;shape&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;],&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;dtype&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;cp&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;int64&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;数据集向量只需调用ivf_flat.extend。在内部，如果需要减少内存消耗，则对数据进行批量处理。相应的 C++代码如下所示：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c++&#34; data-lang=&#34;c++&#34;&gt;&lt;span class=&#34;n&#34;&gt;index_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;add_data_on_build&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;false&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;// Sub sample the dataset to create trainset.
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// ...
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// Run k-means clustering using the training set
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;auto&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;index&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;build&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;index_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-    &lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;make_const_mdspan&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;trainset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;view&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()));&lt;/span&gt;
- 
-&lt;span class=&#34;c1&#34;&gt;// Fill the index with the dataset vectors
-&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;index&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;extend&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
-    &lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;make_const_mdspan&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dataset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;view&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()),&lt;/span&gt;
-    &lt;span class=&#34;n&#34;&gt;std&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;optional&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;device_vector_view&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;const&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int64_t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int64_t&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&amp;gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(),&lt;/span&gt;
-    &lt;span class=&#34;n&#34;&gt;index&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;向索引中添加新向量&#34;&gt;向索引中添加新向量&lt;/h3&gt;
-&lt;p&gt;可以通过调用ivf_flat.extend.默认情况下，增加向量列表的成本将通过在增加列表大小时分配额外空间来抵消。C++API 用户可以通过设置以下参数来更改此行为：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c++&#34; data-lang=&#34;c++&#34;&gt;&lt;span class=&#34;n&#34;&gt;index_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;conservative_memory_allocation&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;true&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果聚类数量较大且预计不会经常添加向量，则此操作会非常有用。&lt;/p&gt;
-&lt;p&gt;默认情况下，当向数据集添加向量时，簇中心不会发生变化。adaptive_centers，如果希望簇中心随新数据移动，则可以在索引构建期间启用标志。&lt;/p&gt;
-&lt;h2 id=&#34;调整搜索参数&#34;&gt;调整搜索参数&lt;/h2&gt;
-&lt;p&gt;以下是设置搜索参数的方法：高效使用 GPU 资源并增加 n_probes。&lt;/p&gt;
-&lt;h3 id=&#34;gpu-资源&#34;&gt;GPU 资源&lt;/h3&gt;
-&lt;p&gt;在搜索过程中，需要创建内部工作空间内存。建议使用&lt;strong&gt;池化分配器来减少内存分配&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;构建 RAFT资源对象非常耗时。资源对象应该复用， 通过资源handle传递给搜索函数 。在 Python 中，可以通过以下方式配置设备资源和内存池：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;pylibraft.common&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;DeviceResources&lt;/span&gt;
-&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;rmm&lt;/span&gt;
-&lt;span class=&#34;n&#34;&gt;mr&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rmm&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;mr&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PoolMemoryResource&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
-     &lt;span class=&#34;n&#34;&gt;rmm&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;mr&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;CudaMemoryResource&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(),&lt;/span&gt;
-     &lt;span class=&#34;n&#34;&gt;initial_pool_size&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;**&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;30&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;n&#34;&gt;rmm&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;mr&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;set_current_device_resource&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;mr&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
- 
-&lt;span class=&#34;n&#34;&gt;handle&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;DeviceResources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
- 
-&lt;span class=&#34;n&#34;&gt;search_params&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SearchParams&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;n_probes&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;50&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;n&#34;&gt;distances&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;indices&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;search&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;search_params&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;index&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;queries&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;k&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;10&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;handle&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;handle&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;n&#34;&gt;handle&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;sync&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;C++API 的用户必须始终传递显式 device_resources handle，并且应在单独调用之间重复使用此handle进行搜索。可以通过以下方式设置池分配器：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c++&#34; data-lang=&#34;c++&#34;&gt;&lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;device_resources&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
-&lt;span class=&#34;n&#34;&gt;raft&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;resource&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;set_workspace_to_pool_resource&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
-    &lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1024&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1024&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1024ull&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
-&lt;span class=&#34;n&#34;&gt;ivf_flat&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;::&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;search&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;dev_resources&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;...);&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;C++ 用户可以为临时工作空间数组指定一个单独的分配器，这在前面的示例中已经使用过。全局分配器（用于创建输入/输出数组）可以使用 &lt;a href=&#34;https://docs.rapids.ai/api/rmm/stable/api/#rmm.mr.set_current_device_resource&#34;&gt;rmm::mr::set_current_device_resource&lt;/a&gt;。&lt;/p&gt;
-&lt;h3 id=&#34;探针数量&#34;&gt;探针数量&lt;/h3&gt;
-&lt;p&gt;比率&lt;code&gt;n_probes/n_lists&lt;/code&gt;表明数据集的哪一部分与每个查询进行比较。距离计算的数量减少到&lt;code&gt;n_probes/n_clusters&lt;/code&gt;暴力搜索计算量的一小部分。搜索质量以及计算时间会随着&lt;code&gt;n_probes&lt;/code&gt; 的增加而增加，正确的值取决于数据集。&lt;/p&gt;
-&lt;p&gt;在图 3 和图 4 中，可以分别观察吞吐量（每秒查询次数）和搜索精度（召回率）如何取决于探测器数量。这里，从&lt;a href=&#34;https://research.yandex.com/blog/benchmarks-for-billion-scale-similarity-search#14h2&#34;&gt;DEEP1B 数据集&lt;/a&gt;搜索 100M 个向量，并使用 H100 GPU 进行搜索。&lt;/p&gt;
-&lt;p&gt;吞吐量与探针的数量成反比。数据集被分为 10 万个簇；每个查询仅搜索 100 个最接近的簇可实现 96% 的召回率，而搜索 1000 个簇（数据集的 1%）可实现 99.8% 的准确率。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/4.png&#34; alt=&#34;The throughput graph follows 1/x trend.&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;图 3.搜索吞吐量(每秒查询次数)作为n_probes搜索参数&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/5.png&#34; alt=&#34;Search accuracy graph shows that recall improves quickly as you increase n_probes from 20 to 200 and flattens out above that (region with 99% recall).&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;图 4.精度(召回)作为n_probes搜索参数&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;通常会将这些图形组合到单个 QPS 与召回图中(图 5)。当想要紧凑地权衡准确性和搜索吞吐量时，这很有用。在比较不同的 ANN 方法时，这也很有用。&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://developer-blogs.nvidia.com/wp-content/uploads/2023/09/combined-qps-recall.png&#34;&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/6.png&#34; alt=&#34;Graph shows that the QPS drops when you require high recall.&#34;&gt;&lt;/a&gt;&lt;em&gt;图 5.组合 QPS 召回图&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;如果 &lt;code&gt;n_lists=n_probes&lt;/code&gt; 这就像精确(暴力)搜索：将所有数据集向量与所有查询向量进行比较。在这种情况下，预计召回率等于 1 (除了小的舍入误差)。&lt;/p&gt;
-&lt;p&gt;当 &lt;code&gt;n_probes&lt;/code&gt; 接近 &lt;code&gt;n_lists&lt;/code&gt; 时，IVF-Flat 由于算法所做的额外工作(粗略加精细搜索)，速度比暴力慢。在实践中，搜索大约 0.1-1%的列表足以处理许多数据集。但这取决于输入的聚类效果。&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://bib.dbvis.de/uploadedFiles/155.pdf&#34;&gt;On the Surprising Behavior of Distance Metrics in High Dimensional Space&lt;/a&gt;论文中提到，如果数据集没有结构（例如，统一随机数），聚类会变得困难。在这种情况下，IVF 方法的效果不佳。&lt;/p&gt;
-&lt;p&gt;（注：IVF-Flat算法依赖输入的数据集，以及聚类效果）&lt;/p&gt;
-&lt;h2 id=&#34;性能&#34;&gt;性能&lt;/h2&gt;
-&lt;p&gt;RAFT 库可快速实施 IVF-Flat 算法。索引 1 亿个向量可在一分钟内完成(图 6)。这比使用 CPU 快 14 倍。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/7.png&#34; alt=&#34;Bar chart showing high index building time on the CPU and significantly faster times with GPU implementations.&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;图 6.不同数据集和簇大小的索引构建时间&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;我们在 NVIDIA H100 SXM GPU (使用 RAFT 23.10 进行 GPU 测试)和 Intel Xeon Platinum 8480CL CPU 上执行了&lt;a href=&#34;https://github.com/facebookresearch/faiss&#34;&gt;FAISS&lt;/a&gt; 1.7.4 的测量。&lt;/p&gt;
-&lt;p&gt;实现这种加速有两个主要因素：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;GPU 的高计算吞吐量&lt;/strong&gt;：RAFT 利用 &lt;a href=&#34;https://blog.paperspace.com/understanding-tensor-cores/&#34;&gt;Tensor Core&lt;/a&gt; 在索引构建期间加速 k-means 聚类。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;改进的算法&lt;/strong&gt;：RAFT 使用平衡的分层 k-means 聚类，即使数据集的向量数量达到数亿，也能高效地进行聚类。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;还可以观察到，构建索引的时间随向量数量线性增加，随聚类数量线性增加。&lt;/p&gt;
-&lt;p&gt;GPU 的高内存吞吐量有助于搜索索引。RAFT 的 IVF-Flat 索引使用优化的内存布局。向量交错以进行向量化内存访问，以确保在遍历每个探测簇中的数据集向量时实现高带宽利用率。&lt;/p&gt;
-&lt;p&gt;精细搜索过程中的另一个重要步骤是过滤掉前 k 个候选项。最新top-k算法on GPU论文 &lt;a href=&#34;https://sc23.supercomputing.org/presentation/?id=pap294&amp;amp;sess=sess156&#34;&gt;&lt;strong&gt;Parallel Top-K Algorithms on GPU: A Comprehensive Study and New Methods&lt;/strong&gt;&lt;/a&gt;。将优化的 block-select-k 内核融合到距离计算内核中。如图 7 所示，与 CPU 实现的性能相比，这可以将 RAFT IVF-Flat 的速度提高 20 倍以上（回顾值=0.95）。&lt;/p&gt;
-&lt;p&gt;（&lt;strong&gt;注&lt;/strong&gt;：top-k 这篇论文期待一下；和&lt;a href=&#34;https://github.com/weedge/learn/blob/main/gpu/Efficient%20Top-K%20Query%20Processing%20on%20Massively%20Parallel%20Hardware.pdf&#34;&gt;Efficient Top-K Query Processing on Massively Parallel Hardware&lt;/a&gt; 对比学习下~）&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/8.png&#34; alt=&#34;Graph compares IVF-Flat search throughput on the GPU and on the CPU.&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;图 7.不同召回率(准确性)的搜索吞吐量&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;在此基准测试中，我们使用了 FAISS IVF-Flat 的 CPU 实现。FAISS 还提供了此算法的 GPU 实现。如果使用 FAISS，则只需对代码进行细微更改即可从 GPU 加速中受益。与 Meta 合作，将 RAFT 的性能改进引入 FAISS，因此很快也可以通过 FAISS 使用 RAFT。&lt;/p&gt;
-&lt;p&gt;（&lt;strong&gt;注&lt;/strong&gt;： 相关PR见Reference,  IVF-Flat 已集成）&lt;/p&gt;
-&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
-&lt;p&gt;在大型数据库中执行向量搜索时，务必要注意精确搜索的高昂成本，因为这会导致不适合在线服务的低延迟。&lt;/p&gt;
-&lt;p&gt;RAPIDS RAFT 库提供了高效的算法，通过将搜索集中到数据集中最相关的部分，以提高向量搜索的延迟和吞吐量。本文讨论了 RAFT IVF-Flat 算法的工作原理，以及如何设置索引构建和搜索的参数。最后，提供基准测试，以强调 GPU 在 IVF – Flat 搜索中的卓越性能。可以使用&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/raft_ann_benchmarks/&#34;&gt;基准测试工具&lt;/a&gt;。&lt;/p&gt;
-&lt;h2 id=&#34;reference&#34;&gt;Reference&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://developer.nvidia.com/blog/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/&#34;&gt;https://developer.nvidia.com/blog/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/notebooks/ivf_flat_example.ipynb&#34;&gt;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/notebooks/ivf_flat_example.ipynb&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/cpp/template/src/ivf_flat_example.cu&#34;&gt;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/cpp/template/src/ivf_flat_example.cu&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/rapidsai/raft/blob/branch-23.12/docs/source/vector_search_tutorial.md&#34;&gt;https://github.com/rapidsai/raft/blob/branch-23.12/docs/source/vector_search_tutorial.md&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://bib.dbvis.de/uploadedFiles/155.pdf&#34;&gt;On the Surprising Behavior of Distance Metrics in High Dimensional Space&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://sc23.supercomputing.org/presentation/?id=pap294&amp;amp;sess=sess156&#34;&gt;&lt;strong&gt;Parallel Top-K Algorithms on GPU: A Comprehensive Study and New Methods&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.kdnuggets.com/2018/05/wtf-tensor.html&#34;&gt;https://www.kdnuggets.com/2018/05/wtf-tensor.html&lt;/a&gt; ， &lt;a href=&#34;https://en.wikipedia.org/wiki/Tensor&#34;&gt;https://en.wikipedia.org/wiki/Tensor&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://blog.paperspace.com/understanding-tensor-cores/&#34;&gt;https://blog.paperspace.com/understanding-tensor-cores/&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss/pull/2521&#34;&gt;https://github.com/facebookresearch/faiss/pull/2521&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss/pull/2707&#34;&gt;https://github.com/facebookresearch/faiss/pull/2707&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/facebookresearch/faiss/pull/3044&#34;&gt;https://github.com/facebookresearch/faiss/pull/3044&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>
