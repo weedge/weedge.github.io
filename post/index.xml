@@ -88,7 +88,8 @@
 &lt;/ol&gt;
 &lt;p&gt;结构：&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/3ddec975-a9fd-460c-91fa-894b8ebd8c8c&#34; alt=&#34;VITS&#34;&gt;&lt;/p&gt;
-&lt;p&gt;PS： &lt;a href=&#34;https://github.com/ai-bot-pro/achatbot&#34;&gt;achatbot&lt;/a&gt; 集成了OpenVoiceV2 with meloTTS(meloTTS代码大部分来自VITS，Flow 采用 Transformer Encoder 结构)，PR地址： &lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/103&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/103&lt;/a&gt;&lt;/p&gt;</description>
+&lt;p&gt;PS： &lt;a href=&#34;https://github.com/ai-bot-pro/achatbot&#34;&gt;achatbot&lt;/a&gt; 集成了OpenVoiceV2 with meloTTS(meloTTS代码大部分来自VITS，Flow 采用 Transformer Encoder 结构来自 [&lt;a href=&#34;https://arxiv.org/abs/2307.16430&#34;&gt;VITS2: Improving Quality and Efficiency of Single-Stage Text-to-Speech with Adversarial Learning and Architecture Design&lt;/a&gt;](&lt;a href=&#34;https://arxiv.org/abs/2307.16430&#34;&gt;https://arxiv.org/abs/2307.16430&lt;/a&gt;) | &lt;a href=&#34;https://github.com/daniilrobnikov/vits2&#34;&gt;paper code&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;PR地址： &lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/103&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/103&lt;/a&gt;&lt;/p&gt;</description>
     </item>
     
     <item>

@@ -134,7 +134,8 @@
 &lt;/ol&gt;
 &lt;p&gt;结构：&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/3ddec975-a9fd-460c-91fa-894b8ebd8c8c&#34; alt=&#34;VITS&#34;&gt;&lt;/p&gt;
-&lt;p&gt;PS： &lt;a href=&#34;https://github.com/ai-bot-pro/achatbot&#34;&gt;achatbot&lt;/a&gt; 集成了OpenVoiceV2 with meloTTS(meloTTS代码大部分来自VITS，Flow 采用 Transformer Encoder 结构)，PR地址： &lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/103&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/103&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;PS： &lt;a href=&#34;https://github.com/ai-bot-pro/achatbot&#34;&gt;achatbot&lt;/a&gt; 集成了OpenVoiceV2 with meloTTS(meloTTS代码大部分来自VITS，Flow 采用 Transformer Encoder 结构来自 [&lt;a href=&#34;https://arxiv.org/abs/2307.16430&#34;&gt;VITS2: Improving Quality and Efficiency of Single-Stage Text-to-Speech with Adversarial Learning and Architecture Design&lt;/a&gt;](&lt;a href=&#34;https://arxiv.org/abs/2307.16430&#34;&gt;https://arxiv.org/abs/2307.16430&lt;/a&gt;) | &lt;a href=&#34;https://github.com/daniilrobnikov/vits2&#34;&gt;paper code&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;PR地址： &lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/103&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/103&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&#34;cvae&#34;&gt;CVAE:&lt;/h2&gt;
 &lt;p&gt;条件 VAE:
 传统“原始” VAE 的一个缺点是用户无法控制自动编码器生成的特定输出。例如，使用前面提到的 MNIST 数据集训练的传统 VAE，可以生成从 0 到 9 的手写数字新样本，但不能局限于仅输出 4 和 7。&lt;/p&gt;
@@ -149,7 +150,7 @@
 &lt;h2 id=&#34;posterior-encoder&#34;&gt;Posterior Encoder:&lt;/h2&gt;
 &lt;p&gt;WaveNet residual block由具有门控激活单元和跳跃连接的扩张卷积层组成(LSTM+CNN)。块上方的线性投影层产生正态后验分布的均值μ和方差δ。对于多说话人的情况，我们在残差块中使用全局调节(global conditioning)来添加说话人嵌入。&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/1609.03499&#34;&gt;2016. &lt;strong&gt;WaveNet: A Generative Model for Raw Audio&lt;/strong&gt;&lt;/a&gt;(WaveNet residual block) PS: 在OpenVoice(meloTTS)中的实现采用的Transformer Encoder&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/1609.03499&#34;&gt;2016. &lt;strong&gt;WaveNet: A Generative Model for Raw Audio&lt;/strong&gt;&lt;/a&gt;(WaveNet residual block) PS: 在OpenVoice(meloTTS)中的实现采用的Transformer Encoder, 来自 [&lt;a href=&#34;https://arxiv.org/abs/2307.16430&#34;&gt;VITS2: Improving Quality and Efficiency of Single-Stage Text-to-Speech with Adversarial Learning and Architecture Design&lt;/a&gt;](&lt;a href=&#34;https://arxiv.org/abs/2307.16430&#34;&gt;https://arxiv.org/abs/2307.16430&lt;/a&gt;) | &lt;a href=&#34;https://github.com/daniilrobnikov/vits2&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;prior-encoder&#34;&gt;Prior Encoder:&lt;/h2&gt;
 &lt;p&gt;为了提高先验分布的表示能力，我们将归一化流添加到条件先验网络中，从而生成更真实的样本。&lt;/p&gt;
