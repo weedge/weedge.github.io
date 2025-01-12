@@ -124,11 +124,11 @@
 &lt;li&gt;学习直接从文本合成原始波形，而不需要额外的输入条件；&lt;/li&gt;
 &lt;li&gt;使用动态编程方法 MAS 来搜索最佳对齐方式，而不是与计算损失相比,不需要任何外部对齐器；&lt;/li&gt;
 &lt;li&gt;并行生成样本；&lt;/li&gt;
-&lt;li&gt;高效的端到端训练方法, 并且生成质量优于最好的公开可用的两阶段模型。附两阶段的数据处理过程：
+&lt;li&gt;高效的端到端训练方法, 并且生成质量优于最好的公开可用的两阶段模型。附两阶段的数据处理过程(在后续的研究论文中称之为级联方法(cascaded)，见&lt;a href=&#34;https://www.microsoft.com/en-us/research/project/vall-e-x/&#34;&gt;VALL-E&lt;/a&gt;系列论文研究)：
 &lt;ul&gt;
 &lt;li&gt;第一阶段是从预处理的文本中生成中间语音表示，例如梅尔谱图(mel-spectrograms)或语言特征(linguistic features)&lt;/li&gt;
 &lt;li&gt;第二阶段是生成以中间表示为条件的原始波形。&lt;/li&gt;
-&lt;li&gt;两阶段的相关模型都是独立开发的。&lt;/li&gt;
+&lt;li&gt;两阶段的相关模型大都是独立开发的。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
@@ -150,7 +150,7 @@
 &lt;h2 id=&#34;posterior-encoder&#34;&gt;Posterior Encoder:&lt;/h2&gt;
 &lt;p&gt;WaveNet residual block由具有门控激活单元和跳跃连接的扩张卷积层组成(LSTM+CNN)。块上方的线性投影层产生正态后验分布的均值μ和方差δ。对于多说话人的情况，我们在残差块中使用全局调节(global conditioning)来添加说话人嵌入。&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/1609.03499&#34;&gt;2016. &lt;strong&gt;WaveNet: A Generative Model for Raw Audio&lt;/strong&gt;&lt;/a&gt;(WaveNet residual block) PS: 在OpenVoice(meloTTS)中的实现采用的Transformer Encoder, 来自 [&lt;a href=&#34;https://arxiv.org/abs/2307.16430&#34;&gt;VITS2: Improving Quality and Efficiency of Single-Stage Text-to-Speech with Adversarial Learning and Architecture Design&lt;/a&gt;](&lt;a href=&#34;https://arxiv.org/abs/2307.16430&#34;&gt;https://arxiv.org/abs/2307.16430&lt;/a&gt;) | &lt;a href=&#34;https://github.com/daniilrobnikov/vits2&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/1609.03499&#34;&gt;2016. &lt;strong&gt;WaveNet: A Generative Model for Raw Audio&lt;/strong&gt;&lt;/a&gt;(WaveNet residual block) PS: 在OpenVoice(meloTTS)中的实现采用的Transformer Encoder, 来自 &lt;a href=&#34;https://arxiv.org/abs/2307.16430&#34;&gt;VITS2: Improving Quality and Efficiency of Single-Stage Text-to-Speech with Adversarial Learning and Architecture Design&lt;/a&gt; | &lt;a href=&#34;https://github.com/daniilrobnikov/vits2&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;prior-encoder&#34;&gt;Prior Encoder:&lt;/h2&gt;
 &lt;p&gt;为了提高先验分布的表示能力，我们将归一化流添加到条件先验网络中，从而生成更真实的样本。&lt;/p&gt;

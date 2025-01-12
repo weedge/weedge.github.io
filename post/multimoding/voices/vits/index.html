@@ -42,7 +42,7 @@ VAE 经常与生成式对抗网络 (GAN) 进行比较，GAN 是另一种模型�
  VAE: https://github.com/ai-bot-pro/baby-llm/tree/main/modules/VAE | PR: https://github.com/ai-bot-pro/baby-llm/pull/13 GAN: https://github.com/ai-bot-pro/baby-llm/tree/main/modules/GAN | PR: https://github.com/ai-bot-pro/baby-llm/pull/12  这篇文章是讲解VITS，是现在工业上TTS常用的基础方案(NAR模型，成本相对AR模型低， 推理快，生成质量尽可能追平或超越SOTA AR模型)。作者来自韩国现代汽车公司的 AIR 实验室（人工智能研究实验室），论文结合了以前的研究成果：
  2018. FloWaveNet : A Generative Flow for Raw Audio 2020. Glow-TTS: A Generative Flow for Text-to-Speech via Monotonic Alignment Search 2020. HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis  VITS  2021. Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech | paper coder  主要贡献：
  提出了一种并行的端到端 TTS 方法，它可以生成比当前两阶段模型更自然的音频； 采用通过归一化流程和对抗性训练过程增强的变分推理，提高了生成模型的表达能力； 一个随机持续时间预测器（stochastic duration predictor）来从输入文本中合成具有不同节奏的语音； 通过对潜在变量的不确定性建模和随机持续时间预测器，表达了自然的一对多关系，其中文本输入可以以不同的音调（pitches）和节奏（rhythms）以多种方式说出。  通过利用条件变分自编码器 CVAE，模型特点：
- 学习直接从文本合成原始波形，而不需要额外的输入条件； 使用动态编程方法 MAS 来搜索最佳对齐方式，而不是与计算损失相比,不需要任何外部对齐器； 并行生成样本； 高效的端到端训练方法, 并且生成质量优于最好的公开可用的两阶段模型。附两阶段的数据处理过程：  第一阶段是从预处理的文本中生成中间语音表示，例如梅尔谱图(mel-spectrograms)或语言特征(linguistic features) 第二阶段是生成以中间表示为条件的原始波形。 两阶段的相关模型都是独立开发的。    结构：
+ 学习直接从文本合成原始波形，而不需要额外的输入条件； 使用动态编程方法 MAS 来搜索最佳对齐方式，而不是与计算损失相比,不需要任何外部对齐器； 并行生成样本； 高效的端到端训练方法, 并且生成质量优于最好的公开可用的两阶段模型。附两阶段的数据处理过程(在后续的研究论文中称之为级联方法(cascaded)，见VALL-E系列论文研究)：  第一阶段是从预处理的文本中生成中间语音表示，例如梅尔谱图(mel-spectrograms)或语言特征(linguistic features) 第二阶段是生成以中间表示为条件的原始波形。 两阶段的相关模型大都是独立开发的。    结构：
 PS： achatbot 集成了OpenVoiceV2 with meloTTS(meloTTS代码大部分来自VITS，Flow 采用 Transformer Encoder 结构来自 [VITS2: Improving Quality and Efficiency of Single-Stage Text-to-Speech with Adversarial Learning and Architecture Design](https://arxiv.org/abs/2307.16430) | paper code
 PR地址： https://github.com/ai-bot-pro/achatbot/pull/103
 " />
@@ -149,11 +149,11 @@ VITS
 学习直接从文本合成原始波形，而不需要额外的输入条件；
 使用动态编程方法 MAS 来搜索最佳对齐方式，而不是与计算损失相比,不需要任何外部对齐器；
 并行生成样本；
-高效的端到端训练方法, 并且生成质量优于最好的公开可用的两阶段模型。附两阶段的数据处理过程：
+高效的端到端训练方法, 并且生成质量优于最好的公开可用的两阶段模型。附两阶段的数据处理过程(在后续的研究论文中称之为级联方法(cascaded)，见VALL-E系列论文研究)：
 
 第一阶段是从预处理的文本中生成中间语音表示，例如梅尔谱图(mel-spectrograms)或语言特征(linguistic features)
 第二阶段是生成以中间表示为条件的原始波形。
-两阶段的相关模型都是独立开发的。
+两阶段的相关模型大都是独立开发的。
 
 
 
@@ -232,11 +232,11 @@ VITS
 学习直接从文本合成原始波形，而不需要额外的输入条件；
 使用动态编程方法 MAS 来搜索最佳对齐方式，而不是与计算损失相比,不需要任何外部对齐器；
 并行生成样本；
-高效的端到端训练方法, 并且生成质量优于最好的公开可用的两阶段模型。附两阶段的数据处理过程：
+高效的端到端训练方法, 并且生成质量优于最好的公开可用的两阶段模型。附两阶段的数据处理过程(在后续的研究论文中称之为级联方法(cascaded)，见VALL-E系列论文研究)：
 
 第一阶段是从预处理的文本中生成中间语音表示，例如梅尔谱图(mel-spectrograms)或语言特征(linguistic features)
 第二阶段是生成以中间表示为条件的原始波形。
-两阶段的相关模型都是独立开发的。
+两阶段的相关模型大都是独立开发的。
 
 
 
@@ -245,7 +245,7 @@ VITS
 PS： achatbot 集成了OpenVoiceV2 with meloTTS(meloTTS代码大部分来自VITS，Flow 采用 Transformer Encoder 结构来自 [VITS2: Improving Quality and Efficiency of Single-Stage Text-to-Speech with Adversarial Learning and Architecture Design](https://arxiv.org/abs/2307.16430) | paper code
 PR地址： https://github.com/ai-bot-pro/achatbot/pull/103"><meta itemprop="datePublished" content="2025-01-11T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2025-01-11T10:26:23+08:00" />
-<meta itemprop="wordCount" content="4278">
+<meta itemprop="wordCount" content="4321">
 <meta itemprop="keywords" content="flow,NAR,VITS," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="论文解读 VITS: Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech"/>
 <meta name="twitter:description" content="前文讲到OpenVoicev2，补充下细节，然后梳理使用的基础模型VITS：
@@ -313,11 +313,11 @@ VITS
 学习直接从文本合成原始波形，而不需要额外的输入条件；
 使用动态编程方法 MAS 来搜索最佳对齐方式，而不是与计算损失相比,不需要任何外部对齐器；
 并行生成样本；
-高效的端到端训练方法, 并且生成质量优于最好的公开可用的两阶段模型。附两阶段的数据处理过程：
+高效的端到端训练方法, 并且生成质量优于最好的公开可用的两阶段模型。附两阶段的数据处理过程(在后续的研究论文中称之为级联方法(cascaded)，见VALL-E系列论文研究)：
 
 第一阶段是从预处理的文本中生成中间语音表示，例如梅尔谱图(mel-spectrograms)或语言特征(linguistic features)
 第二阶段是生成以中间表示为条件的原始波形。
-两阶段的相关模型都是独立开发的。
+两阶段的相关模型大都是独立开发的。
 
 
 
@@ -718,11 +718,11 @@ PR地址： https://github.com/ai-bot-pro/achatbot/pull/103"/>
 <li>学习直接从文本合成原始波形，而不需要额外的输入条件；</li>
 <li>使用动态编程方法 MAS 来搜索最佳对齐方式，而不是与计算损失相比,不需要任何外部对齐器；</li>
 <li>并行生成样本；</li>
-<li>高效的端到端训练方法, 并且生成质量优于最好的公开可用的两阶段模型。附两阶段的数据处理过程：
+<li>高效的端到端训练方法, 并且生成质量优于最好的公开可用的两阶段模型。附两阶段的数据处理过程(在后续的研究论文中称之为级联方法(cascaded)，见<a href="https://www.microsoft.com/en-us/research/project/vall-e-x/">VALL-E</a>系列论文研究)：
 <ul>
 <li>第一阶段是从预处理的文本中生成中间语音表示，例如梅尔谱图(mel-spectrograms)或语言特征(linguistic features)</li>
 <li>第二阶段是生成以中间表示为条件的原始波形。</li>
-<li>两阶段的相关模型都是独立开发的。</li>
+<li>两阶段的相关模型大都是独立开发的。</li>
 </ul>
 </li>
 </ol>
@@ -744,7 +744,7 @@ PR地址： https://github.com/ai-bot-pro/achatbot/pull/103"/>
 <h2 id="posterior-encoder">Posterior Encoder:</h2>
 <p>WaveNet residual block由具有门控激活单元和跳跃连接的扩张卷积层组成(LSTM+CNN)。块上方的线性投影层产生正态后验分布的均值μ和方差δ。对于多说话人的情况，我们在残差块中使用全局调节(global conditioning)来添加说话人嵌入。</p>
 <ul>
-<li><a href="https://arxiv.org/abs/1609.03499">2016. <strong>WaveNet: A Generative Model for Raw Audio</strong></a>(WaveNet residual block) PS: 在OpenVoice(meloTTS)中的实现采用的Transformer Encoder, 来自 [<a href="https://arxiv.org/abs/2307.16430">VITS2: Improving Quality and Efficiency of Single-Stage Text-to-Speech with Adversarial Learning and Architecture Design</a>](<a href="https://arxiv.org/abs/2307.16430">https://arxiv.org/abs/2307.16430</a>) | <a href="https://github.com/daniilrobnikov/vits2">paper code</a></li>
+<li><a href="https://arxiv.org/abs/1609.03499">2016. <strong>WaveNet: A Generative Model for Raw Audio</strong></a>(WaveNet residual block) PS: 在OpenVoice(meloTTS)中的实现采用的Transformer Encoder, 来自 <a href="https://arxiv.org/abs/2307.16430">VITS2: Improving Quality and Efficiency of Single-Stage Text-to-Speech with Adversarial Learning and Architecture Design</a> | <a href="https://github.com/daniilrobnikov/vits2">paper code</a></li>
 </ul>
 <h2 id="prior-encoder">Prior Encoder:</h2>
 <p>为了提高先验分布的表示能力，我们将归一化流添加到条件先验网络中，从而生成更真实的样本。</p>
