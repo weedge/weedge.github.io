@@ -6,7 +6,91 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sat, 11 May 2024 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 11 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>论文解读 VITS: Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech</title>
+      <link>https://weedge.github.io/post/multimoding/voices/vits/</link>
+      <pubDate>Sat, 11 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/multimoding/voices/vits/</guid>
+      <description>&lt;p&gt;前文讲到OpenVoicev2，补充下细节，然后梳理使用的基础模型VITS：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;📓&lt;/p&gt;
+&lt;p&gt;melo-tts 生成原始音频：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;OpenVoice 版本1不依赖melo-tts, 升级后的V2版本依赖melo-tts, 主要是生成原始音频质量加强了(由melo-tts生成);&lt;/li&gt;
+&lt;li&gt;默认配置使用了TransformerCouplingBlock list作为flow 和 reverse flow, 而第一版的OpenVoice 模型使用的 ResidualCouplingBlock ;&lt;/li&gt;
+&lt;li&gt;melo-tts的模型权重支持多语言，更具语言区分，比如 ZH: &lt;a href=&#34;https://huggingface.co/myshell-ai/MeloTTS-Chinese&#34;&gt;myshell-ai/MeloTTS-Chinese&lt;/a&gt;, EN_NEWEST: &lt;a href=&#34;https://huggingface.co/myshell-ai/MeloTTS-English-v3&#34;&gt;myshell-ai/MeloTTS-English-v3&lt;/a&gt;;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;音色转换生成目标音频：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;通过训练好的&lt;strong&gt;音色抽取器&lt;/strong&gt;抽取目标说话者的音色 (&lt;a href=&#34;https://huggingface.co/myshell-ai/OpenVoiceV2/tree/main/base_speakers/ses&#34;&gt;myshell-ai/OpenVoiceV2/converter&lt;/a&gt;)；&lt;/li&gt;
+&lt;li&gt;生成的原始音频信息通过 训练抽取好的基础说话者的音色(&lt;a href=&#34;https://huggingface.co/myshell-ai/OpenVoiceV2/tree/main/converter&#34;&gt;myshell-ai/OpenVoiceV2/base_speakers/ses&lt;/a&gt;)，将原始音频中的音色去除 （flow）；&lt;/li&gt;
+&lt;li&gt;将去除原始音色的音频 和 抽取好的目标说话者的音色 合并 （reverse flow）； 最终通过 vocoder(也是论文中的Decoder,使用的 HiFi-Gan模型)合成目标音频。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;额外注意的是，由melo-tts生成原始音频sample rate是 44100， 而通过音色提取器 提取 并且 生成目标音频sample rate是 22050&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这里简单概括如下：&lt;/p&gt;
+&lt;p&gt;AE(Autoencoder): 自编码器是&lt;a href=&#34;https://www.ibm.com/cn-zh/topics/self-supervised-learning&#34;&gt;自监督&lt;/a&gt;系统，其训练目标是通过降维来压缩（或&lt;em&gt;编码&lt;/em&gt;）输入数据，然后使用该压缩后的表示准确重建（或&lt;em&gt;解码&lt;/em&gt;）其原始输入。无泛化生成能力，但是可以执行特定任务：常用于数据压缩、图像去噪、异常检测和面部识别等任务。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;VAE(Variational Autoencoder)&lt;/strong&gt; :与其他自编码器(Autoencoder(AE)的区别在于它们对潜在空间进行编码的独特方式，以及可以应用其概率编码的不同用例，即随机生成训练数据的变体。具有泛化生成能力。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;CVAE(Conditional Variational Autoencoder)&lt;/strong&gt;: 条件变分自编码器 可以以特定输入为条件进行输出，而不仅仅是随机生成训练数据的变体。这是通过将监督学习（或半监督学习）的元素与常规自编码器的传统无监督训练目标相结合来实现的。具有指定特征的泛化能力。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;VAE 与 GAN的区别：&lt;/p&gt;
+&lt;p&gt;VAE 经常与生成式对抗网络 (GAN) 进行比较，GAN 是另一种模型架构，用于生成类似于训练数据的样本，尤其是图像。&lt;/p&gt;
+&lt;p&gt;与 VAE 类似，GAN 是结合两种神经网络的联合架构：一个生成器网络，负责输出与训练数据集中的图像相似的图像样本，另一个判别器网络，负责确定特定图像是训练数据中的“真实”图像还是来自生成器网络的“虚假”图像。&lt;/p&gt;
+&lt;p&gt;这两个网络在零和博弈中进行对抗性训练：来自判别器的反馈用于改进生成器的输出，直到判别器不再能够区分真假样本。&lt;/p&gt;
+&lt;p&gt;就图像合成而言，两者各有优劣：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;GAN 可以生成更清晰的图像，但由于两种复合模型之间的对抗性权衡，在训练中并不稳定。&lt;/li&gt;
+&lt;li&gt;VAE 更容易训练，但由于其根据训练数据的“平均”特征生成图像的性质，往往会生成比较模糊的图像。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;VAE-GAN 两者结合
+顾名思义，VAE-GAN 是变分自编码器 (VAE) 和生成式对抗网络 (GAN) 的混合体。通过用判别器网络替换 VAE 模型的重建损失项，来降低 VAE 生成图像的模糊性，提高生成质量。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;VITS 使用了 条件变分自编码器 (Conditional Variational Autoencoder (CVAE)) 和生成式对抗网络 (&lt;a href=&#34;https://en.wikipedia.org/wiki/Generative_adversarial_network&#34;&gt;Generative adversarial network&lt;/a&gt;(GAN)) 两个模型架构。 至于VAE和GAN的细节可以关注下baby-llm这个学习项目中的对应模块PR学习资料:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;VAE: &lt;a href=&#34;https://github.com/ai-bot-pro/baby-llm/tree/main/modules/VAE&#34;&gt;https://github.com/ai-bot-pro/baby-llm/tree/main/modules/VAE&lt;/a&gt; | PR:  &lt;a href=&#34;https://github.com/ai-bot-pro/baby-llm/pull/13&#34;&gt;https://github.com/ai-bot-pro/baby-llm/pull/13&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;GAN: &lt;a href=&#34;https://github.com/ai-bot-pro/baby-llm/tree/main/modules/GAN&#34;&gt;https://github.com/ai-bot-pro/baby-llm/tree/main/modules/GAN&lt;/a&gt; | PR: &lt;a href=&#34;https://github.com/ai-bot-pro/baby-llm/pull/12&#34;&gt;https://github.com/ai-bot-pro/baby-llm/pull/12&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这篇文章是讲解VITS，是现在工业上TTS常用的基础方案(NAR模型，成本相对AR模型低， 推理快，生成质量尽可能追平或超越SOTA AR模型)。作者来自韩国现代汽车公司的 AIR 实验室（人工智能研究实验室），论文结合了以前的研究成果：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/1811.02155&#34;&gt;2018. &lt;strong&gt;FloWaveNet : A Generative Flow for Raw Audio&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2005.11129&#34;&gt;2020. &lt;strong&gt;Glow-TTS: A Generative Flow for Text-to-Speech via Monotonic Alignment Search&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2010.05646&#34;&gt;2020. &lt;strong&gt;HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;vits&#34;&gt;VITS&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2106.06103&#34;&gt;2021. &lt;strong&gt;Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech&lt;/strong&gt;&lt;/a&gt;  | &lt;a href=&#34;https://github.com/jaywalnut310/vits&#34;&gt;paper coder&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;主要贡献：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;提出了一种并行的端到端 TTS 方法，它可以生成比当前两阶段模型更自然的音频；&lt;/li&gt;
+&lt;li&gt;采用通过归一化流程和对抗性训练过程增强的变分推理，提高了生成模型的表达能力；&lt;/li&gt;
+&lt;li&gt;一个随机持续时间预测器（stochastic duration predictor）来从输入文本中合成具有不同节奏的语音；&lt;/li&gt;
+&lt;li&gt;通过对潜在变量的不确定性建模和随机持续时间预测器，表达了自然的一对多关系，其中文本输入可以以不同的音调（pitches）和节奏（rhythms）以多种方式说出。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;通过利用条件变分自编码器 CVAE，模型特点：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;学习直接从文本合成原始波形，而不需要额外的输入条件；&lt;/li&gt;
+&lt;li&gt;使用动态编程方法 MAS 来搜索最佳对齐方式，而不是与计算损失相比,不需要任何外部对齐器；&lt;/li&gt;
+&lt;li&gt;并行生成样本；&lt;/li&gt;
+&lt;li&gt;优于最好的公开可用的两阶段模型。
+&lt;ul&gt;
+&lt;li&gt;第一阶段是从预处理的文本中生成中间语音表示，例如梅尔谱图(mel-spectrograms)或语言特征(linguistic features)&lt;/li&gt;
+&lt;li&gt;第二阶段是生成以中间表示为条件的原始波形。&lt;/li&gt;
+&lt;li&gt;两阶段的相关模型都是独立开发的。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;结构：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/3ddec975-a9fd-460c-91fa-894b8ebd8c8c&#34; alt=&#34;VITS&#34;&gt;&lt;/p&gt;
+&lt;p&gt;PS： &lt;a href=&#34;https://github.com/ai-bot-pro/achatbot&#34;&gt;achatbot&lt;/a&gt; 集成了OpenVoiceV2 with meloTTS(meloTTS代码大部分来自VITS，Flow 采用 Transformer Encoder 结构)，PR地址： &lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/103&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/103&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>论文解读 OpenVoice: Versatile Instant Voice Cloning</title>
       <link>https://weedge.github.io/post/multimoding/voices/open_voice_extra_se_and_convert/</link>
@@ -79,7 +163,7 @@
       <pubDate>Fri, 12 Apr 2024 10:26:12 +0800</pubDate>
       
       <guid>https://weedge.github.io/post/paper/transformer/infini_attention/</guid>
-      <description>&lt;p&gt;&lt;img src=&#34;https://aiptcomics.com/ezoimgfmt/i0.wp.com/aiptcomics.com/wp-content/uploads/2024/04/transformers-7.jpg?ezimgfmt=ng%3Awebp%2Fngcb4%2Frs%3Adevice%2Frscb4-1&amp;amp;ssl=1&amp;amp;w=1500&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+      <description>&lt;p&gt;&lt;img src=&#34;https://aiptcomics.com/ezoimgfmt/i0.wp.com/aiptcomics.com/wp-content/uploads/2024/04/transformers-7.jpg?w=1500&amp;amp;ssl=1&amp;amp;ezimgfmt=ngcb4/notWebP&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
 &lt;p&gt;图片来源： &lt;a href=&#34;https://aiptcomics.com/2024/04/10/transformers-7-2024-review/&#34;&gt;https://aiptcomics.com/2024/04/10/transformers-7-2024-review/&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;摘要&lt;/strong&gt;： 本文介绍了一种有效的方法，将基于Transformer的大型语言模型（LLMs）扩展到无限长的输入，同时受到内存和计算的限制。我们提出的方法的关键组成部分是一种新的注意力技术，称为Infini-attention。Infini-attention将一种压缩内存集成到了传统的注意力机制中，并在单个Transformer块中构建了掩码局部注意力和长期线性注意力机制。我们通过在长上下文语言建模基准、1M序列长度的口令(keypass)上下文块检索和500K长度的书籍摘要任务中使用1B和8B LLMs，展示了我们方法的有效性。我们的方法引入了最小的有界内存参数，并实现了LLMs的快速流式推理。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;：为解决大模型（LLMs）在处理超长输入序列时遇到的内存限制问题，本文作者提出了一种新型架构：Infini-Transformer，它可以在有限内存条件下，让基于Transformer的大语言模型（LLMs）高效处理无限长的输入序列。实验结果表明：Infini-Transformer在长上下文语言建模任务上超越了基线模型，内存最高可节约114倍。&lt;/p&gt;
@@ -335,19 +419,6 @@
 &lt;p&gt;在数据科学中，字符串数据代表语音、文本、基因序列、日志记录和许多其他类型的信息。在使用字符串数据进行机器学习和特征工程时，必须经常对数据进行规范化和转换，然后才能将其应用于特定用例。libcudf 提供通用 API 和设备端实用程序，以支持各种自定义字符串操作。&lt;/p&gt;
 &lt;p&gt;这篇文章演示了如何使用 libcudf 通用 API 巧妙地转换字符串列。您将获得有关如何使用自定义内核和 libcudf 设备端实用程序解锁峰值性能的新知识。这篇文章还向您介绍了如何最好地管理 GPU 内存和高效构建 libcudf 列以加速字符串转换的示例。&lt;/p&gt;
 &lt;p&gt;(&lt;strong&gt;注&lt;/strong&gt;：从文件中获取数据到buffer中，都需要通过字符串处理操作，特别是split操作，如果是数值，需要atoi，atof操作进行数据分析，向量化操作等， 和数据处理打交道的 super 马里奥 应该学会这个工具，这里直接使用底层操作库libcudf；集成的其他语言有java(JNI)和python(cython), 主要是方便和现有 大数据生态打通(会有一些内存方面的性能损耗)，大多是离线处理场景，特别是LLM的预训练场景)&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>译：加速向量搜索：RAPIDS RAFT IVF-Flat 近似算法</title>
-      <link>https://weedge.github.io/post/gpu/3.accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/</link>
-      <pubDate>Fri, 03 Nov 2023 15:00:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/gpu/3.accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/</guid>
-      <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;执行详尽的精确 k 最近邻 (kNN) 搜索，也称为&lt;em&gt;暴力搜索(brute-force search)&lt;/em&gt;，成本高昂，并且它不能很好地扩展到更大的数据集。在向量搜索期间，暴力搜索需要计算每个查询向量和数据库向量之间的距离。对于常用的欧几里德和余弦距离，计算任务等同于大型矩阵乘法。&lt;/p&gt;
-&lt;p&gt;虽然 GPU 在执行矩阵乘法方面效率很高，但随着数据量的增加，计算成本变得令人望而却步。然而，许多应用程序不需要精确的结果，而是可以为了更快的搜索而牺牲一些准确性。当不需要精确的结果时，近似最近邻 (ANN) 方法通常可以减少搜索期间必须执行的距离计算的数量。&lt;/p&gt;
-&lt;p&gt;本文主要介绍了 IVF-Flat，这是 NVIDIA &lt;a href=&#34;https://developer.nvidia.cn/zh-cn/blog/reusable-computational-patterns-for-machine-learning-and-data-analytics-with-rapids-raft/&#34;&gt;RAPIDS RAFT&lt;/a&gt; 中的一种方法。IVF-Flat 方法使用原始（即Flat）向量的倒排索引 (IVF)。此算法提供了简单的调整手段，以减少整体搜索空间并在准确性和速度之间进行权衡。&lt;/p&gt;
-&lt;p&gt;为了帮助了解如何使用 IVF-Flat，我们讨论了该算法的工作原理，并演示了&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/pylibraft_api/neighbors/#ivf-flat&#34;&gt;Python&lt;/a&gt;和&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_flat/&#34;&gt;C++ APIs&lt;/a&gt;我们介绍了索引构建的设置参数，并提供了如何配置 GPU 加速的 IVF-Flat搜索的技巧。这些步骤也可以在示例中遵循&lt;a href=&#34;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/notebooks/ivf_flat_example.ipynb&#34;&gt;Python notebook&lt;/a&gt;和&lt;a href=&#34;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/cpp/template/src/ivf_flat_example.cu&#34;&gt;C++ project&lt;/a&gt;.最后，我们演示了 GPU 加速的向量搜索比 CPU 搜索快一个数量级。&lt;/p&gt;</description>
     </item>
     
   </channel>

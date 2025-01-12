@@ -342,6 +342,44 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/ping/">工具盒子-ping/traceroute</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2021-11-15" class="post-time">
+        2021-11-15
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <h2 id="序言">序言</h2>
+<p>在访问网络是否ok, 通常喜欢用ping 命令来访问<code>ping www.baidu.com</code> 看是否出现超时；ping在不同的操作系统平台实现方式差不多，底层都是用ICMP协议，每次发ICMP ECHO_REQUEST packet (IP地址/Host, ttl，icmp_seq序列号，<a href="https://en.wikipedia.org/wiki/Round-trip_delay">RTD/RTT</a>(往返延时)记录 ),  运行结束后统计每个RTT, 最大RTT, 最小RTT, 平均RTT, <a href="https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford">标准偏差</a>RTT, 发送/接受packets总数，丢包率 等数据，ping工具在PING(8)中的定义如下：</p>
+<blockquote>
+<p>The ping utility uses the ICMP protocol&rsquo;s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.  ECHO_REQUEST datagrams  (&ldquo;pings'') have an IP and ICMP header, followed by a &ldquo;struct timeval'' and then an arbitrary number of &ldquo;pad&rdquo; bytes used to fill out the packet.</p>
+</blockquote>
+    </div>
+    <div class="read-more">
+      <a href="/post/ping/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/lru/">缓存淘汰策略-LRU</a>
     </h1>
     
@@ -550,40 +588,6 @@
 </article>
 
   
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/jxzbim/">直播系列之消息模块演进</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2020-11-02" class="post-time">
-        2020-11-02
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      整体服务框架
-    </div>
-    <div class="read-more">
-      <a href="/post/jxzbim/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
 </section>
 
 
@@ -729,7 +733,7 @@
     &copy;
     
       2013 -
-    2024
+    2025
     <span class="heart">
       
       <i class="iconfont">

@@ -342,6 +342,116 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/multimoding/voices/vits/">论文解读 VITS: Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2025-01-11" class="post-time">
+        2025-01-11
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/tts/"> TTS </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <p>前文讲到OpenVoicev2，补充下细节，然后梳理使用的基础模型VITS：</p>
+<blockquote>
+<p>📓</p>
+<p>melo-tts 生成原始音频：</p>
+<ul>
+<li>OpenVoice 版本1不依赖melo-tts, 升级后的V2版本依赖melo-tts, 主要是生成原始音频质量加强了(由melo-tts生成);</li>
+<li>默认配置使用了TransformerCouplingBlock list作为flow 和 reverse flow, 而第一版的OpenVoice 模型使用的 ResidualCouplingBlock ;</li>
+<li>melo-tts的模型权重支持多语言，更具语言区分，比如 ZH: <a href="https://huggingface.co/myshell-ai/MeloTTS-Chinese">myshell-ai/MeloTTS-Chinese</a>, EN_NEWEST: <a href="https://huggingface.co/myshell-ai/MeloTTS-English-v3">myshell-ai/MeloTTS-English-v3</a>;</li>
+</ul>
+<p>音色转换生成目标音频：</p>
+<ul>
+<li>通过训练好的<strong>音色抽取器</strong>抽取目标说话者的音色 (<a href="https://huggingface.co/myshell-ai/OpenVoiceV2/tree/main/base_speakers/ses">myshell-ai/OpenVoiceV2/converter</a>)；</li>
+<li>生成的原始音频信息通过 训练抽取好的基础说话者的音色(<a href="https://huggingface.co/myshell-ai/OpenVoiceV2/tree/main/converter">myshell-ai/OpenVoiceV2/base_speakers/ses</a>)，将原始音频中的音色去除 （flow）；</li>
+<li>将去除原始音色的音频 和 抽取好的目标说话者的音色 合并 （reverse flow）； 最终通过 vocoder(也是论文中的Decoder,使用的 HiFi-Gan模型)合成目标音频。</li>
+</ul>
+<p>额外注意的是，由melo-tts生成原始音频sample rate是 44100， 而通过音色提取器 提取 并且 生成目标音频sample rate是 22050</p>
+</blockquote>
+<p>这里简单概括如下：</p>
+<p>AE(Autoencoder): 自编码器是<a href="https://www.ibm.com/cn-zh/topics/self-supervised-learning">自监督</a>系统，其训练目标是通过降维来压缩（或<em>编码</em>）输入数据，然后使用该压缩后的表示准确重建（或<em>解码</em>）其原始输入。无泛化生成能力，但是可以执行特定任务：常用于数据压缩、图像去噪、异常检测和面部识别等任务。</p>
+<p><strong>VAE(Variational Autoencoder)</strong> :与其他自编码器(Autoencoder(AE)的区别在于它们对潜在空间进行编码的独特方式，以及可以应用其概率编码的不同用例，即随机生成训练数据的变体。具有泛化生成能力。</p>
+<p><strong>CVAE(Conditional Variational Autoencoder)</strong>: 条件变分自编码器 可以以特定输入为条件进行输出，而不仅仅是随机生成训练数据的变体。这是通过将监督学习（或半监督学习）的元素与常规自编码器的传统无监督训练目标相结合来实现的。具有指定特征的泛化能力。</p>
+<ul>
+<li>
+<p>VAE 与 GAN的区别：</p>
+<p>VAE 经常与生成式对抗网络 (GAN) 进行比较，GAN 是另一种模型架构，用于生成类似于训练数据的样本，尤其是图像。</p>
+<p>与 VAE 类似，GAN 是结合两种神经网络的联合架构：一个生成器网络，负责输出与训练数据集中的图像相似的图像样本，另一个判别器网络，负责确定特定图像是训练数据中的“真实”图像还是来自生成器网络的“虚假”图像。</p>
+<p>这两个网络在零和博弈中进行对抗性训练：来自判别器的反馈用于改进生成器的输出，直到判别器不再能够区分真假样本。</p>
+<p>就图像合成而言，两者各有优劣：</p>
+<ul>
+<li>GAN 可以生成更清晰的图像，但由于两种复合模型之间的对抗性权衡，在训练中并不稳定。</li>
+<li>VAE 更容易训练，但由于其根据训练数据的“平均”特征生成图像的性质，往往会生成比较模糊的图像。</li>
+</ul>
+</li>
+<li>
+<p>VAE-GAN 两者结合
+顾名思义，VAE-GAN 是变分自编码器 (VAE) 和生成式对抗网络 (GAN) 的混合体。通过用判别器网络替换 VAE 模型的重建损失项，来降低 VAE 生成图像的模糊性，提高生成质量。</p>
+</li>
+</ul>
+<p>VITS 使用了 条件变分自编码器 (Conditional Variational Autoencoder (CVAE)) 和生成式对抗网络 (<a href="https://en.wikipedia.org/wiki/Generative_adversarial_network">Generative adversarial network</a>(GAN)) 两个模型架构。 至于VAE和GAN的细节可以关注下baby-llm这个学习项目中的对应模块PR学习资料:</p>
+<ul>
+<li>VAE: <a href="https://github.com/ai-bot-pro/baby-llm/tree/main/modules/VAE">https://github.com/ai-bot-pro/baby-llm/tree/main/modules/VAE</a> | PR:  <a href="https://github.com/ai-bot-pro/baby-llm/pull/13">https://github.com/ai-bot-pro/baby-llm/pull/13</a></li>
+<li>GAN: <a href="https://github.com/ai-bot-pro/baby-llm/tree/main/modules/GAN">https://github.com/ai-bot-pro/baby-llm/tree/main/modules/GAN</a> | PR: <a href="https://github.com/ai-bot-pro/baby-llm/pull/12">https://github.com/ai-bot-pro/baby-llm/pull/12</a></li>
+</ul>
+<p>这篇文章是讲解VITS，是现在工业上TTS常用的基础方案(NAR模型，成本相对AR模型低， 推理快，生成质量尽可能追平或超越SOTA AR模型)。作者来自韩国现代汽车公司的 AIR 实验室（人工智能研究实验室），论文结合了以前的研究成果：</p>
+<ul>
+<li><a href="https://arxiv.org/abs/1811.02155">2018. <strong>FloWaveNet : A Generative Flow for Raw Audio</strong></a></li>
+<li><a href="https://arxiv.org/abs/2005.11129">2020. <strong>Glow-TTS: A Generative Flow for Text-to-Speech via Monotonic Alignment Search</strong></a></li>
+<li><a href="https://arxiv.org/abs/2010.05646">2020. <strong>HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis</strong></a></li>
+</ul>
+<h1 id="vits">VITS</h1>
+<ul>
+<li><a href="https://arxiv.org/abs/2106.06103">2021. <strong>Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech</strong></a>  | <a href="https://github.com/jaywalnut310/vits">paper coder</a></li>
+</ul>
+<p>主要贡献：</p>
+<ul>
+<li>提出了一种并行的端到端 TTS 方法，它可以生成比当前两阶段模型更自然的音频；</li>
+<li>采用通过归一化流程和对抗性训练过程增强的变分推理，提高了生成模型的表达能力；</li>
+<li>一个随机持续时间预测器（stochastic duration predictor）来从输入文本中合成具有不同节奏的语音；</li>
+<li>通过对潜在变量的不确定性建模和随机持续时间预测器，表达了自然的一对多关系，其中文本输入可以以不同的音调（pitches）和节奏（rhythms）以多种方式说出。</li>
+</ul>
+<p>通过利用条件变分自编码器 CVAE，模型特点：</p>
+<ol>
+<li>学习直接从文本合成原始波形，而不需要额外的输入条件；</li>
+<li>使用动态编程方法 MAS 来搜索最佳对齐方式，而不是与计算损失相比,不需要任何外部对齐器；</li>
+<li>并行生成样本；</li>
+<li>优于最好的公开可用的两阶段模型。
+<ul>
+<li>第一阶段是从预处理的文本中生成中间语音表示，例如梅尔谱图(mel-spectrograms)或语言特征(linguistic features)</li>
+<li>第二阶段是生成以中间表示为条件的原始波形。</li>
+<li>两阶段的相关模型都是独立开发的。</li>
+</ul>
+</li>
+</ol>
+<p>结构：</p>
+<p><img src="https://github.com/user-attachments/assets/3ddec975-a9fd-460c-91fa-894b8ebd8c8c" alt="VITS"></p>
+<p>PS： <a href="https://github.com/ai-bot-pro/achatbot">achatbot</a> 集成了OpenVoiceV2 with meloTTS(meloTTS代码大部分来自VITS，Flow 采用 Transformer Encoder 结构)，PR地址： <a href="https://github.com/ai-bot-pro/achatbot/pull/103">https://github.com/ai-bot-pro/achatbot/pull/103</a></p>
+    </div>
+    <div class="read-more">
+      <a href="/post/multimoding/voices/vits/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/multimoding/voices/open_voice_extra_se_and_convert/">论文解读 OpenVoice: Versatile Instant Voice Cloning</a>
     </h1>
     
@@ -481,7 +591,7 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <p><img src="https://aiptcomics.com/ezoimgfmt/i0.wp.com/aiptcomics.com/wp-content/uploads/2024/04/transformers-7.jpg?ezimgfmt=ng%3Awebp%2Fngcb4%2Frs%3Adevice%2Frscb4-1&amp;ssl=1&amp;w=1500" alt=""></p>
+      <p><img src="https://aiptcomics.com/ezoimgfmt/i0.wp.com/aiptcomics.com/wp-content/uploads/2024/04/transformers-7.jpg?w=1500&amp;ssl=1&amp;ezimgfmt=ngcb4/notWebP" alt=""></p>
 <p>图片来源： <a href="https://aiptcomics.com/2024/04/10/transformers-7-2024-review/">https://aiptcomics.com/2024/04/10/transformers-7-2024-review/</a></p>
 <p><strong>摘要</strong>： 本文介绍了一种有效的方法，将基于Transformer的大型语言模型（LLMs）扩展到无限长的输入，同时受到内存和计算的限制。我们提出的方法的关键组成部分是一种新的注意力技术，称为Infini-attention。Infini-attention将一种压缩内存集成到了传统的注意力机制中，并在单个Transformer块中构建了掩码局部注意力和长期线性注意力机制。我们通过在长上下文语言建模基准、1M序列长度的口令(keypass)上下文块检索和500K长度的书籍摘要任务中使用1B和8B LLMs，展示了我们方法的有效性。我们的方法引入了最小的有界内存参数，并实现了LLMs的快速流式推理。</p>
 <p><strong>注</strong>：为解决大模型（LLMs）在处理超长输入序列时遇到的内存限制问题，本文作者提出了一种新型架构：Infini-Transformer，它可以在有限内存条件下，让基于Transformer的大语言模型（LLMs）高效处理无限长的输入序列。实验结果表明：Infini-Transformer在长上下文语言建模任务上超越了基线模型，内存最高可节约114倍。</p>
@@ -603,45 +713,6 @@
     </div>
     <div class="read-more">
       <a href="/post/rust/chatgpt_rust_check_thread_safety/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/doraemon/redis_gcp_rag_stack/">Redis和GCP AI服务搭建RAG参考架构解决方案</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2024-03-14" class="post-time">
-        2024-03-14
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          <a href="https://weedge.github.io/categories/doraemon/"> doraemon </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p>本文主要是讲解一个快速搭建比如RAG pipeline相关应用参考方案，结合云厂商GCP AI服务，以及<a href="https://redis.io/docs/about/about-stack/">redis stack</a> | <a href="https://redis.io/docs/get-started/vector-database/">vector index</a>，借助 Google Cloud Platform 上易用的开发<a href="https://cloud.google.com/sdk">SDK</a>,  以及使用<a href="https://app.redislabs.com">redislabs</a> 提供的免费30M内存空间服务；GCP新用户前三个月好像是免费使用一些服务，而且提供 <strong>$300</strong> 的赠金使用，对于前期学习和使用体验服务还是不错的选择，而且个人感觉学习文档很齐全，不会很零散。但是解决方案相对AWS要少些，毕竟AWS做的很深入，搭建解决方案很方便，集成开发工具比较齐全，特别是serverless lambda服务，可以看下以前写的文章『 <a href="https://weedge.github.io/post/user-behavior-analytics-solution/">用户行为分析方案设计</a>』通过CDK构建解决方案stack(用于前期架构推演，不要YY，要动手，节约成本是干出来的)。</p>
-<p><img src="https://raw.githubusercontent.com/weedge/mypic/master/doraemon/redis_gcp_rag_stack/gcp-cost.png" alt="image-20240314215720290"></p>
-<p>以前注册的，忘记用了。。。</p>
-<p>笔记地址：<a href="https://github.com/weedge/doraemon-nb/blob/main/Google_BigQuery_Palm_Redis.ipynb">https://github.com/weedge/doraemon-nb/blob/main/Google_BigQuery_Palm_Redis.ipynb</a></p>
-<p><strong>注</strong>：这里使用redis作为向量索引数据库，也可以结合其他向量索引库来搭建相应方案。主要目的是熟悉GCP服务和redis cloud服务。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/doraemon/redis_gcp_rag_stack/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
@@ -793,7 +864,7 @@
     &copy;
     
       2013 -
-    2024
+    2025
     <span class="heart">
       
       <i class="iconfont">
