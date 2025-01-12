@@ -108,6 +108,11 @@
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2005.11129&#34;&gt;2020. &lt;strong&gt;Glow-TTS: A Generative Flow for Text-to-Speech via Monotonic Alignment Search&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2010.05646&#34;&gt;2020. &lt;strong&gt;HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;后续作者还研究了加入扩散模型来生成语音，不需要使用分类器指导的目标说话者的任何转录。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2111.11755&#34;&gt;2022. Guided-TTS: A Diffusion Model for Text-to-Speech via Classifier Guidance&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Guided-TTS 将无条件扩散概率模型(unconditional Diffusion Model)与单独训练的音素分类器(phoneme classifier )相结合，用于分类器指导。我们的无条件扩散模型学习在没有任何上下文的情况下从未转录的语音数据中生成语音。对于 TTS 合成，我们使用在大规模语音识别数据集上训练的音素分类器来指导扩散模型的生成过程。&lt;/p&gt;
 &lt;h1 id=&#34;vits&#34;&gt;VITS&lt;/h1&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2106.06103&#34;&gt;2021. &lt;strong&gt;Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech&lt;/strong&gt;&lt;/a&gt;  | &lt;a href=&#34;https://github.com/jaywalnut310/vits&#34;&gt;paper coder&lt;/a&gt;&lt;/li&gt;

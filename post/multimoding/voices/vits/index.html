@@ -40,7 +40,9 @@ VAE 经常与生成式对抗网络 (GAN) 进行比较，GAN 是另一种模型�
  GAN 可以生成更清晰的图像，但由于两种复合模型之间的对抗性权衡，在训练中并不稳定。 VAE 更容易训练，但由于其根据训练数据的“平均”特征生成图像的性质，往往会生成比较模糊的图像。    VAE-GAN 两者结合 顾名思义，VAE-GAN 是变分自编码器 (VAE) 和生成式对抗网络 (GAN) 的混合体。通过用判别器网络替换 VAE 模型的重建损失项，来降低 VAE 生成图像的模糊性，提高生成质量。
   VITS 使用了 条件变分自编码器 (Conditional Variational Autoencoder (CVAE)) 和生成式对抗网络 (Generative adversarial network(GAN)) 两个模型架构。 至于VAE和GAN的细节可以关注下baby-llm这个学习项目中的对应模块PR学习资料:
  VAE: https://github.com/ai-bot-pro/baby-llm/tree/main/modules/VAE | PR: https://github.com/ai-bot-pro/baby-llm/pull/13 GAN: https://github.com/ai-bot-pro/baby-llm/tree/main/modules/GAN | PR: https://github.com/ai-bot-pro/baby-llm/pull/12  这篇文章是讲解VITS，是现在工业上TTS常用的基础方案(NAR模型，成本相对AR模型低， 推理快，生成质量尽可能追平或超越SOTA AR模型)。作者来自韩国现代汽车公司的 AIR 实验室（人工智能研究实验室），论文结合了以前的研究成果：
- 2018. FloWaveNet : A Generative Flow for Raw Audio 2020. Glow-TTS: A Generative Flow for Text-to-Speech via Monotonic Alignment Search 2020. HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis  VITS  2021. Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech | paper coder  主要贡献：
+ 2018. FloWaveNet : A Generative Flow for Raw Audio 2020. Glow-TTS: A Generative Flow for Text-to-Speech via Monotonic Alignment Search 2020. HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis  后续作者还研究了加入扩散模型来生成语音，不需要使用分类器指导的目标说话者的任何转录。
+ 2022. Guided-TTS: A Diffusion Model for Text-to-Speech via Classifier Guidance  Guided-TTS 将无条件扩散概率模型(unconditional Diffusion Model)与单独训练的音素分类器(phoneme classifier )相结合，用于分类器指导。我们的无条件扩散模型学习在没有任何上下文的情况下从未转录的语音数据中生成语音。对于 TTS 合成，我们使用在大规模语音识别数据集上训练的音素分类器来指导扩散模型的生成过程。
+VITS  2021. Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech | paper coder  主要贡献：
  提出了一种并行的端到端 TTS 方法，它可以生成比当前两阶段模型更自然的音频； 采用通过归一化流程和对抗性训练过程增强的变分推理，提高了生成模型的表达能力； 一个随机持续时间预测器（stochastic duration predictor）来从输入文本中合成具有不同节奏的语音； 通过对潜在变量的不确定性建模和随机持续时间预测器，表达了自然的一对多关系，其中文本输入可以以不同的音调（pitches）和节奏（rhythms）以多种方式说出。  通过利用条件变分自编码器 CVAE，模型特点：
  学习直接从文本合成原始波形，而不需要额外的输入条件； 使用动态编程方法 MAS 来搜索最佳对齐方式，而不是与计算损失相比,不需要任何外部对齐器； 并行生成样本； 高效的端到端训练方法, 并且生成质量优于最好的公开可用的两阶段模型。附两阶段的数据处理过程(在后续的研究论文中称之为级联方法(cascaded)，见VALL-E系列论文研究)：  第一阶段是从预处理的文本中生成中间语音表示，例如梅尔谱图(mel-spectrograms)或语言特征(linguistic features) 第二阶段是生成以中间表示为条件的原始波形。 两阶段的相关模型大都是独立开发的。    结构：
 PS： achatbot 集成了OpenVoiceV2 with meloTTS(meloTTS代码大部分来自VITS，Flow 采用 Transformer Encoder 结构来自 [VITS2: Improving Quality and Efficiency of Single-Stage Text-to-Speech with Adversarial Learning and Architecture Design](https://arxiv.org/abs/2307.16430) | paper code
@@ -133,6 +135,11 @@ GAN: https://github.com/ai-bot-pro/baby-llm/tree/main/modules/GAN | PR: https://
 2020. Glow-TTS: A Generative Flow for Text-to-Speech via Monotonic Alignment Search
 2020. HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis
 
+后续作者还研究了加入扩散模型来生成语音，不需要使用分类器指导的目标说话者的任何转录。
+
+2022. Guided-TTS: A Diffusion Model for Text-to-Speech via Classifier Guidance
+
+Guided-TTS 将无条件扩散概率模型(unconditional Diffusion Model)与单独训练的音素分类器(phoneme classifier )相结合，用于分类器指导。我们的无条件扩散模型学习在没有任何上下文的情况下从未转录的语音数据中生成语音。对于 TTS 合成，我们使用在大规模语音识别数据集上训练的音素分类器来指导扩散模型的生成过程。
 VITS
 
 2021. Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech  | paper coder
@@ -216,6 +223,11 @@ GAN: https://github.com/ai-bot-pro/baby-llm/tree/main/modules/GAN | PR: https://
 2020. Glow-TTS: A Generative Flow for Text-to-Speech via Monotonic Alignment Search
 2020. HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis
 
+后续作者还研究了加入扩散模型来生成语音，不需要使用分类器指导的目标说话者的任何转录。
+
+2022. Guided-TTS: A Diffusion Model for Text-to-Speech via Classifier Guidance
+
+Guided-TTS 将无条件扩散概率模型(unconditional Diffusion Model)与单独训练的音素分类器(phoneme classifier )相结合，用于分类器指导。我们的无条件扩散模型学习在没有任何上下文的情况下从未转录的语音数据中生成语音。对于 TTS 合成，我们使用在大规模语音识别数据集上训练的音素分类器来指导扩散模型的生成过程。
 VITS
 
 2021. Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech  | paper coder
@@ -245,7 +257,7 @@ VITS
 PS： achatbot 集成了OpenVoiceV2 with meloTTS(meloTTS代码大部分来自VITS，Flow 采用 Transformer Encoder 结构来自 [VITS2: Improving Quality and Efficiency of Single-Stage Text-to-Speech with Adversarial Learning and Architecture Design](https://arxiv.org/abs/2307.16430) | paper code
 PR地址： https://github.com/ai-bot-pro/achatbot/pull/103"><meta itemprop="datePublished" content="2025-01-11T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2025-01-11T10:26:23+08:00" />
-<meta itemprop="wordCount" content="4321">
+<meta itemprop="wordCount" content="4520">
 <meta itemprop="keywords" content="flow,NAR,VITS," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="论文解读 VITS: Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech"/>
 <meta name="twitter:description" content="前文讲到OpenVoicev2，补充下细节，然后梳理使用的基础模型VITS：
@@ -297,6 +309,11 @@ GAN: https://github.com/ai-bot-pro/baby-llm/tree/main/modules/GAN | PR: https://
 2020. Glow-TTS: A Generative Flow for Text-to-Speech via Monotonic Alignment Search
 2020. HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis
 
+后续作者还研究了加入扩散模型来生成语音，不需要使用分类器指导的目标说话者的任何转录。
+
+2022. Guided-TTS: A Diffusion Model for Text-to-Speech via Classifier Guidance
+
+Guided-TTS 将无条件扩散概率模型(unconditional Diffusion Model)与单独训练的音素分类器(phoneme classifier )相结合，用于分类器指导。我们的无条件扩散模型学习在没有任何上下文的情况下从未转录的语音数据中生成语音。对于 TTS 合成，我们使用在大规模语音识别数据集上训练的音素分类器来指导扩散模型的生成过程。
 VITS
 
 2021. Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech  | paper coder
@@ -702,6 +719,11 @@ PR地址： https://github.com/ai-bot-pro/achatbot/pull/103"/>
 <li><a href="https://arxiv.org/abs/2005.11129">2020. <strong>Glow-TTS: A Generative Flow for Text-to-Speech via Monotonic Alignment Search</strong></a></li>
 <li><a href="https://arxiv.org/abs/2010.05646">2020. <strong>HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis</strong></a></li>
 </ul>
+<p>后续作者还研究了加入扩散模型来生成语音，不需要使用分类器指导的目标说话者的任何转录。</p>
+<ul>
+<li><a href="https://arxiv.org/abs/2111.11755">2022. Guided-TTS: A Diffusion Model for Text-to-Speech via Classifier Guidance</a></li>
+</ul>
+<p>Guided-TTS 将无条件扩散概率模型(unconditional Diffusion Model)与单独训练的音素分类器(phoneme classifier )相结合，用于分类器指导。我们的无条件扩散模型学习在没有任何上下文的情况下从未转录的语音数据中生成语音。对于 TTS 合成，我们使用在大规模语音识别数据集上训练的音素分类器来指导扩散模型的生成过程。</p>
 <h1 id="vits">VITS</h1>
 <ul>
 <li><a href="https://arxiv.org/abs/2106.06103">2021. <strong>Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech</strong></a>  | <a href="https://github.com/jaywalnut310/vits">paper coder</a></li>
