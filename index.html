@@ -342,6 +342,55 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/multimoding/voices/vall-e-x/">论文解读： VALL-E 系列</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2025-01-13" class="post-time">
+        2025-01-13
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/tts/"> TTS </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <p>前文讲到VITS，采用的端到端的NAR模型，这篇文章记录下微软提出的VALL-E系列，从 AR+NAR 到 AR 模型的转变，以及后面MELLE引入的VAE和Mel-Spectorgram，将neural codec text speech LM (AR+NAR Transformer Decoder) 转变为  autoregressive  mel-spectrogram text speech LM  (AR Transformer Decoder) ；由于LM生成的是mel-spectrogram 需要通过vocoder 转换成 waveform； 生成的内容采样模块：从top-p random sampling 变成 Latent Sampling潜在采样模块（思想源自VAE, 从预测的高斯分布中采样潜在嵌入，然后将其投影回频谱图空间）</p>
+<h2 id="vall-e-系列">VALL-E 系列</h2>
+<p><a href="https://www.microsoft.com/en-us/research/project/vall-e-x/">https://www.microsoft.com/en-us/research/project/vall-e-x/</a></p>
+<p>Vall-E: <a href="https://ar5iv.labs.arxiv.org/html/2301.02111">https://ar5iv.labs.arxiv.org/html/2301.02111</a></p>
+<p>具体来说，我们使用从现成的神经音频编解码器模型派生的离散代码来训练<em><strong>神经编解码器语言模型（neural codec language model）</strong></em>（称为VALL-E ），并将 TTS 视为条件语言建模任务，而不是像之前的工作那样将 TTS 视为连续信号回归。 在预训练阶段，我们将 TTS 训练数据扩展到 60K 小时的英语语音，比现有系统大数百倍。 VALL-E具有情境学习功能，可用于合成高质量的个性化语音，只需对看不见的说话者进行 3 秒的注册录音作为声音提示。实验结果表明， VALL-E在语音自然度和说话人相似度方面显着优于最先进的零样本 TTS 系统。此外，我们发现VALL-E可以在合成时保留说话者的情感和声音提示的声学环境。</p>
+<p>与之前的管道不同（例如，音素 → 梅尔谱图 → 波形）， VALL-E的管线是音素 → 离散码 → 波形。</p>
+<p>VALL-E根据音素和声学代码提示生成与目标内容和说话者的声音相对应的离散音频编解码器代码。 VALL-E直接支持各种语音合成应用，例如零样本 TTS、语音编辑以及与 GPT-3 等其他生成式 AI 模型相结合的内容创建。</p>
+<p>VALL-E系列：2023年的1月份开始 - 2024年的7月份</p>
+<ul>
+<li>VALL-E 使用从现成的神经音频编解码器模型派生的离散代码来训练神经编解码器语言模型，并将 TTS 视为条件语言建模任务，而不是像之前的工作那样将 TTS 视为连续信号回归。 VALL-E 具有情境学习功能，可用于合成高质量的个性化语音，只需录制未见过的讲话者的 3 秒注册录音作为提示。在语音自然度和说话人相似度方面，VALL-E 显着优于最先进的零样本 TTS 系统。此外，VALL-E可以在合成时保留说话者的情绪和声音提示的声学环境。</li>
+<li>VALL-E X 扩展其能力，适应多语言场景，促进跨语言零样本 TTS。</li>
+<li>VALL-E R 引入了音素单调对齐策略，增强了语音生成的鲁棒性。</li>
+<li>VALL-E 2 通过集成重复感知采样和分组代码建模技术， 实现了一个突破性的里程碑：在 LibriSpeech 和 VCTK 数据集上的零样本 TTS 性能与人类相当。这标志着此类成就的首次实例，为该领域树立了新标准。</li>
+<li>MELLE 是一种新颖的基于连续值标记的语言建模方法，用于文本到语音合成 (TTS)。 MELLE 直接从文本条件自回归生成连续的梅尔频谱图帧，绕过了矢量量化的需要，矢量量化最初是为音频压缩而设计的，与梅尔频谱图相比，牺牲了保真度。</li>
+</ul>
+    </div>
+    <div class="read-more">
+      <a href="/post/multimoding/voices/vall-e-x/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/multimoding/voices/vits/">论文解读 VITS: Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech</a>
     </h1>
     
@@ -416,7 +465,7 @@
 <ul>
 <li><a href="https://arxiv.org/abs/2111.11755">2022. Guided-TTS: A Diffusion Model for Text-to-Speech via Classifier Guidance</a></li>
 </ul>
-<p>Guided-TTS 将无条件扩散概率模型(unconditional Diffusion Model)与单独训练的音素分类器(phoneme classifier )相结合，用于分类器指导。我们的无条件扩散模型学习在没有任何上下文的情况下从未转录的语音数据中生成语音。对于 TTS 合成，我们使用在大规模语音识别数据集上训练的音素分类器来指导扩散模型的生成过程。</p>
+<p>Guided-TTS 将无条件扩散概率模型(unconditional Diffusion Model)与单独训练的音素分类器(phoneme classifier )相结合，用于分类器指导。无条件扩散模型学习在没有任何上下文的情况下从未转录的语音数据中生成语音。对于 TTS 合成，使用在大规模语音识别数据集上训练的音素分类器来指导扩散模型的生成过程。</p>
 <h1 id="vits">VITS</h1>
 <ul>
 <li><a href="https://arxiv.org/abs/2106.06103">2021. <strong>Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech</strong></a>  | <a href="https://github.com/jaywalnut310/vits">paper coder</a></li>
@@ -443,7 +492,7 @@
 </ol>
 <p>结构：</p>
 <p><img src="https://github.com/user-attachments/assets/3ddec975-a9fd-460c-91fa-894b8ebd8c8c" alt="VITS"></p>
-<p>PS： <a href="https://github.com/ai-bot-pro/achatbot">achatbot</a> 集成了OpenVoiceV2 with meloTTS(meloTTS代码大部分来自VITS，Flow 采用 Transformer Encoder 结构来自 [<a href="https://arxiv.org/abs/2307.16430">VITS2: Improving Quality and Efficiency of Single-Stage Text-to-Speech with Adversarial Learning and Architecture Design</a>](<a href="https://arxiv.org/abs/2307.16430">https://arxiv.org/abs/2307.16430</a>) | <a href="https://github.com/daniilrobnikov/vits2">paper code</a></p>
+<p>PS： <a href="https://github.com/ai-bot-pro/achatbot">achatbot</a> 集成了OpenVoiceV2 with meloTTS(meloTTS代码大部分来自VITS，Flow 采用 Transformer Encoder 结构来自 <a href="https://arxiv.org/abs/2307.16430">VITS2: Improving Quality and Efficiency of Single-Stage Text-to-Speech with Adversarial Learning and Architecture Design</a> | <a href="https://github.com/daniilrobnikov/vits2">paper code</a></p>
 <p>PR地址： <a href="https://github.com/ai-bot-pro/achatbot/pull/103">https://github.com/ai-bot-pro/achatbot/pull/103</a></p>
     </div>
     <div class="read-more">
@@ -680,45 +729,6 @@
     </div>
     <div class="read-more">
       <a href="/post/doraemon/gemma_faiss_langchain_rag/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/rust/chatgpt_rust_check_thread_safety/">通过chatGPT聊天解决rust线程安全问题</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2024-03-16" class="post-time">
-        2024-03-16
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          <a href="https://weedge.github.io/categories/rust/"> rust </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=27445288&auto=1&height=66"></iframe>
-
-
-
-<p>发现一个有趣玩法，针对rust 编译检查的问题（这个在编写代码逻辑的时候经常会遇到，逻辑是OK，但是通不过rust的安全检查），可以直接发给 chatGPT (其他通过代码库进行PT的模型，或者SFT的模型)， 会给出修改意见，并且可以根据它的提示继续追问怎么解决； 如果直接通过传统的搜索引擎比如google, 也很难找出好的解决方法，而且还要去筛选，去尝试这个方法，如果不是权威网站，可能还被坑。来来回回折腾，效率太低了。像最近的AI程序员 david： <a href="https://www.cognition-labs.com/introducing-devin"><strong>introducing-devin</strong></a> ，其实类似思路，也是通过聊天来解决问题，只不过更加的专业，归根结底还是需要专业数据去PT/SFT底层的模型，上层应用通过pipeline对应框架去整体系统调优。(不知是否满足类似这种rust场景的解决方案pipeline，直接给它代码，帮忙修改)</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/rust/chatgpt_rust_check_thread_safety/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>

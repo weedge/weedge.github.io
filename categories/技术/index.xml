@@ -6,7 +6,30 @@
     <description>Recent content in 技术 on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sat, 11 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 13 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>论文解读： VALL-E 系列</title>
+      <link>https://weedge.github.io/post/multimoding/voices/vall-e-x/</link>
+      <pubDate>Mon, 13 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/multimoding/voices/vall-e-x/</guid>
+      <description>&lt;p&gt;前文讲到VITS，采用的端到端的NAR模型，这篇文章记录下微软提出的VALL-E系列，从 AR+NAR 到 AR 模型的转变，以及后面MELLE引入的VAE和Mel-Spectorgram，将neural codec text speech LM (AR+NAR Transformer Decoder) 转变为  autoregressive  mel-spectrogram text speech LM  (AR Transformer Decoder) ；由于LM生成的是mel-spectrogram 需要通过vocoder 转换成 waveform； 生成的内容采样模块：从top-p random sampling 变成 Latent Sampling潜在采样模块（思想源自VAE, 从预测的高斯分布中采样潜在嵌入，然后将其投影回频谱图空间）&lt;/p&gt;
+&lt;h2 id=&#34;vall-e-系列&#34;&gt;VALL-E 系列&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.microsoft.com/en-us/research/project/vall-e-x/&#34;&gt;https://www.microsoft.com/en-us/research/project/vall-e-x/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Vall-E: &lt;a href=&#34;https://ar5iv.labs.arxiv.org/html/2301.02111&#34;&gt;https://ar5iv.labs.arxiv.org/html/2301.02111&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;具体来说，我们使用从现成的神经音频编解码器模型派生的离散代码来训练&lt;em&gt;&lt;strong&gt;神经编解码器语言模型（neural codec language model）&lt;/strong&gt;&lt;/em&gt;（称为VALL-E ），并将 TTS 视为条件语言建模任务，而不是像之前的工作那样将 TTS 视为连续信号回归。 在预训练阶段，我们将 TTS 训练数据扩展到 60K 小时的英语语音，比现有系统大数百倍。 VALL-E具有情境学习功能，可用于合成高质量的个性化语音，只需对看不见的说话者进行 3 秒的注册录音作为声音提示。实验结果表明， VALL-E在语音自然度和说话人相似度方面显着优于最先进的零样本 TTS 系统。此外，我们发现VALL-E可以在合成时保留说话者的情感和声音提示的声学环境。&lt;/p&gt;
+&lt;p&gt;与之前的管道不同（例如，音素 → 梅尔谱图 → 波形）， VALL-E的管线是音素 → 离散码 → 波形。&lt;/p&gt;
+&lt;p&gt;VALL-E根据音素和声学代码提示生成与目标内容和说话者的声音相对应的离散音频编解码器代码。 VALL-E直接支持各种语音合成应用，例如零样本 TTS、语音编辑以及与 GPT-3 等其他生成式 AI 模型相结合的内容创建。&lt;/p&gt;
+&lt;p&gt;VALL-E系列：2023年的1月份开始 - 2024年的7月份&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;VALL-E 使用从现成的神经音频编解码器模型派生的离散代码来训练神经编解码器语言模型，并将 TTS 视为条件语言建模任务，而不是像之前的工作那样将 TTS 视为连续信号回归。 VALL-E 具有情境学习功能，可用于合成高质量的个性化语音，只需录制未见过的讲话者的 3 秒注册录音作为提示。在语音自然度和说话人相似度方面，VALL-E 显着优于最先进的零样本 TTS 系统。此外，VALL-E可以在合成时保留说话者的情绪和声音提示的声学环境。&lt;/li&gt;
+&lt;li&gt;VALL-E X 扩展其能力，适应多语言场景，促进跨语言零样本 TTS。&lt;/li&gt;
+&lt;li&gt;VALL-E R 引入了音素单调对齐策略，增强了语音生成的鲁棒性。&lt;/li&gt;
+&lt;li&gt;VALL-E 2 通过集成重复感知采样和分组代码建模技术， 实现了一个突破性的里程碑：在 LibriSpeech 和 VCTK 数据集上的零样本 TTS 性能与人类相当。这标志着此类成就的首次实例，为该领域树立了新标准。&lt;/li&gt;
+&lt;li&gt;MELLE 是一种新颖的基于连续值标记的语言建模方法，用于文本到语音合成 (TTS)。 MELLE 直接从文本条件自回归生成连续的梅尔频谱图帧，绕过了矢量量化的需要，矢量量化最初是为音频压缩而设计的，与梅尔频谱图相比，牺牲了保真度。&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
     <item>
       <title>论文解读 VITS: Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech</title>
       <link>https://weedge.github.io/post/multimoding/voices/vits/</link>
@@ -66,7 +89,7 @@
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2111.11755&#34;&gt;2022. Guided-TTS: A Diffusion Model for Text-to-Speech via Classifier Guidance&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Guided-TTS 将无条件扩散概率模型(unconditional Diffusion Model)与单独训练的音素分类器(phoneme classifier )相结合，用于分类器指导。我们的无条件扩散模型学习在没有任何上下文的情况下从未转录的语音数据中生成语音。对于 TTS 合成，我们使用在大规模语音识别数据集上训练的音素分类器来指导扩散模型的生成过程。&lt;/p&gt;
+&lt;p&gt;Guided-TTS 将无条件扩散概率模型(unconditional Diffusion Model)与单独训练的音素分类器(phoneme classifier )相结合，用于分类器指导。无条件扩散模型学习在没有任何上下文的情况下从未转录的语音数据中生成语音。对于 TTS 合成，使用在大规模语音识别数据集上训练的音素分类器来指导扩散模型的生成过程。&lt;/p&gt;
 &lt;h1 id=&#34;vits&#34;&gt;VITS&lt;/h1&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2106.06103&#34;&gt;2021. &lt;strong&gt;Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech&lt;/strong&gt;&lt;/a&gt;  | &lt;a href=&#34;https://github.com/jaywalnut310/vits&#34;&gt;paper coder&lt;/a&gt;&lt;/li&gt;
@@ -93,7 +116,7 @@
 &lt;/ol&gt;
 &lt;p&gt;结构：&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/3ddec975-a9fd-460c-91fa-894b8ebd8c8c&#34; alt=&#34;VITS&#34;&gt;&lt;/p&gt;
-&lt;p&gt;PS： &lt;a href=&#34;https://github.com/ai-bot-pro/achatbot&#34;&gt;achatbot&lt;/a&gt; 集成了OpenVoiceV2 with meloTTS(meloTTS代码大部分来自VITS，Flow 采用 Transformer Encoder 结构来自 [&lt;a href=&#34;https://arxiv.org/abs/2307.16430&#34;&gt;VITS2: Improving Quality and Efficiency of Single-Stage Text-to-Speech with Adversarial Learning and Architecture Design&lt;/a&gt;](&lt;a href=&#34;https://arxiv.org/abs/2307.16430&#34;&gt;https://arxiv.org/abs/2307.16430&lt;/a&gt;) | &lt;a href=&#34;https://github.com/daniilrobnikov/vits2&#34;&gt;paper code&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;PS： &lt;a href=&#34;https://github.com/ai-bot-pro/achatbot&#34;&gt;achatbot&lt;/a&gt; 集成了OpenVoiceV2 with meloTTS(meloTTS代码大部分来自VITS，Flow 采用 Transformer Encoder 结构来自 &lt;a href=&#34;https://arxiv.org/abs/2307.16430&#34;&gt;VITS2: Improving Quality and Efficiency of Single-Stage Text-to-Speech with Adversarial Learning and Architecture Design&lt;/a&gt; | &lt;a href=&#34;https://github.com/daniilrobnikov/vits2&#34;&gt;paper code&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;PR地址： &lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/103&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/103&lt;/a&gt;&lt;/p&gt;</description>
     </item>
     
@@ -406,23 +429,6 @@
 &lt;li&gt;一个端到端的例子演示了使用 Python 在 GPU 上运行向量搜索是多么容易&lt;/li&gt;
 &lt;li&gt;GPU 上的向量搜索与 CPU 上当前最先进的 HNSW 方法的性能比较&lt;/li&gt;
 &lt;/ul&gt;</description>
-    </item>
-    
-    <item>
-      <title>译：加速向量搜索：利用 GPU 索引的 RAPIDS RAFT</title>
-      <link>https://weedge.github.io/post/gpu/1.accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/</link>
-      <pubDate>Fri, 03 Nov 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/gpu/1.accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/</guid>
-      <description>&lt;p&gt;在 2023 年的人工智能领域，向量搜索成为最热门的话题之一，因为它在&lt;a href=&#34;https://www.nvidia.cn/glossary/data-science/large-language-models/&#34;&gt;大语言模型&lt;/a&gt;（LLM）和&lt;a href=&#34;https://www.nvidia.cn/glossary/data-science/generative-ai/&#34;&gt;生成式人工智能&lt;/a&gt;中发挥了重要作用。语义向量搜索实现了一系列重要任务，如检测欺诈交易、向用户推荐产品、使用上下文信息增强全文搜索以及查找潜在安全风险的参与者。&lt;/p&gt;
-&lt;p&gt;数据量持续飙升，传统的逐一比较的方法在计算上变得不可行。向量搜索方法使用近似查找，这种查找更具可扩展性，可以更有效地处理大量数据。正如我们在这篇文章中所展示的，在 GPU 上加速向量搜索不仅提供了更快的搜索时间，而且索引构建时间也可以更快。&lt;/p&gt;
-&lt;p&gt;本文内容如下：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;向量搜索简介及流行应用综述&lt;/li&gt;
-&lt;li&gt;在 GPU 上加速向量搜索的 RAFT 库综述&lt;/li&gt;
-&lt;li&gt;GPU 加速向量搜索索引与 CPU 上最新技术的性能比较&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;本系列的第二篇文章深入探讨了每一个 GPU 加速指数，并简要解释了算法的工作原理以及微调其行为的重要参数摘要。想要了解更多信息，请访问 &lt;a href=&#34;https://developer.nvidia.cn/zh-cn/blog/accelerating-vector-search-fine-tuning-gpu-index-algorithms/&#34;&gt;加速向量搜索：微调 GPU 索引算法&lt;/a&gt;。&lt;/p&gt;</description>
     </item>
     
   </channel>

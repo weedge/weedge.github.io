@@ -6,22 +6,58 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sat, 11 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 13 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>flow</title>
-      <link>https://weedge.github.io/tags/flow/</link>
-      <pubDate>Sat, 11 Jan 2025 10:26:23 +0800</pubDate>
+      <title>AR</title>
+      <link>https://weedge.github.io/tags/ar/</link>
+      <pubDate>Mon, 13 Jan 2025 10:26:23 +0800</pubDate>
       
-      <guid>https://weedge.github.io/tags/flow/</guid>
+      <guid>https://weedge.github.io/tags/ar/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>encodec</title>
+      <link>https://weedge.github.io/tags/encodec/</link>
+      <pubDate>Mon, 13 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/encodec/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>mel-spectrogram</title>
+      <link>https://weedge.github.io/tags/mel-spectrogram/</link>
+      <pubDate>Mon, 13 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/mel-spectrogram/</guid>
       <description></description>
     </item>
     
     <item>
       <title>NAR</title>
       <link>https://weedge.github.io/tags/nar/</link>
-      <pubDate>Sat, 11 Jan 2025 10:26:23 +0800</pubDate>
+      <pubDate>Mon, 13 Jan 2025 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/nar/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>VALL-E</title>
+      <link>https://weedge.github.io/tags/vall-e/</link>
+      <pubDate>Mon, 13 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/vall-e/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>flow</title>
+      <link>https://weedge.github.io/tags/flow/</link>
+      <pubDate>Sat, 11 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/flow/</guid>
       <description></description>
     </item>
     
@@ -148,42 +184,6 @@
       <pubDate>Tue, 26 Mar 2024 20:16:30 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/rag/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>chatGPT</title>
-      <link>https://weedge.github.io/tags/chatgpt/</link>
-      <pubDate>Sat, 16 Mar 2024 20:16:30 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/chatgpt/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>GCP</title>
-      <link>https://weedge.github.io/tags/gcp/</link>
-      <pubDate>Thu, 14 Mar 2024 20:16:30 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/gcp/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>redis</title>
-      <link>https://weedge.github.io/tags/redis/</link>
-      <pubDate>Thu, 14 Mar 2024 20:16:30 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/redis/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>memory profiling</title>
-      <link>https://weedge.github.io/tags/memory-profiling/</link>
-      <pubDate>Sun, 03 Mar 2024 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/memory-profiling/</guid>
       <description></description>
     </item>
     
