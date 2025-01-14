@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>diffusion on 时间飘过</title>
+    <link>https://weedge.github.io/tags/diffusion/</link>
+    <description>Recent content in diffusion on 时间飘过</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Tue, 14 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/diffusion/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>论文解读 Matcha-TTS: A fast TTS architecture with conditional flow matching</title>
+      <link>https://weedge.github.io/post/multimoding/voices/matcha-tts/</link>
+      <pubDate>Tue, 14 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/multimoding/voices/matcha-tts/</guid>
+      <description>&lt;h1 id=&#34;-matcha-tts&#34;&gt;🍵 matcha-tts&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2309.03199&#34;&gt;2024.1 &lt;strong&gt;Matcha-TTS: A fast TTS architecture with conditional flow matching&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://github.com/shivammehta25/Matcha-TTS&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;摘要&#34;&gt;摘要：&lt;/h1&gt;
+&lt;p&gt;一种用于快速 TTS 声学建模的新编码器-解码器架构，使用最佳传输条件流匹配 (OT-CFM) 进行训练。与使用分数匹配训练的模型相比，这产生了基于 ODE 的解码器，能够以更少的合成步骤实现高输出质量。仔细的设计选择还确保每个合成步骤都能快速运行。该方法是概率性的、非自回归的，并且无需外部对齐即可从头开始学习说话。与强大的预训练基线模型相比，Matcha-TTS 系统具有最小的内存占用，可以与长语音上最快的模型相媲美，并在听力测试中获得最高的平均意见得分。&lt;/p&gt;
+&lt;p&gt;一种非自回归神经 TTS 的新方法，它使用条件流匹配(CFM from &lt;a href=&#34;https://arxiv.org/abs/2210.02747&#34;&gt;2022.10 &lt;strong&gt;Flow Matching for Generative Modeling&lt;/strong&gt;&lt;/a&gt;)（类似于校正流(Rectified Flow &lt;a href=&#34;https://arxiv.org/abs/2209.03003&#34;&gt;2022.9 Flow Straight and Fast: Learning to Generate and Transfer Data with Rectified Flow&lt;/a&gt;）来加速基于 ODE 的语音合成。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Is probabilistic  是概率性的&lt;/li&gt;
+&lt;li&gt;Has compact memory footprint 具有紧凑的内存占用&lt;/li&gt;
+&lt;li&gt;Sounds highly natural  听起来非常自然&lt;/li&gt;
+&lt;li&gt;Is very fast to synthesise from 合成速度非常快&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;简洁的结构，训练推理快，使用更少额内存空间，&lt;/p&gt;
+&lt;p&gt;一种基于连续归一化流的概率性、非自回归、快速采样的 TTS 声学模型。主要有两个创新点：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;提出了一种改进的编码器-解码器 TTS 结构，该结构在解码器中结合使用 1D CNN 和 Transformer。这减少了内存消耗并且可以快速评估，从而提高综合速度。&lt;/li&gt;
+&lt;li&gt;使用最优传输条件流匹配 optimal-transport conditional flow matching(OT-CFM) 来训练这些模型，这是一种学习从数据分布中采样的 ODE 的新方法。与传统的 连续时间归一化流 CNF（continuous-time normalising flows ） 和分数匹配概率流 ODE （probability flow ODE） 相比，OT-CFM 定义了从源到目标的更简单的路径，从而能够以比 DPM（Diffusion probabilistic model） 更少的步骤进行准确合成。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;实验结果表明，这两种创新都加速了合成，减少了速度和合成质量之间的权衡。尽管速度快且轻量级，Matcha-TTS能够在不需要外部对齐器的情况下学习说话和对齐。与强大的预训练基线模型相比，Matcha-TTS实现了快速合成，并获得了更好的自然度评分。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

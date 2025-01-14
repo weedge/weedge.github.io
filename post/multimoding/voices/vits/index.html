@@ -28,7 +28,7 @@
 melo-tts 生成原始音频：
  OpenVoice 版本1不依赖melo-tts, 升级后的V2版本依赖melo-tts, 主要是生成原始音频质量加强了(由melo-tts生成); 默认配置使用了TransformerCouplingBlock list作为flow 和 reverse flow, 而第一版的OpenVoice 模型使用的 ResidualCouplingBlock ; melo-tts的模型权重支持多语言，更具语言区分，比如 ZH: myshell-ai/MeloTTS-Chinese, EN_NEWEST: myshell-ai/MeloTTS-English-v3;  音色转换生成目标音频：
  通过训练好的音色抽取器抽取目标说话者的音色 (myshell-ai/OpenVoiceV2/converter)； 生成的原始音频信息通过 训练抽取好的基础说话者的音色(myshell-ai/OpenVoiceV2/base_speakers/ses)，将原始音频中的音色去除 （flow）； 将去除原始音色的音频 和 抽取好的目标说话者的音色 合并 （reverse flow）； 最终通过 vocoder(也是论文中的Decoder,使用的 HiFi-Gan模型)合成目标音频。  额外注意的是，由melo-tts生成原始音频sample rate是 44100， 而通过音色提取器 提取 并且 生成目标音频sample rate是 22050
- 这里简单概括如下：
+ 前提知识这里简单概括如下：
 AE(Autoencoder): 自编码器是自监督系统，其训练目标是通过降维来压缩（或编码）输入数据，然后使用该压缩后的表示准确重建（或解码）其原始输入。无泛化生成能力，但是可以执行特定任务：常用于数据压缩、图像去噪、异常检测和面部识别等任务。
 VAE(Variational Autoencoder) :与其他自编码器(Autoencoder(AE)的区别在于它们对潜在空间进行编码的独特方式，以及可以应用其概率编码的不同用例，即随机生成训练数据的变体。具有泛化生成能力。
 CVAE(Conditional Variational Autoencoder): 条件变分自编码器 可以以特定输入为条件进行输出，而不仅仅是随机生成训练数据的变体。这是通过将监督学习（或半监督学习）的元素与常规自编码器的传统无监督训练目标相结合来实现的。具有指定特征的泛化能力。
@@ -103,7 +103,7 @@ melo-tts的模型权重支持多语言，更具语言区分，比如 ZH: myshell
 
 额外注意的是，由melo-tts生成原始音频sample rate是 44100， 而通过音色提取器 提取 并且 生成目标音频sample rate是 22050
 
-这里简单概括如下：
+前提知识这里简单概括如下：
 AE(Autoencoder): 自编码器是自监督系统，其训练目标是通过降维来压缩（或编码）输入数据，然后使用该压缩后的表示准确重建（或解码）其原始输入。无泛化生成能力，但是可以执行特定任务：常用于数据压缩、图像去噪、异常检测和面部识别等任务。
 VAE(Variational Autoencoder) :与其他自编码器(Autoencoder(AE)的区别在于它们对潜在空间进行编码的独特方式，以及可以应用其概率编码的不同用例，即随机生成训练数据的变体。具有泛化生成能力。
 CVAE(Conditional Variational Autoencoder): 条件变分自编码器 可以以特定输入为条件进行输出，而不仅仅是随机生成训练数据的变体。这是通过将监督学习（或半监督学习）的元素与常规自编码器的传统无监督训练目标相结合来实现的。具有指定特征的泛化能力。
@@ -191,7 +191,7 @@ melo-tts的模型权重支持多语言，更具语言区分，比如 ZH: myshell
 
 额外注意的是，由melo-tts生成原始音频sample rate是 44100， 而通过音色提取器 提取 并且 生成目标音频sample rate是 22050
 
-这里简单概括如下：
+前提知识这里简单概括如下：
 AE(Autoencoder): 自编码器是自监督系统，其训练目标是通过降维来压缩（或编码）输入数据，然后使用该压缩后的表示准确重建（或解码）其原始输入。无泛化生成能力，但是可以执行特定任务：常用于数据压缩、图像去噪、异常检测和面部识别等任务。
 VAE(Variational Autoencoder) :与其他自编码器(Autoencoder(AE)的区别在于它们对潜在空间进行编码的独特方式，以及可以应用其概率编码的不同用例，即随机生成训练数据的变体。具有泛化生成能力。
 CVAE(Conditional Variational Autoencoder): 条件变分自编码器 可以以特定输入为条件进行输出，而不仅仅是随机生成训练数据的变体。这是通过将监督学习（或半监督学习）的元素与常规自编码器的传统无监督训练目标相结合来实现的。具有指定特征的泛化能力。
@@ -257,7 +257,7 @@ VITS
 PS： achatbot 集成了OpenVoiceV2 with meloTTS(meloTTS代码大部分来自VITS，Flow 采用 Transformer Encoder 结构来自 VITS2: Improving Quality and Efficiency of Single-Stage Text-to-Speech with Adversarial Learning and Architecture Design | paper code
 PR地址： https://github.com/ai-bot-pro/achatbot/pull/103"><meta itemprop="datePublished" content="2025-01-11T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2025-01-11T10:26:23+08:00" />
-<meta itemprop="wordCount" content="4515">
+<meta itemprop="wordCount" content="4519">
 <meta itemprop="keywords" content="flow,NAR,VITS,mel-spectrogram," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="论文解读 VITS: Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech"/>
 <meta name="twitter:description" content="前文讲到OpenVoicev2，补充下细节，然后梳理使用的基础模型VITS：
@@ -277,7 +277,7 @@ melo-tts的模型权重支持多语言，更具语言区分，比如 ZH: myshell
 
 额外注意的是，由melo-tts生成原始音频sample rate是 44100， 而通过音色提取器 提取 并且 生成目标音频sample rate是 22050
 
-这里简单概括如下：
+前提知识这里简单概括如下：
 AE(Autoencoder): 自编码器是自监督系统，其训练目标是通过降维来压缩（或编码）输入数据，然后使用该压缩后的表示准确重建（或解码）其原始输入。无泛化生成能力，但是可以执行特定任务：常用于数据压缩、图像去噪、异常检测和面部识别等任务。
 VAE(Variational Autoencoder) :与其他自编码器(Autoencoder(AE)的区别在于它们对潜在空间进行编码的独特方式，以及可以应用其概率编码的不同用例，即随机生成训练数据的变体。具有泛化生成能力。
 CVAE(Conditional Variational Autoencoder): 条件变分自编码器 可以以特定输入为条件进行输出，而不仅仅是随机生成训练数据的变体。这是通过将监督学习（或半监督学习）的元素与常规自编码器的传统无监督训练目标相结合来实现的。具有指定特征的泛化能力。
@@ -687,7 +687,7 @@ PR地址： https://github.com/ai-bot-pro/achatbot/pull/103"/>
 </ul>
 <p>额外注意的是，由melo-tts生成原始音频sample rate是 44100， 而通过音色提取器 提取 并且 生成目标音频sample rate是 22050</p>
 </blockquote>
-<p>这里简单概括如下：</p>
+<p>前提知识这里简单概括如下：</p>
 <p>AE(Autoencoder): 自编码器是<a href="https://www.ibm.com/cn-zh/topics/self-supervised-learning">自监督</a>系统，其训练目标是通过降维来压缩（或<em>编码</em>）输入数据，然后使用该压缩后的表示准确重建（或<em>解码</em>）其原始输入。无泛化生成能力，但是可以执行特定任务：常用于数据压缩、图像去噪、异常检测和面部识别等任务。</p>
 <p><strong>VAE(Variational Autoencoder)</strong> :与其他自编码器(Autoencoder(AE)的区别在于它们对潜在空间进行编码的独特方式，以及可以应用其概率编码的不同用例，即随机生成训练数据的变体。具有泛化生成能力。</p>
 <p><strong>CVAE(Conditional Variational Autoencoder)</strong>: 条件变分自编码器 可以以特定输入为条件进行输出，而不仅仅是随机生成训练数据的变体。这是通过将监督学习（或半监督学习）的元素与常规自编码器的传统无监督训练目标相结合来实现的。具有指定特征的泛化能力。</p>

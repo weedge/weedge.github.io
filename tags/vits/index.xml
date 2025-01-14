@@ -30,7 +30,7 @@
 &lt;/ul&gt;
 &lt;p&gt;额外注意的是，由melo-tts生成原始音频sample rate是 44100， 而通过音色提取器 提取 并且 生成目标音频sample rate是 22050&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;这里简单概括如下：&lt;/p&gt;
+&lt;p&gt;前提知识这里简单概括如下：&lt;/p&gt;
 &lt;p&gt;AE(Autoencoder): 自编码器是&lt;a href=&#34;https://www.ibm.com/cn-zh/topics/self-supervised-learning&#34;&gt;自监督&lt;/a&gt;系统，其训练目标是通过降维来压缩（或&lt;em&gt;编码&lt;/em&gt;）输入数据，然后使用该压缩后的表示准确重建（或&lt;em&gt;解码&lt;/em&gt;）其原始输入。无泛化生成能力，但是可以执行特定任务：常用于数据压缩、图像去噪、异常检测和面部识别等任务。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;VAE(Variational Autoencoder)&lt;/strong&gt; :与其他自编码器(Autoencoder(AE)的区别在于它们对潜在空间进行编码的独特方式，以及可以应用其概率编码的不同用例，即随机生成训练数据的变体。具有泛化生成能力。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;CVAE(Conditional Variational Autoencoder)&lt;/strong&gt;: 条件变分自编码器 可以以特定输入为条件进行输出，而不仅仅是随机生成训练数据的变体。这是通过将监督学习（或半监督学习）的元素与常规自编码器的传统无监督训练目标相结合来实现的。具有指定特征的泛化能力。&lt;/p&gt;

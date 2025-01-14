@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 13 Jan 2025 10:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 14 Jan 2025 10:26:23 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -49,6 +49,120 @@
 &lt;li&gt;“&lt;strong&gt;万物之始，大道至简，衍化至繁&lt;/strong&gt;” – 老子《道德经》&lt;/li&gt;
 &lt;/ol&gt;
 </description>
+      
+    </item>
+    
+    <item>
+      <title>论文解读 Matcha-TTS: A fast TTS architecture with conditional flow matching</title>
+      <link>https://weedge.github.io/post/multimoding/voices/matcha-tts/</link>
+      <pubDate>Tue, 14 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/multimoding/voices/matcha-tts/</guid>
+      
+        <description>&lt;h1 id=&#34;-matcha-tts&#34;&gt;🍵 matcha-tts&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2309.03199&#34;&gt;2024.1 &lt;strong&gt;Matcha-TTS: A fast TTS architecture with conditional flow matching&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://github.com/shivammehta25/Matcha-TTS&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;摘要&#34;&gt;摘要：&lt;/h1&gt;
+&lt;p&gt;一种用于快速 TTS 声学建模的新编码器-解码器架构，使用最佳传输条件流匹配 (OT-CFM) 进行训练。与使用分数匹配训练的模型相比，这产生了基于 ODE 的解码器，能够以更少的合成步骤实现高输出质量。仔细的设计选择还确保每个合成步骤都能快速运行。该方法是概率性的、非自回归的，并且无需外部对齐即可从头开始学习说话。与强大的预训练基线模型相比，Matcha-TTS 系统具有最小的内存占用，可以与长语音上最快的模型相媲美，并在听力测试中获得最高的平均意见得分。&lt;/p&gt;
+&lt;p&gt;一种非自回归神经 TTS 的新方法，它使用条件流匹配(CFM from &lt;a href=&#34;https://arxiv.org/abs/2210.02747&#34;&gt;2022.10 &lt;strong&gt;Flow Matching for Generative Modeling&lt;/strong&gt;&lt;/a&gt;)（类似于校正流(Rectified Flow &lt;a href=&#34;https://arxiv.org/abs/2209.03003&#34;&gt;2022.9 Flow Straight and Fast: Learning to Generate and Transfer Data with Rectified Flow&lt;/a&gt;）来加速基于 ODE 的语音合成。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Is probabilistic  是概率性的&lt;/li&gt;
+&lt;li&gt;Has compact memory footprint 具有紧凑的内存占用&lt;/li&gt;
+&lt;li&gt;Sounds highly natural  听起来非常自然&lt;/li&gt;
+&lt;li&gt;Is very fast to synthesise from 合成速度非常快&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;简洁的结构，训练推理快，使用更少额内存空间，&lt;/p&gt;
+&lt;p&gt;一种基于连续归一化流的概率性、非自回归、快速采样的 TTS 声学模型。主要有两个创新点：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;提出了一种改进的编码器-解码器 TTS 结构，该结构在解码器中结合使用 1D CNN 和 Transformer。这减少了内存消耗并且可以快速评估，从而提高综合速度。&lt;/li&gt;
+&lt;li&gt;使用最优传输条件流匹配 optimal-transport conditional flow matching(OT-CFM) 来训练这些模型，这是一种学习从数据分布中采样的 ODE 的新方法。与传统的 连续时间归一化流 CNF（continuous-time normalising flows ） 和分数匹配概率流 ODE （probability flow ODE） 相比，OT-CFM 定义了从源到目标的更简单的路径，从而能够以比 DPM（Diffusion probabilistic model） 更少的步骤进行准确合成。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;实验结果表明，这两种创新都加速了合成，减少了速度和合成质量之间的权衡。尽管速度快且轻量级，Matcha-TTS能够在不需要外部对齐器的情况下学习说话和对齐。与强大的预训练基线模型相比，Matcha-TTS实现了快速合成，并获得了更好的自然度评分。&lt;/p&gt;
+&lt;h1 id=&#34;结构&#34;&gt;结构：&lt;/h1&gt;
+&lt;p&gt;Matcha-TTS 是一种非自回归的神经文本到语音（TTS）编码器-解码器架构。其架构的概述在图1中提供。文本编码器和时长预测器架构和Grad-TTS一致，但Text encoder使用旋转位置嵌入而不是相对位置嵌入。对齐和时长模型训练遵循MAS和先验损失  $\mathcal{L}_{enc}$ ，如Grad-TTS中所述。预测的时长，经过向上取整后，用于上采样（复制）编码器输出的向量，以获得 $\mu$ ，即在给定文本和所选时长的情况下预测的平均声学特征（例如，梅尔频谱图）。这个平均值用于条件化解码器，解码器预测用于合成的向量场 $v_{t}\left(\phi_{t}^{OT}\left(x_{0}\right)\mid\mu;\theta\right)$，但它并不用作初始噪声样本 $x_0$ 的均值（与Grad-TTS不同）。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/50e1e3ad-7181-41a5-8cc2-6d6c62473065&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;text-encoder-文本编码器&#34;&gt;Text encoder 文本编码器&lt;/h2&gt;
+&lt;p&gt;位置编码使用 RoPE embedding 而不是相对位置 relative embedding, 和Grad-TTS中Text encoder 相同的超参数&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;来自 &lt;a href=&#34;https://arxiv.org/abs/2005.11129&#34;&gt;2020. &lt;strong&gt;Glow-TTS: A Generative Flow for Text-to-Speech via Monotonic Alignment Search&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;来自 &lt;a href=&#34;https://arxiv.org/abs/2105.06337&#34;&gt;2021. &lt;strong&gt;Grad-TTS: A diffusion probabilistic model for text-to-speech&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;duration-predictor-持续时间预测器&#34;&gt;Duration predictor 持续时间预测器&lt;/h2&gt;
+&lt;p&gt;和Grad-TTS中Duration predictor 相同的超参数&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;来自 &lt;a href=&#34;https://arxiv.org/abs/2005.11129&#34;&gt;2020. &lt;strong&gt;Glow-TTS: A Generative Flow for Text-to-Speech via Monotonic Alignment Search&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;来自 &lt;a href=&#34;https://arxiv.org/abs/2105.06337&#34;&gt;2021. &lt;strong&gt;Grad-TTS: A diffusion probabilistic model for text-to-speech&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;decoder-the-flow-prediction-network-流预测网络&#34;&gt;Decoder (the Flow-prediction network 流预测网络)&lt;/h2&gt;
+&lt;p&gt;使用两个下采样块，然后是两个中采样块和两个上采样块，如图 2 所示。每个块都有一个 Transformer 层，隐藏维度为 256、2 个头、注意力维度为 64，并且使用snake 激活函数。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/5c50f129-e7bf-427e-aa75-cfd01f6b089b&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;受LDM &lt;a href=&#34;https://arxiv.org/abs/2112.10752&#34;&gt;2021. High-resolution image synthesis with latent diffusion models&lt;/a&gt;的启发,一个包含 1D 卷积残差块的 U-Net，用于对输入进行下采样和上采样，并具有流匹配步骤 t∈[0,1] 嵌入, 每个残差块后面都有一个 Transformer块，其前馈网络使用 snake 激活函数，这些 Transformer 不使用任何位置嵌入，因为音素(phone)之间的位置信息已经由编码器嵌入，并且卷积和下采样操作用于在同一音素内的帧之间，插入这些信息并区分它们彼此的相对位置。与 Grad-TTS 使用的仅 2D 卷积 U-Net 相比，该解码器网络的评估速度明显更快，并且消耗的内存更少。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;激活函数： snake active function 来自 &lt;a href=&#34;https://arxiv.org/abs/2006.08195&#34;&gt;2020. Neural networks fail to learn periodic functions and how to fix it&lt;/a&gt; 和 &lt;a href=&#34;https://arxiv.org/abs/2206.04658&#34;&gt;2022. BigVGAN: A universal neural vocoder with large-scale training&lt;/a&gt; 一样的使用方法&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;结构来自 &lt;a href=&#34;https://arxiv.org/abs/2105.06337&#34;&gt;2021. &lt;strong&gt;Grad-TTS: A diffusion probabilistic model for text-to-speech&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;optimal-transport-conditional-flow-matching-最优传输条件流匹配&#34;&gt;Optimal-transport conditional flow matching 最优传输条件流匹配&lt;/h2&gt;
+&lt;p&gt;在这一部分，首先介绍由向量场生成的概率密度路径，然后引入提出的方法中使用的最优传输条件流匹配（OT-CFM）目标。
+设 $\mathbf{x}$ 表示数据空间 $\mathbb{R}^d$中的一个观测值，它从复杂且未知的数据分布 $q(\mathbf{x}) q(x)$ 中采样得到。一个概率密度路径是一个随时间变化的概率密度函数， $p_t: [0,1] \times \mathbb{R}^d \rightarrow \mathbb{R}^{&amp;gt;0} pt:[0,1]×Rd→R&amp;gt;0 $，其中 $t \in [0,1] t∈[0,1]$ ，
+$p_0(\mathbf{x}) = \mathcal{N}(\mathbf{x}; \mathbf{0}, \mathbf{I})$ 是一个先验分布，使得 $p_1(\mathbf{x})$ 近似于数据分布 $q(\mathbf{x})$ 。
+例如，连续时间归一化流（CNFs）首先定义一个向量场 $\mathbf{v}_t: [0,1] \times \mathbb{R}^d \rightarrow \mathbb{R}^d$ ，它通过下面的常微分方程（ODE）生成流 $\phi_t: [0,1] \times \mathbb{R}^d \rightarrow \mathbb{R}^d$ ：&lt;/p&gt;
+&lt;p&gt;$$
+\frac{d}{dt} \phi_t(\mathbf{x}) = \mathbf{v}_t(\phi_t(\mathbf{x})) \quad ; \quad \phi_0(\mathbf{x}) = \mathbf{x}.
+$$
+这生成了路径 $p_t$ ，作为数据点的边际概率分布。我们可以通过解决方程（1）中的初值问题，从近似的数据分布 $p_1$ 中采样。 假设存在一个已知的向量场 $\mathbf{u}_t$ ，它从 $p_0$ 到 $p_1 \approx q$ 生成概率路径 $p_t$ 。流匹配损失定义为：&lt;/p&gt;
+&lt;p&gt;$$
+\mathcal{L}_{\mathrm{FM}}(\theta) = \mathbb{E}_{t,p_t(\mathbf{x})} \left| \mathbf{u}_t(\mathbf{x}) - \mathbf{v}_t(\mathbf{x}; \theta) \right|^2,
+$$
+其中 $t \sim \mathbb{U}[0,1]$ 并且 $\mathbf{v}_t(\mathbf{x}; \theta)$ 是一个具有参数 $\theta$ 的神经网络。然而，流匹配在实践中是不可行的，因为获取向量场 $\mathbf{u}_t$ 和目标概率 $p_t$ 并非易事。因此，条件流匹配考虑的是：&lt;/p&gt;
+&lt;p&gt;$$
+\mathcal{L}_{\mathrm{CFM}}(\theta) = \mathbb{E}_{t,q(\mathbf{x}_1),p_t(\mathbf{x} \mid \mathbf{x}_1)} \left| \mathbf{u}_t(\mathbf{x} \mid \mathbf{x}_1) - \mathbf{v}_t(\mathbf{x}; \theta) \right|^2.
+$$&lt;/p&gt;
+&lt;p&gt;这替换了难以处理的边际概率密度和向量场，转而考虑条件概率密度和条件向量场。关键是，这些通常是可行的，并且有封闭形式的解决方案，而且可以证明 $\mathcal{L}_{\mathrm{CFM}}(\theta)$ 和 $\mathcal{L}_{\mathrm{FM}}(\theta)$ 在 $\theta$ 方面具有相同的梯度。&lt;/p&gt;
+&lt;p&gt;Matcha-TTS 使用最优传输条件流匹配（OT-CFM）进行训练，这是一种具有特别简单梯度的 CFM 变体。OT-CFM 损失函数可以写成：
+$$
+L(\theta)=\mathbb{E}_{t, q(x_{1}), p_{0}(x_{0})}\left|u_{t}^{OT}\left(\phi_{t}^{OT}(x)\mid x_{1}\right)-v_{t}\left(\phi_{t}^{OT}(x)\mid\mu;\theta\right)\right|^{2}, \quad
+$$&lt;/p&gt;
+&lt;p&gt;定义 $\phi_{t}^{OT}(x)=(1-(1-\sigma_{\min}) t) x_{0}+t x_{1}$ 为从 $x_{0}$ 到 $x_{1}$ 的流，其中每个数据 $x_{1}$ 与一个随机样本 $x_{0}\sim\mathcal{N}(0, I)$ 匹配，其梯度向量场(其期望值是学习的目标) 则是 $u_{t}^{OT}\left(\phi_{t}^{OT}\left(x_{0}\right)\mid x_{1}\right)=x_{1}-(1-\sigma_{\min}) x_{0}$，它是线性的、时间不变的，并且只依赖于 $x_{0}$ 和 $x_{1}$ 。这些属性使得训练更简单、更快，生成更快，并且与 DPMs 相比性能更好。&lt;/p&gt;
+&lt;p&gt;在Matcha-TTS的情况下，$\mathbf{x}_1$ 是声学帧，而 $\boldsymbol{\mu}$ 是从文本预测的这些帧的条件均值，使用下一部分描述的架构。 $\sigma_{\min}$ 是一个具有很小值（在我们的实验中为1e-4）的超参数。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;来自 &lt;a href=&#34;https://arxiv.org/abs/2210.02747&#34;&gt;2022.10 Flow Matching for Generative Modeling&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;训练&#34;&gt;训练&lt;/h1&gt;
+&lt;p&gt;常规数据集，论文中使用单人数据（LJ Speech），额外也用多人数据（VCTK）来训练；可以使用lhotse工具下载, 进行切分数据预处理，然后通过带有 espeak-ng 后端的phonemizer: &lt;a href=&#34;https://github.com/bootphon/phonemizer&#34;&gt;https://github.com/bootphon/phonemizer&lt;/a&gt; 用于将输入字素（graphemes）转换为 IPA 音素（IPA phones），在 2 个 GPU 上训练了 500k 更新，批量大小为 32，学习率为 1e-4。&lt;/p&gt;
+&lt;h2 id=&#34;训练数据集&#34;&gt;训练数据集：&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://keithito.com/LJ-Speech-Dataset/&#34;&gt;LJ Speech&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://datashare.ed.ac.uk/handle/10283/2651&#34;&gt;VCTK&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;对比开源模型&#34;&gt;对比开源模型&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2006.04558&#34;&gt;2020. FastSpeech 2: Fast and High-Quality End-to-End Text to Speech&lt;/a&gt; 一种快速非-概率声学模型 | &lt;a href=&#34;https://github.com/ming024/FastSpeech2&#34;&gt;非官方 code&lt;/a&gt;， Matcha-TTS的论文中提到用，改为使用 Meta 的 &lt;a href=&#34;https://github.com/facebookresearch/fairseq&#34;&gt;https://github.com/facebookresearch/fairseq&lt;/a&gt; 中的检查点（ckpt）?；&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2106.06103&#34;&gt;2021.6 &lt;strong&gt;VITS: Conditional Variational Autoencoder with Adversarial Learning for End-to-End Text-to-Speech&lt;/strong&gt;&lt;/a&gt; 一个具有离散时间归一化流的强大概率端对端 TTS 系统 | &lt;a href=&#34;https://github.com/jaywalnut310/vits&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2105.06337&#34;&gt;2021.5 Grad-TTS: A Diffusion Probabilistic Model for Text-to-Speech&lt;/a&gt; 一种基于 DPM 的强大声学模型 | &lt;a href=&#34;https://github.com/huawei-noah/Speech-Backbones/tree/main/Grad-TTS&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;对比评估&#34;&gt;对比评估&lt;/h2&gt;
+&lt;p&gt;从内存使用量(模型参数)，推理速度，以及生成语音质量三个方面评估：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;所有系统训练期间（批量大小为 32 和 fp16）的参数数量和最大内存使用情况，使用内存小;&lt;/li&gt;
+&lt;li&gt;在训练系统之后，我们通过计算在测试集上合成时的实时因子（RTF）的平均值和标准差，以及将Whisper medium ASR系统应用于结果时的单词错误率（WER），来评估不同条件的合成速度和可理解性；&lt;/li&gt;
+&lt;li&gt;平均意见得分（MOS）听力测试(众包人工测试)，这个比较意义不大；&lt;/li&gt;
+&lt;li&gt;评估了不同模型的合成速度如何随着语句长度的增加而变化，通过使用GPT-2模型生成不同长度的180个句子，评估合成时间，对长句子合成更快；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;p&gt;结合作者以前的研究成果，都是在3090上进行训练，构造精简小而美的结构，满足基本要求(正常文本到语音)&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2108.13320&#34;&gt;2021.8 Neural HMMs are all you need (for high-quality attention-free TTS)&lt;/a&gt; | &lt;a href=&#34;https://github.com/shivammehta25/Neural-HMM&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2211.06892&#34;&gt;2022.11 OverFlow: Putting flows on top of neural transducers for better TTS&lt;/a&gt; | &lt;a href=&#34;https://github.com/shivammehta25/OverFlow&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;总结&#34;&gt;总结：&lt;/h1&gt;
+&lt;p&gt;论文实现的代码结构清晰，提炼的网络结构参数少，所需硬件成本不高，挺适合快速上手训练一个tts，然后根据需求和所要解决的实际问题，加入其他网络结构，再去推进升级。比如 VALL-E, Seed-TTS(非纯DiT结构)，CosyVoice 基于大语言模型（LLM）的文本转语音（TTS）成为主流，生成更加泛化(涌现),但是所需训练数据和模型网络参数大(scaling)，训练推理成本高(虽然有大量的推理优化工作)。 &lt;a href=&#34;https://arxiv.org/abs/2407.05407&#34;&gt;2024.7 CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens&lt;/a&gt; | &lt;a href=&#34;https://arxiv.org/abs/2412.10117&#34;&gt;2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models&lt;/a&gt; | &lt;a href=&#34;https://github.com/FunAudioLLM/CosyVoice&#34;&gt;paper code&lt;/a&gt;&lt;/p&gt;</description>
       
     </item>
     
@@ -136,7 +250,7 @@ MELLE包括以下主要组件：&lt;/p&gt;
 &lt;/ul&gt;
 &lt;p&gt;额外注意的是，由melo-tts生成原始音频sample rate是 44100， 而通过音色提取器 提取 并且 生成目标音频sample rate是 22050&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;这里简单概括如下：&lt;/p&gt;
+&lt;p&gt;前提知识这里简单概括如下：&lt;/p&gt;
 &lt;p&gt;AE(Autoencoder): 自编码器是&lt;a href=&#34;https://www.ibm.com/cn-zh/topics/self-supervised-learning&#34;&gt;自监督&lt;/a&gt;系统，其训练目标是通过降维来压缩（或&lt;em&gt;编码&lt;/em&gt;）输入数据，然后使用该压缩后的表示准确重建（或&lt;em&gt;解码&lt;/em&gt;）其原始输入。无泛化生成能力，但是可以执行特定任务：常用于数据压缩、图像去噪、异常检测和面部识别等任务。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;VAE(Variational Autoencoder)&lt;/strong&gt; :与其他自编码器(Autoencoder(AE)的区别在于它们对潜在空间进行编码的独特方式，以及可以应用其概率编码的不同用例，即随机生成训练数据的变体。具有泛化生成能力。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;CVAE(Conditional Variational Autoencoder)&lt;/strong&gt;: 条件变分自编码器 可以以特定输入为条件进行输出，而不仅仅是随机生成训练数据的变体。这是通过将监督学习（或半监督学习）的元素与常规自编码器的传统无监督训练目标相结合来实现的。具有指定特征的泛化能力。&lt;/p&gt;
@@ -14835,279 +14949,6 @@ $$L = -\frac{1}{N}\sum_{i=1}^{N}t_i\log(y_i)$$&lt;/p&gt;
 &lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://transformers.run/&#34;&gt;https://transformers.run/&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://huggingface.co/learn/nlp-course/chapter1/4&#34;&gt;https://huggingface.co/learn/nlp-course/chapter1/4&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://kexue.fm/archives/4765&#34;&gt;https://kexue.fm/archives/4765&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
-&lt;/ol&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>译：使用大型语言模型进行开发所需了解的知识</title>
-      <link>https://weedge.github.io/post/llm/all-you-need-to-know-to-develop-using-large-language-models/</link>
-      <pubDate>Sun, 03 Dec 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/llm/all-you-need-to-know-to-develop-using-large-language-models/</guid>
-      
-        <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/0.jpeg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
-&lt;h2 id=&#34;导读&#34;&gt;导读&lt;/h2&gt;
-&lt;p&gt;本文的目的是简单地解释开始开发基于 LLM 的应用程序所需的关键技术。它面向对机器学习概念有基本了解并希望深入研究的软件开发人员、数据科学家和&lt;strong&gt;人工智能爱好者&lt;/strong&gt;。本文还提供了许多有用的链接以供进一步研究。这会很有趣！&lt;/p&gt;
-&lt;p&gt;注：本文可以作为一个索引目录(进一步阅读资料深入学习)，从整体上了解下，毕竟现在LLM发展很快，可以发散或者focus某个领域；大部分LLM相关开源实现，可以手动demo下过程，至于炼丹了解过程即可，主要在场景上结合工程去利用好大力神丸在生产环境落地；还有就是应用场景，国内app应该可以复刻，如果模型和数据有了，缺个落地idea的话~&lt;/p&gt;
-&lt;h2 id=&#34;1-大型语言模型llm简介&#34;&gt;1. 大型语言模型（LLM）简介&lt;/h2&gt;
-&lt;p&gt;我想你已经听过一千遍什么是大语言模型，所以不会让你负担过重。需要知道的是：大型语言模型（LLM）是一种大型神经网络模型，它根据先前预测的标记来预测下一个标记。就这样。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;模型参数数量的比较。看看 GPT-3 有多大就知道了。没有人知道 GPT-4……&lt;/p&gt;
-&lt;p&gt;大语言模型的受欢迎程度归因于其多功能性和有效性。它们完美地应对翻译、摘要、意义分析等任务。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/2.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;大语言模型能力&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;使用大语言模型的一些项目示例：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.notion.so/product/ai&#34;&gt;&lt;strong&gt;Notion AI&lt;/strong&gt;&lt;/a&gt; — 帮助提高写作质量、生成内容、纠正拼写和语法、编辑语音和语调、翻译等。&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/features/copilot&#34;&gt;&lt;strong&gt;GitHub Copilot&lt;/strong&gt;&lt;/a&gt; — 通过提供自动完成风格的建议来改进您的代码。&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://blog.dropbox.com/topics/product/introducing-AI-powered-tools&#34;&gt;&lt;strong&gt;Dropbox Dash&lt;/strong&gt;&lt;/a&gt; — 提供自然语言搜索功能，并且还专门引用了答案源自哪些文件。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;如果想详细了解大语言模型的工作原理，建议您阅读优秀的文章“&lt;a href=&#34;https://medium.com/@mark-riedl/a-very-gentle-introduction-to-large-language-models-without-the-hype-5f67941fa59e&#34;&gt;对大型语言模型的非常温和的介绍，无需炒作&lt;/a&gt;”&lt;/p&gt;
-&lt;h2 id=&#34;2-开源与闭源模型&#34;&gt;2. 开源与闭源模型&lt;/h2&gt;
-&lt;p&gt;主要差异：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;隐私&lt;/strong&gt;——大公司选择自托管解决方案的最重要原因之一。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;快速原型制作&lt;/strong&gt;——非常适合小型初创公司快速测试他们的想法，而无需过多的支出。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;生成质量&lt;/strong&gt;——可以针对特定任务微调模型，也可以使用付费 API。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;对于什么是好什么是坏，没有明确的答案。强调了以下几点：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/3.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;如果有兴趣深入研究细节，建议阅读之前的文章“&lt;a href=&#34;https://medium.com/better-programming/you-dont-need-hosted-llms-do-you-1160b2520526&#34;&gt;您不需要托管大语言模型，是吗？&lt;/a&gt;”。探索&lt;a href=&#34;https://www.promptingguide.ai/models/collection&#34;&gt;大语言模型系列&lt;/a&gt;以查看所有模型。&lt;/p&gt;
-&lt;h2 id=&#34;3-提示词工程的艺术&#34;&gt;3. 提示词工程的艺术&lt;/h2&gt;
-&lt;p&gt;许多人认为这是伪科学或只是暂时的炒作。但事实是，我们仍然不完全了解大语言模型是如何运作的。为什么他们有时会提供高质量的答复，有时会捏造事实（&lt;a href=&#34;https://medium.com/better-programming/fixing-hallucinations-in-llms-9ff0fd438e33&#34;&gt;产生幻觉&lt;/a&gt;）？或者为什么在提示中添加“让我们逐步思考”会突然提高质量？&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/4.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;添加情感色彩可以提高任何模型的质量。&lt;a href=&#34;https://arxiv.org/pdf/2307.11760.pdf&#34;&gt;来源&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;由于这一切，科学家和爱好者只能尝试不同的提示，试图让模型表现得更好。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/5.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;说明大语言模型解决问题的各种方法的示意图&lt;/p&gt;
-&lt;p&gt;我不会用复杂的提示链让你感到厌烦；相反，我只给出一些可以立即提高性能的示例：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://arxiv.org/pdf/2205.11916.pdf&#34;&gt;&amp;ldquo;让我们一步一步思考&amp;rdquo;&lt;/a&gt;  对于推理或逻辑任务非常有效。&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://arxiv.org/pdf/2309.03409.pdf&#34;&gt;&amp;ldquo;深吸一口气，一步步解决这个问题&amp;rdquo;&lt;/a&gt;  上一点的改进版本。它可以增加几个百分点的质量。&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://arxiv.org/pdf/2307.11760.pdf&#34;&gt;&amp;ldquo;这对我的职业生涯非常重要&amp;rdquo;&lt;/a&gt; 只需将其添加到提示的末尾，发现质量提高了 5-20%。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;另外，我会立即分享一个有用的提示模板：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;让我们结合我们的&lt;strong&gt;X&lt;/strong&gt;命令和清晰的思维，以循序渐进的方式快速准确地破译答案。提供详细信息并在答案中包含来源。这对我的职业生涯非常重要。&lt;/p&gt;
-&lt;p&gt;其中&lt;strong&gt;X&lt;/strong&gt;是您正在解决的任务的行业，例如编程。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;我强烈建议您花几个晚上探索快速的工程技术。这不仅可以让您更好地控制模型的行为，还有助于提高质量并减少幻觉。为此，我建议阅读&lt;a href=&#34;https://www.promptingguide.ai/introduction/basics&#34;&gt;《提示词工程指南》&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&#34;有用的链接&#34;&gt;有用的链接：&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/hegelai/prompttools&#34;&gt;Prompttools&lt;/a&gt; — 快速测试和实验，支持两种 LLM（例如 OpenAI、LLaMA）。&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/promptfoo/promptfoo&#34;&gt;Promptfoo&lt;/a&gt; — 测试和评估 LLM 输出质量。&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/f/awesome-chatgpt-prompts&#34;&gt;Awesome ChatGPT Prompts&lt;/a&gt; — 用于 ChatGPT 模型的提示示例集合。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;4合并新数据检索增强生成rag&#34;&gt;4.合并新数据：检索增强生成（RAG）&lt;/h2&gt;
-&lt;p&gt;RAG是一种将LLM与外部知识库相结合的技术。这允许模型将原始训练集中未包含的相关信息或特定数据添加到模型中。&lt;/p&gt;
-&lt;p&gt;尽管这个名字令人生畏（有时我们会在其中添加“reranker”一词），但它实际上是一种相当古老且出奇简单的技术：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/6.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;RAG 工作原理示意图&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;将文档转换为数字，称之为&lt;a href=&#34;https://towardsdatascience.com/neural-network-embeddings-explained-4d028e6f0526&#34;&gt;&lt;strong&gt;嵌入(embedding)&lt;/strong&gt;&lt;/a&gt;。&lt;/li&gt;
-&lt;li&gt;然后，使用相同的模型将用户的搜索查询转换为嵌入。&lt;/li&gt;
-&lt;li&gt;查找前 K 个最接近的文档，通常基于&lt;a href=&#34;https://en.wikipedia.org/wiki/Cosine_similarity&#34;&gt;余弦相似度&lt;/a&gt;。&lt;/li&gt;
-&lt;li&gt;要求大语言模型根据这些文件生成回复。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h3 id=&#34;何时使用&#34;&gt;何时使用&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;对当前信息的需求&lt;/strong&gt;：当应用程序需要不断更新的信息（例如新闻文章）时。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;特定领域的应用程序&lt;/strong&gt;：适用于需要大语言模型培训数据之外的专业知识的应用程序。例如，公司内部文件。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;何时不使用&#34;&gt;何时不使用&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;通用会话应用程序&lt;/strong&gt;：信息需要通用且不需要附加数据的地方。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;有限的资源场景&lt;/strong&gt;： RAG 的检索组件涉及搜索大型知识库，这可能在计算上昂贵且缓慢，但仍然比微调更快且成本更低。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;使用-rag-构建应用程序&#34;&gt;使用 RAG 构建应用程序&lt;/h3&gt;
-&lt;p&gt;一个很好的起点是使用&lt;a href=&#34;https://github.com/run-llama/llama_index&#34;&gt;LlamaIndex 库&lt;/a&gt;。它允许您快速将数据连接到大语言模型。为此，只需要几行代码：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;llama_index&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;VectorStoreIndex&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;SimpleDirectoryReader&lt;/span&gt;
-
-&lt;span class=&#34;c1&#34;&gt;# 1. Load your documents:&lt;/span&gt;
-&lt;span class=&#34;n&#34;&gt;documents&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;SimpleDirectoryReader&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;YOUR_DATA&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;load_data&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
-
-&lt;span class=&#34;c1&#34;&gt;# 2. Convert them to vectors:&lt;/span&gt;
-&lt;span class=&#34;n&#34;&gt;index&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;VectorStoreIndex&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;from_documents&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;documents&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-
-&lt;span class=&#34;c1&#34;&gt;# 3. Ask the question:&lt;/span&gt;
-&lt;span class=&#34;n&#34;&gt;query_engine&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;index&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;as_query_engine&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
-&lt;span class=&#34;n&#34;&gt;response&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;query_engine&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;query&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;When&amp;#39;s my boss&amp;#39;s birthday?&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;response&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在实际应用中，事情明显更加复杂。就像在任何开发中一样，您会遇到许多细微差别。例如，检索到的文档可能并不总是与问题相关，或者可能存在速度问题。然而，即使在这个阶段，也可以显着提高搜索系统的质量。&lt;/p&gt;
-&lt;h3 id=&#34;进一步阅读&#34;&gt;进一步阅读&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.anyscale.com/blog/a-comprehensive-guide-for-building-rag-based-llm-applications-part-1&#34;&gt;构建基于 RAG 的 LLM 应用程序用于生产&lt;/a&gt; 一篇关于 RAG 主要组件的优秀详细文章。&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/why-your-rag-is-not-reliable-in-a-production-environment-9e6a73b3eddb&#34;&gt;为什么您的 RAG 在生产环境中不可靠&lt;/a&gt; 一篇很棒的文章，它以清晰的语言解释了使用 RAG 时可能出现的困难。&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://betterprogramming.pub/7-query-strategies-for-navigating-knowledge-graphs-with-llamaindex-ed551863d416&#34;&gt;使用 LlamaIndex 导航知识图的 7 种查询策略&lt;/a&gt; 一篇内容丰富的文章，详细而细致地了解了使用 LlamaIndex 构建 RAG 管道。&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://platform.openai.com/docs/assistants/tools/knowledge-retrieval&#34;&gt;OpenAI 检索工具 &lt;/a&gt;如果想要最少的工作，使用 OpenAI 的 RAG。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;5-微调大语言模型&#34;&gt;5. 微调大语言模型&lt;/h2&gt;
-&lt;p&gt;微调是在特定数据集上继续训练预训练的 LLM 的过程。可能会问，如果已经可以使用 RAG 添加数据，为什么还需要进一步训练模型。简单的答案是，只有微调才能定制模型以理解特定领域或定义其风格。例如，&lt;a href=&#34;https://medium.com/better-programming/unleash-your-digital-twin-how-fine-tuning-llm-can-create-your-perfect-doppelganger-b5913e7dda2e&#34;&gt;通过对个人信件进行微调来创建自己的副本&lt;/a&gt;：&lt;/p&gt;
-&lt;p&gt;如果已经相信了它的重要性，那么看看它是如何工作的：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/7.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;对特定领域数据进行微调的经典方法（所有图标均来自&lt;a href=&#34;http://flaticon.com/&#34;&gt;flaticon&lt;/a&gt;）&lt;/em&gt;&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;接受训练有素的大语言模型，有时称为基础大语言模型。可以从&lt;a href=&#34;https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard&#34;&gt;HuggingFace&lt;/a&gt;下载它们。&lt;/li&gt;
-&lt;li&gt;准备您的训练数据。只需编写说明和响应即可。这是此类数据集的&lt;a href=&#34;https://huggingface.co/datasets/databricks/databricks-dolly-15k&#34;&gt;示例&lt;/a&gt;；还可以使用 GPT-4&lt;a href=&#34;https://www.promptingguide.ai/applications/generating&#34;&gt;生成合成数据&lt;/a&gt;。&lt;/li&gt;
-&lt;li&gt;选择合适的微调方法。目前比较流行的是&lt;a href=&#34;https://github.com/microsoft/LoRA&#34;&gt;LoRA&lt;/a&gt;和&lt;a href=&#34;https://github.com/artidoro/qlora&#34;&gt;QLoRA&lt;/a&gt;。&lt;/li&gt;
-&lt;li&gt;根据新数据微调模型。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h3 id=&#34;何时使用-1&#34;&gt;何时使用&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;垂直领域应用程序&lt;/strong&gt;：当应用程序处理专门或非常规主题时。例如，法律文档应用需要理解和处理法律术语。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;自定义语言风格&lt;/strong&gt;：适用于需要特定语气或风格的应用程序。例如，创建一个&lt;a href=&#34;https://beta.character.ai/&#34;&gt;人工智能角色&lt;/a&gt;，无论是名人还是书中的角色。（衍生场景：旅游景点数字人，游戏NPC，二次元社区）&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;何时不使用-1&#34;&gt;何时不使用&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;广泛的应用&lt;/strong&gt;：应用范围是一般性的，不需要专业知识。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;数据有限&lt;/strong&gt;：微调需要大量相关数据。但是，始终可以&lt;a href=&#34;https://www.confident-ai.com/blog/how-to-generate-synthetic-data-using-llms-part-1&#34;&gt;使用另一个 LLM 生成它们&lt;/a&gt;。例如，今年早些时候，使用包含 52k LLM 生成的指令响应对的&lt;a href=&#34;https://github.com/gururise/AlpacaDataCleaned&#34;&gt;Alpaca 数据集&lt;/a&gt;创建了第一个微调&lt;a href=&#34;https://arxiv.org/abs/2302.13971&#34;&gt;Llama v1模型&lt;/a&gt;。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;微调llm&#34;&gt;微调LLM&lt;/h3&gt;
-&lt;p&gt;可以找到大量致力于模型微调的文章。仅在 Medium 上就有数千个。因此，不想太深入地研究这个主题，而是展示一个高级库&lt;a href=&#34;https://github.com/Lightning-AI/lit-gpt&#34;&gt;Lit-GPT&lt;/a&gt;，它隐藏了所有的魔力。是的，它不允许对训练过程进行太多定制，但可以快速进行实验并获得初步结果。只需要几行代码：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 1. Download the model:&lt;/span&gt;
-python scripts/download.py --repo_id meta-llama/Llama-2-7b
-
-&lt;span class=&#34;c1&#34;&gt;# 2. Convert the checkpoint to the lit-gpt format:&lt;/span&gt;
-python scripts/convert_hf_checkpoint.py --checkpoint_dir checkpoints/llama
-
-&lt;span class=&#34;c1&#34;&gt;# 3. Generate an instruction tuning dataset:&lt;/span&gt;
-python scripts/prepare_alpaca.py  &lt;span class=&#34;c1&#34;&gt;# it should be your dataset&lt;/span&gt;
-
-&lt;span class=&#34;c1&#34;&gt;# 4. Run the finetuning script&lt;/span&gt;
-python finetune/lora.py &lt;span class=&#34;se&#34;&gt;\
-&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;    --checkpoint_dir checkpoints/llama/
-    --data_dir your_data_folder/
-    --out_dir my_finetuned_model/ 
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;就是这样！训练过程将开始：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/8.gif&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;请注意，该过程可能需要很长时间。在单个 A100 GPU 上微调 Falcon-7B需要大约&lt;strong&gt;10 小时&lt;/strong&gt;和&lt;strong&gt;30 GB内存。&lt;/strong&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;当然，我有点过于简单化了，我们只触及了表面。实际上，微调过程要复杂得多，为了获得更好的结果，需要了解各种适配器及其参数等等。然而，即使经过如此简单的迭代，会得到一个遵循特定指示的新模型。&lt;/p&gt;
-&lt;h3 id=&#34;进一步阅读-1&#34;&gt;进一步阅读&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://medium.com/better-programming/unleash-your-digital-twin-how-fine-tuning-llm-can-create-your-perfect-doppelganger-b5913e7dda2e&#34;&gt;使用微调的大语言模型创建自己的克隆&lt;/a&gt; 作者在文章中写了有关收集数据集、使用参数的文章，并提供了有关微调的有用技巧。&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://lightning.ai/pages/community/article/understanding-llama-adapters/&#34;&gt;了解大型语言模型的参数高效微调&lt;/a&gt; 如果想了解微调概念和流行的参数高效替代方案的详细信息，这是一个很好的教程。&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://lightning.ai/pages/community/lora-insights/&#34;&gt;使用 LoRA 和 QLoRA 微调大语言模型：数百次实验的见解 &lt;/a&gt;了解 LoRA 功能的文章之一。&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://platform.openai.com/docs/guides/fine-tuning&#34;&gt;OpenAI 微调 &lt;/a&gt;如果想以最小的工作微调 GPT-3.5。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;6-部署-llm-工程化&#34;&gt;6. 部署 LLM (工程化)&lt;/h2&gt;
-&lt;p&gt;有时，如果有用于推理的计算资源和模型,数据存储资源，想直接利用训练好的开源大模型，仅仅简单地按下“部署”按钮&amp;hellip;&amp;hellip;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/9.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;幸运的是，这是相当可行的。有大量专门用于部署大型语言模型的框架。是什么让他们如此出色？&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;许多预构建的包装器和集成。&lt;/li&gt;
-&lt;li&gt;大量可用型号可供选择。&lt;/li&gt;
-&lt;li&gt;大量内部优化。&lt;/li&gt;
-&lt;li&gt;快速原型制作。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;选择正确的框架&#34;&gt;选择正确的框架&lt;/h3&gt;
-&lt;p&gt;部署LLM应用程序的框架的选择取决于多种因素，包括模型的大小、应用程序的可扩展性要求和部署环境。目前，框架的多样性并不丰富，因此理解它们的差异应该不会太困难。下面，准备了一份备忘单，可以快速入门：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/10.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;此外，在文章“&lt;a href=&#34;https://medium.com/better-programming/frameworks-for-serving-llms-60b7f7b23407&#34;&gt;为大语言模型提供服务的 7 个框架&lt;/a&gt;”中，对现有解决方案进行了更详细的概述。如果打算部署模型，建议检查一下。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/11.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;LLM 推理框架比较&lt;/em&gt;&lt;/p&gt;
-&lt;h3 id=&#34;部署示例代码&#34;&gt;部署示例代码&lt;/h3&gt;
-&lt;p&gt;从理论转向实践，并尝试使用&lt;a href=&#34;https://github.com/huggingface/text-generation-inference&#34;&gt;文本生成推理(Text Generation Inference)&lt;/a&gt;来部署 LLaMA-2 。通过运行已经打包好的模型服务镜像，demo只需要几行代码：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 1. Create a folder where your model will be stored:&lt;/span&gt;
-mkdir data
-
-&lt;span class=&#34;c1&#34;&gt;# 2. Run Docker container (launch RestAPI service):&lt;/span&gt;
-docker run --gpus all --shm-size 1g -p 8080:80 &lt;span class=&#34;se&#34;&gt;\
-&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;    -v &lt;span class=&#34;nv&#34;&gt;$volume&lt;/span&gt;:/data &lt;span class=&#34;se&#34;&gt;\
-&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;    ghcr.io/huggingface/text-generation-inference:1.1.0
-    --model-id meta-llama/Llama-2-7b
-
-&lt;span class=&#34;c1&#34;&gt;# 3. And now you can make requests:&lt;/span&gt;
-curl 127.0.0.1:8080/generate &lt;span class=&#34;se&#34;&gt;\
-&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;    -X POST &lt;span class=&#34;se&#34;&gt;\
-&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;    -d &lt;span class=&#34;s1&#34;&gt;&amp;#39;{&amp;#34;inputs&amp;#34;:&amp;#34;Tell me a joke!&amp;#34;,&amp;#34;parameters&amp;#34;:{&amp;#34;max_new_tokens&amp;#34;:20}}&amp;#39;&lt;/span&gt; &lt;span class=&#34;se&#34;&gt;\
-&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;    -H &lt;span class=&#34;s1&#34;&gt;&amp;#39;Content-Type: application/json&amp;#39;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;设置了带有内置日志记录的 RestAPI 服务、用于监控的 Prometheus 端点、令牌流，并且模型已完全优化。这不是很神奇吗？这些工程化实现方案相对成熟，移动互联网时代的工程累积。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/all-you-need-to-know-to-develop-using-large-language-models/12.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;API文档&lt;/em&gt;&lt;/p&gt;
-&lt;h3 id=&#34;进一步阅读-2&#34;&gt;进一步阅读&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://medium.com/better-programming/frameworks-for-serving-llms-60b7f7b23407&#34;&gt;为大语言模型提供服务的 7 个框架&lt;/a&gt; 大语言模型推理和服务的综合指南，并进行了详细比较。&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://huggingface.co/inference-endpoints&#34;&gt;Inference Endpoints&lt;/a&gt; HuggingFace 的一款产品，只需点击几下即可部署任何 LLM。当需要快速原型设计时，这是一个不错的选择。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;7-幕后还剩下什么&#34;&gt;7. 幕后还剩下什么&lt;/h2&gt;
-&lt;p&gt;尽管我们已经介绍了开发基于 LLM 的应用程序所需的主要概念，但将来可能会遇到一些问题。所以，想留下一些有用的链接：&lt;/p&gt;
-&lt;h3 id=&#34;优化&#34;&gt;优化&lt;/h3&gt;
-&lt;p&gt;当启动第一个模型时，不可避免地会发现它没有想要的那么快并且消耗了大量资源。需要了解如何对其进行优化。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://medium.com/better-programming/speed-up-llm-inference-83653aa24c47&#34;&gt;加速托管 LLM 推理的 7 种方法 &lt;/a&gt;加速 LLM 推理的技术，以提高令牌生成速度并减少内存消耗。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://lightning.ai/pages/community/tutorial/pytorch-memory-vit-llm/&#34;&gt;优化 PyTorch 中训练 LLM 的内存使用&lt;/a&gt; 文章提供了一系列技术，可以将 PyTorch 中的内存消耗减少约 20 倍，而不会牺牲建模性能和预测准确性。&lt;/p&gt;
-&lt;p&gt;补充：&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/owgDAUGnrsXmNwUXY2Ya0w&#34;&gt;飞桨大模型分布式训练技术&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/PIh2gPhqF8r-9k8QZQ8GEw&#34;&gt;⻜桨⼤模型推理部署⾼性能优化&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;评估&#34;&gt;评估&lt;/h3&gt;
-&lt;p&gt;假设有一个经过微调的模型。但怎么能确定它的质量已经提高了呢？应该使用什么指标？&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://explodinggradients.com/all-about-evaluating-large-language-models&#34;&gt;所有关于评估大型语言模型的内容 &lt;/a&gt;一篇关于基准和指标的很好的概述文章。&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/openai/evals&#34;&gt;evals&lt;/a&gt; 用于评估大语言模型和大语言模型系统的最流行框架。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;向量数据库&#34;&gt;向量数据库&lt;/h3&gt;
-&lt;p&gt;如果使用 RAG，在某些时候，将向量存储在内存中转移到数据库中。为此，了解当前市场上的产品及其局限性非常重要。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/all-you-need-to-know-about-vector-databases-and-how-to-use-them-to-augment-your-llm-apps-596f39adfedb&#34;&gt;All You Need to Know about Vector Databases&lt;/a&gt; 发现并利用向量数据库的力量。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://benchmark.vectorview.ai/vectordbs.html&#34;&gt;选择向量数据库：2023 年的比较和指南 &lt;/a&gt; Pinecone、Weviate、Milvus、Qdrant、Chroma、Elasticsearch 和 PGvector 数据库的比较。&lt;/p&gt;
-&lt;p&gt;补充：&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/-io_q8WCdAxfSCY9qlrgCw&#34;&gt;向量检索在大模型应用场景的技术和实践&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;注： 尽管大模型提高了输入token数量(长文本)，但是对向量数据库的影响不大，特别是多模场景混合搜索的场景。&lt;/p&gt;
-&lt;h3 id=&#34;大语言模型agents&#34;&gt;大语言模型Agents&lt;/h3&gt;
-&lt;p&gt;在我看来，大语言模型最有前途的发展。如果希望多个模型协同工作，建议浏览以下链接：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/paitesanshi/llm-agent-survey#-more-comprehensive-summarization&#34;&gt;基于 LLM 的自治agents的调查 &lt;/a&gt;这可能是基于 LLM 的agents最全面的概述。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/microsoft/autogen&#34;&gt;autogen&lt;/a&gt;  是一个框架，允许使用多个agents来开发 LLM 应用程序，这些agents可以相互对话来解决任务。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/xlang-ai/OpenAgents&#34;&gt;OpenAgents&lt;/a&gt;  一个用于在使用和托管语言agents的开放平台。&lt;/p&gt;
-&lt;p&gt;补充：&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/PL-QjlvVugUfmRD4g0P-qQ&#34;&gt;&lt;strong&gt;从第一性原理看大模型Agent技术&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;存储-补充&#34;&gt;存储 (补充)&lt;/h3&gt;
-&lt;p&gt;注： 这块主要是聚焦用于训练模型的数据，以及训练好的模型数据，相关链接：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/c4MWpBuYK0b1DDufeDV1vg&#34;&gt;面向大模型的存储加速方案设计和实践&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;根据人类反馈进行强化学习-rlhf&#34;&gt;根据人类反馈进行强化学习 (RLHF)&lt;/h3&gt;
-&lt;p&gt;一旦允许用户访问模型，如果对方反应粗鲁怎么办？或者揭示制造炸弹的成分？为了避免这种情况，请查看这些文章：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://huggingface.co/blog/rlhf&#34;&gt;&lt;strong&gt;介绍 根据人类反馈进行强化学习(RLHF)&lt;/strong&gt;&lt;/a&gt;  一篇详细介绍 RLHF 技术的概述文章。&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/allenai/RL4LMs&#34;&gt;RL4LMs&lt;/a&gt;  一个模块化 RL 库，用于根据人类偏好微调语言模型。&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/huggingface/trl&#34;&gt;TRL&lt;/a&gt;  一组使用强化学习训练 Transformer 语言模型的工具，从监督微调步骤 (SFT)、奖励建模步骤 (RM) 到近端策略优化 (PPO) 步骤。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;结论&#34;&gt;结论&lt;/h2&gt;
-&lt;p&gt;尽管我们都有点厌倦了炒作，但大语言模型将陪伴我们很长一段时间，并且理解他们的堆栈和编写简单应用程序的能力可以给你带来显着的提升。希望本文已经成功地让您稍微沉浸在这个领域，并向您展示它没有什么复杂或可怕的。&lt;/p&gt;
-&lt;h2 id=&#34;reference&#34;&gt;Reference&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/all-you-need-to-know-to-develop-using-large-language-models-5c45708156bc&#34;&gt;https://towardsdatascience.com/all-you-need-to-know-to-develop-using-large-language-models-5c45708156bc&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Large_language_model&#34;&gt;https://en.wikipedia.org/wiki/Large_language_model&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bbycroft.net/llm&#34;&gt;https://bbycroft.net/llm&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
       
     </item>

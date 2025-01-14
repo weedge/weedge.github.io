@@ -342,6 +342,45 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/db_tutorial_go/">构建一个简单的数据库[golang版]</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2024-01-10" class="post-time">
+        2024-01-10
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <p>上篇文章使用chatGPT翻译了<a href="https://cstack.github.io/db_tutorial/">db_tutorial</a> 文章，文中使用的是c语言开发； 这篇文章使用chatGPT根据db_tutorial中的c源码，使用golang进行重写, 测试的ruby代码使用python进行重写；同理其他语言也适用。</p>
+<p>注：利用已有知识结构，通过chatGPT来生成另一种表达(现实中这种转换经常出现，比如一个基础知识点，嚼碎了，揉烂了，底层相通，表达方式不同，变了个花样玩，而且还能通过认知差来盈利，也许精细利己主义会利益最大化吧)，使用AGI工具进行效率编码的一种小小实践。在实践过程中，chatGPT生成的代码不可能都能正常运行，需要调试下(特别是指针操作)。</p>
+<p>整体实现代码：https://github.com/weedge/baby-db/tree/main/golang</p>
+<p>主要的btree数据结构为leafNode 和 internalNode，叶子节点表数据存放在value中，id存放在key中，序列化和遍历操作需要额外偏移操作；这里仅实现简单的insert和select操作。</p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/leaf-node-format.png" alt="leafNode"></p>
+<p><img src="https://cstack.github.io/db_tutorial/assets/images/internal-node-format.png" alt="internalNode"></p>
+    </div>
+    <div class="read-more">
+      <a href="/post/db_tutorial_go/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/db_tutorial_zh/">[译]构建一个简单的数据库</a>
     </h1>
     
@@ -576,44 +615,6 @@
 </article>
 
   
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/gpu/mastering-string-transformations-in-rapids-libcudf/">译：掌握 RAPIDS libcudf 中的字符串转换</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-11-07" class="post-time">
-        2023-11-07
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p><img src="https://github.com/weedge/mypic/raw/master/oneday/mastering-string-transformations-in-rapids-libcudf/1.png" alt="img"></p>
-<p>字符串数据的高效处理对于许多数据科学应用至关重要。为了从字符串数据中提取有价值的信息，<a href="https://github.com/rapidsai/cudf">RAPIDS libcudf</a>提供了强大的工具来加速字符串数据转换。libcudf 是一个 C++ GPU DataFrame 库，用于加载、连接、聚合和过滤数据。</p>
-<p>在数据科学中，字符串数据代表语音、文本、基因序列、日志记录和许多其他类型的信息。在使用字符串数据进行机器学习和特征工程时，必须经常对数据进行规范化和转换，然后才能将其应用于特定用例。libcudf 提供通用 API 和设备端实用程序，以支持各种自定义字符串操作。</p>
-<p>这篇文章演示了如何使用 libcudf 通用 API 巧妙地转换字符串列。您将获得有关如何使用自定义内核和 libcudf 设备端实用程序解锁峰值性能的新知识。这篇文章还向您介绍了如何最好地管理 GPU 内存和高效构建 libcudf 列以加速字符串转换的示例。</p>
-<p>(<strong>注</strong>：从文件中获取数据到buffer中，都需要通过字符串处理操作，特别是split操作，如果是数值，需要atoi，atof操作进行数据分析，向量化操作等， 和数据处理打交道的 super 马里奥 应该学会这个工具，这里直接使用底层操作库libcudf；集成的其他语言有java(JNI)和python(cython), 主要是方便和现有 大数据生态打通(会有一些内存方面的性能损耗)，大多是离线处理场景，特别是LLM的预训练场景)</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/gpu/mastering-string-transformations-in-rapids-libcudf/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
 </section>
 
 
@@ -681,6 +682,10 @@
       
       <li >
         <a href="/page/11/">11</a>
+      </li>
+      
+      <li >
+        <a href="/page/12/">12</a>
       </li>
       
     </ul>

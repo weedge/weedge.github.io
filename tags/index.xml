@@ -6,7 +6,43 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 13 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 14 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>diffusion</title>
+      <link>https://weedge.github.io/tags/diffusion/</link>
+      <pubDate>Tue, 14 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/diffusion/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>flow</title>
+      <link>https://weedge.github.io/tags/flow/</link>
+      <pubDate>Tue, 14 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/flow/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>mel-spectrogram&#34;</title>
+      <link>https://weedge.github.io/tags/mel-spectrogram/</link>
+      <pubDate>Tue, 14 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/mel-spectrogram/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>NAR</title>
+      <link>https://weedge.github.io/tags/nar/</link>
+      <pubDate>Tue, 14 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/nar/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>AR</title>
       <link>https://weedge.github.io/tags/ar/</link>
@@ -26,38 +62,11 @@
     </item>
     
     <item>
-      <title>mel-spectrogram</title>
-      <link>https://weedge.github.io/tags/mel-spectrogram/</link>
-      <pubDate>Mon, 13 Jan 2025 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/mel-spectrogram/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>NAR</title>
-      <link>https://weedge.github.io/tags/nar/</link>
-      <pubDate>Mon, 13 Jan 2025 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/nar/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>VALL-E</title>
       <link>https://weedge.github.io/tags/vall-e/</link>
       <pubDate>Mon, 13 Jan 2025 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/vall-e/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>flow</title>
-      <link>https://weedge.github.io/tags/flow/</link>
-      <pubDate>Sat, 11 Jan 2025 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/flow/</guid>
       <description></description>
     </item>
     
@@ -175,15 +184,6 @@
       <pubDate>Tue, 26 Mar 2024 20:16:30 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/langchain/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>rag</title>
-      <link>https://weedge.github.io/tags/rag/</link>
-      <pubDate>Tue, 26 Mar 2024 20:16:30 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/rag/</guid>
       <description></description>
     </item>
     
