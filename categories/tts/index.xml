@@ -36,8 +36,13 @@
 &lt;hr&gt;
 &lt;p&gt;&lt;strong&gt;附&lt;/strong&gt;：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;使用LJ Speech数据集训练202 epochs 的ckpt: &lt;a href=&#34;https://huggingface.co/weege007/matchaTTS/tree/main&#34;&gt;https://huggingface.co/weege007/matchaTTS/tree/main&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;笔记地址：https://github.com/weedge/doraemon-nb/blob/main/matcha_tts.ipynb&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;使用LJ Speech数据集训练202 epochs 的ckpt： &lt;a href=&#34;https://huggingface.co/weege007/matchaTTS/tree/main&#34;&gt;https://huggingface.co/weege007/matchaTTS/tree/main&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;笔记地址： &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/matcha_tts.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/matcha_tts.ipynb&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/95bccbf2-b164-484f-a6c9-8ab7e235c018&#34; alt=&#34;loss&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
 &lt;/ul&gt;</description>
     </item>
     

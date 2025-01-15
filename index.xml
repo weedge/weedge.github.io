@@ -82,8 +82,13 @@
 &lt;hr&gt;
 &lt;p&gt;&lt;strong&gt;附&lt;/strong&gt;：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;使用LJ Speech数据集训练202 epochs 的ckpt: &lt;a href=&#34;https://huggingface.co/weege007/matchaTTS/tree/main&#34;&gt;https://huggingface.co/weege007/matchaTTS/tree/main&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;笔记地址：https://github.com/weedge/doraemon-nb/blob/main/matcha_tts.ipynb&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;使用LJ Speech数据集训练202 epochs 的ckpt： &lt;a href=&#34;https://huggingface.co/weege007/matchaTTS/tree/main&#34;&gt;https://huggingface.co/weege007/matchaTTS/tree/main&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;笔记地址： &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/matcha_tts.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/matcha_tts.ipynb&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/95bccbf2-b164-484f-a6c9-8ab7e235c018&#34; alt=&#34;loss&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h1 id=&#34;结构&#34;&gt;结构：&lt;/h1&gt;
 &lt;p&gt;Matcha-TTS 是一种非自回归的神经文本到语音（TTS）编码器-解码器结构。其结构的概述在图1中提供。文本编码器和时长预测器结构和Grad-TTS一致，但Text encoder使用旋转位置嵌入而不是相对位置嵌入。对齐和时长模型训练遵循MAS和先验损失  $\mathcal{L}_{enc}$ ，如Grad-TTS中所述。预测的时长，经过向上取整后，用于上采样（复制）编码器输出的向量，以获得 $\mu$ ，即在给定文本和所选时长的情况下预测的平均声学特征（例如，梅尔频谱图）。这个平均值用于条件化解码器，解码器预测用于合成的向量场 $v_{t}\left(\phi_{t}^{OT}\left(x_{0}\right)\mid\mu;\theta\right)$，但它并不用作初始噪声样本 $x_0$ 的均值（与Grad-TTS不同）。最终通过vocoder(HiFi-GAN Generator)生成waveform&lt;/p&gt;

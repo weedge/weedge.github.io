@@ -29,7 +29,9 @@
 一种基于连续归一化流的概率性、非自回归、快速采样的 TTS 声学模型。主要有两个创新点：
  提出了一种改进的编码器-解码器 TTS 结构，该结构在解码器中结合使用 1D CNN 和 Transformer。这减少了内存消耗并且可以快速评估，从而提高综合速度。 使用最优传输条件流匹配 optimal-transport conditional flow matching(OT-CFM) 来训练这些模型，这是一种学习从数据分布中采样的 ODE 的新方法。与传统的 连续时间归一化流 CNF（continuous-time normalising flows ） 和分数匹配概率流 ODE （probability flow ODE） 相比，OT-CFM 定义了从源到目标的更简单的路径，从而能够以比 DPM（Diffusion probabilistic model） 更少的步骤进行准确合成。  实验结果表明，这两种创新都加速了合成，减少了速度和合成质量之间的权衡。尽管速度快且轻量级，Matcha-TTS能够在不需要外部对齐器的情况下学习说话和对齐。与强大的预训练基线模型相比，Matcha-TTS实现了快速合成，并获得了更好的自然度评分。
  附：
- 使用LJ Speech数据集训练202 epochs 的ckpt: https://huggingface.co/weege007/matchaTTS/tree/main 笔记地址：https://github.com/weedge/doraemon-nb/blob/main/matcha_tts.ipynb " />
+  使用LJ Speech数据集训练202 epochs 的ckpt： https://huggingface.co/weege007/matchaTTS/tree/main
+  笔记地址： https://github.com/weedge/doraemon-nb/blob/main/matcha_tts.ipynb
+ " />
 
   <meta name="keywords" content="工作, 技术, 生活" />
 
@@ -91,8 +93,13 @@ Is very fast to synthesise from 合成速度非常快
 
 附：
 
-使用LJ Speech数据集训练202 epochs 的ckpt: https://huggingface.co/weege007/matchaTTS/tree/main
-笔记地址：https://github.com/weedge/doraemon-nb/blob/main/matcha_tts.ipynb
+
+使用LJ Speech数据集训练202 epochs 的ckpt： https://huggingface.co/weege007/matchaTTS/tree/main
+
+
+笔记地址： https://github.com/weedge/doraemon-nb/blob/main/matcha_tts.ipynb
+
+
 " />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://weedge.github.io/post/multimoding/voices/matcha-tts/" /><meta property="article:section" content="post" />
@@ -123,11 +130,16 @@ Is very fast to synthesise from 合成速度非常快
 
 附：
 
-使用LJ Speech数据集训练202 epochs 的ckpt: https://huggingface.co/weege007/matchaTTS/tree/main
-笔记地址：https://github.com/weedge/doraemon-nb/blob/main/matcha_tts.ipynb
+
+使用LJ Speech数据集训练202 epochs 的ckpt： https://huggingface.co/weege007/matchaTTS/tree/main
+
+
+笔记地址： https://github.com/weedge/doraemon-nb/blob/main/matcha_tts.ipynb
+
+
 "><meta itemprop="datePublished" content="2025-01-14T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2025-01-14T10:26:23+08:00" />
-<meta itemprop="wordCount" content="3465">
+<meta itemprop="wordCount" content="3402">
 <meta itemprop="keywords" content="diffusion,flow,NAR,mel-spectrogram," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="论文解读 Matcha-TTS: A fast TTS architecture with conditional flow matching"/>
 <meta name="twitter:description" content="🍵 matcha-tts
@@ -153,8 +165,13 @@ Is very fast to synthesise from 合成速度非常快
 
 附：
 
-使用LJ Speech数据集训练202 epochs 的ckpt: https://huggingface.co/weege007/matchaTTS/tree/main
-笔记地址：https://github.com/weedge/doraemon-nb/blob/main/matcha_tts.ipynb
+
+使用LJ Speech数据集训练202 epochs 的ckpt： https://huggingface.co/weege007/matchaTTS/tree/main
+
+
+笔记地址： https://github.com/weedge/doraemon-nb/blob/main/matcha_tts.ipynb
+
+
 "/>
 
 <!--[if lte IE 9]>
@@ -509,8 +526,13 @@ Is very fast to synthesise from 合成速度非常快
 <hr>
 <p><strong>附</strong>：</p>
 <ul>
-<li>使用LJ Speech数据集训练202 epochs 的ckpt: <a href="https://huggingface.co/weege007/matchaTTS/tree/main">https://huggingface.co/weege007/matchaTTS/tree/main</a></li>
-<li>笔记地址：https://github.com/weedge/doraemon-nb/blob/main/matcha_tts.ipynb</li>
+<li>
+<p>使用LJ Speech数据集训练202 epochs 的ckpt： <a href="https://huggingface.co/weege007/matchaTTS/tree/main">https://huggingface.co/weege007/matchaTTS/tree/main</a></p>
+</li>
+<li>
+<p>笔记地址： <a href="https://github.com/weedge/doraemon-nb/blob/main/matcha_tts.ipynb">https://github.com/weedge/doraemon-nb/blob/main/matcha_tts.ipynb</a></p>
+<p><img src="https://github.com/user-attachments/assets/95bccbf2-b164-484f-a6c9-8ab7e235c018" alt="loss"></p>
+</li>
 </ul>
 <h1 id="结构">结构：</h1>
 <p>Matcha-TTS 是一种非自回归的神经文本到语音（TTS）编码器-解码器结构。其结构的概述在图1中提供。文本编码器和时长预测器结构和Grad-TTS一致，但Text encoder使用旋转位置嵌入而不是相对位置嵌入。对齐和时长模型训练遵循MAS和先验损失  $\mathcal{L}_{enc}$ ，如Grad-TTS中所述。预测的时长，经过向上取整后，用于上采样（复制）编码器输出的向量，以获得 $\mu$ ，即在给定文本和所选时长的情况下预测的平均声学特征（例如，梅尔频谱图）。这个平均值用于条件化解码器，解码器预测用于合成的向量场 $v_{t}\left(\phi_{t}^{OT}\left(x_{0}\right)\mid\mu;\theta\right)$，但它并不用作初始噪声样本 $x_0$ 的均值（与Grad-TTS不同）。最终通过vocoder(HiFi-GAN Generator)生成waveform</p>
