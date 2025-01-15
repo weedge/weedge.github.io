@@ -383,6 +383,12 @@
 <li>使用最优传输条件流匹配 optimal-transport conditional flow matching(OT-CFM) 来训练这些模型，这是一种学习从数据分布中采样的 ODE 的新方法。与传统的 连续时间归一化流 CNF（continuous-time normalising flows ） 和分数匹配概率流 ODE （probability flow ODE） 相比，OT-CFM 定义了从源到目标的更简单的路径，从而能够以比 DPM（Diffusion probabilistic model） 更少的步骤进行准确合成。</li>
 </ol>
 <p>实验结果表明，这两种创新都加速了合成，减少了速度和合成质量之间的权衡。尽管速度快且轻量级，Matcha-TTS能够在不需要外部对齐器的情况下学习说话和对齐。与强大的预训练基线模型相比，Matcha-TTS实现了快速合成，并获得了更好的自然度评分。</p>
+<hr>
+<p><strong>附</strong>：</p>
+<ul>
+<li>使用LJ Speech数据集训练202 epochs 的ckpt: <a href="https://huggingface.co/weege007/matchaTTS/tree/main">https://huggingface.co/weege007/matchaTTS/tree/main</a></li>
+<li>笔记地址：https://github.com/weedge/doraemon-nb/blob/main/matcha_tts.ipynb</li>
+</ul>
     </div>
     <div class="read-more">
       <a href="/post/multimoding/voices/matcha-tts/" class="read-more-link">阅读全文</a>
