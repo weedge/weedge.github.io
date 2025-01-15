@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="zh-cn" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>论文解读：CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens - 时间飘过</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="weedge" />
+  <meta name="description" content="CosyVoice  2024.7 FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs （主要介绍ASR SenseVoice 和 TTS CosyVoice,其中 SenseVoice 没有单独论文，相关CosyVoice 和单独论文是重复的, SenseVoice Large的工作可以用于 CosyVoice 在多语言上， Supervised speech tokenizer 模块的训练和推理） 2024.7 CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens 2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models （流式合成） paper code: 没有pre-trainning过程；公开推理和权重，以及微调。  创新点：
+ 将监督语音token集成到TTS 模型，增强了零样本语音克隆中的内容一致性和说话者相似性。 一种可扩展的零样本 TTS 合成系统，它将用于文本到token生成的 LLM 与用于token到语音合成的条件流匹配模型(conditional flow matching model(CFM))相结合，不依赖于音素持续时间预测(Duration predictor)，不需要使用补充音素器(phonemizers)和强制对齐器(aligners 比如：Glow-TTS中 Monotonic Alignment Search(MAS))。 为了进一步细化生成语音的质量，将 x-vector 合并到 LLM 中，将语音建模分为语义、说话者和韵律(semantic, speaker, and prosody)组件。 LLM 对语义(semantic)内容和韵律(prosody)进行建模，而条件流匹配模型(CFM)则捕获音色(timbre)和环境信息。我们使用无分类器引导(2022. Classifier-free diffusion guidance)、余弦调度器(cosine scheduler)和屏蔽条件(masked conditions)等技术来优化流匹配过程。  CosyVoice由四个组件组成，即文本编码器(text encoder)、语音分词器(speech tokenizer)、大语言模型(large language model)和条件流匹配模型(conditional flow matching model)
+ 文本编码器(text encoder)用于对齐文本和语音token的语义空间; 语音标记器(speech tokenizer)用于提取语义token; LLM(GLM)学习文本编码和语音标记的整个序列，将 TTS 重新表述为以文本作为提示的自回归序列生成问题; 利用条件流匹配模型(conditional flow matching model), 通过最优路径上的去噪处理,将语音标记转换为梅尔谱图(Mel spectrogram); 通过分类器自由指导（Classifier-free diffusion guidance CFG）提高扩散概率模型的生成质量, 将CFG适应到条件流匹配模型中; 获得人类耳朵可感知的声音信号，声码器(vocoder)使用 Hifi-GAN Generator 用于将生成的梅尔频谱图作为输入来合成波形(waveform)。  其中：
+ conditional flow matching model (OT-CFM) 来自 2023.9 Matcha-TTS: A fast TTS architecture with conditional flow matching(CFM的改进版本OT-CFM) Classifier-free diffusion guidance (CFG) 来自 2022. Classifier-free diffusion guidance vocoder 来自 2020. HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis Generator。  附：
+ achatbot 接入 CosyVoice:  https://github.com/ai-bot-pro/achatbot/pull/21 https://github.com/ai-bot-pro/achatbot/pull/23   " />
+
+  <meta name="keywords" content="工作, 技术, 生活" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.91.0" />
+
+
+<link rel="canonical" href="https://weedge.github.io/post/multimoding/voices/cosyvoice/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css" integrity="sha256-&#43;ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
+
+<meta property="og:title" content="论文解读：CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens" />
+<meta property="og:description" content="CosyVoice
+
+2024.7 FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs （主要介绍ASR SenseVoice 和 TTS CosyVoice,其中 SenseVoice 没有单独论文，相关CosyVoice 和单独论文是重复的, SenseVoice Large的工作可以用于 CosyVoice 在多语言上， Supervised speech tokenizer 模块的训练和推理）
+2024.7 CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens
+2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models （流式合成）
+paper code: 没有pre-trainning过程；公开推理和权重，以及微调。
+
+创新点：
+
+将监督语音token集成到TTS 模型，增强了零样本语音克隆中的内容一致性和说话者相似性。
+一种可扩展的零样本 TTS 合成系统，它将用于文本到token生成的 LLM 与用于token到语音合成的条件流匹配模型(conditional flow matching model(CFM))相结合，不依赖于音素持续时间预测(Duration predictor)，不需要使用补充音素器(phonemizers)和强制对齐器(aligners 比如：Glow-TTS中 Monotonic Alignment Search(MAS))。
+为了进一步细化生成语音的质量，将 x-vector 合并到 LLM 中，将语音建模分为语义、说话者和韵律(semantic, speaker, and prosody)组件。 LLM 对语义(semantic)内容和韵律(prosody)进行建模，而条件流匹配模型(CFM)则捕获音色(timbre)和环境信息。我们使用无分类器引导(2022. Classifier-free diffusion guidance)、余弦调度器(cosine scheduler)和屏蔽条件(masked conditions)等技术来优化流匹配过程。
+
+
+CosyVoice由四个组件组成，即文本编码器(text encoder)、语音分词器(speech tokenizer)、大语言模型(large language model)和条件流匹配模型(conditional flow matching model)
+
+文本编码器(text encoder)用于对齐文本和语音token的语义空间;
+语音标记器(speech tokenizer)用于提取语义token;
+LLM(GLM)学习文本编码和语音标记的整个序列，将 TTS 重新表述为以文本作为提示的自回归序列生成问题;
+利用条件流匹配模型(conditional flow matching model), 通过最优路径上的去噪处理,将语音标记转换为梅尔谱图(Mel spectrogram); 通过分类器自由指导（Classifier-free diffusion guidance CFG）提高扩散概率模型的生成质量, 将CFG适应到条件流匹配模型中;
+获得人类耳朵可感知的声音信号，声码器(vocoder)使用 Hifi-GAN Generator 用于将生成的梅尔频谱图作为输入来合成波形(waveform)。
+
+其中：
+
+conditional flow matching model (OT-CFM) 来自 2023.9 Matcha-TTS: A fast TTS architecture with conditional flow matching(CFM的改进版本OT-CFM)
+Classifier-free diffusion guidance (CFG) 来自 2022. Classifier-free diffusion guidance
+vocoder 来自 2020. HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis Generator。
+
+附：
+
+achatbot 接入 CosyVoice:
+
+https://github.com/ai-bot-pro/achatbot/pull/21
+https://github.com/ai-bot-pro/achatbot/pull/23
+
+
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/multimoding/voices/cosyvoice/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2025-01-15T10:26:23+08:00" />
+<meta property="article:modified_time" content="2025-01-15T10:26:23+08:00" />
+
+<meta itemprop="name" content="论文解读：CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens">
+<meta itemprop="description" content="CosyVoice
+
+2024.7 FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs （主要介绍ASR SenseVoice 和 TTS CosyVoice,其中 SenseVoice 没有单独论文，相关CosyVoice 和单独论文是重复的, SenseVoice Large的工作可以用于 CosyVoice 在多语言上， Supervised speech tokenizer 模块的训练和推理）
+2024.7 CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens
+2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models （流式合成）
+paper code: 没有pre-trainning过程；公开推理和权重，以及微调。
+
+创新点：
+
+将监督语音token集成到TTS 模型，增强了零样本语音克隆中的内容一致性和说话者相似性。
+一种可扩展的零样本 TTS 合成系统，它将用于文本到token生成的 LLM 与用于token到语音合成的条件流匹配模型(conditional flow matching model(CFM))相结合，不依赖于音素持续时间预测(Duration predictor)，不需要使用补充音素器(phonemizers)和强制对齐器(aligners 比如：Glow-TTS中 Monotonic Alignment Search(MAS))。
+为了进一步细化生成语音的质量，将 x-vector 合并到 LLM 中，将语音建模分为语义、说话者和韵律(semantic, speaker, and prosody)组件。 LLM 对语义(semantic)内容和韵律(prosody)进行建模，而条件流匹配模型(CFM)则捕获音色(timbre)和环境信息。我们使用无分类器引导(2022. Classifier-free diffusion guidance)、余弦调度器(cosine scheduler)和屏蔽条件(masked conditions)等技术来优化流匹配过程。
+
+
+CosyVoice由四个组件组成，即文本编码器(text encoder)、语音分词器(speech tokenizer)、大语言模型(large language model)和条件流匹配模型(conditional flow matching model)
+
+文本编码器(text encoder)用于对齐文本和语音token的语义空间;
+语音标记器(speech tokenizer)用于提取语义token;
+LLM(GLM)学习文本编码和语音标记的整个序列，将 TTS 重新表述为以文本作为提示的自回归序列生成问题;
+利用条件流匹配模型(conditional flow matching model), 通过最优路径上的去噪处理,将语音标记转换为梅尔谱图(Mel spectrogram); 通过分类器自由指导（Classifier-free diffusion guidance CFG）提高扩散概率模型的生成质量, 将CFG适应到条件流匹配模型中;
+获得人类耳朵可感知的声音信号，声码器(vocoder)使用 Hifi-GAN Generator 用于将生成的梅尔频谱图作为输入来合成波形(waveform)。
+
+其中：
+
+conditional flow matching model (OT-CFM) 来自 2023.9 Matcha-TTS: A fast TTS architecture with conditional flow matching(CFM的改进版本OT-CFM)
+Classifier-free diffusion guidance (CFG) 来自 2022. Classifier-free diffusion guidance
+vocoder 来自 2020. HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis Generator。
+
+附：
+
+achatbot 接入 CosyVoice:
+
+https://github.com/ai-bot-pro/achatbot/pull/21
+https://github.com/ai-bot-pro/achatbot/pull/23
+
+
+"><meta itemprop="datePublished" content="2025-01-15T10:26:23+08:00" />
+<meta itemprop="dateModified" content="2025-01-15T10:26:23+08:00" />
+<meta itemprop="wordCount" content="7327">
+<meta itemprop="keywords" content="Supervised Semantic Speech Tokenizer,BPE,AR&#34;,flow,CFG,mel-spectrogram," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="论文解读：CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens"/>
+<meta name="twitter:description" content="CosyVoice
+
+2024.7 FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs （主要介绍ASR SenseVoice 和 TTS CosyVoice,其中 SenseVoice 没有单独论文，相关CosyVoice 和单独论文是重复的, SenseVoice Large的工作可以用于 CosyVoice 在多语言上， Supervised speech tokenizer 模块的训练和推理）
+2024.7 CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens
+2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models （流式合成）
+paper code: 没有pre-trainning过程；公开推理和权重，以及微调。
+
+创新点：
+
+将监督语音token集成到TTS 模型，增强了零样本语音克隆中的内容一致性和说话者相似性。
+一种可扩展的零样本 TTS 合成系统，它将用于文本到token生成的 LLM 与用于token到语音合成的条件流匹配模型(conditional flow matching model(CFM))相结合，不依赖于音素持续时间预测(Duration predictor)，不需要使用补充音素器(phonemizers)和强制对齐器(aligners 比如：Glow-TTS中 Monotonic Alignment Search(MAS))。
+为了进一步细化生成语音的质量，将 x-vector 合并到 LLM 中，将语音建模分为语义、说话者和韵律(semantic, speaker, and prosody)组件。 LLM 对语义(semantic)内容和韵律(prosody)进行建模，而条件流匹配模型(CFM)则捕获音色(timbre)和环境信息。我们使用无分类器引导(2022. Classifier-free diffusion guidance)、余弦调度器(cosine scheduler)和屏蔽条件(masked conditions)等技术来优化流匹配过程。
+
+
+CosyVoice由四个组件组成，即文本编码器(text encoder)、语音分词器(speech tokenizer)、大语言模型(large language model)和条件流匹配模型(conditional flow matching model)
+
+文本编码器(text encoder)用于对齐文本和语音token的语义空间;
+语音标记器(speech tokenizer)用于提取语义token;
+LLM(GLM)学习文本编码和语音标记的整个序列，将 TTS 重新表述为以文本作为提示的自回归序列生成问题;
+利用条件流匹配模型(conditional flow matching model), 通过最优路径上的去噪处理,将语音标记转换为梅尔谱图(Mel spectrogram); 通过分类器自由指导（Classifier-free diffusion guidance CFG）提高扩散概率模型的生成质量, 将CFG适应到条件流匹配模型中;
+获得人类耳朵可感知的声音信号，声码器(vocoder)使用 Hifi-GAN Generator 用于将生成的梅尔频谱图作为输入来合成波形(waveform)。
+
+其中：
+
+conditional flow matching model (OT-CFM) 来自 2023.9 Matcha-TTS: A fast TTS architecture with conditional flow matching(CFM的改进版本OT-CFM)
+Classifier-free diffusion guidance (CFG) 来自 2022. Classifier-free diffusion guidance
+vocoder 来自 2020. HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis Generator。
+
+附：
+
+achatbot 接入 CosyVoice:
+
+https://github.com/ai-bot-pro/achatbot/pull/21
+https://github.com/ai-bot-pro/achatbot/pull/23
+
+
+"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [["$", "$"]],
+    },
+    displayMath: [
+      ["$$", "$$"],
+      ["\[\[", "\]\]"],
+    ],
+    svg: {
+      fontCache: "global",
+    },
+  };
+</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script
+  id="MathJax-script"
+  async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+></script>
+
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">时间飘过</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/perf-book-cn/zh/" rel="noopener" target="_blank">
+              《现代CPU性能分析与优化》
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      时间飘过
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/perf-book-cn/zh/" rel="noopener" target="_blank">
+              《现代CPU性能分析与优化》
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">论文解读：CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens</h1>
+      
+      <div class="post-meta">
+        <time datetime="2025-01-15" class="post-time">
+          2025-01-15
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            <a href="https://weedge.github.io/categories/tts/"> TTS </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#supervised-semantic-tokens-for-speech-语音的监督语义tokens">Supervised Semantic Tokens for Speech 语音的监督语义tokens</a></li>
+    <li><a href="#large-language-model-for-tts-用于tts的大型语言模型">Large Language Model for TTS 用于TTS的大型语言模型</a></li>
+    <li><a href="#optimal-transport-conditional-flow-matching-最优传输条件流匹配">Optimal-transport Conditional Flow Matching 最优传输条件流匹配</a></li>
+    <li><a href="#zero-shot-in-context-learning-零样本上下文学习">Zero-shot In-context Learning 零样本上下文学习</a></li>
+    <li><a href="#rich-generation-with-instruction-带指令的丰富生成">Rich Generation with Instruction 带指令的丰富生成</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#supervised-semantic-speech-tokenizer">Supervised Semantic Speech Tokenizer</a></li>
+    <li><a href="#cosyvoice-模型设置">CosyVoice 模型设置</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#supervised-semantic-speech-tokenizer-的评估">Supervised Semantic Speech Tokenizer 的评估</a></li>
+    <li><a href="#cosyvoice生成质量评估">CosyVoice生成质量评估</a></li>
+    <li><a href="#cosyvoice的情绪可控性-emotion-controllability">CosyVoice的情绪可控性 Emotion Controllability</a></li>
+    <li><a href="#cosyvoice-作为数据生成器-data-generator">CosyVoice 作为数据生成器 Data Generator</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <h1 id="cosyvoice">CosyVoice</h1>
+<ul>
+<li><a href="https://arxiv.org/abs/2407.04051">2024.7 FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs</a> （主要介绍ASR SenseVoice 和 TTS CosyVoice,其中 SenseVoice 没有单独论文，相关CosyVoice 和单独论文是重复的, SenseVoice Large的工作可以用于 CosyVoice 在多语言上， Supervised speech tokenizer 模块的训练和推理）</li>
+<li><a href="https://arxiv.org/abs/2407.05407">2024.7 <strong>CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens</strong></a></li>
+<li><a href="https://arxiv.org/abs/2412.10117">2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models</a> （流式合成）</li>
+<li><a href="https://github.com/FunAudioLLM/CosyVoice">paper code</a>: 没有pre-trainning过程；公开推理和权重，以及微调。</li>
+</ul>
+<p>创新点：</p>
+<ul>
+<li>将监督语音token集成到TTS 模型，增强了零样本语音克隆中的内容一致性和说话者相似性。</li>
+<li>一种可扩展的零样本 TTS 合成系统，它将用于文本到token生成的 LLM 与用于token到语音合成的条件流匹配模型(conditional flow matching model(CFM))相结合，不依赖于音素持续时间预测(Duration predictor)，不需要使用补充音素器(phonemizers)和强制对齐器(aligners 比如：Glow-TTS中 Monotonic Alignment Search(MAS))。</li>
+<li>为了进一步细化生成语音的质量，将 x-vector 合并到 LLM 中，将语音建模分为语义、说话者和韵律(semantic, speaker, and prosody)组件。 LLM 对语义(semantic)内容和韵律(prosody)进行建模，而条件流匹配模型(CFM)则捕获音色(timbre)和环境信息。我们使用无分类器引导(<a href="https://arxiv.org/abs/2207.12598">2022. <strong>Classifier-free diffusion guidance</strong></a>)、余弦调度器(<a href="https://d2l.ai/chapter_optimization/lr-scheduler.html#cosine-scheduler">cosine scheduler</a>)和屏蔽条件(masked conditions)等技术来优化流匹配过程。</li>
+</ul>
+<p><img src="https://github.com/user-attachments/assets/3e8c1132-e146-4b73-8d0c-f3972bf7c8bd" alt=""></p>
+<p>CosyVoice由四个组件组成，即文本编码器(text encoder)、语音分词器(speech tokenizer)、大语言模型(large language model)和条件流匹配模型(conditional flow matching model)</p>
+<ul>
+<li>文本编码器(text encoder)用于对齐文本和语音token的语义空间;</li>
+<li>语音标记器(speech tokenizer)用于提取语义token;</li>
+<li>LLM(GLM)学习文本编码和语音标记的整个序列，将 TTS 重新表述为以文本作为提示的自回归序列生成问题;</li>
+<li>利用条件流匹配模型(conditional flow matching model), 通过最优路径上的去噪处理,将语音标记转换为梅尔谱图(Mel spectrogram); 通过分类器自由指导（Classifier-free diffusion guidance CFG）提高扩散概率模型的生成质量, 将CFG适应到条件流匹配模型中;</li>
+<li>获得人类耳朵可感知的声音信号，声码器(vocoder)使用 Hifi-GAN Generator 用于将生成的梅尔频谱图作为输入来合成波形(waveform)。</li>
+</ul>
+<p>其中：</p>
+<ul>
+<li>conditional flow matching model (OT-CFM) 来自 <a href="https://arxiv.org/abs/2309.03199">2023.9 <strong>Matcha-TTS: A fast TTS architecture with conditional flow matching</strong></a>(CFM的改进版本OT-CFM)</li>
+<li>Classifier-free diffusion guidance (CFG) 来自 <a href="https://arxiv.org/abs/2207.12598">2022. <strong>Classifier-free diffusion guidance</strong></a></li>
+<li>vocoder 来自 <a href="https://arxiv.org/abs/2010.05646">2020. <strong>HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis</strong></a> Generator。</li>
+</ul>
+<p>附：</p>
+<ul>
+<li>achatbot 接入 CosyVoice:
+<ul>
+<li><a href="https://github.com/ai-bot-pro/achatbot/pull/21">https://github.com/ai-bot-pro/achatbot/pull/21</a></li>
+<li><a href="https://github.com/ai-bot-pro/achatbot/pull/23">https://github.com/ai-bot-pro/achatbot/pull/23</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="supervised-semantic-tokens-for-speech-语音的监督语义tokens">Supervised Semantic Tokens for Speech 语音的监督语义tokens</h2>
+<p><strong>Supervised speech tokenizer</strong>: 使用一个监督自动语音识别（ASR）模型来派生监督语义语音tokenizer(Supervised speech tokenizer)。该模型是我们专有的SenseVoice ASR模型的一个微调版本。它在多语言音频数据上进行训练，具有丰富的音频内容理解能力。与原始ASR模型不同，我们将编码器分为两部分，并在它们之间插入一个向量量化层。给定一个梅尔频谱图 X 作为输入，它首先经过位置编码和 $Encoder_1$以获得上下文感知表示 H ：
+$$
+H = \text{Encoder}_1(\text{PosEnc}(X))
+$$</p>
+<p>然后，向量量化器（VQ）被用来获得离散标记。对于第 l 帧的隐藏表示 $h_l$ ，码本 C 中最近邻嵌入的索引被视为该时间步的语音token $\mu_l$ ：
+$$
+\mu_l = \text{VQ}(h_l, C) = \arg \min_{c_n \in C} | h_l - c_n |_2
+$$</p>
+<p>其中 $|\cdot |_2$  表示L2范数（L2 norm，也称为欧几里得范数或欧几里得距离）。</p>
+<p>在训练阶段，码本嵌入通过指数移动平均（EMA）进行更新：
+$$
+c_{\mu_l} := \alpha c_{\mu_l} + (1 - \alpha) h_l
+$$</p>
+<p>其中 $\alpha$ 是一个预定义的衰减系数。相应的语音token的码本嵌入被用作量化后的隐藏表示
+$ \bar{H} = { c_{\mu_1}, c_{\mu_2}, \ldots, c_{\mu_L} }$ ，并传递给剩余的编码器层$Encoder_2$：
+$$
+\tilde{H} = \text{Encoder}_2(\text{PosEnc}(\bar{H}))
+$$</p>
+<p>在剩余的编码器层之前，我们添加了一个额外的位置编码，以增强时间信息。经过$Encoder_2$后，跟随一个基于Transformer的ASR解码器，预测文本标签(labels)的后验概率：
+$$
+P(Y | X) = \text{ASRDecoder}(\tilde{H}, Y^{Z-1})
+$$
+其中 $Y^{Z-1}$ 表示在教师强制训练方案中左移的文本标签。</p>
+<h2 id="large-language-model-for-tts-用于tts的大型语言模型">Large Language Model for TTS 用于TTS的大型语言模型</h2>
+<p>将文本到语音（TTS）任务重新定义为一个自回归语音token生成问题，并使用大型语言模型（LLM）来解决。对于LLM，序列的构建至关重要，具体构建方式如下：</p>
+<p>$$
+S, v, {\bar{y}_u}|{u\in[1:U]}, T, {\mu_l}|{l\in[1:L]}, E
+$$</p>
+<p>其中：</p>
+<ul>
+<li>S 和 E 分别表示序列的开始和结束。</li>
+<li>v 是从语音 X 中提取的说话人嵌入向量，使用预训练的声纹模型(voice-print model),来自: <a href="https://github.com/modelscope/3D-Speaker/tree/main/egs/3dspeaker/sv-cam++">https://github.com/modelscope/3D-Speaker/tree/main/egs/3dspeaker/sv-cam++</a> | <a href="https://arxiv.org/abs/2305.12838">An Enhanced Res2Net with Local and Global Feature Fusion for Speaker Verification</a>。</li>
+<li>文本编码 $\bar{Y}={\bar{y}_u}, u\in[1:U] $ 将文本通过字节对编码(BPE)tokenizer和文本编码器(TextEncoder)获得：</li>
+</ul>
+<p>$$
+\bar{Y} = \text{TextEncoder}(\text{BPE}(Y))
+$$</p>
+<p>由于文本和语音token位于不同的语义层次，文本编码器用于对齐它们的语义空间，从而有利于LLM的建模。在文本编码和语音token ${\mu_l}_{l \in [1:L]}$ 之间插入一个起始标识符 T ，语音token是使用语音的监督语义标记器(Supervised Semantic Speech Tokenizer)提取的。在训练阶段，采用教师强制方案，其中左移序列作为模型输入，原始序列作为期望输出。注意，在训练过程中，只有语音token和 E 的交叉熵损失被考虑：</p>
+<p>$$
+\text{LLM} = - \frac{1}{L + 1} \sum_{l=1}^{L+1} \log q(\mu_l)
+$$</p>
+<p>其中 $\mu_{L+1}$ 是“序列结束”token E 。 $q(\mu_l)$ 表示由LLM的softmax层预测的 $\mu_l$ 的后验概率。</p>
+<h2 id="optimal-transport-conditional-flow-matching-最优传输条件流匹配">Optimal-transport Conditional Flow Matching 最优传输条件流匹配</h2>
+<p>使用最优传输条件流匹配模型（OT-CFM）来学习梅尔频谱图的分布，并以生成的语音标记为条件生成样本。与扩散概率模型（DPMs）相比，OT-CFM具有更简单的梯度、更容易的训练和更快的生成速度。
+这在论文：<a href="https://arxiv.org/abs/2210.02747">2022.10 Flow matching for generative modeling</a> | <a href="https://arxiv.org/abs/2302.00482">2023.2 Improving and generalizing flow-based generative models with minibatch optimal transport</a> | <a href="https://arxiv.org/abs/2309.03199">2023.9 <strong>Matcha-TTS: A fast TTS architecture with conditional flow matching</strong></a> 中已经研究过。</p>
+<p>在连续时间正规化流（CNFs）中，从先验分布 $p_0(X)$ 到梅尔频谱图数据分布 $q(X)$ 构建一个概率密度路径。这个概率密度路径由一个时间依赖的向量场 $\nu_t(X)$ 定义，通过以下常微分方程（ODE）生成流 $\phi_t$ ：</p>
+<p>$$
+\frac{d}{dt} \phi_t(X) = \nu_t(\phi_t(X), t)
+\phi_0(X) \sim p_0(X) = N(X; 0, I)
+\phi_1(X) \sim p_1(X)
+$$</p>
+<p>通过求解初值问题，可以用 $p_1(X)$ 近似语音分布 $q(X)$ 并从中采样。为了学习向量场 $\nu_t(X)$ ，我们定义最优传输（OT）流，并通过最小化以下损失函数使神经网络匹配它：</p>
+<p>$$
+L_{OT-CFM}\ = \mathbb{E}_{t, p_0(X_0),\ q(X_1)} \left[ \left| \omega_t(\phi_{OT}^t(X_0, X_1) | X_1) - \nu_t(\phi_{OT}^t(X_0, X_1) | \theta) \right| \right]
+$$</p>
+<p>其中：
+$$
+\phi_{OT}^t(X_0, X_1) = (1 - (1 - \sigma)t)X_0 + tX_1
+\omega_t(\phi_{OT}^t(X_0, X_1) | X_1) = X_1 - (1 - \sigma)X_0
+$$</p>
+<p>说话人嵌入 v 、语音标记 ${\mu_l}_{1:L}$ 和掩码梅尔频谱图 $\tilde{X}_1$ 也被输入到神经网络中，以匹配带有可学习参数 $\theta$ 的向量场：</p>
+<p>$$
+\nu_t(\phi_{OT}^t(X_0, X_1) | \theta) = \text{NN}_\theta \left( \phi_{OT}^t(X_0, X_1), t; v, {\mu_l}_{1:L}, \tilde{X}_1 \right)
+$$</p>
+<p>掩码梅尔频谱图 $\tilde{X}_1$ 是通过从随机起点到结束连续帧设为零得到的。考虑到生成过程在开始时比后续更难，我们引入了一个余弦调度器来调整时间步 t ：</p>
+<p>$$
+t := 1 - \cos \left(\frac{t\pi}{2}\right)
+$$</p>
+<p>在调度的流下，开始时有更多的生成步骤。</p>
+<p>分类器自由指导（Classifier-free diffusion guidance CFG）已被证明可以提高扩散概率模型的生成质量。
+在论文：<a href="https://arxiv.org/abs/2102.09672">2021. <strong>Improved denoising diffusion probabilistic models</strong></a> | <a href="https://arxiv.org/abs/2207.12598">2022. <strong>Classifier-free diffusion guidance</strong></a> | <a href="https://arxiv.org/abs/2306.15687">2023. Voicebox: Text-guided multilingual universal speech generation at scale</a> 中已经研究过。
+因此，提出将CFG适应到条件流匹配模型中。在训练阶段，以固定概率0.2随机丢弃条件 $\Psi = {v, {\mu_l}_{1:L}, \tilde{X}_1}$ 。以这种方式，可以学习条件和无条件流。在生成期间，向量场被修改如下：</p>
+<p>$$
+\tilde{\nu}_t(\phi_{OT}^t(X_0, X_1)|\theta; \Psi)=(1+\beta)\cdot \nu_t(\phi_{OT}^t(X_0, X_1)|\theta;\Psi) -\beta \cdot \nu_t(\phi_{OT}^t(X_0, X_1) | \theta)
+$$</p>
+<p>其中 $\beta$ 是指导强度，取值为0.7。</p>
+<h2 id="zero-shot-in-context-learning-零样本上下文学习">Zero-shot In-context Learning 零样本上下文学习</h2>
+<p>这种零样本上下文学习能力使得CosyVoice能够在没有目标说话人的大量样本的情况下，生成高质量的语音，这对于个性化语音合成和多语言应用具有重要意义。通过这种方式，模型能够快速适应新的说话人和语言，提供更加自然和一致的语音输出。</p>
+<p>CosyVoice模型展示了零样本上下文学习的能力，允许仅使用简短的参考语音样本复制任意声音。这一过程涉及精心构建输入序列以供token 语言模型（LM）使用。</p>
+<p>构建输入序列如图所示：
+<img src="https://github.com/user-attachments/assets/a4391621-c996-414b-b5a1-0bc55b99ed4e" alt=""></p>
+<ul>
+<li>对于提示语音(prompt speech)和输入文本(input text)使用相同语言的情况，将它们合并为一个统一的输入，将提示语音token视为预先生成的。通过这种输入序列，自回归LM迭代预测后续token，直到遇到“序列结束”标记 E。</li>
+<li>当提示语音(prompt speech)和输入文本(input text)在语言上不同时，省略与提示相关的文本(prompt text)和tokens (prompt speech token)，以防止原始语言的韵律特征(prosodic characteristics)影响目标语言。需要注意的是，提示文本（对应于提示语音的内容）可以通过人工标注或ASR模型（如SenseVoice）进行转录。与提示文本类似，prompt speech token是使用 supervised semantic speech ($S^3$) tokenizer 从提示语音中提取的。</li>
+</ul>
+<p>生成speech token后，将它们附加到prompt tokens之后，形成流匹配模型的复合条件。此外，还纳入了prompt speech的说话人嵌入(speaker embedding)和梅尔频谱图(Mel spectrogram)，以进一步增强音色(timbre)和环境的一致性。</p>
+<p>PS: 引入提示语音和文本，进行零样本上下文学习，也为后续speech to speech学习提供参考方法</p>
+<h2 id="rich-generation-with-instruction-带指令的丰富生成">Rich Generation with Instruction 带指令的丰富生成</h2>
+<p>为了进一步增强CosyVoice的可控性，我们尝试整合额外的指令微调。CosyVoice-instruct在CosyVoice-base的基础上进行了扩展，增强了对指令的遵循能力。具体来说，它支持对多个方面的控制，包括说话人身份（即说话人的特征）、说话风格（包括情感、性别、语速和音高）以及细粒度的副语言特征。这些特征包括插入笑声、呼吸声、边笑边说以及强调某些词汇的能力。</p>
+<p>使用不包含说话人嵌入的自回归语言模型的训练数据对CosyVoice-base进行了微调。</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Speaker Identity</td>
+<td>1. Selene ’Moonshade’, is a mysterious, elegant dancer with a connection to the night. Her movements are both mesmerizing and deadly.<!-- raw HTML omitted -->Hope is a good thing. <!-- raw HTML omitted --> 2. Theo ’Crimson’, is a fiery, passionate rebel leader. Fights with fervor for justice, but struggles with impulsiveness.<!-- raw HTML omitted -->You don’t know about real loss</td>
+</tr>
+<tr>
+<td>类别示例说话人身份</td>
+<td>1. Selene ‘Moonshade’，是一位神秘、优雅的舞者，与夜晚有着神秘的联系。她的动作既迷人又致命。<!-- raw HTML omitted -->希望是美好的东西。<!-- raw HTML omitted -->2. Theo ‘Crimson’，是一位热情、激进的叛军领袖。他为正义而战，充满热情，但有时会冲动。<!-- raw HTML omitted -->你不知道真正的失落是什么。</td>
+</tr>
+<tr>
+<td>Speaking Style</td>
+<td>1. A happy girl with high tone and quick speech.<!-- raw HTML omitted -->The sun is shining brightly today.<!-- raw HTML omitted -->2. A sad woman with normal tone and slow speaking speed.<!-- raw HTML omitted -->I failed my important exam.</td>
+</tr>
+<tr>
+<td>说话风格</td>
+<td>1. 一个快乐的女孩，语调高，语速快。<!-- raw HTML omitted -->今天阳光明媚。<!-- raw HTML omitted -->2. 一个悲伤的女性，语调正常，语速慢。<!-- raw HTML omitted -->我重要的考试没通过。</td>
+</tr>
+<tr>
+<td>Fine-grained Paralinguistics</td>
+<td>1. Well that’s kind of scary [laughter].<!-- raw HTML omitted -->2. I don’t think I over eat yeah [breath] and um I do exercise regularly.<!-- raw HTML omitted -->3. Well that pretty much covers <!-- raw HTML omitted -->the subject<!-- raw HTML omitted --> well thanks for calling me. <!-- raw HTML omitted -->4. The team’s <!-- raw HTML omitted -->unity<!-- raw HTML omitted --> and <!-- raw HTML omitted -->resilience<!-- raw HTML omitted --> helped them win the championship</td>
+</tr>
+<tr>
+<td>细粒度副语言</td>
+<td>1. 好吧，这有点吓人[笑声]。<!-- raw HTML omitted -->2. 我不认为我吃得过多，是的[呼吸]，而且我确实定期锻炼。<!-- raw HTML omitted -->3. 好吧，这基本上涵盖了&lt;笑声&gt;这个话题<!-- raw HTML omitted -->，好吧，谢谢你打电话给我。<!-- raw HTML omitted -->4. 团队的<!-- raw HTML omitted -->团结<!-- raw HTML omitted -->和<!-- raw HTML omitted -->韧性<!-- raw HTML omitted -->帮助他们赢得了冠军。</td>
+</tr>
+</tbody>
+</table>
+<p>通过这种指令微调，CosyVoice能够根据给定的指令生成更加丰富和多样化的语音，满足不同场景下的需求。例如，用户可以指定生成一个快乐的女孩的声音，或者在语音中插入笑声，使生成的语音更加自然和生动。这种可控性不仅提高了语音合成的灵活性，还为个性化语音合成和多语言应用提供了更广泛的可能性。</p>
+<h1 id="datasets-数据集">Datasets 数据集</h1>
+<ul>
+<li><a href="https://arxiv.org/abs/1904.02882">Libritts: A corpus derived from librispeech for text-to-speech</a> (小规模单语言数据集, 应该是用来快速验证的) | <a href="https://www.openslr.org/60/">https://www.openslr.org/60/</a> : 该语料库包含 2,456 名英语使用者的 585 小时; 其中“train-clean-100”、“train-clean-360”和“train-other-500”合并进行训练(train)，“dev-clean”用于模型选择。 “test-clean”用于构建评估集（val）。</li>
+<li>非公开数据，内部采集，利用专门的内部工具进行语音检测、信噪比 (SNR) 估计、说话人二值化和分离。随后，使用 SenseVoice-Large 和 Paraformer 生成伪文本标签。这些标签在强制对齐 (force-alignment FA) 模型的帮助下经历了细化过程，这有助于消除低质量数据并提高标点符号的准确性。(大规模多语言数据集，进行scaling，毕竟结合LLM模型参数变大了)。</li>
+</ul>
+<p>PS: 这里还是用了<a href="https://arxiv.org/abs/2010.11567">AISHELL-3: A Multi-speaker Mandarin TTS Corpus and the Baselines</a> 作为评估数据集来评估模型的生成质量。</p>
+<p>大规模多语言数据集时长和对应指令类型时长统计:</p>
+<p><img src="https://github.com/user-attachments/assets/fb02e823-bb65-4299-8314-088d1963a56e" alt="image"></p>
+<h1 id="实验设置">实验设置</h1>
+<h2 id="supervised-semantic-speech-tokenizer">Supervised Semantic Speech Tokenizer</h2>
+<ul>
+<li>
+<p>对于小规模单语言数据集（Librispeech数据集）；采用 ESPNet Conformer ASR 模型作为主干；Speech Tokenizer 由前六个编码器层和VQ组成；</p>
+<ul>
+<li>VQ单个码本包含 4,096 个code。在Librispeech数据集上从头开始 50 个 epoch 训练量化器增强的 ASR 模型。</li>
+<li>Text Tokenizer: 在训练文本上训练单词句子模型，其词汇量为 4,000。</li>
+</ul>
+</li>
+<li>
+<p>对于大规模多语言数据集（内部采集处理的数据集）；采用SenseVoice-Large丰富的识别模型作为骨干；Speech Tokenizer 也由前六个编码器层和VQ组成；</p>
+<ul>
+<li>VQ包含 4,096 个code的单个码本。与单语言实验不同，使用预训练的检查点来初始化SenseVoice-Large模型，而不是从头开始训练。加入VQ后，进一步微调了 8 个 A800 GPU 上 210,000 个训练步骤(steps)的整体参数。</li>
+<li>Text Tokenizer 使用原有模型中自带的。</li>
+</ul>
+</li>
+</ul>
+<p>SenseVoice 模型结构（small Transformer Encoder, large Transformer Encoder-Decoder）：</p>
+<p><img src="https://github.com/user-attachments/assets/b1da07c1-29c2-41b9-824b-b190baec33d3" alt="image"></p>
+<h2 id="cosyvoice-模型设置">CosyVoice 模型设置</h2>
+<p>在单语言和多语言实验中训练微小和正常大小的模型。模型架构设置的详细信息如表所示:</p>
+<p><img src="https://github.com/user-attachments/assets/121c6bcb-d71f-4d90-86c5-281d9443b0ca" alt="image"></p>
+<ul>
+<li>微型模型在 LibriTTS 训练集上使用 4 个 V100-32M GPU 进行了 50 个周期的训练.</li>
+<li>多语言模型则在我们的内部数据集上使用 64 个 V100-32M GPU 进行了 800,000 个步骤的训练。</li>
+<li>微小模型和普通模型的学习率分别为 1e−3 和 1e−4。预热步骤设置为 10,000。</li>
+</ul>
+<h1 id="实验结果">实验结果</h1>
+<h2 id="supervised-semantic-speech-tokenizer-的评估">Supervised Semantic Speech Tokenizer 的评估</h2>
+<ul>
+<li>
+<p>引入VQ后是否WER很高，结果表明和不量化时，差距不大</p>
+</li>
+<li>
+<p>使用不同的 Tokenizer (text Tokenizer 和 speech Tokenizer) 对模型的影响评估，在 LibriTTS 单一说话人英文测试集上与其他 TTS 模型在内容一致性和说话人相似度 (SS) 方面的比较。使用 非自回归 ASR 模型 Paraformer-en 来识别生成的话语(utterances), 用于快速评估 WER.</p>
+<ul>
+<li>与其他 TTS 模型相比，即使使用相同的文本和语音标记器，所提出的 CosyVoice 框架也能实现可比的内容一致性和更高的说话者相似度。</li>
+<li>多语言text和speech tokenizer替换了单语言text和speech tokenizer。仅使用 LibriTTS 语料库来训练模型会降低内容一致性和说话人相似度。通过涉及内部大规模数据集，性能得到显着提升，达到了人类同等的质量。
+<img src="https://github.com/user-attachments/assets/c9dc29f0-591d-4fb8-a0a4-c5618704a83a" alt="image"></li>
+</ul>
+</li>
+</ul>
+<h2 id="cosyvoice生成质量评估">CosyVoice生成质量评估</h2>
+<p>评估方法：</p>
+<ul>
+<li>
+<p>从LibriTTS测试子集构建英文评估集，从AISHELL-3 测试集构建中文评估集； 对于这些集中的每个文本，随机选择一个提示语音。使用 Whisper-Large V3 进行英语识别，使用 Paraformer-zh 进行中文识别来评估内容一致性。通过计算使用 ERes2Net 提取的生成语音和提示语音的说话人嵌入之间的余弦相似度来量化说话人相似度 。</p>
+</li>
+<li>
+<p>token LM 采用随机采样解码策略，使用五个不同的随机种子值：0、7、42、123 和 1,337 来评估合成过程。对所得评估指标进行平均以确定平均值和标准差。</p>
+</li>
+<li>
+<p>ASR re-ranking 以展示离线模式下潜在的性能改进。
+ASR re-ranking（自动语音识别重排序）是一种技术，用于改进自动语音识别（ASR）系统的输出质量。其核心思想是通过重新评估和排序ASR系统生成的候选转录结果，选择最有可能正确的转录。这种方法可以显著提高ASR系统的准确性和鲁棒性，特别是在处理复杂或噪声环境下的语音数据时。</p>
+</li>
+</ul>
+<p>结果：</p>
+<ul>
+<li>在英语数据集上，CosyVoice 达到了人类水平的性能，具有相似的内容识别和更高的说话人相似度。</li>
+<li>ASR 重新排名显着增强了内容一致性，将字错误率 (WER) 降低了 1.51%。</li>
+<li>CosyVoice 在 WER 以及插入和删除错误数量方面优于 ChatTTS，这表明其具有出色的内容一致性。</li>
+<li>没有评估 ChatTTS 的说话者相似度，因为它没有发布语音克隆功能。
+<img src="https://github.com/user-attachments/assets/4da8d716-2a56-4236-a812-f4ffe348cf88" alt="image"></li>
+</ul>
+<h2 id="cosyvoice的情绪可控性-emotion-controllability">CosyVoice的情绪可控性 Emotion Controllability</h2>
+<p>评估方法：</p>
+<ul>
+<li>使用公共语音情绪识别模型 <a href="https://arxiv.org/abs/2312.15185">2023. emotion2vec: Self-supervised pre-training for speech emotion representation</a>|<a href="https://github.com/ddlBoJack/emotion2vec">paper code</a></li>
+<li>针对六种情绪分别生成并评估了 100 个英语话语：快乐、愤怒、悲伤、惊讶、恐惧和厌恶。合成文本的内容旨在匹配目标情感。然后，我们测量每种情绪的合成语音预测情绪的准确性。</li>
+</ul>
+<p>结果：</p>
+<ul>
+<li>对于 CosyVoice-instruct，输入由内容文本和语音风格指令组成(e.g., “Happy. <!-- raw HTML omitted --> Content Text”)。相反，CosyVoice-base 仅接收内容文本作为输入。</li>
+<li>结果表明，带有情感指令的 CosyVoice-instruct 比没有情感指令的 CosyVoice-base 和 CosyVoice-instruct 都有显着的改进。</li>
+</ul>
+<p><img src="https://github.com/user-attachments/assets/069420d2-26b7-4f11-b7b0-7d608e836fc6" alt="image"></p>
+<h2 id="cosyvoice-作为数据生成器-data-generator">CosyVoice 作为数据生成器 Data Generator</h2>
+<p>评估方法：</p>
+<ul>
+<li>通过CosyVoice生成语音数据，用于 ASR 模型训练；</li>
+<li>使用原始Librispeech 训练集进行ASR模型训练；</li>
+<li>使用原始Librispeech+合成数据，用于 ASR训练；</li>
+<li>使用原始Librispeech+MLS+合成数据，用于 ASR训练；</li>
+</ul>
+<p>单词错误率作为评估标准。</p>
+<p>CosyVoice 的一个简单应用是作为数据生成器来增强其他任务的训练数据，例如 ASR、语音到语音翻译 (S2ST)。以ASR任务为例，我们在Librispeech语料库上进行了实验，以评估CosyVoice生成高质量数据的能力。实验结果如表所示，其中“Librispeech”表示原始的960小时数据。 “Syn on LS text”和“Syn on LS, MLS text”分别表示使用 Librispeech 和 Multilingual LibriSpeech (<a href="https://www.openslr.org/94/">MLS</a>) 训练集的文本生成的数据。</p>
+<p><img src="https://github.com/user-attachments/assets/c8cdd5c4-e730-4388-82c3-cf46fdb3809e" alt="image"></p>
+<p>结果：</p>
+<ul>
+<li>从表中可以看到，仅对合成数据进行训练，ASR 模型就可以达到与原始 Librispeech 训练集相当的结果。将它们集成后，可以观察到识别精度显着提高。</li>
+<li>一个有趣的发现是，将合成数据纳入 MLS 文本可以显着提高识别性能。这可能表明文本多样性对于 ASR 任务比语音本身的持续时间更重要。</li>
+<li>这一改进可归因于 CosyVoice 合成样本引入的不同语言内容。</li>
+<li>评估结果强调了 CosyVoice 生成的样本的高质量。</li>
+</ul>
+<p>理想化：既然合成的语音数据能提高ASR模型识别任务精度提高，模型质量提高，进而可以提升Supervised Semantic Speech Tokenizer来提高 TTS模型的质量性能。 形成闭环，拟定评估标准，自适应学习提高？</p>
+<h1 id="总结">总结</h1>
+<p>CosyVoice作为一种自回归，可扩展的多语言语音生成模型，它支持零样本上下文学习、跨语言语音克隆、指令生成以及情感、副语言特征的细粒度控制。实验结果表明，CosyVoice的系统架构对于说话者相似度很重要，而文本和语音标记器对内容一致性影响很大。此外，扩大模型大小和数据量可以显着提高性能。因此，CosyVoice 实现了人类同等的生成质量。</p>
+<p>但是扩大模型大小，实际生产环境中推理部署的成本会增加，而且论文中没有对推理生成实时因子RTF进行评估；在同一硬件平台式，推理速度相对NAR模型来说要慢些；尽管可以结合LLM中的推理优化方案。</p>
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2025-01-15
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/supervised-semantic-speech-tokenizer/">Supervised Semantic Speech Tokenizer</a>
+          <a href="https://weedge.github.io/tags/bpe/">BPE</a>
+          <a href="https://weedge.github.io/tags/ar/">AR&#34;</a>
+          <a href="https://weedge.github.io/tags/flow/">flow</a>
+          <a href="https://weedge.github.io/tags/cfg/">CFG</a>
+          <a href="https://weedge.github.io/tags/mel-spectrogram/">mel-spectrogram</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/multimoding/voices/matcha-tts/">
+            <span class="next-text nav-default">论文解读 Matcha-TTS: A fast TTS architecture with conditional flow matching</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/post/multimoding/voices/cosyvoice/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:weege007@gmail.com" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/weedge" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://weibo.com/weedge" rel="me noopener" class="iconfont"
+      title="weibo"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M385.714286 733.714286q12-19.428571 6.285714-39.428571t-25.714286-28.571429q-19.428571-8-41.714286-0.571429t-34.285714 26.285714q-12.571429 19.428571-7.428571 39.142857t24.571429 28.857143 42.571429 1.428571 35.714286-27.142857zm53.714286-69.142857q4.571429-7.428571 2-15.142857t-10-10.571429q-8-2.857143-16.285714 2.857143t-12.285714 10.571429q-9.714286 17.714286 7.428571 25.714286 8 2.857143 16.571429 2.857143t12.571429-10.571429zm99.428571 61.142857q-25.714286 58.285714-90.285714 85.714286t-128 6.857143q-61.142857-19.428571-84.285714-72.285714t3.714286-107.142857q26.857143-53.142857 86.571429-79.428571t120.285714-10.857143q63.428571 16.571429 90.571429 68.285714t1.428571 108.857143zm178.285714-91.428571q-5.142857-54.857143-50.857143-97.142857t-119.142857-62.285714-156.857143-12q-127.428571 13.142857-211.142857 80.857143t-75.714286 151.142857q5.142857 54.857143 50.857143 97.142857t119.142857 62.285714 156.857143 12q127.428571-13.142857 211.142857-80.857143t75.714286-151.142857zm176 2.285714q0 38.857143-21.142857 79.714286t-62.285714 78.285714-96.285714 67.142857-129.142857 47.428571-154.571429 17.714286-157.142857-19.142857-137.428571-53.142857-98-86.285714-37.142857-114q0-65.714286 39.714286-140t112.857143-147.428571q96.571429-96.571429 195.142857-134.857143t140.857143 4q37.142857 36.571429 11.428571 119.428571-2.285714 8-0.571429 11.428571t5.714286 4 8.285714 2.857143 7.714286-2l3.428571-1.142857q79.428571-33.714286 140.571429-33.714286t87.428571 34.857143q25.714286 36 0 101.714286-1.142857 7.428571-2.571429 11.428571t2.571429 7.142857 6.857143 4.285714 9.714286 3.428571q32.571429 10.285714 58.857143 26.857143t45.714286 46.571429 19.428571 66.571429zm-42.285714-356.571429q24 26.857143 31.142857 62t-3.714286 67.142857q-4.571429 13.142857-16.857143 19.428571t-25.428571 2.285714q-13.142857-4.571429-19.428571-16.857143t-2.285714-25.428571q11.428571-36-13.714286-63.428571t-61.142857-20q-13.714286 2.857143-25.714286-4.571429t-14.285714-21.142857q-2.857143-13.714286 4.571429-25.428571t21.142857-14.571429q34.285714-7.428571 68 3.142857t57.714286 37.428571zm103.428571-93.142857q49.714286 54.857143 64.285714 127.142857t-7.714286 138q-5.142857 15.428571-19.428571 22.857143t-29.714286 2.285714-22.857143-19.428571-2.857143-29.714286q16-46.857143 5.714286-98.285714t-45.714286-90.285714q-35.428571-39.428571-84.571429-54.571429t-98.857143-4.857143q-16 3.428571-29.714286-5.428571t-17.142857-24.857143 5.428571-29.428571 24.857143-16.857143q70.285714-14.857143 139.428571 6.571429t118.857143 76.857143z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://weedge.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2013 -
+    2025
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        weedge
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//weedge.disqus.com/count.js" async></script>
+
+
+
+
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
+
+
+</body>
+</html>

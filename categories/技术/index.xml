@@ -6,7 +6,52 @@
     <description>Recent content in 技术 on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 14 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 15 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>论文解读：CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens</title>
+      <link>https://weedge.github.io/post/multimoding/voices/cosyvoice/</link>
+      <pubDate>Wed, 15 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/multimoding/voices/cosyvoice/</guid>
+      <description>&lt;h1 id=&#34;cosyvoice&#34;&gt;CosyVoice&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2407.04051&#34;&gt;2024.7 FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs&lt;/a&gt; （主要介绍ASR SenseVoice 和 TTS CosyVoice,其中 SenseVoice 没有单独论文，相关CosyVoice 和单独论文是重复的, SenseVoice Large的工作可以用于 CosyVoice 在多语言上， Supervised speech tokenizer 模块的训练和推理）&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2407.05407&#34;&gt;2024.7 &lt;strong&gt;CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2412.10117&#34;&gt;2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models&lt;/a&gt; （流式合成）&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/FunAudioLLM/CosyVoice&#34;&gt;paper code&lt;/a&gt;: 没有pre-trainning过程；公开推理和权重，以及微调。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;创新点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;将监督语音token集成到TTS 模型，增强了零样本语音克隆中的内容一致性和说话者相似性。&lt;/li&gt;
+&lt;li&gt;一种可扩展的零样本 TTS 合成系统，它将用于文本到token生成的 LLM 与用于token到语音合成的条件流匹配模型(conditional flow matching model(CFM))相结合，不依赖于音素持续时间预测(Duration predictor)，不需要使用补充音素器(phonemizers)和强制对齐器(aligners 比如：Glow-TTS中 Monotonic Alignment Search(MAS))。&lt;/li&gt;
+&lt;li&gt;为了进一步细化生成语音的质量，将 x-vector 合并到 LLM 中，将语音建模分为语义、说话者和韵律(semantic, speaker, and prosody)组件。 LLM 对语义(semantic)内容和韵律(prosody)进行建模，而条件流匹配模型(CFM)则捕获音色(timbre)和环境信息。我们使用无分类器引导(&lt;a href=&#34;https://arxiv.org/abs/2207.12598&#34;&gt;2022. &lt;strong&gt;Classifier-free diffusion guidance&lt;/strong&gt;&lt;/a&gt;)、余弦调度器(&lt;a href=&#34;https://d2l.ai/chapter_optimization/lr-scheduler.html#cosine-scheduler&#34;&gt;cosine scheduler&lt;/a&gt;)和屏蔽条件(masked conditions)等技术来优化流匹配过程。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/3e8c1132-e146-4b73-8d0c-f3972bf7c8bd&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;CosyVoice由四个组件组成，即文本编码器(text encoder)、语音分词器(speech tokenizer)、大语言模型(large language model)和条件流匹配模型(conditional flow matching model)&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;文本编码器(text encoder)用于对齐文本和语音token的语义空间;&lt;/li&gt;
+&lt;li&gt;语音标记器(speech tokenizer)用于提取语义token;&lt;/li&gt;
+&lt;li&gt;LLM(GLM)学习文本编码和语音标记的整个序列，将 TTS 重新表述为以文本作为提示的自回归序列生成问题;&lt;/li&gt;
+&lt;li&gt;利用条件流匹配模型(conditional flow matching model), 通过最优路径上的去噪处理,将语音标记转换为梅尔谱图(Mel spectrogram); 通过分类器自由指导（Classifier-free diffusion guidance CFG）提高扩散概率模型的生成质量, 将CFG适应到条件流匹配模型中;&lt;/li&gt;
+&lt;li&gt;获得人类耳朵可感知的声音信号，声码器(vocoder)使用 Hifi-GAN Generator 用于将生成的梅尔频谱图作为输入来合成波形(waveform)。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;其中：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;conditional flow matching model (OT-CFM) 来自 &lt;a href=&#34;https://arxiv.org/abs/2309.03199&#34;&gt;2023.9 &lt;strong&gt;Matcha-TTS: A fast TTS architecture with conditional flow matching&lt;/strong&gt;&lt;/a&gt;(CFM的改进版本OT-CFM)&lt;/li&gt;
+&lt;li&gt;Classifier-free diffusion guidance (CFG) 来自 &lt;a href=&#34;https://arxiv.org/abs/2207.12598&#34;&gt;2022. &lt;strong&gt;Classifier-free diffusion guidance&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;vocoder 来自 &lt;a href=&#34;https://arxiv.org/abs/2010.05646&#34;&gt;2020. &lt;strong&gt;HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis&lt;/strong&gt;&lt;/a&gt; Generator。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;附：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;achatbot 接入 CosyVoice:
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/21&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/21&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/23&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/23&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
     <item>
       <title>论文解读 Matcha-TTS: A fast TTS architecture with conditional flow matching</title>
       <link>https://weedge.github.io/post/multimoding/voices/matcha-tts/</link>
@@ -439,19 +484,6 @@
 &lt;p&gt;在数据科学中，字符串数据代表语音、文本、基因序列、日志记录和许多其他类型的信息。在使用字符串数据进行机器学习和特征工程时，必须经常对数据进行规范化和转换，然后才能将其应用于特定用例。libcudf 提供通用 API 和设备端实用程序，以支持各种自定义字符串操作。&lt;/p&gt;
 &lt;p&gt;这篇文章演示了如何使用 libcudf 通用 API 巧妙地转换字符串列。您将获得有关如何使用自定义内核和 libcudf 设备端实用程序解锁峰值性能的新知识。这篇文章还向您介绍了如何最好地管理 GPU 内存和高效构建 libcudf 列以加速字符串转换的示例。&lt;/p&gt;
 &lt;p&gt;(&lt;strong&gt;注&lt;/strong&gt;：从文件中获取数据到buffer中，都需要通过字符串处理操作，特别是split操作，如果是数值，需要atoi，atof操作进行数据分析，向量化操作等， 和数据处理打交道的 super 马里奥 应该学会这个工具，这里直接使用底层操作库libcudf；集成的其他语言有java(JNI)和python(cython), 主要是方便和现有 大数据生态打通(会有一些内存方面的性能损耗)，大多是离线处理场景，特别是LLM的预训练场景)&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>译：加速向量搜索：RAPIDS RAFT IVF-Flat 近似算法</title>
-      <link>https://weedge.github.io/post/gpu/3.accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/</link>
-      <pubDate>Fri, 03 Nov 2023 15:00:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/gpu/3.accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/</guid>
-      <description>&lt;p&gt;&lt;img src=&#34;https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
-&lt;p&gt;执行详尽的精确 k 最近邻 (kNN) 搜索，也称为&lt;em&gt;暴力搜索(brute-force search)&lt;/em&gt;，成本高昂，并且它不能很好地扩展到更大的数据集。在向量搜索期间，暴力搜索需要计算每个查询向量和数据库向量之间的距离。对于常用的欧几里德和余弦距离，计算任务等同于大型矩阵乘法。&lt;/p&gt;
-&lt;p&gt;虽然 GPU 在执行矩阵乘法方面效率很高，但随着数据量的增加，计算成本变得令人望而却步。然而，许多应用程序不需要精确的结果，而是可以为了更快的搜索而牺牲一些准确性。当不需要精确的结果时，近似最近邻 (ANN) 方法通常可以减少搜索期间必须执行的距离计算的数量。&lt;/p&gt;
-&lt;p&gt;本文主要介绍了 IVF-Flat，这是 NVIDIA &lt;a href=&#34;https://developer.nvidia.cn/zh-cn/blog/reusable-computational-patterns-for-machine-learning-and-data-analytics-with-rapids-raft/&#34;&gt;RAPIDS RAFT&lt;/a&gt; 中的一种方法。IVF-Flat 方法使用原始（即Flat）向量的倒排索引 (IVF)。此算法提供了简单的调整手段，以减少整体搜索空间并在准确性和速度之间进行权衡。&lt;/p&gt;
-&lt;p&gt;为了帮助了解如何使用 IVF-Flat，我们讨论了该算法的工作原理，并演示了&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/pylibraft_api/neighbors/#ivf-flat&#34;&gt;Python&lt;/a&gt;和&lt;a href=&#34;https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_flat/&#34;&gt;C++ APIs&lt;/a&gt;我们介绍了索引构建的设置参数，并提供了如何配置 GPU 加速的 IVF-Flat搜索的技巧。这些步骤也可以在示例中遵循&lt;a href=&#34;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/notebooks/ivf_flat_example.ipynb&#34;&gt;Python notebook&lt;/a&gt;和&lt;a href=&#34;https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/cpp/template/src/ivf_flat_example.cu&#34;&gt;C++ project&lt;/a&gt;.最后，我们演示了 GPU 加速的向量搜索比 CPU 搜索快一个数量级。&lt;/p&gt;</description>
     </item>
     
   </channel>

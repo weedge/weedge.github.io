@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>时间飘过</title>
+  <title>BPE · 时间飘过</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -34,8 +34,8 @@
 <meta name="generator" content="Hugo 0.91.0" />
 
 
-<link rel="canonical" href="https://weedge.github.io/" />
-<link href="/index.xml" rel="alternate" type="application/rss+xml" title="时间飘过" />
+<link rel="canonical" href="https://weedge.github.io/tags/bpe/" />
+<link href="/tags/bpe/index.xml" rel="alternate" type="application/rss+xml" title="时间飘过" />
 
 
 
@@ -60,14 +60,14 @@
 <link rel="stylesheet" href="/css/copy-to-clipboard.css">
 
 
-<meta property="og:title" content="时间飘过" />
+<meta property="og:title" content="BPE" />
 <meta property="og:description" content="记录工作和生活" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://weedge.github.io/" />
+<meta property="og:url" content="https://weedge.github.io/tags/bpe/" />
 
-<meta itemprop="name" content="时间飘过">
+<meta itemprop="name" content="BPE">
 <meta itemprop="description" content="记录工作和生活"><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="时间飘过"/>
+<meta name="twitter:title" content="BPE"/>
 <meta name="twitter:description" content="记录工作和生活"/>
 
 <!--[if lte IE 9]>
@@ -331,298 +331,27 @@
       <div class="content-wrapper">
         <div id="content" class="content container">
           
-<section id="posts" class="posts">
-  
+
+<section id="archive" class="archive">
   
     
-  
-  
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/simd/faster_integer_parsing/">译：更快的字符串转整数</a>
-    </h1>
+      <div class="archive-title tag">
+        <h2 class="archive-name">标签： BPE</h2>
+      </div>
     
-    <div class="post-meta">
-      <time datetime="2023-11-30" class="post-time">
-        2023-11-30
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
   
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p>​                        <img src="https://github.com/weedge/mypic/raw/master/simd/faster_integer_parsing/0.jpeg" alt=""></p>
-<h2 id="导读">导读</h2>
-<p>字符串转换成整数，或者浮点类型数据，是在编程中经常遇到的问题，各种语言的标准库中会有实现，本文通过一个常见问题场景，来研究优化如何使用cpu 硬件SIMD指令集，并结合编译器在 log(n) 时间内完成此类parse操作；由于最终的优化需要结合对应cpu arch的指令集，这里硬件平台cpu为Intel x86，整数类型以uint64_t为例，最大2^64-1 20个字符表示。目的：结合场景优化思路(以小见大)，熟悉下Intel cpu simd相关指令的使用。常见场景： <a href="https://github.com/simdjson/simdjson">simdjson</a>  (PS: 不因过早优化，在对应场景下整体稳定性和优化成本/收益上折中)</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/simd/faster_integer_parsing/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
 
   
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/gpu/mastering-string-transformations-in-rapids-libcudf/">译：掌握 RAPIDS libcudf 中的字符串转换</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-11-07" class="post-time">
-        2023-11-07
+    <div class="archive-post">
+      <time datetime="2025-01-15" class="archive-post-time">
+        2025-01-15
       </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
+      <span class="archive-post-title">
+        <a href="/post/multimoding/voices/cosyvoice/" class="archive-post-link">
+          论文解读：CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens
+        </a>
+      </span>
     </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p><img src="https://github.com/weedge/mypic/raw/master/oneday/mastering-string-transformations-in-rapids-libcudf/1.png" alt="img"></p>
-<p>字符串数据的高效处理对于许多数据科学应用至关重要。为了从字符串数据中提取有价值的信息，<a href="https://github.com/rapidsai/cudf">RAPIDS libcudf</a>提供了强大的工具来加速字符串数据转换。libcudf 是一个 C++ GPU DataFrame 库，用于加载、连接、聚合和过滤数据。</p>
-<p>在数据科学中，字符串数据代表语音、文本、基因序列、日志记录和许多其他类型的信息。在使用字符串数据进行机器学习和特征工程时，必须经常对数据进行规范化和转换，然后才能将其应用于特定用例。libcudf 提供通用 API 和设备端实用程序，以支持各种自定义字符串操作。</p>
-<p>这篇文章演示了如何使用 libcudf 通用 API 巧妙地转换字符串列。您将获得有关如何使用自定义内核和 libcudf 设备端实用程序解锁峰值性能的新知识。这篇文章还向您介绍了如何最好地管理 GPU 内存和高效构建 libcudf 列以加速字符串转换的示例。</p>
-<p>(<strong>注</strong>：从文件中获取数据到buffer中，都需要通过字符串处理操作，特别是split操作，如果是数值，需要atoi，atof操作进行数据分析，向量化操作等， 和数据处理打交道的 super 马里奥 应该学会这个工具，这里直接使用底层操作库libcudf；集成的其他语言有java(JNI)和python(cython), 主要是方便和现有 大数据生态打通(会有一些内存方面的性能损耗)，大多是离线处理场景，特别是LLM的预训练场景)</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/gpu/mastering-string-transformations-in-rapids-libcudf/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/gpu/3.accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/">译：加速向量搜索：RAPIDS RAFT IVF-Flat 近似算法</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-11-03" class="post-time">
-        2023-11-03
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p><img src="https://github.com/weedge/mypic/raw/master/oneday/accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/1.png" alt="img"></p>
-<p>执行详尽的精确 k 最近邻 (kNN) 搜索，也称为<em>暴力搜索(brute-force search)</em>，成本高昂，并且它不能很好地扩展到更大的数据集。在向量搜索期间，暴力搜索需要计算每个查询向量和数据库向量之间的距离。对于常用的欧几里德和余弦距离，计算任务等同于大型矩阵乘法。</p>
-<p>虽然 GPU 在执行矩阵乘法方面效率很高，但随着数据量的增加，计算成本变得令人望而却步。然而，许多应用程序不需要精确的结果，而是可以为了更快的搜索而牺牲一些准确性。当不需要精确的结果时，近似最近邻 (ANN) 方法通常可以减少搜索期间必须执行的距离计算的数量。</p>
-<p>本文主要介绍了 IVF-Flat，这是 NVIDIA <a href="https://developer.nvidia.cn/zh-cn/blog/reusable-computational-patterns-for-machine-learning-and-data-analytics-with-rapids-raft/">RAPIDS RAFT</a> 中的一种方法。IVF-Flat 方法使用原始（即Flat）向量的倒排索引 (IVF)。此算法提供了简单的调整手段，以减少整体搜索空间并在准确性和速度之间进行权衡。</p>
-<p>为了帮助了解如何使用 IVF-Flat，我们讨论了该算法的工作原理，并演示了<a href="https://docs.rapids.ai/api/raft/stable/pylibraft_api/neighbors/#ivf-flat">Python</a>和<a href="https://docs.rapids.ai/api/raft/stable/cpp_api/neighbors_ivf_flat/">C++ APIs</a>我们介绍了索引构建的设置参数，并提供了如何配置 GPU 加速的 IVF-Flat搜索的技巧。这些步骤也可以在示例中遵循<a href="https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/notebooks/ivf_flat_example.ipynb">Python notebook</a>和<a href="https://github.com/rapidsai/raft/blob/a1002f8c8f4debc52fbab7191297a2f54ff42856/cpp/template/src/ivf_flat_example.cu">C++ project</a>.最后，我们演示了 GPU 加速的向量搜索比 CPU 搜索快一个数量级。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/gpu/3.accelerated-vector-search-approximating-with-rapids-raft-ivf-flat/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/gpu/2.accelerating-vector-search-fine-tuning-gpu-index-algorithms/">译：加速向量搜索：微调 GPU 索引算法</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-11-03" class="post-time">
-        2023-11-03
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p>这个 <a href="https://developer.nvidia.cn/zh-cn/blog/accelerating-vector-search-using-gpu-accelerated-indexes-with-rapids-raft/">系列的第一篇文章</a> 介绍了向量搜索索引，解释了它们在实现广泛的重要应用中所起的作用，并使用了 <a href="https://github.com/rapidsai/raft">RAFT</a> 库。</p>
-<p>在这篇文章中，我们深入探讨第 1 部分中提到的每种 GPU 加速索引方法，并简要解释了算法的工作原理，以及总结重要的微调参数。</p>
-<p>然后，我们通过一个简单的端到端示例，用预训练的大型语言模型演示 RAFT 在问答问题上的 Python API，并在涉及同时传递给搜索算法的不同查询向量数量的几个不同场景下，将 RAFT 的算法与 HNSW 的性能进行比较。</p>
-<p>内容如下：</p>
-<ul>
-<li>可与 GPU 一起使用的向量搜索索引算法概述</li>
-<li>一个端到端的例子演示了使用 Python 在 GPU 上运行向量搜索是多么容易</li>
-<li>GPU 上的向量搜索与 CPU 上当前最先进的 HNSW 方法的性能比较</li>
-</ul>
-    </div>
-    <div class="read-more">
-      <a href="/post/gpu/2.accelerating-vector-search-fine-tuning-gpu-index-algorithms/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/gpu/1.accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/">译：加速向量搜索：利用 GPU 索引的 RAPIDS RAFT</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-11-03" class="post-time">
-        2023-11-03
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p>在 2023 年的人工智能领域，向量搜索成为最热门的话题之一，因为它在<a href="https://www.nvidia.cn/glossary/data-science/large-language-models/">大语言模型</a>（LLM）和<a href="https://www.nvidia.cn/glossary/data-science/generative-ai/">生成式人工智能</a>中发挥了重要作用。语义向量搜索实现了一系列重要任务，如检测欺诈交易、向用户推荐产品、使用上下文信息增强全文搜索以及查找潜在安全风险的参与者。</p>
-<p>数据量持续飙升，传统的逐一比较的方法在计算上变得不可行。向量搜索方法使用近似查找，这种查找更具可扩展性，可以更有效地处理大量数据。正如我们在这篇文章中所展示的，在 GPU 上加速向量搜索不仅提供了更快的搜索时间，而且索引构建时间也可以更快。</p>
-<p>本文内容如下：</p>
-<ul>
-<li>向量搜索简介及流行应用综述</li>
-<li>在 GPU 上加速向量搜索的 RAFT 库综述</li>
-<li>GPU 加速向量搜索索引与 CPU 上最新技术的性能比较</li>
-</ul>
-<p>本系列的第二篇文章深入探讨了每一个 GPU 加速指数，并简要解释了算法的工作原理以及微调其行为的重要参数摘要。想要了解更多信息，请访问 <a href="https://developer.nvidia.cn/zh-cn/blog/accelerating-vector-search-fine-tuning-gpu-index-algorithms/">加速向量搜索：微调 GPU 索引算法</a>。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/gpu/1.accelerating-vector-search-using-gpu-powered-indexes-with-rapids-raft/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/gpu/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/">译：利用 GPU 上的大规模并行hashmap最大限度地提高性能</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-11-02" class="post-time">
-        2023-11-02
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p><img src="https://github.com/weedge/mypic/raw/master/oneday/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/1.png" alt="img"></p>
-<p>数十年的计算机科学历史一直致力于设计有效存储和检索信息的解决方案。hashmap（或hashtable）是一种流行的信息存储数据结构，因为它们可以保证元素插入和检索的恒定时间。</p>
-<p>然而，尽管hashmap很流行，但很少在 GPU 加速计算的背景下进行讨论。虽然 GPU 以其大量线程和计算能力而闻名，但其极高的内存带宽可以加速许多数据结构（例如hashmap）。</p>
-<p>这篇文章将介绍哈hashmap的基础知识以及它们的内存访问模式如何使其非常适合 GPU 加速。我们将介绍<a href="https://github.com/NVIDIA/cuCollections">cuCollections</a>，这是一个用于并发数据结构（包括hashmap）的新开源 CUDA C++ 库。</p>
-<p>最后，如果有兴趣在应用程序中使用 GPU 加速的哈希表，我们提供了多列关系连接算法的示例实现case。RAPIDS cuDF 集成了 GPU 哈希表，这有助于为数据科学工作负载实现令人难以置信的加速。要了解更多信息，请参阅GitHub 上的<a href="https://github.com/rapidsai/cudf">rapidsai/cudf</a>; 以及使用示例case <a href="https://medium.com/rapids-ai/accelerating-tf-idf-for-natural-language-processing-with-dask-and-rapids-6f6e416429df">使用 Dask 和 RAPIDS 加速 TF-IDF 进行自然语言处理</a>。</p>
-<p>还可以将 cuCollections 用于表格数据处理之外的许多用例，例如推荐系统、流压缩、图形算法、基因组学和稀疏线性代数运算。请参阅<a href="https://blogs.nvidia.com/blog/2022/08/04/pinterest-gpu-acceleration-recommenders/">Pinterest 通过切换推荐系统的 GPU 加速将主页订阅参与度提高 16%</a>了解更多信息。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/gpu/maximizing-performance-with-massively-parallel-hash-maps-on-gpus/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/oneday/similarity-search/7.lsh-compositions/">译：相似性搜索，第 7 部分：LSH 组合</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2023-09-26" class="post-time">
-        2023-09-26
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p><img src="https://github.com/weedge/mypic/raw/master/oneday/lsh-compositions/0.png" alt=""></p>
-<p><strong>深入研究 LSH 函数的组合以保证更可靠的搜索</strong></p>
-<h1 id="介绍">介绍</h1>
-<p>在数据科学中，相似性搜索经常出现在 NLP 领域、搜索引擎或推荐系统中，其中需要检索最相关的文档或项目以进行查询。有多种不同的方法可以提高海量数据的搜索性能。</p>
-<p>在本系列文章的最后两部分中，我们深入研究了 LSH —— 一种<em>将输入向量转换为低维散列值，同时保留有关其相似性的信息</em>的算法。特别是，我们已经研究了两种适用于不同距离度量的算法：</p>
-<p><a href="https://weedge.github.io/post/oneday/similarity-search/5.locality-sensitive-hashing/">相似性搜索，第 5 部分：局部敏感哈希 (LSH)</a>: 经典的LSH算法构造反映向量<strong>Jaccard系数</strong>信息的签名。</p>
-<p><a href="https://weedge.github.io/post/oneday/similarity-search/6.random-projections-with-lsh-forest/">相似性搜索，第 6 部分：LSH 森林的随机投影</a>: 随机投影方法构建了保持向量<strong>余弦相似性</strong>的超平面森林。</p>
-<p>事实上，LSH 算法也适用于其他距离度量。尽管每种方法都有其独特的部分，但每种方法中都出现了许多共同的概念和公式。为了促进未来新方法的学习过程，我们将更多地关注理论并提供一些经常出现在高级 LSH 文献中的基本定义和定理。在本文结束时，我们将能够通过简单地将基本方案组合为乐高积木来构建更复杂的 LSH 方案。</p>
-<p>最后我们将了解如何将<strong>欧几里得距离</strong>纳入 LSH 中。</p>
-<p><em>注意</em>：</p>
-<ul>
-<li>
-<p>作为主要先决条件，您应该已经熟悉本系列文章的第 5 部分和第 6 部分。如果没有，强烈建议先阅读它们。</p>
-</li>
-<li>
-<p><a href="https://en.wikipedia.org/wiki/Cosine_similarity">余弦距离</a>定义在 [0, 2] 范围内。为简单起见，我们将其映射到区间 [0, 1]，其中 0 和 1 分别表示最低和最高可能的相似度。</p>
-</li>
-</ul>
-    </div>
-    <div class="read-more">
-      <a href="/post/oneday/similarity-search/7.lsh-compositions/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
   
 </section>
 
@@ -643,62 +372,6 @@
 
   
   
-
-  
-  
-  <nav class="pagination">
-    <ul>
-      
-      <li >
-        <a href="/">1</a>
-      </li>
-      
-      <li >
-        <a href="/page/2/">2</a>
-      </li>
-      
-      <li >
-        <a href="/page/3/">3</a>
-      </li>
-      
-      <li  class="active" >
-        <a href="/page/4/">4</a>
-      </li>
-      
-      <li >
-        <a href="/page/5/">5</a>
-      </li>
-      
-      <li >
-        <a href="/page/6/">6</a>
-      </li>
-      
-      <li >
-        <a href="/page/7/">7</a>
-      </li>
-      
-      <li >
-        <a href="/page/8/">8</a>
-      </li>
-      
-      <li >
-        <a href="/page/9/">9</a>
-      </li>
-      
-      <li >
-        <a href="/page/10/">10</a>
-      </li>
-      
-      <li >
-        <a href="/page/11/">11</a>
-      </li>
-      
-      <li >
-        <a href="/page/12/">12</a>
-      </li>
-      
-    </ul>
-  </nav>
 
   
   

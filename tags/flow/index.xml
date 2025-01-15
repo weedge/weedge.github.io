@@ -6,7 +6,52 @@
     <description>Recent content in flow on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 14 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/flow/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 15 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/flow/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>论文解读：CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens</title>
+      <link>https://weedge.github.io/post/multimoding/voices/cosyvoice/</link>
+      <pubDate>Wed, 15 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/multimoding/voices/cosyvoice/</guid>
+      <description>&lt;h1 id=&#34;cosyvoice&#34;&gt;CosyVoice&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2407.04051&#34;&gt;2024.7 FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs&lt;/a&gt; （主要介绍ASR SenseVoice 和 TTS CosyVoice,其中 SenseVoice 没有单独论文，相关CosyVoice 和单独论文是重复的, SenseVoice Large的工作可以用于 CosyVoice 在多语言上， Supervised speech tokenizer 模块的训练和推理）&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2407.05407&#34;&gt;2024.7 &lt;strong&gt;CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2412.10117&#34;&gt;2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models&lt;/a&gt; （流式合成）&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/FunAudioLLM/CosyVoice&#34;&gt;paper code&lt;/a&gt;: 没有pre-trainning过程；公开推理和权重，以及微调。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;创新点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;将监督语音token集成到TTS 模型，增强了零样本语音克隆中的内容一致性和说话者相似性。&lt;/li&gt;
+&lt;li&gt;一种可扩展的零样本 TTS 合成系统，它将用于文本到token生成的 LLM 与用于token到语音合成的条件流匹配模型(conditional flow matching model(CFM))相结合，不依赖于音素持续时间预测(Duration predictor)，不需要使用补充音素器(phonemizers)和强制对齐器(aligners 比如：Glow-TTS中 Monotonic Alignment Search(MAS))。&lt;/li&gt;
+&lt;li&gt;为了进一步细化生成语音的质量，将 x-vector 合并到 LLM 中，将语音建模分为语义、说话者和韵律(semantic, speaker, and prosody)组件。 LLM 对语义(semantic)内容和韵律(prosody)进行建模，而条件流匹配模型(CFM)则捕获音色(timbre)和环境信息。我们使用无分类器引导(&lt;a href=&#34;https://arxiv.org/abs/2207.12598&#34;&gt;2022. &lt;strong&gt;Classifier-free diffusion guidance&lt;/strong&gt;&lt;/a&gt;)、余弦调度器(&lt;a href=&#34;https://d2l.ai/chapter_optimization/lr-scheduler.html#cosine-scheduler&#34;&gt;cosine scheduler&lt;/a&gt;)和屏蔽条件(masked conditions)等技术来优化流匹配过程。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/3e8c1132-e146-4b73-8d0c-f3972bf7c8bd&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;CosyVoice由四个组件组成，即文本编码器(text encoder)、语音分词器(speech tokenizer)、大语言模型(large language model)和条件流匹配模型(conditional flow matching model)&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;文本编码器(text encoder)用于对齐文本和语音token的语义空间;&lt;/li&gt;
+&lt;li&gt;语音标记器(speech tokenizer)用于提取语义token;&lt;/li&gt;
+&lt;li&gt;LLM(GLM)学习文本编码和语音标记的整个序列，将 TTS 重新表述为以文本作为提示的自回归序列生成问题;&lt;/li&gt;
+&lt;li&gt;利用条件流匹配模型(conditional flow matching model), 通过最优路径上的去噪处理,将语音标记转换为梅尔谱图(Mel spectrogram); 通过分类器自由指导（Classifier-free diffusion guidance CFG）提高扩散概率模型的生成质量, 将CFG适应到条件流匹配模型中;&lt;/li&gt;
+&lt;li&gt;获得人类耳朵可感知的声音信号，声码器(vocoder)使用 Hifi-GAN Generator 用于将生成的梅尔频谱图作为输入来合成波形(waveform)。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;其中：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;conditional flow matching model (OT-CFM) 来自 &lt;a href=&#34;https://arxiv.org/abs/2309.03199&#34;&gt;2023.9 &lt;strong&gt;Matcha-TTS: A fast TTS architecture with conditional flow matching&lt;/strong&gt;&lt;/a&gt;(CFM的改进版本OT-CFM)&lt;/li&gt;
+&lt;li&gt;Classifier-free diffusion guidance (CFG) 来自 &lt;a href=&#34;https://arxiv.org/abs/2207.12598&#34;&gt;2022. &lt;strong&gt;Classifier-free diffusion guidance&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;vocoder 来自 &lt;a href=&#34;https://arxiv.org/abs/2010.05646&#34;&gt;2020. &lt;strong&gt;HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis&lt;/strong&gt;&lt;/a&gt; Generator。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;附：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;achatbot 接入 CosyVoice:
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/21&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/21&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/23&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/23&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
     <item>
       <title>论文解读 Matcha-TTS: A fast TTS architecture with conditional flow matching</title>
       <link>https://weedge.github.io/post/multimoding/voices/matcha-tts/</link>

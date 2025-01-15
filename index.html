@@ -342,6 +342,77 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/multimoding/voices/cosyvoice/">论文解读：CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2025-01-15" class="post-time">
+        2025-01-15
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/tts/"> TTS </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <h1 id="cosyvoice">CosyVoice</h1>
+<ul>
+<li><a href="https://arxiv.org/abs/2407.04051">2024.7 FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs</a> （主要介绍ASR SenseVoice 和 TTS CosyVoice,其中 SenseVoice 没有单独论文，相关CosyVoice 和单独论文是重复的, SenseVoice Large的工作可以用于 CosyVoice 在多语言上， Supervised speech tokenizer 模块的训练和推理）</li>
+<li><a href="https://arxiv.org/abs/2407.05407">2024.7 <strong>CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens</strong></a></li>
+<li><a href="https://arxiv.org/abs/2412.10117">2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models</a> （流式合成）</li>
+<li><a href="https://github.com/FunAudioLLM/CosyVoice">paper code</a>: 没有pre-trainning过程；公开推理和权重，以及微调。</li>
+</ul>
+<p>创新点：</p>
+<ul>
+<li>将监督语音token集成到TTS 模型，增强了零样本语音克隆中的内容一致性和说话者相似性。</li>
+<li>一种可扩展的零样本 TTS 合成系统，它将用于文本到token生成的 LLM 与用于token到语音合成的条件流匹配模型(conditional flow matching model(CFM))相结合，不依赖于音素持续时间预测(Duration predictor)，不需要使用补充音素器(phonemizers)和强制对齐器(aligners 比如：Glow-TTS中 Monotonic Alignment Search(MAS))。</li>
+<li>为了进一步细化生成语音的质量，将 x-vector 合并到 LLM 中，将语音建模分为语义、说话者和韵律(semantic, speaker, and prosody)组件。 LLM 对语义(semantic)内容和韵律(prosody)进行建模，而条件流匹配模型(CFM)则捕获音色(timbre)和环境信息。我们使用无分类器引导(<a href="https://arxiv.org/abs/2207.12598">2022. <strong>Classifier-free diffusion guidance</strong></a>)、余弦调度器(<a href="https://d2l.ai/chapter_optimization/lr-scheduler.html#cosine-scheduler">cosine scheduler</a>)和屏蔽条件(masked conditions)等技术来优化流匹配过程。</li>
+</ul>
+<p><img src="https://github.com/user-attachments/assets/3e8c1132-e146-4b73-8d0c-f3972bf7c8bd" alt=""></p>
+<p>CosyVoice由四个组件组成，即文本编码器(text encoder)、语音分词器(speech tokenizer)、大语言模型(large language model)和条件流匹配模型(conditional flow matching model)</p>
+<ul>
+<li>文本编码器(text encoder)用于对齐文本和语音token的语义空间;</li>
+<li>语音标记器(speech tokenizer)用于提取语义token;</li>
+<li>LLM(GLM)学习文本编码和语音标记的整个序列，将 TTS 重新表述为以文本作为提示的自回归序列生成问题;</li>
+<li>利用条件流匹配模型(conditional flow matching model), 通过最优路径上的去噪处理,将语音标记转换为梅尔谱图(Mel spectrogram); 通过分类器自由指导（Classifier-free diffusion guidance CFG）提高扩散概率模型的生成质量, 将CFG适应到条件流匹配模型中;</li>
+<li>获得人类耳朵可感知的声音信号，声码器(vocoder)使用 Hifi-GAN Generator 用于将生成的梅尔频谱图作为输入来合成波形(waveform)。</li>
+</ul>
+<p>其中：</p>
+<ul>
+<li>conditional flow matching model (OT-CFM) 来自 <a href="https://arxiv.org/abs/2309.03199">2023.9 <strong>Matcha-TTS: A fast TTS architecture with conditional flow matching</strong></a>(CFM的改进版本OT-CFM)</li>
+<li>Classifier-free diffusion guidance (CFG) 来自 <a href="https://arxiv.org/abs/2207.12598">2022. <strong>Classifier-free diffusion guidance</strong></a></li>
+<li>vocoder 来自 <a href="https://arxiv.org/abs/2010.05646">2020. <strong>HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis</strong></a> Generator。</li>
+</ul>
+<p>附：</p>
+<ul>
+<li>achatbot 接入 CosyVoice:
+<ul>
+<li><a href="https://github.com/ai-bot-pro/achatbot/pull/21">https://github.com/ai-bot-pro/achatbot/pull/21</a></li>
+<li><a href="https://github.com/ai-bot-pro/achatbot/pull/23">https://github.com/ai-bot-pro/achatbot/pull/23</a></li>
+</ul>
+</li>
+</ul>
+    </div>
+    <div class="read-more">
+      <a href="/post/multimoding/voices/cosyvoice/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/multimoding/voices/matcha-tts/">论文解读 Matcha-TTS: A fast TTS architecture with conditional flow matching</a>
     </h1>
     
@@ -721,42 +792,6 @@
     </div>
     <div class="read-more">
       <a href="/post/paper/transformer/infini_attention/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/nlp/translate_model_inference_and_finetune/">翻译模型 inference 和 微调</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2024-03-28" class="post-time">
-        2024-03-28
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/nlp/translate_model_inference_and_finetune/1.png" alt="image-20240328231303644"></p>
-<p>想把 HuggingFaceTB/cosmopedia 英文数据中的prompt和text 翻译成 中文， 然后看了下python库 <a href="https://github.com/nidhaloff/deep-translator">deep_translator</a>的实现， 翻译调用的是三方接口集成库， 于是使用这个库封装的谷歌翻译接口来翻译，但是三方平台接口多会有限流和接口调用频率限制，即使在代码中有容错处理， 比如常规的sleep下再调用，不影响整理处理流程，但是整体处理时间受接口限制，即使用批处理也如此，这个在大规模数据处理中使用三方接口时，经常会遇到的问题，用的三方服务，如果不升级接口服务，在技术上不太好解决； 于是选择另外一种方案，看是否有开源的翻译模型，底层模型结构一般也是Transform架构 Encoder-Decoder model ，也称sequence-to-sequence model； 比如 谷歌的T5模型， 但是推理速度受硬件条件影响，比较慢，而且原始模型不支持英文翻译成中文。</p>
-<p>然后看了下meta nllb 模型，专门用来处理翻译的模型，单个 AI 模型中支持 200 种语言，开源地址： <a href="https://github.com/facebookresearch/fairseq/tree/nllb">https://github.com/facebookresearch/fairseq/tree/nllb</a> 模型相对现在的LLM参数量小一些，也在huggingface的Transforms库中集成 nllb-200-distilled-600M，直接可以load使用， 等等。。。 既然llm推理可以通过想llama.cpp通过加载ggml格式进行量化，在性能有少许折损的情况下降低推理成本，但是ggml gguf格式还不支持nllb模型权重文件(貌似llama.cpp只支持Transform Decoder模型结构)；那就直接用Transforms库来加载facebook/nllb-200-distilled-600M 模型来批量翻译试试看；后续还尝试使用 <a href="https://huggingface.co/Helsinki-NLP/opus-mt-en-zh">Helsinki-NLP/opus-mt-en-zh</a> 模型，进行了简单对比。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/nlp/translate_model_inference_and_finetune/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>

@@ -342,6 +342,42 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/nlp/translate_model_inference_and_finetune/">翻译模型 inference 和 微调</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2024-03-28" class="post-time">
+        2024-03-28
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <p><img src="https://raw.githubusercontent.com/weedge/mypic/master/nlp/translate_model_inference_and_finetune/1.png" alt="image-20240328231303644"></p>
+<p>想把 HuggingFaceTB/cosmopedia 英文数据中的prompt和text 翻译成 中文， 然后看了下python库 <a href="https://github.com/nidhaloff/deep-translator">deep_translator</a>的实现， 翻译调用的是三方接口集成库， 于是使用这个库封装的谷歌翻译接口来翻译，但是三方平台接口多会有限流和接口调用频率限制，即使在代码中有容错处理， 比如常规的sleep下再调用，不影响整理处理流程，但是整体处理时间受接口限制，即使用批处理也如此，这个在大规模数据处理中使用三方接口时，经常会遇到的问题，用的三方服务，如果不升级接口服务，在技术上不太好解决； 于是选择另外一种方案，看是否有开源的翻译模型，底层模型结构一般也是Transform架构 Encoder-Decoder model ，也称sequence-to-sequence model； 比如 谷歌的T5模型， 但是推理速度受硬件条件影响，比较慢，而且原始模型不支持英文翻译成中文。</p>
+<p>然后看了下meta nllb 模型，专门用来处理翻译的模型，单个 AI 模型中支持 200 种语言，开源地址： <a href="https://github.com/facebookresearch/fairseq/tree/nllb">https://github.com/facebookresearch/fairseq/tree/nllb</a> 模型相对现在的LLM参数量小一些，也在huggingface的Transforms库中集成 nllb-200-distilled-600M，直接可以load使用， 等等。。。 既然llm推理可以通过想llama.cpp通过加载ggml格式进行量化，在性能有少许折损的情况下降低推理成本，但是ggml gguf格式还不支持nllb模型权重文件(貌似llama.cpp只支持Transform Decoder模型结构)；那就直接用Transforms库来加载facebook/nllb-200-distilled-600M 模型来批量翻译试试看；后续还尝试使用 <a href="https://huggingface.co/Helsinki-NLP/opus-mt-en-zh">Helsinki-NLP/opus-mt-en-zh</a> 模型，进行了简单对比。</p>
+    </div>
+    <div class="read-more">
+      <a href="/post/nlp/translate_model_inference_and_finetune/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/doraemon/gemma_faiss_langchain_rag/">使用Gemma LLM构建RAG应用程序</a>
     </h1>
     
@@ -594,51 +630,6 @@
     </div>
     <div class="read-more">
       <a href="/post/book/performance-analysis-and-tuning-on-modern-cpu-cn/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/nainai/">逝去的奶奶</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2024-02-02" class="post-time">
-        2024-02-02
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E7%94%9F%E6%B4%BB/"> 生活 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=32574246&auto=1&height=66"></iframe>
-
-
-
-<blockquote>
-<p>天上的每一颗星 都是爱过我们的人</p>
-<p>听说，地上少个人，天上多颗星，每一颗闪烁的星星都在跟地上的亲人说话。</p>
-<p>但愿，今夜有星。</p>
-<p>但愿，星星会闪。</p>
-<p>&ndash; 人生大事</p>
-</blockquote>
-<p>简单踏实就好，奶奶经常给说的话，一直记着。【step by step, 懂得珍惜】</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/nainai/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>

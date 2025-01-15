@@ -493,7 +493,7 @@ MELLE包括以下主要组件：</p>
 <p>PS: 还有一种采样模块： 基于Flow matching 流匹配的方式，从更简单的分布采样中恢复语音表示。比如: meta的 <a href="https://arxiv.org/abs/2306.15687">2023. Voicebox: Text-Guided Multilingual Universal Speech Generation at Scale</a></p>
 <p>这里主要是学习在TTS中引入GLM，如何训练。</p>
 <p>官方没有给出源码和训练好的权重， 这里只是为例学习AR（生成式语言模型GLM）和NAR的结合，</p>
-<p>非官方实现： <a href="https://github.com/lifeiteng/vall-e">https://github.com/lifeiteng/vall-e</a> (只实现了第一版vall-e, 其实类似训练文本LLM一样的步骤，增加了文本转音素，加上语音的tokenizer, 采用的Transform decoder， AR模型需要掩码self-Attention， NAR则不需要掩码操作，文本到音素采用 <a href="https://github.com/bootphon/phonemizer">https://github.com/bootphon/phonemizer</a> , audio codece 使用 <a href="https://github.com/facebookresearch/encodec">https://github.com/facebookresearch/encodec</a>)</p>
+<p>非官方实现： <a href="https://github.com/lifeiteng/vall-e">https://github.com/lifeiteng/vall-e</a> (只实现了第一版vall-e, 其实类似训练文本LLM一样的步骤，增加了文本转音素，加上语音的tokenizer, 采用的Transform decoder， AR模型需要掩码self-Attention， NAR则不需要掩码操作，文本到音素采用 <a href="https://github.com/bootphon/phonemizer">https://github.com/bootphon/phonemizer</a> , audio codec 使用 <a href="https://github.com/facebookresearch/encodec">https://github.com/facebookresearch/encodec</a>)</p>
 <p>数据集处理工具使用 <a href="https://github.com/lhotse-speech/lhotse">https://github.com/lhotse-speech/lhotse</a>；主要是数据处理比较耗时。可以先小数据验证训练逻辑，然后在scaling。</p>
 <p>PS: 后续可以改进下，尽量复现下MELLE, 需要花点钱 :(</p>
     </div>

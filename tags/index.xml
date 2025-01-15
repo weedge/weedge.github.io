@@ -6,7 +6,61 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 14 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 15 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>AR&#34;</title>
+      <link>https://weedge.github.io/tags/ar/</link>
+      <pubDate>Wed, 15 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/ar/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>BPE</title>
+      <link>https://weedge.github.io/tags/bpe/</link>
+      <pubDate>Wed, 15 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/bpe/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>CFG</title>
+      <link>https://weedge.github.io/tags/cfg/</link>
+      <pubDate>Wed, 15 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/cfg/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>flow</title>
+      <link>https://weedge.github.io/tags/flow/</link>
+      <pubDate>Wed, 15 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/flow/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>mel-spectrogram</title>
+      <link>https://weedge.github.io/tags/mel-spectrogram/</link>
+      <pubDate>Wed, 15 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/mel-spectrogram/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Supervised Semantic Speech Tokenizer</title>
+      <link>https://weedge.github.io/tags/supervised-semantic-speech-tokenizer/</link>
+      <pubDate>Wed, 15 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/supervised-semantic-speech-tokenizer/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>diffusion</title>
       <link>https://weedge.github.io/tags/diffusion/</link>
@@ -17,38 +71,11 @@
     </item>
     
     <item>
-      <title>flow</title>
-      <link>https://weedge.github.io/tags/flow/</link>
-      <pubDate>Tue, 14 Jan 2025 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/flow/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>mel-spectrogram</title>
-      <link>https://weedge.github.io/tags/mel-spectrogram/</link>
-      <pubDate>Tue, 14 Jan 2025 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/mel-spectrogram/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>NAR</title>
       <link>https://weedge.github.io/tags/nar/</link>
       <pubDate>Tue, 14 Jan 2025 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/nar/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>AR</title>
-      <link>https://weedge.github.io/tags/ar/</link>
-      <pubDate>Mon, 13 Jan 2025 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/ar/</guid>
       <description></description>
     </item>
     
@@ -157,33 +184,6 @@
       <pubDate>Thu, 28 Mar 2024 21:51:52 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/nlp/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>translate</title>
-      <link>https://weedge.github.io/tags/translate/</link>
-      <pubDate>Thu, 28 Mar 2024 21:51:52 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/translate/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>gemma</title>
-      <link>https://weedge.github.io/tags/gemma/</link>
-      <pubDate>Tue, 26 Mar 2024 20:16:30 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/gemma/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>langchain</title>
-      <link>https://weedge.github.io/tags/langchain/</link>
-      <pubDate>Tue, 26 Mar 2024 20:16:30 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/langchain/</guid>
       <description></description>
     </item>
     
