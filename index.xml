@@ -59,7 +59,7 @@
       
       <guid>https://weedge.github.io/post/multimoding/voices/cosyvoice/</guid>
       
-        <description>&lt;h1 id=&#34;cosyvoice&#34;&gt;CosyVoice&lt;/h1&gt;
+        <description>&lt;h2 id=&#34;cosyvoice&#34;&gt;CosyVoice&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2407.04051&#34;&gt;2024.7 FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs&lt;/a&gt; （主要介绍ASR SenseVoice 和 TTS CosyVoice,其中 SenseVoice 没有单独论文，相关CosyVoice 和单独论文是重复的, SenseVoice Large的工作可以用于 CosyVoice 在多语言上， Supervised speech tokenizer 模块的训练和推理）&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2407.05407&#34;&gt;2024.7 &lt;strong&gt;CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
@@ -69,7 +69,7 @@
 &lt;p&gt;创新点：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;将监督语音token集成到TTS 模型，增强了零样本语音克隆中的内容一致性和说话者相似性。&lt;/li&gt;
-&lt;li&gt;一种可扩展的零样本 TTS 合成系统，它将用于文本到token生成的 LLM 与用于token到语音合成的条件流匹配模型(conditional flow matching model(CFM))相结合，不依赖于音素持续时间预测(Duration predictor)，不需要使用补充音素器(phonemizers)和强制对齐器(aligners 比如：Glow-TTS中 Monotonic Alignment Search(MAS))。&lt;/li&gt;
+&lt;li&gt;一种可扩展的零样本 TTS 合成系统，它将用于文本到token生成的 LLM 与用于token到语音合成的条件流匹配模型(conditional flow matching model(CFM))相结合，不依赖于音素持续时间预测(Duration predictor)，不需要使用补充音素器(phonemizers)和强制对齐器aligners (比如：Glow-TTS中 Monotonic Alignment Search(MAS))。&lt;/li&gt;
 &lt;li&gt;为了进一步细化生成语音的质量，将 x-vector 合并到 LLM 中，将语音建模分为语义、说话者和韵律(semantic, speaker, and prosody)组件。 LLM 对语义(semantic)内容和韵律(prosody)进行建模，而条件流匹配模型(CFM)则捕获音色(timbre)和环境信息。我们使用无分类器引导(&lt;a href=&#34;https://arxiv.org/abs/2207.12598&#34;&gt;2022. &lt;strong&gt;Classifier-free diffusion guidance&lt;/strong&gt;&lt;/a&gt;)、余弦调度器(&lt;a href=&#34;https://d2l.ai/chapter_optimization/lr-scheduler.html#cosine-scheduler&#34;&gt;cosine scheduler&lt;/a&gt;)和屏蔽条件(masked conditions)等技术来优化流匹配过程。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/3e8c1132-e146-4b73-8d0c-f3972bf7c8bd&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
@@ -96,7 +96,7 @@
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&#34;supervised-semantic-tokens-for-speech-语音的监督语义tokens&#34;&gt;Supervised Semantic Tokens for Speech 语音的监督语义tokens&lt;/h2&gt;
+&lt;h3 id=&#34;supervised-semantic-tokens-for-speech-语音的监督语义tokens&#34;&gt;Supervised Semantic Tokens for Speech 语音的监督语义tokens&lt;/h3&gt;
 &lt;p&gt;&lt;strong&gt;Supervised speech tokenizer&lt;/strong&gt;: 使用一个监督自动语音识别（ASR）模型来派生监督语义语音tokenizer(Supervised speech tokenizer)。该模型是我们专有的SenseVoice ASR模型的一个微调版本。它在多语言音频数据上进行训练，具有丰富的音频内容理解能力。与原始ASR模型不同，我们将编码器分为两部分，并在它们之间插入一个向量量化层。给定一个梅尔频谱图 X 作为输入，它首先经过位置编码和 $Encoder_1$以获得上下文感知表示 H ：
 $$
 H = \text{Encoder}_1(\text{PosEnc}(X))
@@ -120,7 +120,7 @@ $$
 P(Y | X) = \text{ASRDecoder}(\tilde{H}, Y^{Z-1})
 $$
 其中 $Y^{Z-1}$ 表示在教师强制训练方案中左移的文本标签。&lt;/p&gt;
-&lt;h2 id=&#34;large-language-model-for-tts-用于tts的大型语言模型&#34;&gt;Large Language Model for TTS 用于TTS的大型语言模型&lt;/h2&gt;
+&lt;h3 id=&#34;large-language-model-for-tts-用于tts的大型语言模型&#34;&gt;Large Language Model for TTS 用于TTS的大型语言模型&lt;/h3&gt;
 &lt;p&gt;将文本到语音（TTS）任务重新定义为一个自回归语音token生成问题，并使用大型语言模型（LLM）来解决。对于LLM，序列的构建至关重要，具体构建方式如下：&lt;/p&gt;
 &lt;p&gt;$$
 S, v, {\bar{y}_u}|{u\in[1:U]}, T, {\mu_l}|{l\in[1:L]}, E
@@ -139,7 +139,7 @@ $$&lt;/p&gt;
 \text{LLM} = - \frac{1}{L + 1} \sum_{l=1}^{L+1} \log q(\mu_l)
 $$&lt;/p&gt;
 &lt;p&gt;其中 $\mu_{L+1}$ 是“序列结束”token E 。 $q(\mu_l)$ 表示由LLM的softmax层预测的 $\mu_l$ 的后验概率。&lt;/p&gt;
-&lt;h2 id=&#34;optimal-transport-conditional-flow-matching-最优传输条件流匹配&#34;&gt;Optimal-transport Conditional Flow Matching 最优传输条件流匹配&lt;/h2&gt;
+&lt;h3 id=&#34;optimal-transport-conditional-flow-matching-最优传输条件流匹配&#34;&gt;Optimal-transport Conditional Flow Matching 最优传输条件流匹配&lt;/h3&gt;
 &lt;p&gt;使用最优传输条件流匹配模型（OT-CFM）来学习梅尔频谱图的分布，并以生成的语音标记为条件生成样本。与扩散概率模型（DPMs）相比，OT-CFM具有更简单的梯度、更容易的训练和更快的生成速度。
 这在论文：&lt;a href=&#34;https://arxiv.org/abs/2210.02747&#34;&gt;2022.10 Flow matching for generative modeling&lt;/a&gt; | &lt;a href=&#34;https://arxiv.org/abs/2302.00482&#34;&gt;2023.2 Improving and generalizing flow-based generative models with minibatch optimal transport&lt;/a&gt; | &lt;a href=&#34;https://arxiv.org/abs/2309.03199&#34;&gt;2023.9 &lt;strong&gt;Matcha-TTS: A fast TTS architecture with conditional flow matching&lt;/strong&gt;&lt;/a&gt; 中已经研究过。&lt;/p&gt;
 &lt;p&gt;在连续时间正规化流（CNFs）中，从先验分布 $p_0(X)$ 到梅尔频谱图数据分布 $q(X)$ 构建一个概率密度路径。这个概率密度路径由一个时间依赖的向量场 $\nu_t(X)$ 定义，通过以下常微分方程（ODE）生成流 $\phi_t$ ：&lt;/p&gt;
@@ -173,7 +173,7 @@ $$&lt;/p&gt;
 \tilde{\nu}_t(\phi_{OT}^t(X_0, X_1)|\theta; \Psi)=(1+\beta)\cdot \nu_t(\phi_{OT}^t(X_0, X_1)|\theta;\Psi) -\beta \cdot \nu_t(\phi_{OT}^t(X_0, X_1) | \theta)
 $$&lt;/p&gt;
 &lt;p&gt;其中 $\beta$ 是指导强度，取值为0.7。&lt;/p&gt;
-&lt;h2 id=&#34;zero-shot-in-context-learning-零样本上下文学习&#34;&gt;Zero-shot In-context Learning 零样本上下文学习&lt;/h2&gt;
+&lt;h3 id=&#34;zero-shot-in-context-learning-零样本上下文学习&#34;&gt;Zero-shot In-context Learning 零样本上下文学习&lt;/h3&gt;
 &lt;p&gt;这种零样本上下文学习能力使得CosyVoice能够在没有目标说话人的大量样本的情况下，生成高质量的语音，这对于个性化语音合成和多语言应用具有重要意义。通过这种方式，模型能够快速适应新的说话人和语言，提供更加自然和一致的语音输出。&lt;/p&gt;
 &lt;p&gt;CosyVoice模型展示了零样本上下文学习的能力，允许仅使用简短的参考语音样本复制任意声音。这一过程涉及精心构建输入序列以供token 语言模型（LM）使用。&lt;/p&gt;
 &lt;p&gt;构建输入序列如图所示：
@@ -184,7 +184,7 @@ $$&lt;/p&gt;
 &lt;/ul&gt;
 &lt;p&gt;生成speech token后，将它们附加到prompt tokens之后，形成流匹配模型的复合条件。此外，还纳入了prompt speech的说话人嵌入(speaker embedding)和梅尔频谱图(Mel spectrogram)，以进一步增强音色(timbre)和环境的一致性。&lt;/p&gt;
 &lt;p&gt;PS: 引入提示语音和文本，进行零样本上下文学习，也为后续speech to speech学习提供参考方法&lt;/p&gt;
-&lt;h2 id=&#34;rich-generation-with-instruction-带指令的丰富生成&#34;&gt;Rich Generation with Instruction 带指令的丰富生成&lt;/h2&gt;
+&lt;h3 id=&#34;rich-generation-with-instruction-带指令的丰富生成&#34;&gt;Rich Generation with Instruction 带指令的丰富生成&lt;/h3&gt;
 &lt;p&gt;为了进一步增强CosyVoice的可控性，我们尝试整合额外的指令微调。CosyVoice-instruct在CosyVoice-base的基础上进行了扩展，增强了对指令的遵循能力。具体来说，它支持对多个方面的控制，包括说话人身份（即说话人的特征）、说话风格（包括情感、性别、语速和音高）以及细粒度的副语言特征。这些特征包括插入笑声、呼吸声、边笑边说以及强调某些词汇的能力。&lt;/p&gt;
 &lt;p&gt;使用不包含说话人嵌入的自回归语言模型的训练数据对CosyVoice-base进行了微调。&lt;/p&gt;
 &lt;table&gt;
@@ -222,7 +222,7 @@ $$&lt;/p&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;通过这种指令微调，CosyVoice能够根据给定的指令生成更加丰富和多样化的语音，满足不同场景下的需求。例如，用户可以指定生成一个快乐的女孩的声音，或者在语音中插入笑声，使生成的语音更加自然和生动。这种可控性不仅提高了语音合成的灵活性，还为个性化语音合成和多语言应用提供了更广泛的可能性。&lt;/p&gt;
-&lt;h1 id=&#34;datasets-数据集&#34;&gt;Datasets 数据集&lt;/h1&gt;
+&lt;h2 id=&#34;datasets-数据集&#34;&gt;Datasets 数据集&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/1904.02882&#34;&gt;Libritts: A corpus derived from librispeech for text-to-speech&lt;/a&gt; (小规模单语言数据集, 应该是用来快速验证的) | &lt;a href=&#34;https://www.openslr.org/60/&#34;&gt;https://www.openslr.org/60/&lt;/a&gt; : 该语料库包含 2,456 名英语使用者的 585 小时; 其中“train-clean-100”、“train-clean-360”和“train-other-500”合并进行训练(train)，“dev-clean”用于模型选择。 “test-clean”用于构建评估集（val）。&lt;/li&gt;
 &lt;li&gt;非公开数据，内部采集，利用专门的内部工具进行语音检测、信噪比 (SNR) 估计、说话人二值化和分离。随后，使用 SenseVoice-Large 和 Paraformer 生成伪文本标签。这些标签在强制对齐 (force-alignment FA) 模型的帮助下经历了细化过程，这有助于消除低质量数据并提高标点符号的准确性。(大规模多语言数据集，进行scaling，毕竟结合LLM模型参数变大了)。&lt;/li&gt;
@@ -230,8 +230,8 @@ $$&lt;/p&gt;
 &lt;p&gt;PS: 这里还是用了&lt;a href=&#34;https://arxiv.org/abs/2010.11567&#34;&gt;AISHELL-3: A Multi-speaker Mandarin TTS Corpus and the Baselines&lt;/a&gt; 作为评估数据集来评估模型的生成质量。&lt;/p&gt;
 &lt;p&gt;大规模多语言数据集时长和对应指令类型时长统计:&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/fb02e823-bb65-4299-8314-088d1963a56e&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
-&lt;h1 id=&#34;实验设置&#34;&gt;实验设置&lt;/h1&gt;
-&lt;h2 id=&#34;supervised-semantic-speech-tokenizer&#34;&gt;Supervised Semantic Speech Tokenizer&lt;/h2&gt;
+&lt;h2 id=&#34;实验设置&#34;&gt;实验设置&lt;/h2&gt;
+&lt;h3 id=&#34;supervised-semantic-speech-tokenizer&#34;&gt;Supervised Semantic Speech Tokenizer&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;对于小规模单语言数据集（Librispeech数据集）；采用 ESPNet Conformer ASR 模型作为主干；Speech Tokenizer 由前六个编码器层和VQ组成；&lt;/p&gt;
@@ -250,7 +250,7 @@ $$&lt;/p&gt;
 &lt;/ul&gt;
 &lt;p&gt;SenseVoice 模型结构（small Transformer Encoder, large Transformer Encoder-Decoder）：&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/b1da07c1-29c2-41b9-824b-b190baec33d3&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
-&lt;h2 id=&#34;cosyvoice-模型设置&#34;&gt;CosyVoice 模型设置&lt;/h2&gt;
+&lt;h3 id=&#34;cosyvoice-模型设置&#34;&gt;CosyVoice 模型设置&lt;/h3&gt;
 &lt;p&gt;在单语言和多语言实验中训练微小和正常大小的模型。模型架构设置的详细信息如表所示:&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/121c6bcb-d71f-4d90-86c5-281d9443b0ca&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
 &lt;ul&gt;
@@ -258,8 +258,8 @@ $$&lt;/p&gt;
 &lt;li&gt;多语言模型则在我们的内部数据集上使用 64 个 V100-32M GPU 进行了 800,000 个步骤的训练。&lt;/li&gt;
 &lt;li&gt;微小模型和普通模型的学习率分别为 1e−3 和 1e−4。预热步骤设置为 10,000。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h1 id=&#34;实验结果&#34;&gt;实验结果&lt;/h1&gt;
-&lt;h2 id=&#34;supervised-semantic-speech-tokenizer-的评估&#34;&gt;Supervised Semantic Speech Tokenizer 的评估&lt;/h2&gt;
+&lt;h2 id=&#34;实验结果&#34;&gt;实验结果&lt;/h2&gt;
+&lt;h3 id=&#34;supervised-semantic-speech-tokenizer-的评估&#34;&gt;Supervised Semantic Speech Tokenizer 的评估&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;引入VQ后是否WER很高，结果表明和不量化时，差距不大&lt;/p&gt;
@@ -273,7 +273,7 @@ $$&lt;/p&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&#34;cosyvoice生成质量评估&#34;&gt;CosyVoice生成质量评估&lt;/h2&gt;
+&lt;h3 id=&#34;cosyvoice生成质量评估&#34;&gt;CosyVoice生成质量评估&lt;/h3&gt;
 &lt;p&gt;评估方法：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -295,7 +295,7 @@ ASR re-ranking（自动语音识别重排序）是一种技术，用于改进自
 &lt;li&gt;没有评估 ChatTTS 的说话者相似度，因为它没有发布语音克隆功能。
 &lt;img src=&#34;https://github.com/user-attachments/assets/4da8d716-2a56-4236-a812-f4ffe348cf88&#34; alt=&#34;image&#34;&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&#34;cosyvoice的情绪可控性-emotion-controllability&#34;&gt;CosyVoice的情绪可控性 Emotion Controllability&lt;/h2&gt;
+&lt;h3 id=&#34;cosyvoice的情绪可控性-emotion-controllability&#34;&gt;CosyVoice的情绪可控性 Emotion Controllability&lt;/h3&gt;
 &lt;p&gt;评估方法：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;使用公共语音情绪识别模型 &lt;a href=&#34;https://arxiv.org/abs/2312.15185&#34;&gt;2023. emotion2vec: Self-supervised pre-training for speech emotion representation&lt;/a&gt;|&lt;a href=&#34;https://github.com/ddlBoJack/emotion2vec&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
@@ -307,7 +307,7 @@ ASR re-ranking（自动语音识别重排序）是一种技术，用于改进自
 &lt;li&gt;结果表明，带有情感指令的 CosyVoice-instruct 比没有情感指令的 CosyVoice-base 和 CosyVoice-instruct 都有显着的改进。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/069420d2-26b7-4f11-b7b0-7d608e836fc6&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
-&lt;h2 id=&#34;cosyvoice-作为数据生成器-data-generator&#34;&gt;CosyVoice 作为数据生成器 Data Generator&lt;/h2&gt;
+&lt;h3 id=&#34;cosyvoice-作为数据生成器-data-generator&#34;&gt;CosyVoice 作为数据生成器 Data Generator&lt;/h3&gt;
 &lt;p&gt;评估方法：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;通过CosyVoice生成语音数据，用于 ASR 模型训练；&lt;/li&gt;
@@ -326,9 +326,102 @@ ASR re-ranking（自动语音识别重排序）是一种技术，用于改进自
 &lt;li&gt;评估结果强调了 CosyVoice 生成的样本的高质量。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;理想化：既然合成的语音数据能提高ASR模型识别任务精度提高，模型质量提高，进而可以提升Supervised Semantic Speech Tokenizer来提高 TTS模型的质量性能。 形成闭环，拟定评估标准，自适应学习提高？&lt;/p&gt;
-&lt;h1 id=&#34;总结&#34;&gt;总结&lt;/h1&gt;
+&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
 &lt;p&gt;CosyVoice作为一种自回归，可扩展的多语言语音生成模型，它支持零样本上下文学习、跨语言语音克隆、指令生成以及情感、副语言特征的细粒度控制。实验结果表明，CosyVoice的系统架构对于说话者相似度很重要，而文本和语音标记器对内容一致性影响很大。此外，扩大模型大小和数据量可以显着提高性能。因此，CosyVoice 实现了人类同等的生成质量。&lt;/p&gt;
-&lt;p&gt;但是扩大模型大小，实际生产环境中推理部署的成本会增加，而且论文中没有对推理生成实时因子RTF进行评估；在同一硬件平台式，推理速度相对NAR模型来说要慢些；尽管可以结合LLM中的推理优化方案。&lt;/p&gt;</description>
+&lt;p&gt;但是扩大模型大小，实际生产环境中推理部署的成本会增加，而且论文中没有对推理生成实时因子RTF进行评估；在同一硬件平台式，推理速度相对NAR模型来说要慢些；尽管可以结合LLM中的推理优化方案。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;附录&#34;&gt;附录：&lt;/h2&gt;
+&lt;h3 id=&#34;vector-quantizer向量量化器&#34;&gt;Vector Quantizer(向量量化器)&lt;/h3&gt;
+&lt;p&gt;向量量化器（Vector Quantizer）是一种将连续或离散向量序列映射为适合在数字信道上通信或存储的数字序列的系统。其主要目标是数据压缩：在保持数据必要保真度的同时，通过减少比特数来表示数据。&lt;/p&gt;
+&lt;p&gt;应用场景：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;向量量化器在多个领域有广泛应用，包括：&lt;/li&gt;
+&lt;li&gt;图像压缩：通过将图像块映射到码本中的码字，减少存储和传输所需的比特数。&lt;/li&gt;
+&lt;li&gt;声音压缩：将音频信号的特征向量量化，实现高效的音频编码。&lt;/li&gt;
+&lt;li&gt;语音识别：将语音特征向量量化，提高识别效率和准确性。&lt;/li&gt;
+&lt;li&gt;表示学习：通过向量量化学习更具解释性和泛化能力的特征表示。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;优势：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;提高计算效率：向量化技术通过将数据转化为向量形式，可以利用现代计算架构（如GPU）进行高效的并行计算，显著提高处理速度。&lt;/li&gt;
+&lt;li&gt;促进数据交互：通过将不同类型的数据转化为向量形式，可以更容易地在不同的模型和任务之间共享和迁移知识。&lt;/li&gt;
+&lt;li&gt;改善搜索和推荐系统：向量化的数据可以用于快速检索相似内容，如相似图片、文档或商品推荐等。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;向量量化器对计算效率的提升主要体现在以下几个方面：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;减少数据存储需求：向量量化通过将高维向量映射到有限的码本中，显著减少了数据的存储需求。例如，乘积量化（PQ）可以将高维向量压缩高达97%，从而节省大量内存。&lt;/li&gt;
+&lt;li&gt;加速相似性搜索：在进行最近邻搜索时，向量量化可以显著加快查询速度。例如，使用乘积量化可以在实际测试中将最近邻搜索的速度提高5.5倍。此外，通过预先计算和存储码本中每个码字与查询向量的距离，可以进一步减少计算时间，提高检索速度。&lt;/li&gt;
+&lt;li&gt;提高并行计算能力：向量化操作可以利用现代处理器的并行计算能力，显著加速计算过程。例如，使用NEON Intrinsic函数进行向量化优化，可以将效率提升54%。在深度学习中，向量化操作可以加速矩阵运算、卷积操作、激活函数计算和损失函数计算等，从而缩短训练时间。&lt;/li&gt;
+&lt;li&gt;简化计算过程：向量化技术可以将复杂的标量运算转换为更简单的向量运算，减少代码复杂度，提高程序的可读性和可维护性。例如，使用NumPy库进行向量化数组运算，可以显著减少计算时间。&lt;/li&gt;
+&lt;li&gt;减少循环次数：通过将for循环转换为向量或矩阵运算，向量化可以减少循环次数，从而提高计算效率。例如，使用向量化卷积操作可以显著加快卷积神经网络（CNN）中的卷积计算。&lt;/li&gt;
+&lt;li&gt;优化硬件利用：现代处理器和GPU都支持向量化操作，通过优化代码以适应硬件的架构，可以进一步提升性能。例如，使用SIMD指令集可以加速向量计算。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;综上所述，向量量化器通过减少数据存储需求、加速相似性搜索、提高并行计算能力、简化计算过程、减少循环次数和优化硬件利用，显著提升了计算效率。这些优势在处理大规模数据和进行复杂运算时尤为明显。&lt;/p&gt;
+&lt;p&gt;（PS:以上文字来自KIMI,引用互联网内容进行的总结归纳）&lt;/p&gt;
+&lt;p&gt;以下是一个简单的Python代码示例，（这里简化了码本，随机生成，一般是训练而来）;这里展示通过训练好的码本，如何实现将原始特征向量x通过码本进行量化（从原来的12维变成了4维），然后通过码本进行尽可能近似还原其特征(本质没变就行)：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;numpy&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;as&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;np&lt;/span&gt;
+&lt;span class=&#34;kn&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;random&lt;/span&gt; &lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;randint&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# 原始向量&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;8&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;4&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;5&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;4&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;6&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;m&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;4&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;# 子向量的个数&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;D&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;len&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;# 原始向量的维度&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;D_&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;D&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;/&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;m&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;# 子向量的维度&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;u&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;row&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;row&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;D_&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;row&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;range&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;D&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;D_&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)]&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;# 划分子向量&lt;/span&gt;
+
+&lt;span class=&#34;n&#34;&gt;k&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;256&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;# 总簇心个数&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;k_&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;k&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;**&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;/&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;m&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;# 子向量的簇心个数&lt;/span&gt;
+&lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;子向量的簇心个数：&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;k_&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;c1&#34;&gt;# 生成码本&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;codebook&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[]&lt;/span&gt;
+&lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;i&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;range&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;m&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;c_j&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[]&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;j&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;range&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;k_&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;c_ji&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;randint&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;9&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;_&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;range&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;D_&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)]&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;c_j&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;append&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;c_ji&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;codebook&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;append&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;c_j&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# 计算欧几里德距离&lt;/span&gt;
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;euclidean_distance&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;v&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;u&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;distance&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;sum&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;((&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;y&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;**&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;y&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;zip&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;v&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;u&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;**&lt;/span&gt; &lt;span class=&#34;mf&#34;&gt;0.5&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;distance&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# 找到最近的簇心&lt;/span&gt;
+&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;nearest_cluster_center&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;v&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;codebook&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;ans&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[]&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;i&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;range&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;m&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;distance&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mf&#34;&gt;9e9&lt;/span&gt;
+        &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;j&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;range&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;k_&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+            &lt;span class=&#34;n&#34;&gt;d&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;euclidean_distance&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;v&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;i&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;],&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;codebook&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;i&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;][&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;j&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;])&lt;/span&gt;
+            &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;d&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;distance&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
+                &lt;span class=&#34;n&#34;&gt;distance&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;d&lt;/span&gt;
+                &lt;span class=&#34;n&#34;&gt;nearest_cluster_center&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;j&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;ans&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;append&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;nearest_cluster_center&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ans&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# 量化编码&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;quantization_code&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;nearest_cluster_center&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;u&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;codebook&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;c1&#34;&gt;# 恢复向量&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;restore_u&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[]&lt;/span&gt;
+&lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;i&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;code&lt;/span&gt; &lt;span class=&#34;ow&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;enumerate&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;quantization_code&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt;
+    &lt;span class=&#34;n&#34;&gt;restore_u&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;extend&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;codebook&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;i&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;][&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;code&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;])&lt;/span&gt;
+
+&lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;原始向量:&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;划分子向量:&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;u&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;codebook:&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;codebook&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;量化编码:&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;quantization_code&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;nb&#34;&gt;print&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;恢复向量:&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;restore_u&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;s2&#34;&gt;&amp;#34;&amp;#34;&amp;#34;
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;子向量的簇心个数： 4
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;原始向量: [1, 8, 3, 9, 1, 2, 9, 4, 5, 4, 6, 2]
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;划分子向量: [[1, 8, 3], [9, 1, 2], [9, 4, 5], [4, 6, 2]]
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;codebook: [[[8, 1, 6], [8, 7, 0], [7, 2, 5], [1, 0, 5]], [[1, 5, 0], [3, 1, 1], [5, 2, 2], [7, 3, 4]], [[8, 4, 5], [0, 7, 9], [8, 1, 1], [3, 3, 0]], [[9, 3, 3], [5, 9, 1], [8, 6, 8], [7, 9, 1]]]
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;量化编码: [1, 3, 0, 1]
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;恢复向量: [8, 7, 0, 7, 3, 4, 8, 4, 5, 5, 9, 1]
+&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&amp;#34;&amp;#34;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
       
     </item>
     

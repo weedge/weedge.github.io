@@ -363,7 +363,7 @@
   <div class="post-content">
     
     <div class="post-summary">
-      <h1 id="cosyvoice">CosyVoice</h1>
+      <h2 id="cosyvoice">CosyVoice</h2>
 <ul>
 <li><a href="https://arxiv.org/abs/2407.04051">2024.7 FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs</a> （主要介绍ASR SenseVoice 和 TTS CosyVoice,其中 SenseVoice 没有单独论文，相关CosyVoice 和单独论文是重复的, SenseVoice Large的工作可以用于 CosyVoice 在多语言上， Supervised speech tokenizer 模块的训练和推理）</li>
 <li><a href="https://arxiv.org/abs/2407.05407">2024.7 <strong>CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens</strong></a></li>
@@ -373,7 +373,7 @@
 <p>创新点：</p>
 <ul>
 <li>将监督语音token集成到TTS 模型，增强了零样本语音克隆中的内容一致性和说话者相似性。</li>
-<li>一种可扩展的零样本 TTS 合成系统，它将用于文本到token生成的 LLM 与用于token到语音合成的条件流匹配模型(conditional flow matching model(CFM))相结合，不依赖于音素持续时间预测(Duration predictor)，不需要使用补充音素器(phonemizers)和强制对齐器(aligners 比如：Glow-TTS中 Monotonic Alignment Search(MAS))。</li>
+<li>一种可扩展的零样本 TTS 合成系统，它将用于文本到token生成的 LLM 与用于token到语音合成的条件流匹配模型(conditional flow matching model(CFM))相结合，不依赖于音素持续时间预测(Duration predictor)，不需要使用补充音素器(phonemizers)和强制对齐器aligners (比如：Glow-TTS中 Monotonic Alignment Search(MAS))。</li>
 <li>为了进一步细化生成语音的质量，将 x-vector 合并到 LLM 中，将语音建模分为语义、说话者和韵律(semantic, speaker, and prosody)组件。 LLM 对语义(semantic)内容和韵律(prosody)进行建模，而条件流匹配模型(CFM)则捕获音色(timbre)和环境信息。我们使用无分类器引导(<a href="https://arxiv.org/abs/2207.12598">2022. <strong>Classifier-free diffusion guidance</strong></a>)、余弦调度器(<a href="https://d2l.ai/chapter_optimization/lr-scheduler.html#cosine-scheduler">cosine scheduler</a>)和屏蔽条件(masked conditions)等技术来优化流匹配过程。</li>
 </ul>
 <p><img src="https://github.com/user-attachments/assets/3e8c1132-e146-4b73-8d0c-f3972bf7c8bd" alt=""></p>
