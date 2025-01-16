@@ -1276,6 +1276,12 @@
   </url>
   
   <url>
+    <loc>https://weedge.github.io/post/multimoding/voices/cosyvoice2/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
     <loc>https://weedge.github.io/post/notions/database/storage-io/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
