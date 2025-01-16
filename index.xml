@@ -70,7 +70,7 @@
 &lt;ul&gt;
 &lt;li&gt;将监督语音token集成到TTS 模型，增强了零样本语音克隆中的内容一致性和说话者相似性。&lt;/li&gt;
 &lt;li&gt;一种可扩展的零样本 TTS 合成系统，它将用于文本到token生成的 LLM 与用于token到语音合成的条件流匹配模型(conditional flow matching model(CFM))相结合，不依赖于音素持续时间预测(Duration predictor)，不需要使用补充音素器(phonemizers)和强制对齐器aligners (比如：Glow-TTS中 Monotonic Alignment Search(MAS))。&lt;/li&gt;
-&lt;li&gt;为了进一步细化生成语音的质量，将 x-vector 合并到 LLM 中，将语音建模分为语义、说话者和韵律(semantic, speaker, and prosody)组件。 LLM 对语义(semantic)内容和韵律(prosody)进行建模，而条件流匹配模型(CFM)则捕获音色(timbre)和环境信息。我们使用无分类器引导(&lt;a href=&#34;https://arxiv.org/abs/2207.12598&#34;&gt;2022. &lt;strong&gt;Classifier-free diffusion guidance&lt;/strong&gt;&lt;/a&gt;)、余弦调度器(&lt;a href=&#34;https://d2l.ai/chapter_optimization/lr-scheduler.html#cosine-scheduler&#34;&gt;cosine scheduler&lt;/a&gt;)和屏蔽条件(masked conditions)等技术来优化流匹配过程。&lt;/li&gt;
+&lt;li&gt;为了进一步细化生成语音的质量，将 x-vector 合并到 LLM 中，将语音建模分为语义、说话者和韵律(semantic, speaker, and prosody)组件。 LLM 对语义(semantic)内容和韵律(prosody)进行建模，而条件流匹配模型(CFM)则捕获音色(timbre)和环境信息。我们使用&lt;strong&gt;Classifier-Free Guidance&lt;/strong&gt;(&lt;a href=&#34;https://arxiv.org/abs/2207.12598&#34;&gt;2022. &lt;strong&gt;Classifier-free diffusion guidance&lt;/strong&gt;&lt;/a&gt;)、余弦调度器(&lt;a href=&#34;https://d2l.ai/chapter_optimization/lr-scheduler.html#cosine-scheduler&#34;&gt;cosine scheduler&lt;/a&gt;)和屏蔽条件(masked conditions)等技术来优化流匹配过程。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/3e8c1132-e146-4b73-8d0c-f3972bf7c8bd&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
 &lt;p&gt;CosyVoice由四个组件组成，即文本编码器(text encoder)、语音分词器(speech tokenizer)、大语言模型(large language model)和条件流匹配模型(conditional flow matching model)&lt;/p&gt;
@@ -78,7 +78,7 @@
 &lt;li&gt;文本编码器(text encoder)用于对齐文本和语音token的语义空间;&lt;/li&gt;
 &lt;li&gt;语音标记器(speech tokenizer)用于提取语义token;&lt;/li&gt;
 &lt;li&gt;LLM(GLM)学习文本编码和语音标记的整个序列，将 TTS 重新表述为以文本作为提示的自回归序列生成问题;&lt;/li&gt;
-&lt;li&gt;利用条件流匹配模型(conditional flow matching model), 通过最优路径上的去噪处理,将语音标记转换为梅尔谱图(Mel spectrogram); 通过分类器自由指导（Classifier-free diffusion guidance CFG）提高扩散概率模型的生成质量, 将CFG适应到条件流匹配模型中;&lt;/li&gt;
+&lt;li&gt;利用条件流匹配模型(conditional flow matching model), 通过最优路径上的去噪处理,将语音标记转换为梅尔谱图(Mel spectrogram); 通过&lt;strong&gt;Classifier-Free Guidance&lt;/strong&gt;（Classifier-free diffusion guidance CFG）提高扩散概率模型的生成质量, 将CFG适应到条件流匹配模型中;&lt;/li&gt;
 &lt;li&gt;获得人类耳朵可感知的声音信号，声码器(vocoder)使用 Hifi-GAN Generator 用于将生成的梅尔频谱图作为输入来合成波形(waveform)。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;其中：&lt;/p&gt;
@@ -166,7 +166,7 @@ $$&lt;/p&gt;
 t := 1 - \cos \left(\frac{t\pi}{2}\right)
 $$&lt;/p&gt;
 &lt;p&gt;在调度的流下，开始时有更多的生成步骤。&lt;/p&gt;
-&lt;p&gt;分类器自由指导（Classifier-free diffusion guidance CFG）已被证明可以提高扩散概率模型的生成质量。
+&lt;p&gt;&lt;strong&gt;Classifier-Free Guidance&lt;/strong&gt;（Classifier-free diffusion guidance CFG）已被证明可以提高扩散概率模型的生成质量。
 在论文：&lt;a href=&#34;https://arxiv.org/abs/2102.09672&#34;&gt;2021. &lt;strong&gt;Improved denoising diffusion probabilistic models&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://arxiv.org/abs/2207.12598&#34;&gt;2022. &lt;strong&gt;Classifier-free diffusion guidance&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://arxiv.org/abs/2306.15687&#34;&gt;2023. Voicebox: Text-guided multilingual universal speech generation at scale&lt;/a&gt; 中已经研究过。
 因此，提出将CFG适应到条件流匹配模型中。在训练阶段，以固定概率0.2随机丢弃条件 $\Psi = {v, {\mu_l}_{1:L}, \tilde{X}_1}$ 。以这种方式，可以学习条件和无条件流。在生成期间，向量场被修改如下：&lt;/p&gt;
 &lt;p&gt;$$
@@ -421,7 +421,79 @@ ASR re-ranking（自动语音识别重排序）是一种技术，用于改进自
 &lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;量化编码: [1, 3, 0, 1]
 &lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;恢复向量: [8, 7, 0, 7, 3, 4, 8, 4, 5, 5, 9, 1]
 &lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&amp;#34;&amp;#34;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;cfg-classifier-free-diffusion-guidance&#34;&gt;CFG (Classifier-free diffusion guidance)&lt;/h3&gt;
+&lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/2207.12598&#34;&gt;2022. &lt;strong&gt;Classifier-free diffusion guidance&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://github.com/coderpiaobozhe/classifier-free-diffusion-guidance-Pytorch&#34;&gt;Unofficial Implementation pytorch&lt;/a&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;h4 id=&#34;背景和动机&#34;&gt;背景和动机&lt;/h4&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;在条件生成任务中，Classifier Guidance 方法通过引入一个额外的分类器来提升扩散模型生成样本的质量。这种方法虽然有效，但存在一些明显的缺点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;额外的训练成本：需要在噪声数据上重新训练额外的分类器。&lt;/li&gt;
+&lt;li&gt;对分类器的准确度有要求：分类器不准确会导致 score 估计时得到不准确的梯度，导致无法生成对应类别的结果。&lt;/li&gt;
+&lt;li&gt;对抗攻击导致生成失败：通过梯度更新图像会导致对抗攻击效应，生成图像可能会欺骗已经训练好的分类器，实际上并没有按条件生成。&lt;/li&gt;
+&lt;li&gt;为了解决这些问题，谷歌在论文中提出了 Classifier-Free Guidance 方案，该方案无需额外的分类器，通过调节引导的权重来控制生成图像的真实性和多样性的平衡。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;
+&lt;h4 id=&#34;方法原理&#34;&gt;方法原理&lt;/h4&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Classifier-Free Guidance 的核心思想是引入一个隐式的分类器 $p(c \mid z_\lambda)$ ，用它来模拟 Classifier Guidance 中的显式分类器的作用。具体来说，Classifier-Free Guidance 对原始 diffusion 的 score 函数 $\epsilon_\theta(z_\lambda, c)$ 进行了修改，使其能够被输入的条件引导，但没有使用显式的分类器。 在 Classifier Guidance 中，条件生成时的反向 SDE 为：&lt;/p&gt;
+&lt;p&gt;$$
+dx = \left[ f(x, t) - g(t)^2 \nabla_x \log p_t(x \mid y) \right] dt + g(t) d\bar{w}
+$$&lt;/p&gt;
+&lt;p&gt;利用贝叶斯公式，对 $\nabla_x \log p_t(x \mid y)$ 进行处理：
+$$
+\nabla_x \log p_t(x \mid y) = \nabla_x \log p_t(y \mid x) + \nabla_x \log p_t(x)
+$$
+在 Classifier-Free Guidance 中，我们不希望使用分类器来计算 $\nabla_x \log p_t(y \mid x)$ ，因此需要用另一种方式来表示这一项。具体推导如下：
+$$
+\nabla_{x_t} \log p(y \mid x_t) = \nabla_{x_t} \log p(x_t \mid y) - \nabla_{x_t} \log p(x_t)
+$$
+代入 Classifier Guidance 中推导得到的分类器引导对应的梯度项中，可以得到：&lt;/p&gt;
+&lt;p&gt;$$
+\bar{\epsilon}_\theta(x_t, t, y) = (w+1) \epsilon_\theta(x_t, t, y) - w \epsilon_\theta(x_t, t)
+$$&lt;/p&gt;
+&lt;p&gt;其中， w 是一个控制条件重要性的参数。当 w = 0 时，模型就是原来的无条件生成模型；当 $w \to \infty$ 时，模型完全依赖于条件；当 w &amp;gt; 1 时，模型不仅更加重视条件，而且向远离无条件生成的方向移动。&lt;/p&gt;
+&lt;ol start=&#34;3&#34;&gt;
+&lt;li&gt;
+&lt;h4 id=&#34;实现和应用&#34;&gt;实现和应用&lt;/h4&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Classifier-Free Guidance 的实现相对简单，主要步骤如下：&lt;/p&gt;
+&lt;p&gt;训练：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;从数据集中采样一张图片和对应的分类。&lt;/li&gt;
+&lt;li&gt;以一定概率 $p_{\text{uncond}}$ 将条件 c 赋值为空（非条件），以 $1 - p_{\text{uncond}}$ 的概率保留 c （条件）。&lt;/li&gt;
+&lt;li&gt;通过这种方式将条件和非条件放到一起训练。&lt;/li&gt;
+&lt;li&gt;取一个时间样本 $\lambda$ 。&lt;/li&gt;
+&lt;li&gt;抽样随机噪音。&lt;/li&gt;
+&lt;li&gt;通过均值和标准差计算 $z_\lambda$ 。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;推理：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;在推理时，同时预测条件生成和无条件生成的图像。&lt;/li&gt;
+&lt;li&gt;通过 guidance scale 控制最终生成结果的方向和强度。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol start=&#34;4&#34;&gt;
+&lt;li&gt;
+&lt;h4 id=&#34;优势和效果&#34;&gt;优势和效果&lt;/h4&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Classifier-Free Guidance 的主要优势包括：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;无需额外分类器：无需训练额外的分类器，减少了训练成本和复杂度。&lt;/li&gt;
+&lt;li&gt;灵活性：可以生成任意条件下的样本，不受分类器类别的限制。&lt;/li&gt;
+&lt;li&gt;生成质量：通过调节 guidance scale，可以生成高质量且多样化的样本。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol start=&#34;5&#34;&gt;
+&lt;li&gt;
+&lt;h4 id=&#34;总结-1&#34;&gt;总结&lt;/h4&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Classifier-Free Diffusion Guidance 通过引入隐式的分类器和调节引导权重，避免了 Classifier Guidance 的缺点，同时保持了条件生成的高质量和灵活性。这种方法在图像生成、文本到图像翻译等任务中表现出色，适用于需要高质量和多样化生成的应用场景。&lt;/p&gt;</description>
       
     </item>
     
