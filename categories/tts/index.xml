@@ -6,7 +6,111 @@
     <description>Recent content in TTS on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 15 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/tts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 17 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/tts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>论文解读：CosyVoice2: Scalable Streaming Speech Synthesis with Large Language Models</title>
+      <link>https://weedge.github.io/post/multimoding/voices/cosyvoice2/</link>
+      <pubDate>Fri, 17 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/multimoding/voices/cosyvoice2/</guid>
+      <description>&lt;h2 id=&#34;cosyvoice2&#34;&gt;CosyVoice2&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2412.10117&#34;&gt;2024.12  &lt;strong&gt;CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models&lt;/strong&gt;&lt;/a&gt;（流式合成）&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/FunAudioLLM/CosyVoice&#34;&gt;paper code&lt;/a&gt;: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;zero-shot-tts-models-零样本-tts-模型&#34;&gt;zero-shot TTS models 零样本 TTS 模型&lt;/h2&gt;
+&lt;h3 id=&#34;codec-language-models-编解码器语言模型&#34;&gt;codec language models 编解码器语言模型&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;speech &lt;strong&gt;codec model&lt;/strong&gt;  to extract discrete speech representation:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2107.03312&#34;&gt;2021.7 SoundStream: An End-to-End Neural Audio Codec&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2210.13438&#34;&gt;2022.10 &lt;strong&gt;High Fidelity Neural Audio Compression&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;http://github.com/facebookresearch/encodec&#34;&gt;facebookresearch/encodec&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2309.07405&#34;&gt;2023.10 FunCodec: A Fundamental, Reproducible and Integrable Open-source Toolkit for Neural Speech Codec&lt;/a&gt; | &lt;a href=&#34;https://github.com/modelscope/FunCodec&#34;&gt;modelscope/FunCodec&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;speech &lt;strong&gt;codec model&lt;/strong&gt; + &lt;strong&gt;autoregressive model&lt;/strong&gt; to predict the speech tokens (acoustic tokens):&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2301.02111&#34;&gt;2023.1 &lt;strong&gt;Neural Codec Language Models are Zero-Shot Text to Speech Synthesizers&lt;/strong&gt;&lt;/a&gt; (Vall-E) | 以及后续 Vall-E 升级系列 (不包括MELLE): &lt;a href=&#34;https://www.microsoft.com/en-us/research/project/vall-e-x/&#34;&gt;https://www.microsoft.com/en-us/research/project/vall-e-x/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2302.03540&#34;&gt;2023.2 Speak, Read and Prompt: High-Fidelity Text-to-Speech with Minimal Supervision&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;speech &lt;strong&gt;codec model&lt;/strong&gt; (speech semantics Codec) +  &lt;strong&gt;non-autoregressive masked model&lt;/strong&gt; to predict the speech tokens (acoustic tokens):&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2409.00750&#34;&gt;2024.9 &lt;strong&gt;MaskGCT: Zero-Shot Text-to-Speech with Masked Generative Codec Transformer&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://github.com/open-mmlab/Amphion/tree/main/models/tts/maskgct&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;codec model (speech acoustic Codec) or  &lt;strong&gt;vocoder&lt;/strong&gt; to synthesize waveforms from mel-spectrograms:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/2306.00814&#34;&gt;2023.6 &lt;strong&gt;Vocos: Closing the gap between time-domain and Fourier-based neural vocoders for high-quality audio synthesis&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://github.com/gemelo-ai/vocos&#34;&gt;paper code&lt;/a&gt; | 推理速度快：运行速度比 HiFi-GAN 快约 13 倍，比 BigVGAN 快近 70 倍。在没有 GPU 加速的情况下运行时，这种速度优势尤其明显。这主要是由于使用了短时傅里叶逆变换（ISTFT）算法而不是转置卷积。还评估了 Vocos 的一个变体，它利用 ResBlock 的扩张卷积而不是 ConvNeXt 块。在 GPU 上执行时，深度可分离卷积可提供额外的加速。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://ieeexplore.ieee.org/document/10389765&#34;&gt;2023.12 &lt;strong&gt;WaveNeXt: ConvNeXt-Based Fast Neural Vocoder Without ISTFT layer&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://ast-astrec.nict.go.jp/demo_samples/asru_2023_okamoto/index.html&#34;&gt;demo samples&lt;/a&gt; | paper code基于 &lt;a href=&#34;https://arxiv.org/abs/2110.07840&#34;&gt;ESPNet2-TTS&lt;/a&gt;  | 一种新型的基于ConvNeXt的快速神经声码器WaveNeXt，它通过替换Vocos中的逆短时傅里叶变换（iSTFT）层为可训练的线性层，直接预测语音波形样本，而不依赖于STFT频谱。这一改进不仅保持了Vocos的快速推理速度，还提高了语音合成的质量。文章还探讨了如何将WaveNeXt与基于JETS的端到端文本到语音（E2E TTS）框架集成，并研究了采样频率为48kHz的全带模型（Full-band Model：能够处理和生成覆盖整个音频频谱范围的模型，通常是指能够处理从最低频到最高频的完整音频信号的模型）。实验结果表明，WaveNeXt在分析-合成和E2E TTS条件下均优于Vocos，同时保持了快速推理的能力。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/4a1eeaff-528f-4706-b5fc-210caea2c13b&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;feature-diffusion-models-特征扩散模型&#34;&gt;feature diffusion models 特征扩散模型&lt;/h3&gt;
+&lt;p&gt;DDPM + CFM + NAR(non-autoregressive) model, 没有 codec&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Base module:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Denoising Diffusion Probabilistic Model(DDPM)： &lt;a href=&#34;https://arxiv.org/abs/2006.11239&#34;&gt;2020.6 &lt;strong&gt;Denoising Diffusion Probabilistic Models&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://github.com/hojonathanho/diffusion&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Conditional Flow Matching (CFM)：  &lt;a href=&#34;https://arxiv.org/abs/2210.02747&#34;&gt;2022.10 &lt;strong&gt;Flow Matching for Generative Modeling&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://github.com/atong01/conditional-flow-matching&#34;&gt;CFM lib&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;the alignment modeling between input text and synthesized speech&lt;/strong&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;phoneme-level duration model:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2403.03100&#34;&gt;2024.5 NaturalSpeech 3&lt;/a&gt;  and &lt;a href=&#34;https://arxiv.org/abs/2306.15687&#34;&gt;2023.6 Voicebox&lt;/a&gt; use frame-wise phoneme alignment;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2309.03199&#34;&gt;2023.9 Matcha-TTS&lt;/a&gt; adopts monotonic alignment search(MAS) and relies on phoneme-level duration model;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2406.18009&#34;&gt;2024.6 E2 TTS&lt;/a&gt; 和&lt;a href=&#34;https://arxiv.org/abs/2406.02430&#34;&gt;2024.6 Seed-TTS&lt;/a&gt; 研究表明在文本和语音之间引入这种僵化和不灵活的对齐方式会阻碍模型生成更自然的结果。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;E3 TTS 放弃音素级持续时间并对输入序列应用交叉注意力，但产生的音频质量有限；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;DiTTo-TTS 使用扩散变换器 (DiT) ，并以来自预训练语言模型的编码文本为条件进行交叉注意。为了进一步增强对齐，它使用预训练的语言模型来微调神经音频编解码器，将语义信息注入生成的表示中；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;相比之下，基于 Voicebox的 E2 TTS采用了更简单的方法，删除了音素和持续时间预测器，直接使用填充token填充到梅尔频谱图长度的字符作为输入。这个简单的方案也实现了非常自然和真实的合成结果。然而，F5-TTS 发现 E2 TTS 中文本和语音对齐存在鲁棒性问题。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/2406.02430&#34;&gt;2024.6 Seed-TTS&lt;/a&gt; 采用了类似的策略并取得了优异的结果，尽管没有详细说明模型细节。在这些未明确建模音素级持续时间的方法中，模型学习根据给定的总序列长度分配每个单词或音素的长度，从而改进韵律和节奏。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/2410.06885&#34;&gt;2024.10 &lt;strong&gt;F5-TTS: A fairytaler that fakes fluent and faithful speech with flow matching&lt;/strong&gt;&lt;/a&gt; 保持了管道的简单性，无需音素对齐、持续时间预测器、文本编码器和语义注入编解码器模型，利用带有 &lt;a href=&#34;https://arxiv.org/abs/2301.00808&#34;&gt;ConvNeXt V2&lt;/a&gt;|&lt;a href=&#34;https://github.com/facebookresearch/ConvNeXt-V2&#34;&gt;paper code&lt;/a&gt; 的Diffusion Transformer(DiT)来更好地解决上下文学习期间的文本语音对齐问题。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;codec-language-and-feature-diffusion-hybrid-systems-混合系统&#34;&gt;codec language and feature diffusion hybrid systems 混合系统&lt;/h3&gt;
+&lt;p&gt;text-to-codec language model  和 codec-to-feature diffusion model&lt;/p&gt;
+&lt;p&gt;语言模型解决文本和语音之间的对齐以及话语持续时间预测，而编解码器到特征扩散模型则根据生成的编解码器和其他条件合成语音特征（梅尔谱）。通过利用两种生成模型的优势，混合系统实现了高度多样性、韵律一致性和语音质量。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2406.02430&#34;&gt;2024.6 Seed-TTS&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2407.05407&#34;&gt;2024.7 Cosyvoice&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2409.03283&#34;&gt;2024.9 Fireredtts&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;language-model-based-zero-shot-tts-models--streaming-synthesis&#34;&gt;language model-based zero-shot TTS models  &lt;strong&gt;streaming&lt;/strong&gt; synthesis&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2402.08093&#34;&gt;2024.2 &lt;strong&gt;BASE TTS: Lessons from building a billion-parameter Text-to-Speech model on 100K hours of data&lt;/strong&gt;&lt;/a&gt; | 小红书的FireRedTTS 来源于此 &lt;a href=&#34;https://github.com/FireRedTeam/FireRedTTS&#34;&gt;FireRedTTS paper code&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2406.02897&#34;&gt;2024.6 LiveSpeech: Low-Latency Zero-shot Text-to-Speech via Autoregressive Modeling of Audio Discrete Codes&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2309.11210&#34;&gt;2024.9 Speak While You Think: Streaming Speech Synthesis During Text Generation&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2410.00767&#34;&gt;2024.10 Zero-Shot Text-to-Speech from Continuous Text Streams&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
     <item>
       <title>论文解读：CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens</title>
       <link>https://weedge.github.io/post/multimoding/voices/cosyvoice/</link>
@@ -18,7 +122,7 @@
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2407.04051&#34;&gt;2024.7 FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs&lt;/a&gt; （主要介绍ASR SenseVoice 和 TTS CosyVoice,其中 SenseVoice 没有单独论文，相关CosyVoice 和单独论文是重复的, SenseVoice Large的工作可以用于 CosyVoice 在多语言上， Supervised speech tokenizer 模块的训练和推理）&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2407.05407&#34;&gt;2024.7 &lt;strong&gt;CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2412.10117&#34;&gt;2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models&lt;/a&gt; （流式合成）&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/FunAudioLLM/CosyVoice&#34;&gt;paper code&lt;/a&gt;: 没有pre-trainning过程；公开推理和权重，以及微调。&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/FunAudioLLM/CosyVoice&#34;&gt;paper code&lt;/a&gt;: 公开推理和权重，在openslr公开数据集英文数据集LibriSpeech 和中文数据集 MAGICDATA 对模型进行训练代码； 无supervised Speech Tokenizer (对SenseVoice ASR的改造微调) 和Speaker Embedding model(context-aware masking CAM++) 的训练过程代码。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;创新点：&lt;/p&gt;
 &lt;ul&gt;
@@ -43,7 +147,11 @@
 &lt;/ul&gt;
 &lt;p&gt;附：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;achatbot 接入 CosyVoice:
+&lt;li&gt;
+&lt;p&gt;推理和训练操作笔记：https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;achatbot 接入 CosyVoice:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/21&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/21&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/23&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/23&lt;/a&gt;&lt;/li&gt;

@@ -384,6 +384,136 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/multimoding/voices/cosyvoice2/">论文解读：CosyVoice2: Scalable Streaming Speech Synthesis with Large Language Models</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2025-01-17" class="post-time">
+        2025-01-17
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/tts/"> TTS </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <h2 id="cosyvoice2">CosyVoice2</h2>
+<ul>
+<li><a href="https://arxiv.org/abs/2412.10117">2024.12  <strong>CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models</strong></a>（流式合成）</li>
+<li><a href="https://github.com/FunAudioLLM/CosyVoice">paper code</a>: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。</li>
+</ul>
+<h2 id="zero-shot-tts-models-零样本-tts-模型">zero-shot TTS models 零样本 TTS 模型</h2>
+<h3 id="codec-language-models-编解码器语言模型">codec language models 编解码器语言模型</h3>
+<ul>
+<li>
+<p>speech <strong>codec model</strong>  to extract discrete speech representation:</p>
+<ul>
+<li><a href="https://arxiv.org/abs/2107.03312">2021.7 SoundStream: An End-to-End Neural Audio Codec</a></li>
+<li><a href="https://arxiv.org/abs/2210.13438">2022.10 <strong>High Fidelity Neural Audio Compression</strong></a> | <a href="http://github.com/facebookresearch/encodec">facebookresearch/encodec</a></li>
+<li><a href="https://arxiv.org/abs/2309.07405">2023.10 FunCodec: A Fundamental, Reproducible and Integrable Open-source Toolkit for Neural Speech Codec</a> | <a href="https://github.com/modelscope/FunCodec">modelscope/FunCodec</a></li>
+</ul>
+</li>
+<li>
+<p>speech <strong>codec model</strong> + <strong>autoregressive model</strong> to predict the speech tokens (acoustic tokens):</p>
+<ul>
+<li><a href="https://arxiv.org/abs/2301.02111">2023.1 <strong>Neural Codec Language Models are Zero-Shot Text to Speech Synthesizers</strong></a> (Vall-E) | 以及后续 Vall-E 升级系列 (不包括MELLE): <a href="https://www.microsoft.com/en-us/research/project/vall-e-x/">https://www.microsoft.com/en-us/research/project/vall-e-x/</a></li>
+<li><a href="https://arxiv.org/abs/2302.03540">2023.2 Speak, Read and Prompt: High-Fidelity Text-to-Speech with Minimal Supervision</a></li>
+</ul>
+</li>
+<li>
+<p>speech <strong>codec model</strong> (speech semantics Codec) +  <strong>non-autoregressive masked model</strong> to predict the speech tokens (acoustic tokens):</p>
+<ul>
+<li><a href="https://arxiv.org/abs/2409.00750">2024.9 <strong>MaskGCT: Zero-Shot Text-to-Speech with Masked Generative Codec Transformer</strong></a> | <a href="https://github.com/open-mmlab/Amphion/tree/main/models/tts/maskgct">paper code</a></li>
+</ul>
+</li>
+<li>
+<p>codec model (speech acoustic Codec) or  <strong>vocoder</strong> to synthesize waveforms from mel-spectrograms:</p>
+<ul>
+<li>
+<p><a href="https://arxiv.org/abs/2306.00814">2023.6 <strong>Vocos: Closing the gap between time-domain and Fourier-based neural vocoders for high-quality audio synthesis</strong></a> | <a href="https://github.com/gemelo-ai/vocos">paper code</a> | 推理速度快：运行速度比 HiFi-GAN 快约 13 倍，比 BigVGAN 快近 70 倍。在没有 GPU 加速的情况下运行时，这种速度优势尤其明显。这主要是由于使用了短时傅里叶逆变换（ISTFT）算法而不是转置卷积。还评估了 Vocos 的一个变体，它利用 ResBlock 的扩张卷积而不是 ConvNeXt 块。在 GPU 上执行时，深度可分离卷积可提供额外的加速。</p>
+</li>
+<li>
+<p><a href="https://ieeexplore.ieee.org/document/10389765">2023.12 <strong>WaveNeXt: ConvNeXt-Based Fast Neural Vocoder Without ISTFT layer</strong></a> | <a href="https://ast-astrec.nict.go.jp/demo_samples/asru_2023_okamoto/index.html">demo samples</a> | paper code基于 <a href="https://arxiv.org/abs/2110.07840">ESPNet2-TTS</a>  | 一种新型的基于ConvNeXt的快速神经声码器WaveNeXt，它通过替换Vocos中的逆短时傅里叶变换（iSTFT）层为可训练的线性层，直接预测语音波形样本，而不依赖于STFT频谱。这一改进不仅保持了Vocos的快速推理速度，还提高了语音合成的质量。文章还探讨了如何将WaveNeXt与基于JETS的端到端文本到语音（E2E TTS）框架集成，并研究了采样频率为48kHz的全带模型（Full-band Model：能够处理和生成覆盖整个音频频谱范围的模型，通常是指能够处理从最低频到最高频的完整音频信号的模型）。实验结果表明，WaveNeXt在分析-合成和E2E TTS条件下均优于Vocos，同时保持了快速推理的能力。</p>
+<p><img src="https://github.com/user-attachments/assets/4a1eeaff-528f-4706-b5fc-210caea2c13b" alt="image"></p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="feature-diffusion-models-特征扩散模型">feature diffusion models 特征扩散模型</h3>
+<p>DDPM + CFM + NAR(non-autoregressive) model, 没有 codec</p>
+<ul>
+<li>
+<p>Base module:</p>
+<ul>
+<li>Denoising Diffusion Probabilistic Model(DDPM)： <a href="https://arxiv.org/abs/2006.11239">2020.6 <strong>Denoising Diffusion Probabilistic Models</strong></a> | <a href="https://github.com/hojonathanho/diffusion">paper code</a></li>
+<li>Conditional Flow Matching (CFM)：  <a href="https://arxiv.org/abs/2210.02747">2022.10 <strong>Flow Matching for Generative Modeling</strong></a> | <a href="https://github.com/atong01/conditional-flow-matching">CFM lib</a></li>
+</ul>
+</li>
+<li>
+<p><strong>the alignment modeling between input text and synthesized speech</strong>:</p>
+<ul>
+<li>
+<p>phoneme-level duration model:</p>
+<ul>
+<li><a href="https://arxiv.org/abs/2403.03100">2024.5 NaturalSpeech 3</a>  and <a href="https://arxiv.org/abs/2306.15687">2023.6 Voicebox</a> use frame-wise phoneme alignment;</li>
+<li><a href="https://arxiv.org/abs/2309.03199">2023.9 Matcha-TTS</a> adopts monotonic alignment search(MAS) and relies on phoneme-level duration model;</li>
+<li><a href="https://arxiv.org/abs/2406.18009">2024.6 E2 TTS</a> 和<a href="https://arxiv.org/abs/2406.02430">2024.6 Seed-TTS</a> 研究表明在文本和语音之间引入这种僵化和不灵活的对齐方式会阻碍模型生成更自然的结果。</li>
+</ul>
+</li>
+<li>
+<p>E3 TTS 放弃音素级持续时间并对输入序列应用交叉注意力，但产生的音频质量有限；</p>
+</li>
+<li>
+<p>DiTTo-TTS 使用扩散变换器 (DiT) ，并以来自预训练语言模型的编码文本为条件进行交叉注意。为了进一步增强对齐，它使用预训练的语言模型来微调神经音频编解码器，将语义信息注入生成的表示中；</p>
+</li>
+<li>
+<p>相比之下，基于 Voicebox的 E2 TTS采用了更简单的方法，删除了音素和持续时间预测器，直接使用填充token填充到梅尔频谱图长度的字符作为输入。这个简单的方案也实现了非常自然和真实的合成结果。然而，F5-TTS 发现 E2 TTS 中文本和语音对齐存在鲁棒性问题。</p>
+</li>
+<li>
+<p><a href="https://arxiv.org/abs/2406.02430">2024.6 Seed-TTS</a> 采用了类似的策略并取得了优异的结果，尽管没有详细说明模型细节。在这些未明确建模音素级持续时间的方法中，模型学习根据给定的总序列长度分配每个单词或音素的长度，从而改进韵律和节奏。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><a href="https://arxiv.org/abs/2410.06885">2024.10 <strong>F5-TTS: A fairytaler that fakes fluent and faithful speech with flow matching</strong></a> 保持了管道的简单性，无需音素对齐、持续时间预测器、文本编码器和语义注入编解码器模型，利用带有 <a href="https://arxiv.org/abs/2301.00808">ConvNeXt V2</a>|<a href="https://github.com/facebookresearch/ConvNeXt-V2">paper code</a> 的Diffusion Transformer(DiT)来更好地解决上下文学习期间的文本语音对齐问题。</p>
+</li>
+</ul>
+<h3 id="codec-language-and-feature-diffusion-hybrid-systems-混合系统">codec language and feature diffusion hybrid systems 混合系统</h3>
+<p>text-to-codec language model  和 codec-to-feature diffusion model</p>
+<p>语言模型解决文本和语音之间的对齐以及话语持续时间预测，而编解码器到特征扩散模型则根据生成的编解码器和其他条件合成语音特征（梅尔谱）。通过利用两种生成模型的优势，混合系统实现了高度多样性、韵律一致性和语音质量。</p>
+<ul>
+<li><a href="https://arxiv.org/abs/2406.02430">2024.6 Seed-TTS</a></li>
+<li><a href="https://arxiv.org/abs/2407.05407">2024.7 Cosyvoice</a></li>
+<li><a href="https://arxiv.org/abs/2409.03283">2024.9 Fireredtts</a></li>
+</ul>
+<h3 id="language-model-based-zero-shot-tts-models--streaming-synthesis">language model-based zero-shot TTS models  <strong>streaming</strong> synthesis</h3>
+<ul>
+<li><a href="https://arxiv.org/abs/2402.08093">2024.2 <strong>BASE TTS: Lessons from building a billion-parameter Text-to-Speech model on 100K hours of data</strong></a> | 小红书的FireRedTTS 来源于此 <a href="https://github.com/FireRedTeam/FireRedTTS">FireRedTTS paper code</a></li>
+<li><a href="https://arxiv.org/abs/2406.02897">2024.6 LiveSpeech: Low-Latency Zero-shot Text-to-Speech via Autoregressive Modeling of Audio Discrete Codes</a></li>
+<li><a href="https://arxiv.org/abs/2309.11210">2024.9 Speak While You Think: Streaming Speech Synthesis During Text Generation</a></li>
+<li><a href="https://arxiv.org/abs/2410.00767">2024.10 Zero-Shot Text-to-Speech from Continuous Text Streams</a></li>
+</ul>
+    </div>
+    <div class="read-more">
+      <a href="/post/multimoding/voices/cosyvoice2/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/multimoding/voices/cosyvoice/">论文解读：CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens</a>
     </h1>
     
@@ -410,7 +540,7 @@
 <li><a href="https://arxiv.org/abs/2407.04051">2024.7 FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs</a> （主要介绍ASR SenseVoice 和 TTS CosyVoice,其中 SenseVoice 没有单独论文，相关CosyVoice 和单独论文是重复的, SenseVoice Large的工作可以用于 CosyVoice 在多语言上， Supervised speech tokenizer 模块的训练和推理）</li>
 <li><a href="https://arxiv.org/abs/2407.05407">2024.7 <strong>CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens</strong></a></li>
 <li><a href="https://arxiv.org/abs/2412.10117">2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models</a> （流式合成）</li>
-<li><a href="https://github.com/FunAudioLLM/CosyVoice">paper code</a>: 没有pre-trainning过程；公开推理和权重，以及微调。</li>
+<li><a href="https://github.com/FunAudioLLM/CosyVoice">paper code</a>: 公开推理和权重，在openslr公开数据集英文数据集LibriSpeech 和中文数据集 MAGICDATA 对模型进行训练代码； 无supervised Speech Tokenizer (对SenseVoice ASR的改造微调) 和Speaker Embedding model(context-aware masking CAM++) 的训练过程代码。</li>
 </ul>
 <p>创新点：</p>
 <ul>
@@ -435,7 +565,11 @@
 </ul>
 <p>附：</p>
 <ul>
-<li>achatbot 接入 CosyVoice:
+<li>
+<p>推理和训练操作笔记：https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb</p>
+</li>
+<li>
+<p>achatbot 接入 CosyVoice:</p>
 <ul>
 <li><a href="https://github.com/ai-bot-pro/achatbot/pull/21">https://github.com/ai-bot-pro/achatbot/pull/21</a></li>
 <li><a href="https://github.com/ai-bot-pro/achatbot/pull/23">https://github.com/ai-bot-pro/achatbot/pull/23</a></li>
@@ -794,46 +928,6 @@
     </div>
     <div class="read-more">
       <a href="/post/paper/transformer/delight/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/paper/transformer/infini_attention/">解读论文：Leave No Context Behind: Efficient Infinite Context Transformers with Infini-attention</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2024-04-12" class="post-time">
-        2024-04-12
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E5%AD%A6%E6%9C%AF/"> 学术 </a>
-          <a href="https://weedge.github.io/categories/paper/"> paper </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p><img src="https://aiptcomics.com/ezoimgfmt/i0.wp.com/aiptcomics.com/wp-content/uploads/2024/04/transformers-7.jpg?w=1500&amp;ssl=1&amp;ezimgfmt=ngcb4/notWebP" alt=""></p>
-<p>图片来源： <a href="https://aiptcomics.com/2024/04/10/transformers-7-2024-review/">https://aiptcomics.com/2024/04/10/transformers-7-2024-review/</a></p>
-<p><strong>摘要</strong>： 本文介绍了一种有效的方法，将基于Transformer的大型语言模型（LLMs）扩展到无限长的输入，同时受到内存和计算的限制。我们提出的方法的关键组成部分是一种新的注意力技术，称为Infini-attention。Infini-attention将一种压缩内存集成到了传统的注意力机制中，并在单个Transformer块中构建了掩码局部注意力和长期线性注意力机制。我们通过在长上下文语言建模基准、1M序列长度的口令(keypass)上下文块检索和500K长度的书籍摘要任务中使用1B和8B LLMs，展示了我们方法的有效性。我们的方法引入了最小的有界内存参数，并实现了LLMs的快速流式推理。</p>
-<p><strong>注</strong>：为解决大模型（LLMs）在处理超长输入序列时遇到的内存限制问题，本文作者提出了一种新型架构：Infini-Transformer，它可以在有限内存条件下，让基于Transformer的大语言模型（LLMs）高效处理无限长的输入序列。实验结果表明：Infini-Transformer在长上下文语言建模任务上超越了基线模型，内存最高可节约114倍。</p>
-<p>感觉有种外挂存储库(类似向量数据库)嵌入到模型结构中。比如： <a href="https://arxiv.org/abs/2203.08913">Memorizing Transformers</a> + <a href="https://github.com/lucidrains/memorizing-transformers-pytorch">code</a></p>
-<p>在论文《Memorizing Transformers》中，作者提出了一种新的注意力机制，称为kNN-augmented attention layer，它结合了局部上下文的密集自注意力和对外部记忆的近似k-最近邻（kNN）搜索。这个机制的关键部分之一是使用了一个门控机制（gating mechanism）来结合局部注意力和外部记忆的注意力。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/paper/transformer/infini_attention/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>

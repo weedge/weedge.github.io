@@ -6,11 +6,11 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 15 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 17 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>AR&#34;</title>
       <link>https://weedge.github.io/tags/ar/</link>
-      <pubDate>Wed, 15 Jan 2025 10:26:23 +0800</pubDate>
+      <pubDate>Fri, 17 Jan 2025 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/ar/</guid>
       <description></description>
@@ -19,7 +19,7 @@
     <item>
       <title>BPE</title>
       <link>https://weedge.github.io/tags/bpe/</link>
-      <pubDate>Wed, 15 Jan 2025 10:26:23 +0800</pubDate>
+      <pubDate>Fri, 17 Jan 2025 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/bpe/</guid>
       <description></description>
@@ -28,7 +28,7 @@
     <item>
       <title>CFG</title>
       <link>https://weedge.github.io/tags/cfg/</link>
-      <pubDate>Wed, 15 Jan 2025 10:26:23 +0800</pubDate>
+      <pubDate>Fri, 17 Jan 2025 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/cfg/</guid>
       <description></description>
@@ -37,7 +37,7 @@
     <item>
       <title>flow</title>
       <link>https://weedge.github.io/tags/flow/</link>
-      <pubDate>Wed, 15 Jan 2025 10:26:23 +0800</pubDate>
+      <pubDate>Fri, 17 Jan 2025 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/flow/</guid>
       <description></description>
@@ -46,16 +46,25 @@
     <item>
       <title>mel-spectrogram</title>
       <link>https://weedge.github.io/tags/mel-spectrogram/</link>
-      <pubDate>Wed, 15 Jan 2025 10:26:23 +0800</pubDate>
+      <pubDate>Fri, 17 Jan 2025 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/mel-spectrogram/</guid>
       <description></description>
     </item>
     
     <item>
+      <title>streaming</title>
+      <link>https://weedge.github.io/tags/streaming/</link>
+      <pubDate>Fri, 17 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/streaming/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Supervised Semantic Speech Tokenizer</title>
       <link>https://weedge.github.io/tags/supervised-semantic-speech-tokenizer/</link>
-      <pubDate>Wed, 15 Jan 2025 10:26:23 +0800</pubDate>
+      <pubDate>Fri, 17 Jan 2025 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/supervised-semantic-speech-tokenizer/</guid>
       <description></description>
@@ -175,15 +184,6 @@
       <pubDate>Thu, 28 Mar 2024 21:51:52 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/ml/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>NLP</title>
-      <link>https://weedge.github.io/tags/nlp/</link>
-      <pubDate>Thu, 28 Mar 2024 21:51:52 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/nlp/</guid>
       <description></description>
     </item>
     

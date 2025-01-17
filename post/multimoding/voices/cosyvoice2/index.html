@@ -1,0 +1,2241 @@
+<!DOCTYPE html>
+<html lang="zh-cn" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>论文解读：CosyVoice2: Scalable Streaming Speech Synthesis with Large Language Models - 时间飘过</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="weedge" />
+  <meta name="description" content="CosyVoice2  2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models（流式合成） paper code: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。  zero-shot TTS models 零样本 TTS 模型 codec language models 编解码器语言模型   speech codec model to extract discrete speech representation:
+ 2021.7 SoundStream: An End-to-End Neural Audio Codec 2022.10 High Fidelity Neural Audio Compression | facebookresearch/encodec 2023.10 FunCodec: A Fundamental, Reproducible and Integrable Open-source Toolkit for Neural Speech Codec | modelscope/FunCodec    speech codec model &#43; autoregressive model to predict the speech tokens (acoustic tokens):
+ 2023.1 Neural Codec Language Models are Zero-Shot Text to Speech Synthesizers (Vall-E) | 以及后续 Vall-E 升级系列 (不包括MELLE): https://www.microsoft.com/en-us/research/project/vall-e-x/ 2023.2 Speak, Read and Prompt: High-Fidelity Text-to-Speech with Minimal Supervision    speech codec model (speech semantics Codec) &#43; non-autoregressive masked model to predict the speech tokens (acoustic tokens):
+ 2024.9 MaskGCT: Zero-Shot Text-to-Speech with Masked Generative Codec Transformer | paper code    codec model (speech acoustic Codec) or vocoder to synthesize waveforms from mel-spectrograms:
+  2023.6 Vocos: Closing the gap between time-domain and Fourier-based neural vocoders for high-quality audio synthesis | paper code | 推理速度快：运行速度比 HiFi-GAN 快约 13 倍，比 BigVGAN 快近 70 倍。在没有 GPU 加速的情况下运行时，这种速度优势尤其明显。这主要是由于使用了短时傅里叶逆变换（ISTFT）算法而不是转置卷积。还评估了 Vocos 的一个变体，它利用 ResBlock 的扩张卷积而不是 ConvNeXt 块。在 GPU 上执行时，深度可分离卷积可提供额外的加速。
+  2023.12 WaveNeXt: ConvNeXt-Based Fast Neural Vocoder Without ISTFT layer | demo samples | paper code基于 ESPNet2-TTS | 一种新型的基于ConvNeXt的快速神经声码器WaveNeXt，它通过替换Vocos中的逆短时傅里叶变换（iSTFT）层为可训练的线性层，直接预测语音波形样本，而不依赖于STFT频谱。这一改进不仅保持了Vocos的快速推理速度，还提高了语音合成的质量。文章还探讨了如何将WaveNeXt与基于JETS的端到端文本到语音（E2E TTS）框架集成，并研究了采样频率为48kHz的全带模型（Full-band Model：能够处理和生成覆盖整个音频频谱范围的模型，通常是指能够处理从最低频到最高频的完整音频信号的模型）。实验结果表明，WaveNeXt在分析-合成和E2E TTS条件下均优于Vocos，同时保持了快速推理的能力。
+    feature diffusion models 特征扩散模型 DDPM &#43; CFM &#43; NAR(non-autoregressive) model, 没有 codec
+  Base module:
+ Denoising Diffusion Probabilistic Model(DDPM)： 2020.6 Denoising Diffusion Probabilistic Models | paper code Conditional Flow Matching (CFM)： 2022.10 Flow Matching for Generative Modeling | CFM lib    the alignment modeling between input text and synthesized speech:
+  phoneme-level duration model:
+ 2024.5 NaturalSpeech 3 and 2023.6 Voicebox use frame-wise phoneme alignment; 2023.9 Matcha-TTS adopts monotonic alignment search(MAS) and relies on phoneme-level duration model; 2024.6 E2 TTS 和2024.6 Seed-TTS 研究表明在文本和语音之间引入这种僵化和不灵活的对齐方式会阻碍模型生成更自然的结果。    E3 TTS 放弃音素级持续时间并对输入序列应用交叉注意力，但产生的音频质量有限；
+  DiTTo-TTS 使用扩散变换器 (DiT) ，并以来自预训练语言模型的编码文本为条件进行交叉注意。为了进一步增强对齐，它使用预训练的语言模型来微调神经音频编解码器，将语义信息注入生成的表示中；
+  相比之下，基于 Voicebox的 E2 TTS采用了更简单的方法，删除了音素和持续时间预测器，直接使用填充token填充到梅尔频谱图长度的字符作为输入。这个简单的方案也实现了非常自然和真实的合成结果。然而，F5-TTS 发现 E2 TTS 中文本和语音对齐存在鲁棒性问题。
+  2024.6 Seed-TTS 采用了类似的策略并取得了优异的结果，尽管没有详细说明模型细节。在这些未明确建模音素级持续时间的方法中，模型学习根据给定的总序列长度分配每个单词或音素的长度，从而改进韵律和节奏。
+    2024.10 F5-TTS: A fairytaler that fakes fluent and faithful speech with flow matching 保持了管道的简单性，无需音素对齐、持续时间预测器、文本编码器和语义注入编解码器模型，利用带有 ConvNeXt V2|paper code 的Diffusion Transformer(DiT)来更好地解决上下文学习期间的文本语音对齐问题。
+  codec language and feature diffusion hybrid systems 混合系统 text-to-codec language model 和 codec-to-feature diffusion model
+语言模型解决文本和语音之间的对齐以及话语持续时间预测，而编解码器到特征扩散模型则根据生成的编解码器和其他条件合成语音特征（梅尔谱）。通过利用两种生成模型的优势，混合系统实现了高度多样性、韵律一致性和语音质量。
+ 2024.6 Seed-TTS 2024.7 Cosyvoice 2024.9 Fireredtts  language model-based zero-shot TTS models streaming synthesis  2024.2 BASE TTS: Lessons from building a billion-parameter Text-to-Speech model on 100K hours of data | 小红书的FireRedTTS 来源于此 FireRedTTS paper code 2024.6 LiveSpeech: Low-Latency Zero-shot Text-to-Speech via Autoregressive Modeling of Audio Discrete Codes 2024.9 Speak While You Think: Streaming Speech Synthesis During Text Generation 2024.10 Zero-Shot Text-to-Speech from Continuous Text Streams " />
+
+  <meta name="keywords" content="工作, 技术, 生活" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.91.0" />
+
+
+<link rel="canonical" href="https://weedge.github.io/post/multimoding/voices/cosyvoice2/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css" integrity="sha256-&#43;ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
+
+<meta property="og:title" content="论文解读：CosyVoice2: Scalable Streaming Speech Synthesis with Large Language Models" />
+<meta property="og:description" content="CosyVoice2
+
+2024.12  CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models（流式合成）
+paper code: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。
+
+zero-shot TTS models 零样本 TTS 模型
+codec language models 编解码器语言模型
+
+
+speech codec model  to extract discrete speech representation:
+
+2021.7 SoundStream: An End-to-End Neural Audio Codec
+2022.10 High Fidelity Neural Audio Compression | facebookresearch/encodec
+2023.10 FunCodec: A Fundamental, Reproducible and Integrable Open-source Toolkit for Neural Speech Codec | modelscope/FunCodec
+
+
+
+speech codec model &#43; autoregressive model to predict the speech tokens (acoustic tokens):
+
+2023.1 Neural Codec Language Models are Zero-Shot Text to Speech Synthesizers (Vall-E) | 以及后续 Vall-E 升级系列 (不包括MELLE): https://www.microsoft.com/en-us/research/project/vall-e-x/
+2023.2 Speak, Read and Prompt: High-Fidelity Text-to-Speech with Minimal Supervision
+
+
+
+speech codec model (speech semantics Codec) &#43;  non-autoregressive masked model to predict the speech tokens (acoustic tokens):
+
+2024.9 MaskGCT: Zero-Shot Text-to-Speech with Masked Generative Codec Transformer | paper code
+
+
+
+codec model (speech acoustic Codec) or  vocoder to synthesize waveforms from mel-spectrograms:
+
+
+2023.6 Vocos: Closing the gap between time-domain and Fourier-based neural vocoders for high-quality audio synthesis | paper code | 推理速度快：运行速度比 HiFi-GAN 快约 13 倍，比 BigVGAN 快近 70 倍。在没有 GPU 加速的情况下运行时，这种速度优势尤其明显。这主要是由于使用了短时傅里叶逆变换（ISTFT）算法而不是转置卷积。还评估了 Vocos 的一个变体，它利用 ResBlock 的扩张卷积而不是 ConvNeXt 块。在 GPU 上执行时，深度可分离卷积可提供额外的加速。
+
+
+2023.12 WaveNeXt: ConvNeXt-Based Fast Neural Vocoder Without ISTFT layer | demo samples | paper code基于 ESPNet2-TTS  | 一种新型的基于ConvNeXt的快速神经声码器WaveNeXt，它通过替换Vocos中的逆短时傅里叶变换（iSTFT）层为可训练的线性层，直接预测语音波形样本，而不依赖于STFT频谱。这一改进不仅保持了Vocos的快速推理速度，还提高了语音合成的质量。文章还探讨了如何将WaveNeXt与基于JETS的端到端文本到语音（E2E TTS）框架集成，并研究了采样频率为48kHz的全带模型（Full-band Model：能够处理和生成覆盖整个音频频谱范围的模型，通常是指能够处理从最低频到最高频的完整音频信号的模型）。实验结果表明，WaveNeXt在分析-合成和E2E TTS条件下均优于Vocos，同时保持了快速推理的能力。
+
+
+
+
+
+feature diffusion models 特征扩散模型
+DDPM &#43; CFM &#43; NAR(non-autoregressive) model, 没有 codec
+
+
+Base module:
+
+Denoising Diffusion Probabilistic Model(DDPM)： 2020.6 Denoising Diffusion Probabilistic Models | paper code
+Conditional Flow Matching (CFM)：  2022.10 Flow Matching for Generative Modeling | CFM lib
+
+
+
+the alignment modeling between input text and synthesized speech:
+
+
+phoneme-level duration model:
+
+2024.5 NaturalSpeech 3  and 2023.6 Voicebox use frame-wise phoneme alignment;
+2023.9 Matcha-TTS adopts monotonic alignment search(MAS) and relies on phoneme-level duration model;
+2024.6 E2 TTS 和2024.6 Seed-TTS 研究表明在文本和语音之间引入这种僵化和不灵活的对齐方式会阻碍模型生成更自然的结果。
+
+
+
+E3 TTS 放弃音素级持续时间并对输入序列应用交叉注意力，但产生的音频质量有限；
+
+
+DiTTo-TTS 使用扩散变换器 (DiT) ，并以来自预训练语言模型的编码文本为条件进行交叉注意。为了进一步增强对齐，它使用预训练的语言模型来微调神经音频编解码器，将语义信息注入生成的表示中；
+
+
+相比之下，基于 Voicebox的 E2 TTS采用了更简单的方法，删除了音素和持续时间预测器，直接使用填充token填充到梅尔频谱图长度的字符作为输入。这个简单的方案也实现了非常自然和真实的合成结果。然而，F5-TTS 发现 E2 TTS 中文本和语音对齐存在鲁棒性问题。
+
+
+2024.6 Seed-TTS 采用了类似的策略并取得了优异的结果，尽管没有详细说明模型细节。在这些未明确建模音素级持续时间的方法中，模型学习根据给定的总序列长度分配每个单词或音素的长度，从而改进韵律和节奏。
+
+
+
+
+2024.10 F5-TTS: A fairytaler that fakes fluent and faithful speech with flow matching 保持了管道的简单性，无需音素对齐、持续时间预测器、文本编码器和语义注入编解码器模型，利用带有 ConvNeXt V2|paper code 的Diffusion Transformer(DiT)来更好地解决上下文学习期间的文本语音对齐问题。
+
+
+codec language and feature diffusion hybrid systems 混合系统
+text-to-codec language model  和 codec-to-feature diffusion model
+语言模型解决文本和语音之间的对齐以及话语持续时间预测，而编解码器到特征扩散模型则根据生成的编解码器和其他条件合成语音特征（梅尔谱）。通过利用两种生成模型的优势，混合系统实现了高度多样性、韵律一致性和语音质量。
+
+2024.6 Seed-TTS
+2024.7 Cosyvoice
+2024.9 Fireredtts
+
+language model-based zero-shot TTS models  streaming synthesis
+
+2024.2 BASE TTS: Lessons from building a billion-parameter Text-to-Speech model on 100K hours of data | 小红书的FireRedTTS 来源于此 FireRedTTS paper code
+2024.6 LiveSpeech: Low-Latency Zero-shot Text-to-Speech via Autoregressive Modeling of Audio Discrete Codes
+2024.9 Speak While You Think: Streaming Speech Synthesis During Text Generation
+2024.10 Zero-Shot Text-to-Speech from Continuous Text Streams
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/multimoding/voices/cosyvoice2/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2025-01-17T10:26:23+08:00" />
+<meta property="article:modified_time" content="2025-01-17T10:26:23+08:00" />
+
+<meta itemprop="name" content="论文解读：CosyVoice2: Scalable Streaming Speech Synthesis with Large Language Models">
+<meta itemprop="description" content="CosyVoice2
+
+2024.12  CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models（流式合成）
+paper code: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。
+
+zero-shot TTS models 零样本 TTS 模型
+codec language models 编解码器语言模型
+
+
+speech codec model  to extract discrete speech representation:
+
+2021.7 SoundStream: An End-to-End Neural Audio Codec
+2022.10 High Fidelity Neural Audio Compression | facebookresearch/encodec
+2023.10 FunCodec: A Fundamental, Reproducible and Integrable Open-source Toolkit for Neural Speech Codec | modelscope/FunCodec
+
+
+
+speech codec model &#43; autoregressive model to predict the speech tokens (acoustic tokens):
+
+2023.1 Neural Codec Language Models are Zero-Shot Text to Speech Synthesizers (Vall-E) | 以及后续 Vall-E 升级系列 (不包括MELLE): https://www.microsoft.com/en-us/research/project/vall-e-x/
+2023.2 Speak, Read and Prompt: High-Fidelity Text-to-Speech with Minimal Supervision
+
+
+
+speech codec model (speech semantics Codec) &#43;  non-autoregressive masked model to predict the speech tokens (acoustic tokens):
+
+2024.9 MaskGCT: Zero-Shot Text-to-Speech with Masked Generative Codec Transformer | paper code
+
+
+
+codec model (speech acoustic Codec) or  vocoder to synthesize waveforms from mel-spectrograms:
+
+
+2023.6 Vocos: Closing the gap between time-domain and Fourier-based neural vocoders for high-quality audio synthesis | paper code | 推理速度快：运行速度比 HiFi-GAN 快约 13 倍，比 BigVGAN 快近 70 倍。在没有 GPU 加速的情况下运行时，这种速度优势尤其明显。这主要是由于使用了短时傅里叶逆变换（ISTFT）算法而不是转置卷积。还评估了 Vocos 的一个变体，它利用 ResBlock 的扩张卷积而不是 ConvNeXt 块。在 GPU 上执行时，深度可分离卷积可提供额外的加速。
+
+
+2023.12 WaveNeXt: ConvNeXt-Based Fast Neural Vocoder Without ISTFT layer | demo samples | paper code基于 ESPNet2-TTS  | 一种新型的基于ConvNeXt的快速神经声码器WaveNeXt，它通过替换Vocos中的逆短时傅里叶变换（iSTFT）层为可训练的线性层，直接预测语音波形样本，而不依赖于STFT频谱。这一改进不仅保持了Vocos的快速推理速度，还提高了语音合成的质量。文章还探讨了如何将WaveNeXt与基于JETS的端到端文本到语音（E2E TTS）框架集成，并研究了采样频率为48kHz的全带模型（Full-band Model：能够处理和生成覆盖整个音频频谱范围的模型，通常是指能够处理从最低频到最高频的完整音频信号的模型）。实验结果表明，WaveNeXt在分析-合成和E2E TTS条件下均优于Vocos，同时保持了快速推理的能力。
+
+
+
+
+
+feature diffusion models 特征扩散模型
+DDPM &#43; CFM &#43; NAR(non-autoregressive) model, 没有 codec
+
+
+Base module:
+
+Denoising Diffusion Probabilistic Model(DDPM)： 2020.6 Denoising Diffusion Probabilistic Models | paper code
+Conditional Flow Matching (CFM)：  2022.10 Flow Matching for Generative Modeling | CFM lib
+
+
+
+the alignment modeling between input text and synthesized speech:
+
+
+phoneme-level duration model:
+
+2024.5 NaturalSpeech 3  and 2023.6 Voicebox use frame-wise phoneme alignment;
+2023.9 Matcha-TTS adopts monotonic alignment search(MAS) and relies on phoneme-level duration model;
+2024.6 E2 TTS 和2024.6 Seed-TTS 研究表明在文本和语音之间引入这种僵化和不灵活的对齐方式会阻碍模型生成更自然的结果。
+
+
+
+E3 TTS 放弃音素级持续时间并对输入序列应用交叉注意力，但产生的音频质量有限；
+
+
+DiTTo-TTS 使用扩散变换器 (DiT) ，并以来自预训练语言模型的编码文本为条件进行交叉注意。为了进一步增强对齐，它使用预训练的语言模型来微调神经音频编解码器，将语义信息注入生成的表示中；
+
+
+相比之下，基于 Voicebox的 E2 TTS采用了更简单的方法，删除了音素和持续时间预测器，直接使用填充token填充到梅尔频谱图长度的字符作为输入。这个简单的方案也实现了非常自然和真实的合成结果。然而，F5-TTS 发现 E2 TTS 中文本和语音对齐存在鲁棒性问题。
+
+
+2024.6 Seed-TTS 采用了类似的策略并取得了优异的结果，尽管没有详细说明模型细节。在这些未明确建模音素级持续时间的方法中，模型学习根据给定的总序列长度分配每个单词或音素的长度，从而改进韵律和节奏。
+
+
+
+
+2024.10 F5-TTS: A fairytaler that fakes fluent and faithful speech with flow matching 保持了管道的简单性，无需音素对齐、持续时间预测器、文本编码器和语义注入编解码器模型，利用带有 ConvNeXt V2|paper code 的Diffusion Transformer(DiT)来更好地解决上下文学习期间的文本语音对齐问题。
+
+
+codec language and feature diffusion hybrid systems 混合系统
+text-to-codec language model  和 codec-to-feature diffusion model
+语言模型解决文本和语音之间的对齐以及话语持续时间预测，而编解码器到特征扩散模型则根据生成的编解码器和其他条件合成语音特征（梅尔谱）。通过利用两种生成模型的优势，混合系统实现了高度多样性、韵律一致性和语音质量。
+
+2024.6 Seed-TTS
+2024.7 Cosyvoice
+2024.9 Fireredtts
+
+language model-based zero-shot TTS models  streaming synthesis
+
+2024.2 BASE TTS: Lessons from building a billion-parameter Text-to-Speech model on 100K hours of data | 小红书的FireRedTTS 来源于此 FireRedTTS paper code
+2024.6 LiveSpeech: Low-Latency Zero-shot Text-to-Speech via Autoregressive Modeling of Audio Discrete Codes
+2024.9 Speak While You Think: Streaming Speech Synthesis During Text Generation
+2024.10 Zero-Shot Text-to-Speech from Continuous Text Streams
+"><meta itemprop="datePublished" content="2025-01-17T10:26:23+08:00" />
+<meta itemprop="dateModified" content="2025-01-17T10:26:23+08:00" />
+<meta itemprop="wordCount" content="22251">
+<meta itemprop="keywords" content="Supervised Semantic Speech Tokenizer,BPE,AR&#34;,flow,CFG,mel-spectrogram,streaming," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="论文解读：CosyVoice2: Scalable Streaming Speech Synthesis with Large Language Models"/>
+<meta name="twitter:description" content="CosyVoice2
+
+2024.12  CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models（流式合成）
+paper code: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。
+
+zero-shot TTS models 零样本 TTS 模型
+codec language models 编解码器语言模型
+
+
+speech codec model  to extract discrete speech representation:
+
+2021.7 SoundStream: An End-to-End Neural Audio Codec
+2022.10 High Fidelity Neural Audio Compression | facebookresearch/encodec
+2023.10 FunCodec: A Fundamental, Reproducible and Integrable Open-source Toolkit for Neural Speech Codec | modelscope/FunCodec
+
+
+
+speech codec model &#43; autoregressive model to predict the speech tokens (acoustic tokens):
+
+2023.1 Neural Codec Language Models are Zero-Shot Text to Speech Synthesizers (Vall-E) | 以及后续 Vall-E 升级系列 (不包括MELLE): https://www.microsoft.com/en-us/research/project/vall-e-x/
+2023.2 Speak, Read and Prompt: High-Fidelity Text-to-Speech with Minimal Supervision
+
+
+
+speech codec model (speech semantics Codec) &#43;  non-autoregressive masked model to predict the speech tokens (acoustic tokens):
+
+2024.9 MaskGCT: Zero-Shot Text-to-Speech with Masked Generative Codec Transformer | paper code
+
+
+
+codec model (speech acoustic Codec) or  vocoder to synthesize waveforms from mel-spectrograms:
+
+
+2023.6 Vocos: Closing the gap between time-domain and Fourier-based neural vocoders for high-quality audio synthesis | paper code | 推理速度快：运行速度比 HiFi-GAN 快约 13 倍，比 BigVGAN 快近 70 倍。在没有 GPU 加速的情况下运行时，这种速度优势尤其明显。这主要是由于使用了短时傅里叶逆变换（ISTFT）算法而不是转置卷积。还评估了 Vocos 的一个变体，它利用 ResBlock 的扩张卷积而不是 ConvNeXt 块。在 GPU 上执行时，深度可分离卷积可提供额外的加速。
+
+
+2023.12 WaveNeXt: ConvNeXt-Based Fast Neural Vocoder Without ISTFT layer | demo samples | paper code基于 ESPNet2-TTS  | 一种新型的基于ConvNeXt的快速神经声码器WaveNeXt，它通过替换Vocos中的逆短时傅里叶变换（iSTFT）层为可训练的线性层，直接预测语音波形样本，而不依赖于STFT频谱。这一改进不仅保持了Vocos的快速推理速度，还提高了语音合成的质量。文章还探讨了如何将WaveNeXt与基于JETS的端到端文本到语音（E2E TTS）框架集成，并研究了采样频率为48kHz的全带模型（Full-band Model：能够处理和生成覆盖整个音频频谱范围的模型，通常是指能够处理从最低频到最高频的完整音频信号的模型）。实验结果表明，WaveNeXt在分析-合成和E2E TTS条件下均优于Vocos，同时保持了快速推理的能力。
+
+
+
+
+
+feature diffusion models 特征扩散模型
+DDPM &#43; CFM &#43; NAR(non-autoregressive) model, 没有 codec
+
+
+Base module:
+
+Denoising Diffusion Probabilistic Model(DDPM)： 2020.6 Denoising Diffusion Probabilistic Models | paper code
+Conditional Flow Matching (CFM)：  2022.10 Flow Matching for Generative Modeling | CFM lib
+
+
+
+the alignment modeling between input text and synthesized speech:
+
+
+phoneme-level duration model:
+
+2024.5 NaturalSpeech 3  and 2023.6 Voicebox use frame-wise phoneme alignment;
+2023.9 Matcha-TTS adopts monotonic alignment search(MAS) and relies on phoneme-level duration model;
+2024.6 E2 TTS 和2024.6 Seed-TTS 研究表明在文本和语音之间引入这种僵化和不灵活的对齐方式会阻碍模型生成更自然的结果。
+
+
+
+E3 TTS 放弃音素级持续时间并对输入序列应用交叉注意力，但产生的音频质量有限；
+
+
+DiTTo-TTS 使用扩散变换器 (DiT) ，并以来自预训练语言模型的编码文本为条件进行交叉注意。为了进一步增强对齐，它使用预训练的语言模型来微调神经音频编解码器，将语义信息注入生成的表示中；
+
+
+相比之下，基于 Voicebox的 E2 TTS采用了更简单的方法，删除了音素和持续时间预测器，直接使用填充token填充到梅尔频谱图长度的字符作为输入。这个简单的方案也实现了非常自然和真实的合成结果。然而，F5-TTS 发现 E2 TTS 中文本和语音对齐存在鲁棒性问题。
+
+
+2024.6 Seed-TTS 采用了类似的策略并取得了优异的结果，尽管没有详细说明模型细节。在这些未明确建模音素级持续时间的方法中，模型学习根据给定的总序列长度分配每个单词或音素的长度，从而改进韵律和节奏。
+
+
+
+
+2024.10 F5-TTS: A fairytaler that fakes fluent and faithful speech with flow matching 保持了管道的简单性，无需音素对齐、持续时间预测器、文本编码器和语义注入编解码器模型，利用带有 ConvNeXt V2|paper code 的Diffusion Transformer(DiT)来更好地解决上下文学习期间的文本语音对齐问题。
+
+
+codec language and feature diffusion hybrid systems 混合系统
+text-to-codec language model  和 codec-to-feature diffusion model
+语言模型解决文本和语音之间的对齐以及话语持续时间预测，而编解码器到特征扩散模型则根据生成的编解码器和其他条件合成语音特征（梅尔谱）。通过利用两种生成模型的优势，混合系统实现了高度多样性、韵律一致性和语音质量。
+
+2024.6 Seed-TTS
+2024.7 Cosyvoice
+2024.9 Fireredtts
+
+language model-based zero-shot TTS models  streaming synthesis
+
+2024.2 BASE TTS: Lessons from building a billion-parameter Text-to-Speech model on 100K hours of data | 小红书的FireRedTTS 来源于此 FireRedTTS paper code
+2024.6 LiveSpeech: Low-Latency Zero-shot Text-to-Speech via Autoregressive Modeling of Audio Discrete Codes
+2024.9 Speak While You Think: Streaming Speech Synthesis During Text Generation
+2024.10 Zero-Shot Text-to-Speech from Continuous Text Streams
+"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [["$", "$"]],
+    },
+    displayMath: [
+      ["$$", "$$"],
+      ["\[\[", "\]\]"],
+    ],
+    svg: {
+      fontCache: "global",
+    },
+  };
+</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script
+  id="MathJax-script"
+  async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+></script>
+
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">时间飘过</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/perf-book-cn/zh/" rel="noopener" target="_blank">
+              《现代CPU性能分析与优化》
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.us.kg/" rel="noopener" target="_blank">
+              Podcast AI
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      时间飘过
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">About</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/perf-book-cn/zh/" rel="noopener" target="_blank">
+              《现代CPU性能分析与优化》
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.us.kg/" rel="noopener" target="_blank">
+              Podcast AI
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">论文解读：CosyVoice2: Scalable Streaming Speech Synthesis with Large Language Models</h1>
+      
+      <div class="post-meta">
+        <time datetime="2025-01-17" class="post-time">
+          2025-01-17
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            <a href="https://weedge.github.io/categories/tts/"> TTS </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#cosyvoice2">CosyVoice2</a></li>
+    <li><a href="#zero-shot-tts-models-零样本-tts-模型">zero-shot TTS models 零样本 TTS 模型</a>
+      <ul>
+        <li><a href="#codec-language-models-编解码器语言模型">codec language models 编解码器语言模型</a></li>
+        <li><a href="#feature-diffusion-models-特征扩散模型">feature diffusion models 特征扩散模型</a></li>
+        <li><a href="#codec-language-and-feature-diffusion-hybrid-systems-混合系统">codec language and feature diffusion hybrid systems 混合系统</a></li>
+        <li><a href="#language-model-based-zero-shot-tts-models--streaming-synthesis">language model-based zero-shot TTS models  <strong>streaming</strong> synthesis</a></li>
+      </ul>
+    </li>
+    <li><a href="#cosyvoice2-结构">CosyVoice2 结构</a>
+      <ul>
+        <li><a href="#文本tokenizer">文本tokenizer</a></li>
+        <li><a href="#受监督的语义speech-tokenizer">受监督的语义speech tokenizer</a></li>
+        <li><a href="#统一的文本-语音语言模型unified-text-speech-language-model">统一的文本-语音语言模型(Unified Text-Speech Language Model)</a></li>
+        <li><a href="#lm流式非流式合成streaming-and-non-streaming-synthesis">LM流式/非流式合成(streaming and non-streaming synthesis)</a></li>
+        <li><a href="#块感知流匹配chunk-aware-flow-matching">块感知流匹配(Chunk-aware Flow Matching)</a></li>
+        <li><a href="#流式模式的延迟分析latency-analysis-for-streaming-mode">流式模式的延迟分析(Latency Analysis for Streaming Mode)</a></li>
+        <li><a href="#指令式生成-instructed-generation">指令式生成 Instructed Generation</a></li>
+        <li><a href="#多说话人微调-multi-speaker-fine-tuning">多说话人微调 Multi-Speaker Fine-tuning</a></li>
+        <li><a href="#sft的强化学习-reinforcement-learning-for-sft">SFT的强化学习 Reinforcement Learning for SFT</a></li>
+      </ul>
+    </li>
+    <li><a href="#实验设置">实验设置</a>
+      <ul>
+        <li><a href="#speech-tokenizer的训练数据">Speech Tokenizer的训练数据</a></li>
+        <li><a href="#cosyvoice-2的训练数据">CosyVoice 2的训练数据</a></li>
+        <li><a href="#评估设置">评估设置</a></li>
+        <li><a href="#日语和韩语的基准测试">日语和韩语的基准测试</a></li>
+      </ul>
+    </li>
+    <li><a href="#实验结果">实验结果</a>
+      <ul>
+        <li><a href="#speech-tokenizer的评估">Speech Tokenizer的评估</a></li>
+        <li><a href="#与基线的比较结果">与基线的比较结果</a></li>
+        <li><a href="#模块化消融研究">模块化消融研究</a></li>
+        <li><a href="#日语和韩语基准测试的结果">日语和韩语基准测试的结果</a></li>
+        <li><a href="#指令式生成的结果">指令式生成的结果</a></li>
+        <li><a href="#说话人微调模型的结果">说话人微调模型的结果</a></li>
+        <li><a href="#使用强化学习的lm微调">使用强化学习的LM微调</a></li>
+      </ul>
+    </li>
+    <li><a href="#结论">结论</a></li>
+    <li><a href="#限制">限制</a></li>
+    <li><a href="#附录">附录：</a>
+      <ul>
+        <li><a href="#paralanguage-information副语言信息">Paralanguage information（副语言信息）</a></li>
+        <li><a href="#t-sne可视化">t-SNE可视化</a></li>
+        <li><a href="#说话人纠缠speaker-entanglement">说话人纠缠（Speaker Entanglement）</a></li>
+        <li><a href="#硬测试hard-testing">硬测试（Hard Testing）</a></li>
+        <li><a href="#cerss-和-wer">CER、SS 和 WER</a></li>
+        <li><a href="#nmos-normalized-mean-opinion-score">NMOS （Normalized Mean Opinion Score）</a></li>
+        <li><a href="#说话人spk-e">说话人（Spk E）</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <h2 id="cosyvoice2">CosyVoice2</h2>
+<ul>
+<li><a href="https://arxiv.org/abs/2412.10117">2024.12  <strong>CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models</strong></a>（流式合成）</li>
+<li><a href="https://github.com/FunAudioLLM/CosyVoice">paper code</a>: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。</li>
+</ul>
+<h2 id="zero-shot-tts-models-零样本-tts-模型">zero-shot TTS models 零样本 TTS 模型</h2>
+<h3 id="codec-language-models-编解码器语言模型">codec language models 编解码器语言模型</h3>
+<ul>
+<li>
+<p>speech <strong>codec model</strong>  to extract discrete speech representation:</p>
+<ul>
+<li><a href="https://arxiv.org/abs/2107.03312">2021.7 SoundStream: An End-to-End Neural Audio Codec</a></li>
+<li><a href="https://arxiv.org/abs/2210.13438">2022.10 <strong>High Fidelity Neural Audio Compression</strong></a> | <a href="http://github.com/facebookresearch/encodec">facebookresearch/encodec</a></li>
+<li><a href="https://arxiv.org/abs/2309.07405">2023.10 FunCodec: A Fundamental, Reproducible and Integrable Open-source Toolkit for Neural Speech Codec</a> | <a href="https://github.com/modelscope/FunCodec">modelscope/FunCodec</a></li>
+</ul>
+</li>
+<li>
+<p>speech <strong>codec model</strong> + <strong>autoregressive model</strong> to predict the speech tokens (acoustic tokens):</p>
+<ul>
+<li><a href="https://arxiv.org/abs/2301.02111">2023.1 <strong>Neural Codec Language Models are Zero-Shot Text to Speech Synthesizers</strong></a> (Vall-E) | 以及后续 Vall-E 升级系列 (不包括MELLE): <a href="https://www.microsoft.com/en-us/research/project/vall-e-x/">https://www.microsoft.com/en-us/research/project/vall-e-x/</a></li>
+<li><a href="https://arxiv.org/abs/2302.03540">2023.2 Speak, Read and Prompt: High-Fidelity Text-to-Speech with Minimal Supervision</a></li>
+</ul>
+</li>
+<li>
+<p>speech <strong>codec model</strong> (speech semantics Codec) +  <strong>non-autoregressive masked model</strong> to predict the speech tokens (acoustic tokens):</p>
+<ul>
+<li><a href="https://arxiv.org/abs/2409.00750">2024.9 <strong>MaskGCT: Zero-Shot Text-to-Speech with Masked Generative Codec Transformer</strong></a> | <a href="https://github.com/open-mmlab/Amphion/tree/main/models/tts/maskgct">paper code</a></li>
+</ul>
+</li>
+<li>
+<p>codec model (speech acoustic Codec) or  <strong>vocoder</strong> to synthesize waveforms from mel-spectrograms:</p>
+<ul>
+<li>
+<p><a href="https://arxiv.org/abs/2306.00814">2023.6 <strong>Vocos: Closing the gap between time-domain and Fourier-based neural vocoders for high-quality audio synthesis</strong></a> | <a href="https://github.com/gemelo-ai/vocos">paper code</a> | 推理速度快：运行速度比 HiFi-GAN 快约 13 倍，比 BigVGAN 快近 70 倍。在没有 GPU 加速的情况下运行时，这种速度优势尤其明显。这主要是由于使用了短时傅里叶逆变换（ISTFT）算法而不是转置卷积。还评估了 Vocos 的一个变体，它利用 ResBlock 的扩张卷积而不是 ConvNeXt 块。在 GPU 上执行时，深度可分离卷积可提供额外的加速。</p>
+</li>
+<li>
+<p><a href="https://ieeexplore.ieee.org/document/10389765">2023.12 <strong>WaveNeXt: ConvNeXt-Based Fast Neural Vocoder Without ISTFT layer</strong></a> | <a href="https://ast-astrec.nict.go.jp/demo_samples/asru_2023_okamoto/index.html">demo samples</a> | paper code基于 <a href="https://arxiv.org/abs/2110.07840">ESPNet2-TTS</a>  | 一种新型的基于ConvNeXt的快速神经声码器WaveNeXt，它通过替换Vocos中的逆短时傅里叶变换（iSTFT）层为可训练的线性层，直接预测语音波形样本，而不依赖于STFT频谱。这一改进不仅保持了Vocos的快速推理速度，还提高了语音合成的质量。文章还探讨了如何将WaveNeXt与基于JETS的端到端文本到语音（E2E TTS）框架集成，并研究了采样频率为48kHz的全带模型（Full-band Model：能够处理和生成覆盖整个音频频谱范围的模型，通常是指能够处理从最低频到最高频的完整音频信号的模型）。实验结果表明，WaveNeXt在分析-合成和E2E TTS条件下均优于Vocos，同时保持了快速推理的能力。</p>
+<p><img src="https://github.com/user-attachments/assets/4a1eeaff-528f-4706-b5fc-210caea2c13b" alt="image"></p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="feature-diffusion-models-特征扩散模型">feature diffusion models 特征扩散模型</h3>
+<p>DDPM + CFM + NAR(non-autoregressive) model, 没有 codec</p>
+<ul>
+<li>
+<p>Base module:</p>
+<ul>
+<li>Denoising Diffusion Probabilistic Model(DDPM)： <a href="https://arxiv.org/abs/2006.11239">2020.6 <strong>Denoising Diffusion Probabilistic Models</strong></a> | <a href="https://github.com/hojonathanho/diffusion">paper code</a></li>
+<li>Conditional Flow Matching (CFM)：  <a href="https://arxiv.org/abs/2210.02747">2022.10 <strong>Flow Matching for Generative Modeling</strong></a> | <a href="https://github.com/atong01/conditional-flow-matching">CFM lib</a></li>
+</ul>
+</li>
+<li>
+<p><strong>the alignment modeling between input text and synthesized speech</strong>:</p>
+<ul>
+<li>
+<p>phoneme-level duration model:</p>
+<ul>
+<li><a href="https://arxiv.org/abs/2403.03100">2024.5 NaturalSpeech 3</a>  and <a href="https://arxiv.org/abs/2306.15687">2023.6 Voicebox</a> use frame-wise phoneme alignment;</li>
+<li><a href="https://arxiv.org/abs/2309.03199">2023.9 Matcha-TTS</a> adopts monotonic alignment search(MAS) and relies on phoneme-level duration model;</li>
+<li><a href="https://arxiv.org/abs/2406.18009">2024.6 E2 TTS</a> 和<a href="https://arxiv.org/abs/2406.02430">2024.6 Seed-TTS</a> 研究表明在文本和语音之间引入这种僵化和不灵活的对齐方式会阻碍模型生成更自然的结果。</li>
+</ul>
+</li>
+<li>
+<p>E3 TTS 放弃音素级持续时间并对输入序列应用交叉注意力，但产生的音频质量有限；</p>
+</li>
+<li>
+<p>DiTTo-TTS 使用扩散变换器 (DiT) ，并以来自预训练语言模型的编码文本为条件进行交叉注意。为了进一步增强对齐，它使用预训练的语言模型来微调神经音频编解码器，将语义信息注入生成的表示中；</p>
+</li>
+<li>
+<p>相比之下，基于 Voicebox的 E2 TTS采用了更简单的方法，删除了音素和持续时间预测器，直接使用填充token填充到梅尔频谱图长度的字符作为输入。这个简单的方案也实现了非常自然和真实的合成结果。然而，F5-TTS 发现 E2 TTS 中文本和语音对齐存在鲁棒性问题。</p>
+</li>
+<li>
+<p><a href="https://arxiv.org/abs/2406.02430">2024.6 Seed-TTS</a> 采用了类似的策略并取得了优异的结果，尽管没有详细说明模型细节。在这些未明确建模音素级持续时间的方法中，模型学习根据给定的总序列长度分配每个单词或音素的长度，从而改进韵律和节奏。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><a href="https://arxiv.org/abs/2410.06885">2024.10 <strong>F5-TTS: A fairytaler that fakes fluent and faithful speech with flow matching</strong></a> 保持了管道的简单性，无需音素对齐、持续时间预测器、文本编码器和语义注入编解码器模型，利用带有 <a href="https://arxiv.org/abs/2301.00808">ConvNeXt V2</a>|<a href="https://github.com/facebookresearch/ConvNeXt-V2">paper code</a> 的Diffusion Transformer(DiT)来更好地解决上下文学习期间的文本语音对齐问题。</p>
+</li>
+</ul>
+<h3 id="codec-language-and-feature-diffusion-hybrid-systems-混合系统">codec language and feature diffusion hybrid systems 混合系统</h3>
+<p>text-to-codec language model  和 codec-to-feature diffusion model</p>
+<p>语言模型解决文本和语音之间的对齐以及话语持续时间预测，而编解码器到特征扩散模型则根据生成的编解码器和其他条件合成语音特征（梅尔谱）。通过利用两种生成模型的优势，混合系统实现了高度多样性、韵律一致性和语音质量。</p>
+<ul>
+<li><a href="https://arxiv.org/abs/2406.02430">2024.6 Seed-TTS</a></li>
+<li><a href="https://arxiv.org/abs/2407.05407">2024.7 Cosyvoice</a></li>
+<li><a href="https://arxiv.org/abs/2409.03283">2024.9 Fireredtts</a></li>
+</ul>
+<h3 id="language-model-based-zero-shot-tts-models--streaming-synthesis">language model-based zero-shot TTS models  <strong>streaming</strong> synthesis</h3>
+<ul>
+<li><a href="https://arxiv.org/abs/2402.08093">2024.2 <strong>BASE TTS: Lessons from building a billion-parameter Text-to-Speech model on 100K hours of data</strong></a> | 小红书的FireRedTTS 来源于此 <a href="https://github.com/FireRedTeam/FireRedTTS">FireRedTTS paper code</a></li>
+<li><a href="https://arxiv.org/abs/2406.02897">2024.6 LiveSpeech: Low-Latency Zero-shot Text-to-Speech via Autoregressive Modeling of Audio Discrete Codes</a></li>
+<li><a href="https://arxiv.org/abs/2309.11210">2024.9 Speak While You Think: Streaming Speech Synthesis During Text Generation</a></li>
+<li><a href="https://arxiv.org/abs/2410.00767">2024.10 Zero-Shot Text-to-Speech from Continuous Text Streams</a></li>
+</ul>
+<h2 id="cosyvoice2-结构">CosyVoice2 结构</h2>
+<p>Cosyvoice2 对 Cosyvoice 进行了升级，主要包括如下四点：（模型精简消融，可替换同类型不同参数量的文本LLMs，提高码本利用率，无损流式合成，语义-声学解耦建模，指令和零样本能力模型整合）</p>
+<ul>
+<li>将流式和非流式合成统一在单一框架中，并提出统一的文本语音语言模型和块感知因果流匹配模型(<strong>chunk-aware causal flow matching model</strong>)，从而实现与离线模式相比的无损流式合成。</li>
+<li>通过**删除文本编码器(text encoder)和说话人嵌入(speaker embedding)**来简化LM 架构，允许预先训练的文本大语言模型( LLMs ) 作为骨干，增强上下文理解。</li>
+<li>用有限标量量化 (<strong>finite scalar quantization</strong> FSQ | <a href="https://arxiv.org/abs/2309.15505">2023.9 <strong>Finite Scalar Quantization: VQ-VAE Made Simple</strong></a>| <a href="https://github.com/google-research/google-research/tree/master/fsq">paper code</a>) 取代语音token器中的矢量量化 (VQ)，提高码本利用率并捕获更多语音信息。</li>
+<li>升级指令TTS 能力，支持更多指令，包括情感、口音、角色风格和细粒度控制。在 CosyVoice 2 中，指令和零样本能力被集成到一个模型中，从而实现更通用和生动的合成。</li>
+</ul>
+<p><img src="https://github.com/user-attachments/assets/651d93fd-56b3-4390-8fd9-90312c70d6f6" alt=""></p>
+<p>CosyVoice 2 基于其前身的设计理念，通过分离语音信号的语义和声学信息，并独立地对它们进行建模。语音生成过程被重新定义为一个逐步的语义解码过程，在此过程中逐步引入条件信息。</p>
+<ul>
+<li>文本-语音语言模型（LM）仅关注语义信息，将高级文本token解码为受监督的语义speech token。</li>
+<li>在流匹配模型中，通过speaker embedding和参考语音引入声学细节（如音色），将speech token转换为给定说话人的 Mel 频谱。</li>
+<li>最后，预训练的声码器模型恢复相位，将 Mel 频谱转换回原始音频信号。</li>
+</ul>
+<p>以下将详细介绍 CosyVoice 2 以及为流式合成所做的修改，从五个方面进行阐述：</p>
+<ul>
+<li>文本tokenizer</li>
+<li>受监督的语义speech tokenizer</li>
+<li>统一的文本-语音 LM</li>
+<li>流式/非流式合成</li>
+<li>块感知流匹配模型</li>
+</ul>
+<h3 id="文本tokenizer">文本tokenizer</h3>
+<p>CosyVoice 2 <strong>直接使用原始文本作为输入，通过基于 BPE 的文本tokenizer进行token化</strong>。这消除了需要通过图音转换（g2p）获取音素的前端模型的需求。这种方法不仅简化了数据预处理流程，还使模型能够以端到端的方式学习不同上下文中单词的发音。<strong>与文本 LLM 中常用的tokenizer不同，CosyVoice 2 会屏蔽掉一对多的token。这可以防止token的发音变得过长，并减少由于数据稀疏性引起的边缘情况</strong>。具体来说，如果一个 BPE token编码了多个中文字符，它将被屏蔽，并且在token化过程中每个字符将分别进行编码。其他语言，如英语、日语和韩语，不进行特殊处理。</p>
+<h3 id="受监督的语义speech-tokenizer">受监督的语义speech tokenizer</h3>
+<p><strong>将有限标量量化（FSQ）模块插入到 SenseVoice-Large ASR 模型的编码器中</strong>。在训练阶段，输入语音 X 通过 $Encoder_1$ 获取中间表示，其中 $Encoder_1$ 由六个带有旋转位置嵌入的 Transformer 块组成。然后，中间表示被送入 FSQ 模块进行量化，量化后的表示通过 SenseVoice-Large 的其余模块，包括 $Encoder_2$ 和 ASR Decoder，以预测对应文本token的后验概率。
+在 FSQ 模块中，中间表示 $H$ 首先被投影到一个 $D$ 维的低秩空间中，每个维度的值通过有界四舍五入操作 ROUND 量化为 $[-K, K]$ 。然后，量化后的低秩表示 $\bar{H}$ 被投影回原始维度 $\tilde{H}$
+以供后续模块使用：</p>
+<p>$$
+\bar{H} = \text{ROUND}(\text{Proj}_{\text{down}}(H));
+$$</p>
+<p>$$
+\hat{H} = \text{Proj}_{\text{up}}(\bar{H})
+$$</p>
+<p>在训练阶段，使用直通估计来近似 FSQ 模块和 Encoder1 的梯度。speech token $\mu_i$ 可以通过计算量化后的低秩表示 $\bar{h}_i$ 在 $(2K + 1)$ 进制系统中的索引来获得：</p>
+<p>$$
+\mu_i = \sum_{j=0}^{D-1} \bar{h}_{i,j} (2K + 1)^j
+$$</p>
+<p>$Encoder_1$、FSQ 模块的低秩投影器、有界四舍五入操作和索引计算构成了 CosyVoice 2 的speech tokenizer。peech tokenizer的工作速率为每秒 25 个speech token，即每秒 25 个speech token。</p>
+<h3 id="统一的文本-语音语言模型unified-text-speech-language-model">统一的文本-语音语言模型(Unified Text-Speech Language Model)</h3>
+<p>在 CosyVoice 2 中，使用预训练的文本 LLM，Qwen2.5-0.5B，作为文本-语音语言模型，以输入文本为提示自回归地生成speech token。与其它语言模型类似，文本-语音 LM 也以下一个token预测方案进行训练，与之前的 CosyVoice 不同:</p>
+<ul>
+<li><strong>去除了speaker embedding以避免信息泄露</strong>。发现这种话语级向量不仅包含说话人身份，还包含语言和副语言信息(paralanguage information: 指在口语交流中，除了语言内容本身之外的其他声音特征和表达方式。这些信息虽然不直接涉及语言的词汇或语法结构，但对理解和传达说话人的意图、情感和态度等方面起着重要作用)，这会损害文本-语音 LM 的语调自然度和跨语言能力。</li>
+<li><strong>放弃了之前 CosyVoice 的 text encoder</strong>，因为发现 Qwen2.5-0.5B 模型足够强大，能够对齐文本和speech token，因此不再需要text encoder。</li>
+</ul>
+<h3 id="lm流式非流式合成streaming-and-non-streaming-synthesis">LM流式/非流式合成(streaming and non-streaming synthesis)</h3>
+<p>得益于文本-语音 LM 的简洁性，可以构建一个统一的模型，用于流式和非流式合成。在这里，“流式模式(Streaming mode)”意味着输入文本是连续接收的，而不是预先作为完整句子已知的。在 CosyVoice 2 中，流式和非流式模式之间的区别仅在于 LM 的序列构建方式：</p>
+<p><img src="https://github.com/user-attachments/assets/04156456-4018-4b0e-ace8-b7b7fb36b6d5" alt="image"></p>
+<ul>
+<li><strong>非流式模式(Non-Streaming mode)</strong>：将“序列开始” $S$ 、所有文本token、“话语转换”token $T$ 、所有speech token和“序列结束” $E$ 依次连接，如图 2 底部所示。忽略token意味着在最小化交叉熵目标函数时忽略它们的损失。</li>
+<li><strong>流式模式(Streaming mode)</strong>：将文本和speech token以预定义的比例 $N:M$ 混合，即每 $N$ 个文本token后面跟随 $M$ 个speech token。如果下一个token是文本token，模型期望预测一个填充token（而不是文本token），这表示在推理阶段应将接下来的 $N$ 个文本token连接起来。一旦文本token用完，“话语转换”token $T$ 和剩余的speech token将依次连接，形成流式模式中的混合文本-speech token序列。<strong>在的实验中， $N$ 和 $M$ 分别设置为 5 和 15</strong>。</li>
+</ul>
+<p>通过同时在上述两种序列上训练文本-语音 LM，可以在单个统一模型中执行流式和非流式语音生成。在实际场景中，例如说话人微调（SFT）和上下文学习（ICL），推理序列有所不同：</p>
+<ul>
+<li><strong>ICL，非流式</strong>：在 ICL 中，LM 需要参考音频的提示文本和speech token来模仿口音、语调、情感和风格。在非流式模式中，提示和待合成的文本token被作为一个整体连接起来，提示speech token被视为预生成的结果并固定：“ $S$ ，提示文本，文本， $T$ ，提示语音”。LM 的自回归生成从这样的序列开始，直到检测到“序列结束”token $E$ 。</li>
+<li><strong>ICL，流式</strong>：在这种情况下，假设待生成的文本已经已知，speech token应以流式方式生成。同样，将提示和待生成的文本作为一个整体处理。然后，将它们与提示speech token以 $N:M$ 的比例混合：“ $S$ ，混合文本语音， $T$ ，剩余语音”。如果文本的长度大于提示speech token的长度，LM 将生成“填充token”。在这种情况下，手动填充 $N$ 个文本token。如果文本token用完，“话语转换”token $T$ 将被添加。在流式模式中，每生成 $M$ 个token就返回一次生成结果，直到检测到 $E$ 。</li>
+<li><strong>SFT，非流式</strong>：在 SFT 场景中，LM 在特定说话人上进行微调，提示文本和语音不再需要。因此，初始序列非常简单：“ $S$ ，文本， $T$ ”。从这里开始，文本-语音 LM 可以自回归地生成speech token，直到 $T$ 。</li>
+<li><strong>SFT，流式</strong>：在 SFT 的流式模式中，从以下序列开始语音生成：“ $S$ ，前 $N$ 个文本”。然后，LM 将生成 $M$ 个speech token，手动填充接下来的 $N$ 个文本token。重复上述过程，直到所有文本token用完，然后添加 $T$ 。注意，<strong>这种模式也可以被语音到语音多模态大型语言模型采用，以获得极低的延迟</strong>。</li>
+</ul>
+<h3 id="块感知流匹配chunk-aware-flow-matching">块感知流匹配(Chunk-aware Flow Matching)</h3>
+<p><img src="https://github.com/user-attachments/assets/e44ba5d4-5499-4e74-8d82-5f28ad0ae55d" alt="image"></p>
+<p>在 CosyVoice 2 中，使用 Mel 频谱作为声学特征，帧率为 50 Hz，采样率为 24000。由于speech token和 Mel 特征之间的帧率不匹配，将speech token上采样两倍以匹配 Mel 频谱的帧率。在上采样操作之前，添加了一个额外的前瞻卷积层，为后续的因果模块提供未来信息。前瞻层通过一个右填充的 1-D 卷积实现，填充大小为 $P$ ，核大小为 $P + 1$ 。之后，跟随几个块感知因果 Transformer 块，以对齐speech token的表示空间以匹配声学特征。</p>
+<p>随后，目标是进一步将speech token解码为由speaker embedding和参考语音指定的 Mel 频谱。为了实现这一点，使用条件流匹配（CFM）模型来采样 Mel 频谱，给定speech token、参考语音和speaker embedding作为条件。在 CFM 模型中，目标 Mel 频谱的分布由从先验分布 $p_0(X)$ 和数据分布 $q(X)$ 的概率密度路径描述。概率密度路径可以由一个时间依赖的向量场定义。为了采样效率，使用最优传输（OT）流来匹配向量场 $\omega_t$ ，由一个常微分方程（ODE）给出：</p>
+<p>$$
+\omega_t(\phi^{\text{OT}}_t(X_0, X_1) | X_1) = X_1 - X_0
+$$</p>
+<p>$$
+\phi^{\text{OT}}_t(X_0, X_1) = (1 - t)X_0 + tX_1
+$$</p>
+<p>$$
+X_0 \sim p_0(X) = \mathcal{N}(0, I)
+$$</p>
+<p>$$
+X_1 \sim q(X)
+$$</p>
+<p>一个因果卷积 Transformer UNet 被用来学习上述 ODE，以上采样的token $\mu$、掩蔽的 Mel 频谱 $\tilde{X}_1$ 、speaker embedding $v$ 和时间步 $t$作为条件：</p>
+<p>$$
+\nu_t(\phi^{\text{OT}}_t(X_0, X_1) | \theta) = \text{UNet}_\theta \left( \phi^{\text{OT}}_t(X_0, X_1), t; v, {\mu}_{1:L}, \tilde{X}_1 \right)
+$$</p>
+<p>在训练阶段，掩蔽的 Mel 频谱是通过随机掩蔽 $X_1$ 中 70% 到 100% 的最终帧获得的。对于推理，它由参考语音提取的 Mel 频谱提供。通过最小化预测和真实 ODE 之间的 L1 损失，可以优化 UNet 参数 $\theta$ ：
+$$
+\theta = \arg\min_\theta \mathbb{E}_{p_0(X), q(X), t} \left[ \left| \omega_t(\phi^{\text{OT}}_t(X_0, X_1)) - \nu_t(\phi^{\text{OT}}_t(X_0, X_1) | \theta; \mu, \tilde{X}_1, v) \right|_1 \right]
+$$</p>
+<p>在训练阶段，时间步遵循均匀分布 $U[0, 1]$ 。然而，在推理过程中，使用余弦调度器为初始生成阶段提供更多步骤：
+$$
+t := 1 - \cos \left( \frac{1}{2} t \pi \right)
+$$
+此外，还在有条件和无条件的情况下训练模型，以便在推理阶段启用无分类器引导（CFG）：
+$$
+\tilde{\nu}_t(\phi^{\text{OT}}_t(X_0, X_1) | \theta; \Psi) = (1 + \beta) \cdot \nu_t(\phi^{\text{OT}}_t(X_0, X_1) | \theta; \Psi) - \beta \cdot \nu_t(\phi^{\text{OT}}_t(X_0, X_1) | \theta)
+$$
+其中， $ \Psi$ 表示条件 ${v, \mu, \tilde{X}_1}$ 。根据实验结果，CFG 强度 $\beta$ 和流估计次数（NFE）分别设置为 0.7 和 10。
+当前的流匹配模型通常在离线模式下工作，即只有在所有speech token生成后，Mel 频谱才能被采样，这对流式合成不够友好。为了克服这个问题，将多步流估计视为一个堆叠的更深的神经网络，重复 UNet 十次。因此，通过使展开的神经网络因果化，可以将其应用于流式合成。构建了四种掩码以满足不同应用场景的需求：</p>
+<ul>
+<li><strong>非因果掩码(Non-causal Mask)</strong>：用于离线模式，通过关注所有条件帧来实现最佳性能。非因果掩码适用于延迟不敏感的情况。</li>
+<li><strong>全因果掩码(Full-causal Mask)</strong>：为需要极低延迟的场景设计，仅关注过去的帧。</li>
+<li><strong>块-M 掩码(Chunk-M Mask)</strong>：在延迟和性能之间取得平衡，可以利用过去和 $M$ 个未来帧的信息。这种掩码更适合于低延迟的首个块生成。</li>
+<li><strong>块-2M 掩码(Chunk-2M Mask)</strong>：通过牺牲更多的延迟，实现接近离线模式的性能，可用于级联生成块以获得更好的性能。</li>
+</ul>
+<p>对于每个训练案例的小批量，在上述四种掩码中均匀分布地随机采样一个掩码。通过这种方式，一个流匹配模型可以兼容不同场景，降低部署复杂度。此外，块感知训练的另一个优点是，具有更多上下文的掩码作为具有较少上下文的掩码的教师，受益于隐式的自蒸馏方案。</p>
+<h3 id="流式模式的延迟分析latency-analysis-for-streaming-mode">流式模式的延迟分析(Latency Analysis for Streaming Mode)</h3>
+<p>流式合成模型的首个包延迟是一个重要的指标，它显著影响用户体验，特别是在基于 LLM 的语音聊天应用中，如 GPT-4o。在 TTS 的背景下，待合成的文本是预先已知的，延迟来自speech token生成、Mel 频谱重建和波形合成的方面。因此，CosyVoice 2 的首个包延迟 $L_{\text{TTS}}$ 可以通过以下公式获得：</p>
+<p>$$
+L_{\text{TTS}} = M \cdot d_{\text{lm}} + M \cdot d_{\text{fm}} + M \cdot d_{\text{voc}}
+$$</p>
+<p>其中，$d_{\text{lm}}$ 表示生成一个speech token的计算时间， $d_{\text{fm}}$ 表示生成一个speech token的 Mel 频谱帧的计算时间， $d_{\text{voc}}$ 表示合成对应于一个speech token的波形的计算时间。在基于 LLM 的语音聊天中，首个包所需的文本长度也应考虑在内，首个包延迟 $L_{\text{Chat}}$ 变为：
+$$
+L_{\text{Chat}} \leq N \cdot d_{\text{llm}} + L_{\text{TTS}}
+$$
+其中， $d_{\text{llm}}$ 表示生成一个文本token的计算时间。注意，由于在 CosyVoice 2 的文本tokenizer中屏蔽了多字符token，文本 LLM 使用的文本token总是比 CosyVoice 2 编码更长的原始文本。因此，首个包延迟 $L_{\text{Chat}}$ 必须低于 $N \cdot d_{\text{llm}}$ 和 $L_{\text{TTS}}$ 的总和。</p>
+<h3 id="指令式生成-instructed-generation">指令式生成 Instructed Generation</h3>
+<p>为了增强 CosyVoice 2 的可控性，将指令数据集整合到基础训练集中。收集了 1500 小时的指令训练数据，包括自然语言指令和细粒度指令，如表 1 所示。对于自然语言指令，在待合成的输入文本前添加自然语言描述和一个特殊的结束token“&lt;|endofprompt|&gt;”。这些描述涵盖了情感、语速、角色扮演和方言等方面。对于细粒度指令，在文本token之间插入声音爆发，使用token如“[laughter]”和“[breath]”。此外，还将声音特征标签应用于短语；例如，“&lt;strong&gt; XXX&lt;/strong&gt;”表示对某些单词的强调，而“&lt;laughter&gt;XXX&lt;/laughter&gt;”表示带着笑声说话。
+<img src="https://github.com/user-attachments/assets/c8dae8bc-e5fb-4018-bd37-c42bc3414c06" alt=""></p>
+<h3 id="多说话人微调-multi-speaker-fine-tuning">多说话人微调 Multi-Speaker Fine-tuning</h3>
+<p>在特定说话人上对预训练模型进行微调（SFT）可以进一步提高生成质量和说话人相似性。在本报告中，引入了多说话人微调（mSFT），在多个说话人上同时进行微调，而不是单个说话人。这种方法确保了多个说话人之间全面的语调和发音覆盖，并减轻了预训练模型可能出现的灾难性遗忘。为了避免不同说话人之间的音色混淆，在特定说话人的输入文本前添加说话人提示标签，如“Speaker A&lt;|endofprompt|&gt;”。如果训练样本未token说话人，则使用特殊标签“unknown&lt;|endofprompt|&gt;”。在整个多说话人微调过程中，学习率设置为 $1 \times 10^{-5}$ 。</p>
+<h3 id="sft的强化学习-reinforcement-learning-for-sft">SFT的强化学习 Reinforcement Learning for SFT</h3>
+<p>强化学习是大型语言模型训练中常用的方法，可以使 LM 输出与人类偏好对齐。在 CosyVoice 2 中，使用说话人相似性（SS）和 ASR 系统的识别词错误率（WER）作为奖励函数，以在微调阶段提高说话人相似性和发音准确性。使用 WER 和 SS 来区分首选样本 $x_w$ 和被拒绝的样本 $x_l$ ，并使用直接偏好优化（DPO）优化 TTS 系统：
+$$
+L_{\text{DPO}}(\pi_\theta; \pi_{\text{ref}}) = - \log \sigma \left( \beta \log \frac{\pi_\theta(\mu_w|y)}{\pi_{\text{ref}}(\mu_w|y)} - \beta \log \frac{\pi_\theta(\mu_l|y)}{\pi_{\text{ref}}(\mu_l|y)} \right)
+$$
+其中，$\mu_w$ 和 $\mu_l$ 是从首选和被拒绝的样本 $x_w$ 和 $x_l$ 中提取的speech token。
+然而，这种方法耗时且计算量大，因为它需要通过 TTS 系统反复合成音频以获得可区分的首选和被拒绝的样本。在训练过程中，一个训练步骤需要进行四次前向操作。为了简化这个过程，将 LM 预测的token $\mu_i \in {0, 1, \ldots, (2K + 1)^D - 1}$ 恢复为量化后的低秩表示 $\bar{H}$ ，并直接使用speech tokenizer的 ASR 后端重新预测输入文本。然后，将预测的对数后验概率视为 ASR 奖励函数，以优化文本-语音语言模型。在训练过程中，ASR 后端参数被冻结。
+$$
+\bar{h}_{i,j} = \left\lfloor \frac{\mu_i}{(2K + 1)^j} \right\rfloor \mod (2K + 1)
+$$</p>
+<p>$$
+\hat{H} = \text{Proj}_{\text{up}}(\bar{H})
+$$</p>
+<p>$$
+L_{\text{ASR}} = - \log P(Y | \hat{H}; \theta_{\text{ASR}})
+$$</p>
+<p>其中， $Y$ 是输入文本， $\bar{H}$ 是恢复的语音低秩表示。由于样本操作 $u_i \sim P(\mu_i|\mu_{1:i-1}, Y; \theta_{\text{LM}})$ 仍然阻止直接优化模型，使用 Gumbel Softmax 采样使其可微分，然后通过 $L_{\text{ASR}}$ 优化 $\theta_{\text{LM}}$ 。</p>
+<h2 id="实验设置">实验设置</h2>
+<h3 id="speech-tokenizer的训练数据">Speech Tokenizer的训练数据</h3>
+<p>使用一个200,000小时的数据集来训练Speech Tokenizer，归一化转录作为标签。详细数据信息如表2所示。训练数据来自三个不同的来源：开源ASR数据集、内部工业数据集和TTS生成数据集。尽管在训练Speech Tokenizer时只使用了中文和英文数据，如表2所示，后续实验表明Speech Tokenizer具有其他语言的零样本能力。它也可以用于日语和韩语的语音合成。</p>
+<table>
+<thead>
+<tr>
+<th>语言</th>
+<th>时长（小时）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>中文</td>
+<td>110,884</td>
+</tr>
+<tr>
+<td>英文</td>
+<td>99,918</td>
+</tr>
+</tbody>
+</table>
+<p>表 2：Speech Tokenizer训练数据的详细信息。</p>
+<h3 id="cosyvoice-2的训练数据">CosyVoice 2的训练数据</h3>
+<p>CosyVoice 2与其前身版本共享相同的训练数据。首先使用内部语音处理工具收集仅语音数据。随后，分别使用<a href="https://arxiv.org/abs/2206.08317">2022. Paraformer</a>和<a href="https://arxiv.org/abs/2407.04051">2024. SenseVoice</a>为中文和其他语言生成伪文本标签。还使用内部强制对齐模型过滤低质量数据并增强标点符号的准确性。数据详细信息如表3所示。</p>
+<table>
+<thead>
+<tr>
+<th>语言</th>
+<th>时长（小时）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>中文</td>
+<td>130,000</td>
+</tr>
+<tr>
+<td>英文</td>
+<td>30,000</td>
+</tr>
+<tr>
+<td>日文</td>
+<td>4,600</td>
+</tr>
+<tr>
+<td>韩文</td>
+<td>2,200</td>
+</tr>
+</tbody>
+</table>
+<p>表 3：CosyVoice 2的训练数据详细信息。</p>
+<h3 id="评估设置">评估设置</h3>
+<p>在两个测试集上评估CosyVoice 2。</p>
+<ul>
+<li>第一个测试集是从<a href="https://www.openslr.org/12">Librispeech语料库</a>的test-clean集中构建的，记为test-clean。这个测试集用于评估CosyVoice 2在有限英文领域上的表现。使用Whisper-large V3作为ASR模型来评估内容一致性。对于说话人相似性（SS），使用<a href="https://arxiv.org/abs/2305.12838">2023. ERes2Net</a>模型提取提示和生成话语的speaker embeddings，它们的原始余弦相似度被视为说话人相似性。<a href="https://arxiv.org/abs/2010.15258">2020. NMOS分数</a>用于评估客观质量。</li>
+<li>第二个评估是在<a href="https://arxiv.org/abs/2406.02430">2024. Seed-TTS SEED测试集</a>上进行的，该测试集广泛用于评估最近的TTS模型，涵盖各种文本领域和参考语音。在这个评估中，从<a href="https://commonvoice.mozilla.org/zh-CN/datasets">CommonVoice数据集</a>中选择了约2,000个中文和1,000个英文样本，分别记为test-zh和test-en。</li>
+<li>此外，还包括约400个硬测试案例，用于评估TTS模型在文本重复、绕口令和其他具有挑战性的合成案例上的鲁棒性，记为test-hard。</li>
+<li><strong>使用Paraformer识别test-zh和test-hard的合成结果</strong>，<strong>而使用Whisper-large V3评估test-en的内容一致性</strong>。</li>
+<li><strong>采用两个说话人验证（SV）模型来评估说话人相似性：微软的<a href="https://github.com/microsoft/unilm/tree/master/wavlm">WavLM-finetuned SV模型</a>和阿里3D-Speaker中的<a href="https://github.com/modelscope/3D-Speaker">ERes2Net</a></strong>，（后续研究还有采用其他模型进行SS评估）。</li>
+</ul>
+<h3 id="日语和韩语的基准测试">日语和韩语的基准测试</h3>
+<p>准备了两个测试集，分别记为test-ja和test-ko，用于评估日语和韩语的语音合成。</p>
+<ul>
+<li>test-ja包含从CommonVoice数据集中提取的1,000个样本，用于测量模型在各种指标上的表现，如WER、SS、MOS。具体来说，随机打乱并配对了整个CommonVoice JA-test集作为参考话语和目标话语。考虑到JA-test集话语文本长度的广泛范围，从8到32个字符的长度范围内随机选择了1,000对参考-目标话语作为的最终测试集。</li>
+<li>对于test-ko，选择了1,000个语音样本，WER小于5%，且没有删除或插入错误，使用<a href="https://huggingface.co/openai/whisper-large-v3">Whisper-Large V3</a>作为ASR模型。这些样本作为韩语语音合成的参考话语。对于输入文本，从剩余数据中随机选择了1,000个文本样本。已经发布了这两个测试集的提示话语、提示转录和输入文本的列表，以方便结果复现。通过提供这个开源数据，旨在建立一个评估日语和韩语TTS模型的基准。</li>
+<li><strong>Whisper-large V3用于日语和韩语的评估。</strong></li>
+</ul>
+<h2 id="实验结果">实验结果</h2>
+<h3 id="speech-tokenizer的评估">Speech Tokenizer的评估</h3>
+<p>理想的Speech Tokenizer应有效利用码本，高保真度地保留信息，并表现出说话人独立性。从四个方面评估受监督Speech Tokenizer：</p>
+<ul>
+<li>码本利用率；</li>
+<li>整个编码器内的ASR错误率；</li>
+<li>不同说话人的token可视化；</li>
+<li>说话人识别训练。</li>
+</ul>
+<p>表4显示了码本利用率和ASR错误率。结果表明，基于FSQ的speech tokenizer完全利用了码本，并在ASR方面保持了更多有效信息，表明FSQ保留了更多语义信息。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>码本大小</th>
+<th>码本利用率</th>
+<th>ASR错误率 (C.V. EN)</th>
+<th>ASR错误率 (C.V. CN)</th>
+<th>ASR错误率 (Fluers EN)</th>
+<th>ASR错误率 (Fluers CN)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VQ</td>
+<td>4,096</td>
+<td>963 (23%)</td>
+<td>18.26</td>
+<td>11.56</td>
+<td>7.65</td>
+<td>5.03</td>
+</tr>
+<tr>
+<td>FSQ</td>
+<td>6,561</td>
+<td>6,561 (100%)</td>
+<td>10.67</td>
+<td>7.29</td>
+<td>6.58</td>
+<td>4.43</td>
+</tr>
+</tbody>
+</table>
+<p>表 4：Sensevoice-large编码器内VQ和FSQ的比较。C.V.表示CommonVoice基准测试。</p>
+<p>进一步通过t-SNE可视化分析FSQ的特性。作为TTS任务的上游模型，<strong>speech tokenizer应尽量减少说话人身份信息与语音信号的纠缠</strong>。从<a href="https://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1.html">VoxCeleb1数据集</a>中选择了每名说话人的100个语音样本，并可视化了相应的token。</p>
+<ul>
+<li>
+<p>如图4(a)和(b)所示，量化前$Encoder_1$的输出在不同说话人之间表现出不同的分布。相比之下，量化表示的分布几乎无法区分。</p>
+</li>
+<li>
+<p>此外，图4(c)还表明speech tokenizer完全利用了码本。</p>
+</li>
+<li>
+<p>随后，使用<a href="https://github.com/s3prl/s3prl">S3prl工具包</a>进一步通过执行说话人识别（SID）任务来评估说话人纠缠。使用带有FSQ的Sensevoice-large编码器作为上游特征提取器，并使用量化前或后的表示训练SID任务。图5显示了训练期间的准确率曲线。带有量化token的SID层没有收敛，这证明了speech tokenizer在解耦说话人信息方面的功能。</p>
+</li>
+</ul>
+<p><img src="https://github.com/user-attachments/assets/bd6e5e60-d6e6-4e55-b557-c24bebf22e58" alt="image"></p>
+<p>图 4：Voxceb1数据集中三名不同说话人的语音表示在量化前(a)和量化后(b)的t-SNE可视化。(c)显示了说话人（每个bin 500个token）的token百分比的码本利用率。</p>
+<p><img src="https://github.com/user-attachments/assets/0f1b5023-15a8-48db-94ca-ac04c3715f0a" alt=""></p>
+<p>图 5：量化前或量化后token的SID训练的收敛曲线。</p>
+<h3 id="与基线的比较结果">与基线的比较结果</h3>
+<p>首先在有限的英文文本域上评估了CosyVoice 2模型，并与几个开源模型进行了比较，如ChatTTS、GPT-SoVITs、OpenVoice、ParlerTTS、EmotiVoice和其前身CosyVoice。</p>
+<p>PS: 奇了个怪，为啥没有评估 <a href="https://arxiv.org/abs/2411.01156">fish-speech</a></p>
+<p>表5展示了客观结果，包括内容一致性（WER）、语音质量（NMOS）和说话人相似性（SS）。从表中可以看出，<strong>CosyVoice 2在Librispeech test-clean集上实现了最先进的性能，超越了所有基线模型的所有评估指标。值得注意的是，CosyVoice 2甚至在内容一致性、语音质量和说话人相似性方面都超过了人类话语，表明其人类水平的合成质量</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>WER (%)</th>
+<th>NMOS</th>
+<th>SS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>人类</td>
+<td>2.66</td>
+<td>3.84</td>
+<td>0.697</td>
+</tr>
+<tr>
+<td>ChatTTS</td>
+<td>6.84</td>
+<td>3.89</td>
+<td>-</td>
+</tr>
+<tr>
+<td>GPT-SoVITs</td>
+<td>5.13</td>
+<td>3.93</td>
+<td>0.405</td>
+</tr>
+<tr>
+<td>OpenVoice</td>
+<td>3.47</td>
+<td>3.87</td>
+<td>0.299</td>
+</tr>
+<tr>
+<td>ParlerTTS</td>
+<td>3.16</td>
+<td>3.86</td>
+<td>-</td>
+</tr>
+<tr>
+<td>EmotiVoice</td>
+<td>3.14</td>
+<td>3.93</td>
+<td>-</td>
+</tr>
+<tr>
+<td>CosyVoice</td>
+<td>2.89</td>
+<td>3.93</td>
+<td>0.743</td>
+</tr>
+<tr>
+<td>CosyVoice 2</td>
+<td>2.47</td>
+<td><strong>3.96</strong></td>
+<td>0.745</td>
+</tr>
+<tr>
+<td>CosyVoice 2-S</td>
+<td><strong>2.45</strong></td>
+<td>3.90</td>
+<td><strong>0.751</strong></td>
+</tr>
+</tbody>
+</table>
+<p>表 5：基线和CosyVoice 2在LibriSpeech test-clean子集上的内容一致性（WER）、说话人相似性（SS）和语音质量（NMOS）结果。使用Whisper-Large V3作为ASR模型，计算WER前排除了标点符号。</p>
+<p>还在常用的测试集上评估了CosyVoice 2：SEED test-zh、test-en和test-hard，这些测试集包括来自不同领域的多样化输入文本和参考语音。表6展示了CosyVoice 2和基线模型的实验结果。<strong>在test-zh集上，CosyVoice 2在CER和SS方面超越了所有开源模型，仅比商业模型SEED-TTS落后一点点</strong>。<strong>在test-en集上，CosyVoice 2在WER和SS方面分别排名第四和第三</strong>。<strong>这可能是由于中文和英文训练数据量之间的不平衡</strong>。计划在未来的工作中探索数据扩展，以提高英文的内容一致性。<strong>在test-hard集上，离线CosyVoice 2模型在所有比较的基线中实现了最先进的性能，表明其在具有挑战性的合成场景中的鲁棒性</strong>。与人类生成的语音相比，CosyVoice 2在内容一致性和说话人相似性方面表现出可比的性能。考虑到识别错误也可能来自ASR模型，合理地得出结论，CosyVoice 2实现了人类水平的合成能力。</p>
+<p>还评估了流式模式，记为表5和6中的“CosyVoice 2-S”。对于两种评估设置，<strong>流式模式的性能在典型测试案例中几乎无损</strong>。只有在具有挑战性的案例中，内容一致性才有轻微下降，突出了统一的流式/非流式框架的优势。<strong>实验评估发现，不同SV模型上的说话人相似性结果不一致。这可能表明如何自动评估TTS模型的说话人相似性是一个新的研究课题</strong>。由于不同的TTS模型可能使用不同的SV模型来提取说话人信息，使用相同的SV模型评估说话人相似性可以更准确地评估说话人信息的利用。因此，在后续实验中使用ERes2Net3来评估说话人相似性。</p>
+<p><img src="https://github.com/user-attachments/assets/4de7a183-2a9d-4fb2-9cf3-cbd461a8e6a1" alt="image">表 6：CosyVoice 2和最近的TTS模型在SEED测试集上的结果。†表示闭源模型。对于说话人相似性，括号内的结果是通过ERes2Net测量的，而括号外的结果是通过基于WavLM的模型测量的。</p>
+<h3 id="模块化消融研究">模块化消融研究</h3>
+<p>在文本-语音语言模型上进行了模块化消融研究，以评估修改的影响，包括LLM初始化、去除speaker embedding和使用FSQ。</p>
+<p>表7展示了从其前身逐步发展到CosyVoice 2的过程。</p>
+<ul>
+<li>
+<p>+LLM init: 通过将<strong>随机初始化的语言模型替换为预训练的LLM</strong>，在test-zh和test-hard集上的内容一致性分别实现了18.46%和15.40%的相对改进。</p>
+</li>
+<li>
+<p>+Drop Spk Emb: <strong>从文本到语音语言模型中去除了speaker embeding，这有助于防止信息泄露和上下文学习中的干扰</strong>。<strong>这一变化显著减少了内容错误，同时保持了说话人相似性，表明内容信息主要由LM建模，而说话人信息主要由流匹配模型恢复</strong>。</p>
+</li>
+<li>
+<p>+FSQ(CosyVoice 2): 通过将VQ替换为FSQ，实现了CosyVoice 2模型，注意到<strong>内容一致性的显著提高和不变的说话人相似性</strong>。通过<strong>充分利用码本，FSQ捕获了更多内容信息和上下文变化，从而更好地对齐文本和语音token</strong>。</p>
+</li>
+<li>
+<p>+Pitch Loss: 此外，通过<strong>在FSQ基础的Speech Tokenizer训练中加入音高损失作为约束进行了比较实验</strong>。发现，这种方法<strong>在下游TTS任务中表现出了更好的性能</strong>，如表7的最后一行所示。在未来的CosyVoice版本中，计划进行更详细的实验和分析。</p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>test-zh</th>
+<th></th>
+<th>test-en</th>
+<th></th>
+<th>test-hard</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>CER (%)</td>
+<td>SS</td>
+<td>WER (%)</td>
+<td>SS</td>
+<td>WER (%)</td>
+<td>SS</td>
+</tr>
+<tr>
+<td>CosyVoice</td>
+<td>3.63</td>
+<td>0.775</td>
+<td>4.29</td>
+<td>0.699</td>
+<td>11.75</td>
+<td>0.755</td>
+</tr>
+<tr>
+<td>+ LLM init.</td>
+<td>2.96</td>
+<td>0.808</td>
+<td>4.57</td>
+<td>0.730</td>
+<td>9.94</td>
+<td>0.789</td>
+</tr>
+<tr>
+<td>+ Drop Spk Emb.</td>
+<td>2.56</td>
+<td>0.804</td>
+<td>3.81</td>
+<td>0.740</td>
+<td>9.66</td>
+<td>0.778</td>
+</tr>
+<tr>
+<td>+ FSQ (CosyVoice 2)</td>
+<td><strong>1.45</strong></td>
+<td>0.806</td>
+<td><strong>2.57</strong></td>
+<td>0.736</td>
+<td><strong>6.83</strong></td>
+<td>0.776</td>
+</tr>
+<tr>
+<td>+ Pitch Loss</td>
+<td><strong>1.19</strong></td>
+<td>0.802</td>
+<td><strong>2.40</strong></td>
+<td>0.728</td>
+<td><strong>6.29</strong></td>
+<td>0.769</td>
+</tr>
+</tbody>
+</table>
+<p>表 7：文本-语音语言模型修改的模块化分析。</p>
+<p>还进行了另一项模块化分析，以评估流式模块对合成性能的影响。</p>
+<p>表8展示了内容一致性和说话人相似性的结果。</p>
+<ul>
+<li>发现<strong>流式LM对test-zh和test-en集上的典型案例影响最小</strong>，表明统一训练框架的有效性。</li>
+<li><strong>流式LM的主要影响在test-hard集上的具有挑战性的案例中观察到，可能是因为流式模式中上下文信息的丢失</strong>。</li>
+<li>有趣的是，<strong>与离线模式相比，流式流匹配模型的说话人相似性略高</strong>。这可能是由于流式模式中初始块的提示到生成比例较高，而离线模式中的提示到生成比例可能非常低，包含许多填充token。</li>
+<li><strong>与流式LM相比，流式流匹配模型对内容一致性的负面影响要小得多，这要归功于CosyVoice 2中的语义-声学解耦建模</strong>。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>LM</th>
+<th>FM</th>
+<th>test-zh</th>
+<th></th>
+<th>test-en</th>
+<th></th>
+<th>test-hard</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>CER (%)</td>
+<td>SS</td>
+<td>WER (%)</td>
+<td>SS</td>
+<td>CER (%)</td>
+<td>SS</td>
+</tr>
+<tr>
+<td>M1</td>
+<td>离线</td>
+<td>离线</td>
+<td>1.45</td>
+<td>0.806</td>
+<td>2.57</td>
+<td>0.736</td>
+<td>6.83</td>
+<td>0.776</td>
+</tr>
+<tr>
+<td>M2</td>
+<td>离线</td>
+<td>流式</td>
+<td>1.46</td>
+<td>0.811</td>
+<td>2.60</td>
+<td>0.743</td>
+<td>7.12</td>
+<td>0.788</td>
+</tr>
+<tr>
+<td>M3</td>
+<td>流式</td>
+<td>离线</td>
+<td>1.38</td>
+<td>0.806</td>
+<td>2.51</td>
+<td>0.737</td>
+<td>7.88</td>
+<td>0.773</td>
+</tr>
+<tr>
+<td>M4</td>
+<td>流式</td>
+<td>流式</td>
+<td>1.45</td>
+<td>0.812</td>
+<td>2.38</td>
+<td>0.743</td>
+<td>8.08</td>
+<td>0.785</td>
+</tr>
+</tbody>
+</table>
+<p>表 8：CosyVoice 2中流式模块影响的模块化分析。流式模块的块大小设置为15。</p>
+<h3 id="日语和韩语基准测试的结果">日语和韩语基准测试的结果</h3>
+<p>除了中文和英文，CosyVoice 2还<strong>支持日语和韩语</strong>。在构建的日语和韩语测试集上<strong>评估了内容一致性、说话人相似性和语音质量</strong>。</p>
+<p>如表9所示，CosyVoice 2在韩语上的表现显著优于日语，这主要是由于日语和中文字符集的重叠，导致在日语上下文中使用中文发音。在未来的工作中，计划探索增强多语言合成的语言上下文的方法。由于韩语与其他语言没有字符重叠，其语音合成表现更好。另一个问题是数据不平衡。相信，增加训练数据量可以进一步提高日语和韩语的合成性能。</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>test-ja</th>
+<th></th>
+<th></th>
+<th>test-ko</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>CER (%)</td>
+<td>SS</td>
+<td>NMOS</td>
+<td>CER (%)</td>
+<td>SS</td>
+<td>NMOS</td>
+</tr>
+<tr>
+<td>CosyVoice 2</td>
+<td>18.79</td>
+<td>0.630</td>
+<td>3.42</td>
+<td>7.98</td>
+<td>0.707</td>
+<td>3.73</td>
+</tr>
+<tr>
+<td>CosyVoice 2-S</td>
+<td>21.41</td>
+<td>0.629</td>
+<td>3.35</td>
+<td>9.06</td>
+<td>0.714</td>
+<td>3.60</td>
+</tr>
+</tbody>
+</table>
+<p>表 9：CosyVoice 2及其流式对应模型在日语test-ja和韩语test-ko测试集上的内容一致性（CER）、说话人相似性（SS）和语音质量（NMOS）。</p>
+<h3 id="指令式生成的结果">指令式生成的结果</h3>
+<p>为了评估指令式生成的性能，创建了一个包含290个样本的中文测试集。该测试集包括29种指令，如表1所示，每种指令有10个不同的输入文本。使用五名说话人的五个音频提示和说话人嵌入作为流匹配模型的条件。测试是在离线模式下进行的。客观地评估了内容一致性（CER）、说话人相似性（SS）和语音质量（NMOS）。主观上，使用指令的平均意见得分（MOS-I）评估指令的准确性和自然度，范围从1到5。每个样本由10名母语为中文的说话人评估，评分以0.5的增量给出。评估标准侧重于语音是否遵循所有指定的指令，如情感表达、语速调整、方言使用和角色扮演。细粒度控制，包括插入笑声、带笑说话、呼吸控制和强调，评估其自然度和准确性。如表10所示，CosyVoice 2在内容一致性（CER）、说话人相似性（SS）和指令控制的准确性和自然度（MOS-I）方面表现出色，同时保持了与CosyVoice-Instruct相当的语音质量。当从CosyVoice 2中移除输入指令时，MOS-I显著下降；然而，内容一致性（CER）、说话人相似性（SS）和语音质量（NMOS）有所提高。这表明指令可控性很难从内容文本中隐式地出现。</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>CER (%)</th>
+<th>SS</th>
+<th>NMOS</th>
+<th>MOS-I</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CosyVoice-Instruct</td>
+<td>1.72</td>
+<td>0.797</td>
+<td>3.94</td>
+<td>3.09</td>
+</tr>
+<tr>
+<td>CosyVoice 2</td>
+<td>1.52</td>
+<td>0.804</td>
+<td>3.94</td>
+<td>4.06</td>
+</tr>
+<tr>
+<td>CosyVoice 2 w/o Instruction</td>
+<td>0.97</td>
+<td>0.817</td>
+<td>4.02</td>
+<td>2.28</td>
+</tr>
+</tbody>
+</table>
+<p>表 10：在内部中文测试集上对CosyVoice-Instruct、CosyVoice 2和没有指令输入的CosyVoice 2进行内容一致性（CER）、说话人相似性（SS）、语音质量（NMOS）和MOS-I（指令，评估指令的准确性和自然度）的评估结果。使用Paraformer模型作为ASR系统，计算CER时排除了标点符号。由于Paraformer模型无法识别中文方言语音，因此在计算CER时未包括方言数据。</p>
+<h3 id="说话人微调模型的结果">说话人微调模型的结果</h3>
+<p>在微调阶段，对同一说话人的说话人嵌入进行无监督聚类，以确保说话人音色的稳定性。已经证明，目标说话人只要有400个音频记录就可以实现相当好的语音合成性能，不同说话人之间的客观指标变化很小，如图6所示。实验表明，大多数说话人都可以继承零样本TTS模型的强大上下文理解和感知能力，从而自然地表达各种情绪和情感，以响应输入文本。</p>
+<p><img src="https://github.com/user-attachments/assets/235f1711-2201-423d-8978-53fd5805b2f8" alt="image"></p>
+<p>图 6：CosyVoice 2 SFT模型在SEED评估设置下的结果。CER用于test-zh和test-hard，而WER用于test-en。</p>
+<h3 id="使用强化学习的lm微调">使用强化学习的LM微调</h3>
+<p>尽管SFT可以提高大多数说话人的性能，但Spk E的结果仍然比基础模型差，尤其是在英文方面。因为Spk E的语音更复杂，语速更快。此外，Spk E只有中文录音。因此，对Spk E应用了强化学习以进一步改进。对于DPO，通过SFT模型合成了10,000个样本对，通过ASR和SS奖励改变LM的偏好偏差。还使用可微分的ASR奖励来优化LM参数。经过RL后，在Spk E的测试集上评估了模型的内容一致性（WER）、说话人相似性（SS）和语音质量（NMOS），并进一步在SeedTTS测试集上评估了WER，以探索模型是否能够对域外或跨语言输入文本保持鲁棒性。结果如表11所示。</p>
+<p>与预训练的基础模型相比，SFT模型显示出更高的说话人相似性和语音质量，然而，WER可能比基础模型更差。发现，基础模型合成的音频总是比SFT和真实音频更慢，这对ASR系统更友好。对于目标说话人数据集，偏好偏差和可微分奖励都可以减少WER，对其他两个指标几乎没有有害影响。但对于SEED测试集，基于DPO的强化学习只对中文和英文子集有益，而硬样本会更差。原因可能是硬样本包含许多重复的单词或短语，它们可能在DPO训练中被视为被拒绝的样本。然而，可微分ASR奖励不会遇到这个问题，因为它可以直接通过ASR后验概率优化TTS系统。这意味着可微分ASR奖励在域外情况下具有更好的泛化能力。最后，可以将它们结合起来以进一步改进。</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th></th>
+<th>内部目标说话人</th>
+<th></th>
+<th></th>
+<th>SEED测试 (%)</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>WER (%)</td>
+<td>NMOS</td>
+<td>SS</td>
+<td>zh</td>
+<td>en</td>
+<td>hard</td>
+</tr>
+<tr>
+<td>真实值</td>
+<td>6.00</td>
+<td>3.87</td>
+<td>0.697</td>
+<td>1.26</td>
+<td>2.14</td>
+<td>-</td>
+</tr>
+<tr>
+<td>CosyVoice 2</td>
+<td>5.34</td>
+<td>3.91</td>
+<td>0.721</td>
+<td>1.45</td>
+<td>2.57</td>
+<td>6.83</td>
+</tr>
+<tr>
+<td>CosyVoice 2-SFT</td>
+<td>7.15</td>
+<td>3.96</td>
+<td>0.795</td>
+<td>1.50</td>
+<td>4.26</td>
+<td>7.90</td>
+</tr>
+<tr>
+<td>+ $L_{ASR}$</td>
+<td>6.79</td>
+<td>3.96</td>
+<td>0.795</td>
+<td>1.29</td>
+<td>3.53</td>
+<td>7.30</td>
+</tr>
+<tr>
+<td>+ $L_{DPO}$</td>
+<td>6.83</td>
+<td>3.96</td>
+<td>0.792</td>
+<td>1.43</td>
+<td>4.02</td>
+<td>8.31</td>
+</tr>
+<tr>
+<td>+ $L_{ASR}$+ $L_{DPO}$</td>
+<td>6.64</td>
+<td>3.97</td>
+<td>0.796</td>
+<td>1.25</td>
+<td>3.17</td>
+<td>6.66</td>
+</tr>
+</tbody>
+</table>
+<p>表 11： Spk E 上强化学习模型的内容一致性 (WER)、说话者相似度 (SS) 和语音质量 (NMOS) 比较。</p>
+<h2 id="结论">结论</h2>
+<p>在CosyVoice的基础上，本报告介绍了CosyVoice 2，这是一个改进的流式语音合成模型，利用大型语言模型（LLMs）。通过在一个框架内统一流式和非流式合成，CosyVoice 2实现了人类水平的自然度、最小的响应延迟，以及在流式模式下几乎无损的合成质量。关键创新包括<strong>有限标量量化（FSQ）以充分利用码本</strong>、<strong>简化文本-语音语言模型架构以整合预训练的文本LLMs</strong>，以及<strong>开发块感知因果流匹配模型以支持多样化的合成场景</strong>。此外，<strong>指令式TTS能力的提升允许灵活且生动的语音生成，能够精细控制情感、口音、角色风格和声音爆发</strong>。通过系统的修改和优化，CosyVoice 2不仅提供了卓越的合成质量，还放宽了部署要求，使其适用于流式和非流式应用。论文团队认为CosyVoice 2在可扩展、高质量和交互式文本到语音合成方面是一个重要的进步。</p>
+<p>PS: 论文中未提到实际部署情况，线上分布式推理服务(infer serve)的指标评估；提供实际生产服务的时候，部署服务和优化与模型结构密切相关，CosyVoice2中简化文本-语音语言模型架构以整合预训练的文本LLMs， 虽然输入的token和文本LLMs稍有不同，但是推理优化工作可以复用；而且还可以复用LLM的scaling工作来进行整合扩展。<strong>CosyVoice 2中的语义-声学解耦建模</strong></p>
+<h2 id="限制">限制</h2>
+<p>CosyVoice 2存在一些需要解决的限制。首先，它只支持有限数量的语言。对于字符集重叠的语言，合成性能可能会下降，这为未来的研究提出了一个开放性挑战。其次，CosyVoice 2无法通过文本指令控制音色等声学特征，这可能是角色扮演应用中一个有趣的探索领域。此外，CosyVoice在执行唱歌任务时表现不佳。</p>
+<h2 id="附录">附录：</h2>
+<h3 id="paralanguage-information副语言信息">Paralanguage information（副语言信息）</h3>
+<p>Paralanguage information（副语言信息）是指在口语交流中，除了语言内容本身之外的其他声音特征和表达方式。这些信息虽然不直接涉及语言的词汇或语法结构，但对理解和传达说话人的意图、情感和态度等方面起着重要作用。副语言信息包括以下几个方面：</p>
+<h4 id="1-语调intonation">1. 语调（Intonation）</h4>
+<p>语调是指说话时声音的高低变化。不同的语调可以传达不同的情感和意图。例如：</p>
+<ul>
+<li><strong>升调</strong>：通常用于提问，表示疑问或不确定。例如，“你今天去吗？”（升调）</li>
+<li><strong>降调</strong>：通常用于陈述句，表示肯定或结束。例如，“你今天去。”（降调）</li>
+</ul>
+<h4 id="2-语速speech-rate">2. 语速（Speech Rate）</h4>
+<p>语速是指说话的快慢。不同的语速可以传达不同的情感和 urgency（紧迫感）：</p>
+<ul>
+<li><strong>快速</strong>：通常表示兴奋、紧张或急切。例如，快速说话可能表明说话人很兴奋或有紧急事情要传达。</li>
+<li><strong>慢速</strong>：通常表示沉思、悲伤或强调。例如，慢速说话可能表明说话人在思考或强调某个重要信息。</li>
+</ul>
+<h4 id="3-音量volume">3. 音量（Volume）</h4>
+<p>音量是指说话的响度。不同的音量可以传达不同的情感和态度：</p>
+<ul>
+<li><strong>大声</strong>：通常表示愤怒、兴奋或强调。例如，大声说话可能表明说话人很愤怒或在强调某个重要点。</li>
+<li><strong>小声</strong>：通常表示害羞、害怕或保密。例如，小声说话可能表明说话人很害羞或在分享秘密。</li>
+</ul>
+<h4 id="4-停顿pauses">4. 停顿（Pauses）</h4>
+<p>停顿是指说话中的短暂沉默。停顿可以用于强调、思考或情感表达：</p>
+<ul>
+<li><strong>短暂停顿</strong>：通常用于强调某个词或短语。例如，“我——真的——不知道。”（短暂停顿）</li>
+<li><strong>较长停顿</strong>：通常用于思考或情感表达。例如，“我……我不知道。”（较长停顿）</li>
+</ul>
+<h4 id="5-重音stress">5. 重音（Stress）</h4>
+<p>重音是指在单词或短语中某个音节的强调。不同的重音可以改变单词的意思或强调某个部分：</p>
+<ul>
+<li><strong>单词重音</strong>：例如，“record”（动词）和“record”（名词）的重音位置不同。</li>
+<li><strong>短语重音</strong>：例如，“我真的很喜欢这个礼物。”（重音在“真的”上）</li>
+</ul>
+<h4 id="6-填充词fillers">6. 填充词（Fillers）</h4>
+<p>填充词是指在说话中用于填充空白或思考的词。这些词可以传达说话人的思考过程或情感状态：</p>
+<ul>
+<li><strong>常见的填充词</strong>：例如，“嗯”、“啊”、“这个”、“那个”等。这些词可以表明说话人在思考或犹豫。</li>
+</ul>
+<h4 id="7-声音质量voice-quality">7. 声音质量（Voice Quality）</h4>
+<p>声音质量是指声音的物理特征，如沙哑、尖锐、柔和等。不同的声音质量可以传达不同的情感和健康状态：</p>
+<ul>
+<li><strong>沙哑</strong>：可能表明说话人感冒或情绪低落。</li>
+<li><strong>尖锐</strong>：可能表明说话人很紧张或兴奋。</li>
+<li><strong>柔和</strong>：可能表明说话人很温柔或关心。</li>
+</ul>
+<h4 id="8-音色timbre">8. 音色（Timbre）</h4>
+<p>音色是指声音的独特质地或色彩。不同的音色可以传达不同的情感和个性：</p>
+<ul>
+<li><strong>温暖的音色</strong>：可能表明说话人很友好和亲切。</li>
+<li><strong>冷淡的音色</strong>：可能表明说话人很严肃或疏远。</li>
+</ul>
+<h4 id="总结">总结</h4>
+<p>副语言信息在口语交流中起着重要作用，它可以帮助听者更好地理解说话人的意图、情感和态度。通过语调、语速、音量、停顿、重音、填充词、声音质量和音色等副语言特征，说话人可以更有效地传达信息，增强交流的自然度和生动性。在语音合成和语音识别系统中，考虑副语言信息可以显著提高系统的性能和用户体验。</p>
+<hr>
+<h3 id="t-sne可视化">t-SNE可视化</h3>
+<h4 id="定义">定义</h4>
+<p>t-SNE（t-distributed Stochastic Neighbor Embedding）是一种用于高维数据可视化的降维算法。它能够将高维数据映射到二维或三维空间中，以便人们能够直观地观察数据的分布情况和内在结构。</p>
+<h4 id="工作原理">工作原理</h4>
+<ul>
+<li>
+<p><strong>相似度计算</strong>：在高维空间中，计算数据点之间的相似度。对于数据点 $x_i$ 和 $x_j$，其相似度 $p_{j|i}$ 表示在以 $x_i$ 为中心的高斯分布下，$x_j$ 出现的概率。计算公式为：
+$$
+p_{j|i} = \frac{\exp(-|x_i - x_j|^2 / 2\sigma_i^2)}{\sum_{k \neq i} \exp(-|x_i - x_k|^2 / 2\sigma_i^2)}
+$$</p>
+<p>其中，$sigma_i$是高斯分布的标准差，通过二分查找法确定，使得每个数据点的困惑度（Perplexity）达到预设值。</p>
+</li>
+<li>
+<p><strong>映射到低维空间</strong>：在低维空间中，为每个数据点 $y_i$ 和 $y_j$ 计算相似度 $q_{ij}$，采用 t 分布来计算，公式为：
+$$
+q_{ij} = \frac{(1 + |y_i - y_j|^2)^{-1}}{\sum_{k \neq l} (1 + |y_k - y_l|^2)^{-1}}
+$$</p>
+</li>
+<li>
+<p><strong>优化映射</strong>：通过最小化高维空间和低维空间相似度的差异来优化映射。使用KL散度（Kullback-Leibler Divergence）作为损失函数，通过梯度下降法不断调整低维空间中的数据点位置，使得 (q_{ij}) 尽可能接近 (p_{ij})。</p>
+</li>
+</ul>
+<h4 id="优点">优点</h4>
+<ul>
+<li><strong>能够很好地保持数据的局部结构</strong>：t-SNE在映射过程中，注重保持数据点之间的局部邻近关系，使得相似的数据点在低维空间中也能聚集在一起，便于观察数据的簇结构。</li>
+<li><strong>对高维数据的可视化效果较好</strong>：相比其他降维方法，如PCA，t-SNE在处理高维数据时，能够更清晰地展示数据的分布情况，揭示出数据中隐藏的模式和结构。</li>
+</ul>
+<h4 id="缺点">缺点</h4>
+<ul>
+<li><strong>计算复杂度较高</strong>：在计算数据点之间的相似度以及优化映射过程中，需要进行大量的计算，尤其是对于大规模数据集，计算成本较高。</li>
+<li><strong>结果具有一定的随机性</strong>：由于t-SNE的优化过程涉及到随机初始化，每次运行可能会得到略有不同的结果，这给结果的解释和对比带来了一定的困难。</li>
+<li><strong>难以处理大规模数据</strong>：由于计算复杂度和内存消耗的限制，t-SNE在处理大规模数据集时可能会遇到性能瓶颈，需要借助一些优化方法或近似算法来提高效率。</li>
+</ul>
+<h4 id="应用场景">应用场景</h4>
+<ul>
+<li><strong>图像数据可视化</strong>：在图像识别、图像分类等领域，可以将图像特征通过t-SNE映射到二维或三维空间中，观察不同类别图像的分布情况，了解模型的分类效果。</li>
+<li><strong>文本数据可视化</strong>：对于文本数据的词向量或文档向量，利用t-SNE进行可视化，能够直观地展示词语或文档之间的语义相似性，发现文本数据中的主题和聚类结构。</li>
+<li><strong>生物信息学数据可视化</strong>：在基因表达数据、蛋白质结构数据等生物信息学领域，t-SNE可以帮助研究人员观察数据的分布特征，发现潜在的生物规律和模式。</li>
+</ul>
+<hr>
+<h3 id="说话人纠缠speaker-entanglement">说话人纠缠（Speaker Entanglement）</h3>
+<p>说话人纠缠（Speaker Entanglement）是指在语音处理和语音合成中，语音信号中包含的说话人身份信息与其他语音特征（如语义、情感、语调等）相互混合，难以分离的现象。这种纠缠会使得模型在处理语音时，难以独立地控制和调整说话人的特征，从而影响语音合成的灵活性和自然度。</p>
+<h4 id="说话人纠缠的具体表现">说话人纠缠的具体表现</h4>
+<ol>
+<li><strong>语义与说话人身份的混合</strong>：
+<ul>
+<li>在语音合成中，理想的模型应该能够将语义信息（即文本内容）与说话人身份信息（如音色、语调等）分开处理。然而，如果存在说话人纠缠，模型在生成语音时可能会将特定说话人的语义特征与身份特征混合，导致生成的语音在不同说话人之间缺乏一致性。</li>
+</ul>
+</li>
+<li><strong>情感与说话人身份的混合</strong>：
+<ul>
+<li>情感表达是语音合成中的一个重要方面。如果存在说话人纠缠，模型可能会将特定说话人的情感特征与身份特征混合，使得生成的语音在表达不同情感时，仍然带有特定说话人的特征，而不是根据输入的情感指令进行调整。</li>
+</ul>
+</li>
+<li><strong>语调与说话人身份的混合</strong>：
+<ul>
+<li>语调是语音中的一个重要特征，用于表达疑问、陈述、强调等。如果存在说话人纠缠，模型在生成不同语调的语音时，可能会受到特定说话人语调特征的影响，导致生成的语音在语调上不够自然和灵活。</li>
+</ul>
+</li>
+</ol>
+<h4 id="说话人纠缠的影响">说话人纠缠的影响</h4>
+<ol>
+<li><strong>降低语音合成的灵活性</strong>：
+<ul>
+<li>说话人纠缠会限制模型在生成语音时对说话人特征的独立控制能力。例如，如果模型无法将语义和说话人身份分开处理，就难以实现多说话人的语音合成，或者在不同说话人之间切换时会出现不自然的过渡。</li>
+</ul>
+</li>
+<li><strong>影响语音合成的自然度</strong>：
+<ul>
+<li>说话人纠缠会导致生成的语音在语义、情感和语调等方面不够自然。例如，如果模型在生成带有特定情感的语音时，仍然受到特定说话人的情感特征的影响，生成的语音可能会显得生硬和不自然。</li>
+</ul>
+</li>
+<li><strong>增加模型训练的复杂性</strong>：
+<ul>
+<li>说话人纠缠会增加模型训练的难度，因为模型需要同时学习和处理多种混合的特征。这可能导致模型在训练过程中出现过拟合或欠拟合的问题，影响模型的泛化能力。</li>
+</ul>
+</li>
+</ol>
+<h4 id="解决说话人纠缠的方法">解决说话人纠缠的方法</h4>
+<ol>
+<li><strong>特征解耦</strong>：
+<ul>
+<li>通过设计特定的模型架构，将语义、情感、语调等特征与说话人身份特征解耦。例如，使用自编码器或变分自编码器（VAE）来提取和分离这些特征，然后再进行语音合成。</li>
+</ul>
+</li>
+<li><strong>多任务学习</strong>：
+<ul>
+<li>在模型训练中，同时进行多个任务，如说话人识别、情感识别和语义理解，以增强模型对不同特征的区分能力。通过多任务学习，模型可以更好地理解和分离这些特征，从而减少说话人纠缠。</li>
+</ul>
+</li>
+<li><strong>数据增强</strong>：
+<ul>
+<li>使用数据增强技术，如语音变调、语速调整、噪声添加等，来增加训练数据的多样性。这可以帮助模型更好地学习和适应不同的语音特征，减少说话人纠缠。</li>
+</ul>
+</li>
+<li><strong>正则化技术</strong>：
+<ul>
+<li>使用正则化技术，如dropout、权重衰减等，来防止模型过拟合，增强模型的泛化能力。正则化技术可以减少模型对特定说话人特征的依赖，从而减少说话人纠缠。</li>
+</ul>
+</li>
+</ol>
+<h4 id="总结-1">总结</h4>
+<p>说话人纠缠是语音处理和语音合成中的一个重要问题，它会影响模型的灵活性和生成语音的自然度。通过特征解耦、多任务学习、数据增强和正则化技术，可以有效减少说话人纠缠，提高语音合成的质量和灵活性。</p>
+<hr>
+<h3 id="硬测试hard-testing">硬测试（Hard Testing）</h3>
+<p>硬测试（Hard Testing）是指在评估模型性能时，使用具有挑战性的、难度较高的测试案例来检验模型的鲁棒性和极限性能。这些测试案例通常包含复杂的输入、边缘情况或极端条件，旨在揭示模型在面对困难任务时的表现。硬测试有助于发现模型的弱点和不足，从而指导进一步的改进和优化。</p>
+<h4 id="硬测试的具体内容">硬测试的具体内容</h4>
+<ol>
+<li><strong>复杂输入</strong>：
+<ul>
+<li>包含多个语义层面的输入，如包含多个指令、复杂的情感表达或多种语言混合的输入。</li>
+<li>例如，一个输入文本可能同时包含多种情感指令：“请用高兴的情感说，但中间带点悲伤。”</li>
+</ul>
+</li>
+<li><strong>边缘情况</strong>：
+<ul>
+<li>输入文本或语音中包含不常见的词汇、语法结构或发音。</li>
+<li>例如，包含罕见的方言词汇或生僻字的输入文本。</li>
+</ul>
+</li>
+<li><strong>极端条件</strong>：
+<ul>
+<li>输入文本或语音的长度非常长或非常短，或者包含大量的重复内容。</li>
+<li>例如，一个非常长的文本段落或包含大量重复单词的文本。</li>
+</ul>
+</li>
+<li><strong>多模态输入</strong>：
+<ul>
+<li>输入包含多种模态的信息，如文本、语音、图像等，模型需要同时处理这些信息。</li>
+<li>例如，输入文本和参考语音不匹配，或者输入文本包含图像描述。</li>
+</ul>
+</li>
+</ol>
+<h4 id="硬测试的目的">硬测试的目的</h4>
+<ol>
+<li><strong>评估鲁棒性</strong>：
+<ul>
+<li>检查模型在面对复杂和困难的输入时是否能够保持稳定和准确的性能。</li>
+<li>例如，评估模型在处理包含大量重复内容的文本时是否会出现错误或卡顿。</li>
+</ul>
+</li>
+<li><strong>发现弱点</strong>：
+<ul>
+<li>通过硬测试，可以发现模型在特定情况下表现不佳的地方，从而指导模型的改进。</li>
+<li>例如，发现模型在处理罕见方言词汇时的识别率较低，可以针对性地优化模型的词汇表和训练数据。</li>
+</ul>
+</li>
+<li><strong>提升性能</strong>：
+<ul>
+<li>通过不断挑战模型的极限，推动模型在各种情况下都能表现出色，提升整体性能。</li>
+<li>例如，通过硬测试优化模型的语音合成质量，使其在处理复杂情感表达时更加自然和流畅。</li>
+</ul>
+</li>
+</ol>
+<h4 id="硬测试的应用场景">硬测试的应用场景</h4>
+<ol>
+<li><strong>语音合成</strong>：
+<ul>
+<li>评估TTS模型在处理复杂情感、多语言混合和长文本时的性能。</li>
+<li>例如，评估模型在生成带有多种情感的长文本语音时的自然度和一致性。</li>
+</ul>
+</li>
+<li><strong>语音识别</strong>：
+<ul>
+<li>评估ASR模型在处理带有噪声、口音和罕见词汇的语音时的性能。</li>
+<li>例如，评估模型在识别带有强烈地方口音的语音时的准确率。</li>
+</ul>
+</li>
+<li><strong>自然语言处理</strong>：
+<ul>
+<li>评估NLP模型在处理复杂语法结构、多模态输入和长文本时的性能。</li>
+<li>例如，评估模型在处理包含图像描述和复杂指令的文本时的理解能力。</li>
+</ul>
+</li>
+</ol>
+<h4 id="总结-2">总结</h4>
+<p>硬测试是一种重要的评估方法，通过使用具有挑战性的测试案例，可以全面评估模型的鲁棒性和性能极限。这有助于发现模型的弱点，指导进一步的优化和改进，从而提升模型在实际应用中的表现。</p>
+<hr>
+<h3 id="cerss-和-wer">CER、SS 和 WER</h3>
+<p>在语音合成和语音识别任务中，CER、SS 和 WER 是常用的评估指标，分别代表不同的性能方面。下面详细介绍每个指标的含义和计算方法：</p>
+<h4 id="1-cercharacter-error-rate">1. CER（Character Error Rate）</h4>
+<p><strong>字符错误率（CER）</strong> 是衡量生成文本与目标文本之间字符级差异的指标。它通常用于评估语音识别和语音合成任务中文本的准确性。CER 计算了生成文本和目标文本之间的插入、删除和替换操作的总数，然后除以目标文本的字符数。</p>
+<p><strong>计算方法</strong>：
+$$
+\text{CER} = \frac{\text{插入数} + \text{删除数} + \text{替换数}}{\text{目标文本的字符数}}
+$$
+<strong>示例</strong>：</p>
+<ul>
+<li>目标文本：<code>&quot;hello world&quot;</code></li>
+<li>生成文本：<code>&quot;helo world&quot;</code></li>
+<li>插入数：0</li>
+<li>删除数：0</li>
+<li>替换数：1（<code>&quot;ll&quot;</code> 替换为 <code>&quot;l&quot;</code>）</li>
+<li>目标文本的字符数：11</li>
+<li>CER：$\frac{1}{11} \approx 0.091$ 或 9.1%</li>
+</ul>
+<h4 id="2-ssspeaker-similarity">2. SS（Speaker Similarity）</h4>
+<p><strong>说话人相似性（SS）</strong> 是衡量生成语音与目标说话人语音在音色和音质上的相似度的指标。它通常用于评估语音合成任务中生成语音的说话人一致性。SS 通常通过说话人验证（SV）模型来计算，SV 模型会提取语音的嵌入向量并计算生成语音和目标语音之间的余弦相似度。</p>
+<p><strong>计算方法</strong>：
+$$
+\text{SS} = \cos(\text{生成语音的嵌入向量}, \text{目标语音的嵌入向量})
+$$
+<strong>示例</strong>：</p>
+<ul>
+<li>
+<p>目标语音的嵌入向量：</p>
+<p>[0.1, 0.2, 0.3, $\ldots$]</p>
+</li>
+<li>
+<p>生成语音的嵌入向量：</p>
+<p>[0.11, 0.21, 0.31, $\ldots$]</p>
+</li>
+<li>
+<p>余弦相似度：$\cos(\text{生成语音的嵌入向量}, \text{目标语音的嵌入向量}) \approx 0.95$</p>
+</li>
+<li>
+<p>SS：0.95</p>
+</li>
+</ul>
+<h4 id="3-werword-error-rate">3. WER（Word Error Rate）</h4>
+<p><strong>词错误率（WER）</strong> 是衡量生成文本与目标文本之间词级差异的指标。它通常用于评估语音识别和语音合成任务中文本的准确性。WER 计算了生成文本和目标文本之间的插入、删除和替换操作的总数，然后除以目标文本的词数。</p>
+<p><strong>计算方法</strong>：
+$$
+\text{WER} = \frac{\text{插入数} + \text{删除数} + \text{替换数}}{\text{目标文本的词数}}
+$$
+<strong>示例</strong>：</p>
+<ul>
+<li>目标文本：<code>&quot;hello world&quot;</code></li>
+<li>生成文本：<code>&quot;hello there&quot;</code></li>
+<li>插入数：1（<code>&quot;there&quot;</code>）</li>
+<li>删除数：1（<code>&quot;world&quot;</code>）</li>
+<li>替换数：0</li>
+<li>目标文本的词数：2</li>
+<li>WER：$\frac{1 + 1 + 0}{2} = 1.0$ 或 100%</li>
+</ul>
+<h4 id="总结-3">总结</h4>
+<ul>
+<li><strong>CER</strong>：字符错误率，用于评估文本的字符级准确性。</li>
+<li><strong>SS</strong>：说话人相似性，用于评估生成语音与目标说话人语音的音色和音质相似度。</li>
+<li><strong>WER</strong>：词错误率，用于评估文本的词级准确性。</li>
+</ul>
+<p>这些指标在语音合成和语音识别任务中非常重要，它们帮助评估模型的性能，指导模型的优化和改进。通过综合使用这些指标，可以全面评估模型在不同方面的表现。</p>
+<hr>
+<h3 id="nmos-normalized-mean-opinion-score">NMOS （Normalized Mean Opinion Score）</h3>
+<p>NMOS（Normalized Mean Opinion Score）是一种用于评估语音质量的客观指标，它通过模拟人类听众的主观评价来量化语音的自然度和可理解性。NMOS值通常在0到5之间，其中5表示最佳质量，0表示最差质量。NMOS广泛应用于语音处理、语音合成和语音通信系统中，以评估和优化语音信号的质量。</p>
+<ol>
+<li><strong>定义</strong>：
+<ul>
+<li>NMOS是一种标准化的平均意见得分，用于评估语音质量。它通过算法自动计算，模拟人类对语音质量的主观评价。</li>
+<li>NMOS值越高，表示语音质量越好；值越低，表示语音质量越差。</li>
+</ul>
+</li>
+<li><strong>计算方法</strong>：
+<ul>
+<li>NMOS的计算通常基于语音信号的多个特征，如信噪比（SNR）、谐波噪声比（HNR）、梅尔频谱失真等。</li>
+<li>例如，一个常见的NMOS计算方法是使用深度学习模型，如DNSMOS（Deep Noise Suppression Mean Opinion Score），该模型通过训练学习人类对语音质量的主观评价标准，然后对新的语音样本进行评分。</li>
+</ul>
+</li>
+<li><strong>应用场景</strong>：
+<ul>
+<li><strong>语音合成</strong>：评估生成语音的自然度和可理解性。</li>
+<li><strong>语音识别</strong>：评估语音信号在传输和处理过程中的质量损失。</li>
+<li><strong>语音通信</strong>：评估语音在不同通信环境下的质量，如电话通话、视频会议等。</li>
+</ul>
+</li>
+</ol>
+<h4 id="nmos的作用">NMOS的作用</h4>
+<ol>
+<li><strong>评估语音质量</strong>：
+<ul>
+<li>NMOS可以快速、自动地评估语音信号的质量，提供一个量化的指标来衡量语音的自然度和可理解性。</li>
+<li>例如，NMOS可以用于比较不同语音合成模型的输出质量，帮助选择最佳模型。</li>
+</ul>
+</li>
+<li><strong>优化系统性能</strong>：
+<ul>
+<li>通过NMOS，可以识别语音处理系统中的问题，如噪声、失真和编码 artifacts，从而指导系统的优化和改进。</li>
+<li>例如，如果NMOS值较低，可能表明语音信号在传输过程中受到了噪声干扰，需要优化噪声抑制算法。</li>
+</ul>
+</li>
+<li><strong>用户满意度预测</strong>：
+<ul>
+<li>NMOS值可以预测用户对语音质量的满意度，帮助设计更符合用户需求的语音系统。</li>
+<li>例如，一个高NMOS值的语音合成系统更可能获得用户的正面评价。</li>
+</ul>
+</li>
+</ol>
+<h4 id="nmos的计算示例">NMOS的计算示例</h4>
+<p>假设我们使用一个预训练的NMOS模型来评估一段语音的质量。模型的输出是一个0到5之间的分数，表示语音的自然度和可理解性。以下是一个简单的示例：</p>
+<p>Python复制</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">dnsmos</span> <span class="kn">import</span> <span class="n">DNSMOS</span>
+
+<span class="c1"># 加载预训练的NMOS模型</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">DNSMOS</span><span class="p">()</span>
+
+<span class="c1"># 读取语音文件</span>
+<span class="n">audio</span><span class="p">,</span> <span class="n">sr</span> <span class="o">=</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;example.wav&#39;</span><span class="p">)</span>
+
+<span class="c1"># 计算NMOS</span>
+<span class="n">nmoss</span><span class="p">,</span> <span class="n">mos_sig</span><span class="p">,</span> <span class="n">mos_bak</span><span class="p">,</span> <span class="n">mos_ovr</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">audio</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">sr</span><span class="p">)</span>
+
+<span class="c1"># 输出NMOS值</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;NMOS: </span><span class="si">{</span><span class="n">nmoss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;MOS_SIG: </span><span class="si">{</span><span class="n">mos_sig</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;MOS_BAK: </span><span class="si">{</span><span class="n">mos_bak</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;MOS_OVR: </span><span class="si">{</span><span class="n">mos_ovr</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre></div><p>在这个示例中，<code>nmoss</code>表示整体的NMOS值，<code>mos_sig</code>、<code>mos_bak</code>和<code>mos_ovr</code>分别表示信号质量、背景噪声质量和整体质量的评分。</p>
+<h4 id="总结-4">总结</h4>
+<p>NMOS是一种重要的客观指标，用于评估语音质量。通过模拟人类的主观评价，NMOS可以快速、自动地提供语音质量的量化评估，帮助优化语音处理系统，提高用户满意度。在语音合成、语音识别和语音通信等应用中，NMOS广泛用于评估和优化语音信号的质量。</p>
+<hr>
+<h3 id="说话人spk-e">说话人（Spk E）</h3>
+<p>在语音合成和语音处理的上下文中，&ldquo;Spk E&rdquo; 通常是指一个特定的说话人（Speaker E）。说话人（Spk）是语音数据中的一个标识符，用于区分不同的说话者。&ldquo;Spk E&rdquo; 可能是数据集中众多说话人中的一个，用于训练和评估语音合成模型或语音识别模型。</p>
+<ol>
+<li><strong>定义</strong>：
+<ul>
+<li><strong>说话人（Spk）</strong>：在语音数据集中，每个说话人通常有一个唯一的标识符，如 &ldquo;Spk A&rdquo;、&ldquo;Spk B&rdquo;、&ldquo;Spk C&rdquo; 等。这些标识符用于区分不同的说话者，以便模型可以学习和识别每个说话人的独特语音特征。</li>
+<li><strong>Spk E</strong>：具体指数据集中的第五个说话人（假设按字母顺序排列）。</li>
+</ul>
+</li>
+<li><strong>作用</strong>：
+<ul>
+<li><strong>训练</strong>：在训练语音合成模型时，使用多个说话人的数据可以帮助模型学习不同说话人的语音特征，从而提高模型的泛化能力和多说话人合成能力。</li>
+<li><strong>评估</strong>：在评估模型性能时，使用特定的说话人数据可以测试模型在生成特定说话人语音时的表现，如说话人相似性、语音自然度等。</li>
+<li><strong>微调</strong>：在对模型进行微调时，可以针对特定的说话人进行优化，以提高生成语音的质量和相似度。</li>
+</ul>
+</li>
+</ol>
+<h4 id="说话人相似性speaker-similarity">说话人相似性（Speaker Similarity）</h4>
+<ul>
+<li>
+<p><strong>说话人相似性（SS）</strong>：用于衡量生成语音与目标说话人语音在音色和音质上的相似度。SS 通常通过说话人验证（SV）模型来计算，SV 模型会提取语音的嵌入向量并计算生成语音和目标语音之间的余弦相似度。</p>
+</li>
+<li>
+<p><strong>计算方法</strong>：</p>
+<p>SS=cos(生成语音的嵌入向量,目标语音的嵌入向量)</p>
+</li>
+</ul>
+<h4 id="说话人微调speaker-fine-tuning">说话人微调（Speaker Fine-Tuning）</h4>
+<ul>
+<li><strong>说话人微调（SFT）</strong>：在特定说话人上对预训练模型进行微调，可以进一步提高生成质量和说话人相似性。通过在特定说话人的数据上进行微调，模型可以更好地捕捉该说话人的独特特征。</li>
+<li><strong>多说话人微调（mSFT）</strong>：同时在多个说话人上进行微调，可以确保模型在多个说话人之间具有全面的语调和发音覆盖，减少灾难性遗忘。</li>
+</ul>
+<h4 id="示例">示例</h4>
+<p>假设我们有一个包含多个说话人的语音数据集，其中 &ldquo;Spk E&rdquo; 是其中一个说话人。我们可以在训练和评估过程中使用 &ldquo;Spk E&rdquo; 的数据：</p>
+<p>Python复制</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 示例数据集</span>
+<span class="n">speakers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&#34;Spk A&#34;</span><span class="p">,</span> <span class="s2">&#34;Spk B&#34;</span><span class="p">,</span> <span class="s2">&#34;Spk C&#34;</span><span class="p">,</span> <span class="s2">&#34;Spk D&#34;</span><span class="p">,</span> <span class="s2">&#34;Spk E&#34;</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+
+<span class="c1"># 训练模型</span>
+<span class="k">for</span> <span class="n">spk</span> <span class="ow">in</span> <span class="n">speakers</span><span class="p">:</span>
+    <span class="n">train_model</span><span class="p">(</span><span class="n">spk_data</span><span class="p">[</span><span class="n">spk</span><span class="p">])</span>
+
+<span class="c1"># 评估模型</span>
+<span class="k">for</span> <span class="n">spk</span> <span class="ow">in</span> <span class="n">speakers</span><span class="p">:</span>
+    <span class="n">evaluate_model</span><span class="p">(</span><span class="n">spk_data</span><span class="p">[</span><span class="n">spk</span><span class="p">])</span>
+
+<span class="c1"># 特定说话人微调</span>
+<span class="n">fine_tune_model</span><span class="p">(</span><span class="n">spk_e_data</span><span class="p">)</span>
+
+<span class="c1"># 评估微调后的模型</span>
+<span class="n">evaluate_model</span><span class="p">(</span><span class="n">spk_e_data</span><span class="p">)</span>
+</code></pre></div><h4 id="总结-5">总结</h4>
+<p>&ldquo;Spk E&rdquo; 是数据集中的一个特定说话人标识符，用于训练、评估和微调语音合成模型。通过使用多个说话人的数据，模型可以学习和识别不同说话人的独特特征，从而提高生成语音的质量和自然度。说话人相似性（SS）和说话人微调（SFT）是评估和优化模型性能的重要手段。</p>
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2025-01-17
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/supervised-semantic-speech-tokenizer/">Supervised Semantic Speech Tokenizer</a>
+          <a href="https://weedge.github.io/tags/bpe/">BPE</a>
+          <a href="https://weedge.github.io/tags/ar/">AR&#34;</a>
+          <a href="https://weedge.github.io/tags/flow/">flow</a>
+          <a href="https://weedge.github.io/tags/cfg/">CFG</a>
+          <a href="https://weedge.github.io/tags/mel-spectrogram/">mel-spectrogram</a>
+          <a href="https://weedge.github.io/tags/streaming/">streaming</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/multimoding/voices/cosyvoice/">
+            <span class="next-text nav-default">论文解读：CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/post/multimoding/voices/cosyvoice2/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:weege007@gmail.com" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/weedge" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://weibo.com/weedge" rel="me noopener" class="iconfont"
+      title="weibo"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M385.714286 733.714286q12-19.428571 6.285714-39.428571t-25.714286-28.571429q-19.428571-8-41.714286-0.571429t-34.285714 26.285714q-12.571429 19.428571-7.428571 39.142857t24.571429 28.857143 42.571429 1.428571 35.714286-27.142857zm53.714286-69.142857q4.571429-7.428571 2-15.142857t-10-10.571429q-8-2.857143-16.285714 2.857143t-12.285714 10.571429q-9.714286 17.714286 7.428571 25.714286 8 2.857143 16.571429 2.857143t12.571429-10.571429zm99.428571 61.142857q-25.714286 58.285714-90.285714 85.714286t-128 6.857143q-61.142857-19.428571-84.285714-72.285714t3.714286-107.142857q26.857143-53.142857 86.571429-79.428571t120.285714-10.857143q63.428571 16.571429 90.571429 68.285714t1.428571 108.857143zm178.285714-91.428571q-5.142857-54.857143-50.857143-97.142857t-119.142857-62.285714-156.857143-12q-127.428571 13.142857-211.142857 80.857143t-75.714286 151.142857q5.142857 54.857143 50.857143 97.142857t119.142857 62.285714 156.857143 12q127.428571-13.142857 211.142857-80.857143t75.714286-151.142857zm176 2.285714q0 38.857143-21.142857 79.714286t-62.285714 78.285714-96.285714 67.142857-129.142857 47.428571-154.571429 17.714286-157.142857-19.142857-137.428571-53.142857-98-86.285714-37.142857-114q0-65.714286 39.714286-140t112.857143-147.428571q96.571429-96.571429 195.142857-134.857143t140.857143 4q37.142857 36.571429 11.428571 119.428571-2.285714 8-0.571429 11.428571t5.714286 4 8.285714 2.857143 7.714286-2l3.428571-1.142857q79.428571-33.714286 140.571429-33.714286t87.428571 34.857143q25.714286 36 0 101.714286-1.142857 7.428571-2.571429 11.428571t2.571429 7.142857 6.857143 4.285714 9.714286 3.428571q32.571429 10.285714 58.857143 26.857143t45.714286 46.571429 19.428571 66.571429zm-42.285714-356.571429q24 26.857143 31.142857 62t-3.714286 67.142857q-4.571429 13.142857-16.857143 19.428571t-25.428571 2.285714q-13.142857-4.571429-19.428571-16.857143t-2.285714-25.428571q11.428571-36-13.714286-63.428571t-61.142857-20q-13.714286 2.857143-25.714286-4.571429t-14.285714-21.142857q-2.857143-13.714286 4.571429-25.428571t21.142857-14.571429q34.285714-7.428571 68 3.142857t57.714286 37.428571zm103.428571-93.142857q49.714286 54.857143 64.285714 127.142857t-7.714286 138q-5.142857 15.428571-19.428571 22.857143t-29.714286 2.285714-22.857143-19.428571-2.857143-29.714286q16-46.857143 5.714286-98.285714t-45.714286-90.285714q-35.428571-39.428571-84.571429-54.571429t-98.857143-4.857143q-16 3.428571-29.714286-5.428571t-17.142857-24.857143 5.428571-29.428571 24.857143-16.857143q70.285714-14.857143 139.428571 6.571429t118.857143 76.857143z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://weedge.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2013 -
+    2025
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        weedge
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//weedge.disqus.com/count.js" async></script>
+
+
+
+
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
+
+
+</body>
+</html>

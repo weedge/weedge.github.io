@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>AR&#34; on 时间飘过</title>
-    <link>https://weedge.github.io/tags/ar/</link>
-    <description>Recent content in AR&#34; on 时间飘过</description>
+    <title>streaming on 时间飘过</title>
+    <link>https://weedge.github.io/tags/streaming/</link>
+    <description>Recent content in streaming on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 17 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/ar/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 17 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/streaming/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>论文解读：CosyVoice2: Scalable Streaming Speech Synthesis with Large Language Models</title>
       <link>https://weedge.github.io/post/multimoding/voices/cosyvoice2/</link>
@@ -108,78 +108,6 @@
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2406.02897&#34;&gt;2024.6 LiveSpeech: Low-Latency Zero-shot Text-to-Speech via Autoregressive Modeling of Audio Discrete Codes&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2309.11210&#34;&gt;2024.9 Speak While You Think: Streaming Speech Synthesis During Text Generation&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2410.00767&#34;&gt;2024.10 Zero-Shot Text-to-Speech from Continuous Text Streams&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;</description>
-    </item>
-    
-    <item>
-      <title>论文解读：CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens</title>
-      <link>https://weedge.github.io/post/multimoding/voices/cosyvoice/</link>
-      <pubDate>Wed, 15 Jan 2025 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/multimoding/voices/cosyvoice/</guid>
-      <description>&lt;h2 id=&#34;cosyvoice&#34;&gt;CosyVoice&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2407.04051&#34;&gt;2024.7 FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs&lt;/a&gt; （主要介绍ASR SenseVoice 和 TTS CosyVoice,其中 SenseVoice 没有单独论文，相关CosyVoice 和单独论文是重复的, SenseVoice Large的工作可以用于 CosyVoice 在多语言上， Supervised speech tokenizer 模块的训练和推理）&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2407.05407&#34;&gt;2024.7 &lt;strong&gt;CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2412.10117&#34;&gt;2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models&lt;/a&gt; （流式合成）&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/FunAudioLLM/CosyVoice&#34;&gt;paper code&lt;/a&gt;: 公开推理和权重，在openslr公开数据集英文数据集LibriSpeech 和中文数据集 MAGICDATA 对模型进行训练代码； 无supervised Speech Tokenizer (对SenseVoice ASR的改造微调) 和Speaker Embedding model(context-aware masking CAM++) 的训练过程代码。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;创新点：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;将监督语音token集成到TTS 模型，增强了零样本语音克隆中的内容一致性和说话者相似性。&lt;/li&gt;
-&lt;li&gt;一种可扩展的零样本 TTS 合成系统，它将用于文本到token生成的 LLM 与用于token到语音合成的条件流匹配模型(conditional flow matching model(CFM))相结合，不依赖于音素持续时间预测(Duration predictor)，不需要使用补充音素器(phonemizers)和强制对齐器aligners (比如：Glow-TTS中 Monotonic Alignment Search(MAS))。&lt;/li&gt;
-&lt;li&gt;为了进一步细化生成语音的质量，将 x-vector 合并到 LLM 中，将语音建模分为语义、说话者和韵律(semantic, speaker, and prosody)组件。 LLM 对语义(semantic)内容和韵律(prosody)进行建模，而条件流匹配模型(CFM)则捕获音色(timbre)和环境信息。我们使用&lt;strong&gt;Classifier-Free Guidance&lt;/strong&gt;(&lt;a href=&#34;https://arxiv.org/abs/2207.12598&#34;&gt;2022. &lt;strong&gt;Classifier-free diffusion guidance&lt;/strong&gt;&lt;/a&gt;)、余弦调度器(&lt;a href=&#34;https://d2l.ai/chapter_optimization/lr-scheduler.html#cosine-scheduler&#34;&gt;cosine scheduler&lt;/a&gt;)和屏蔽条件(masked conditions)等技术来优化流匹配过程。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/3e8c1132-e146-4b73-8d0c-f3972bf7c8bd&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
-&lt;p&gt;CosyVoice由四个组件组成，即文本编码器(text encoder)、语音分词器(speech tokenizer)、大语言模型(large language model)和条件流匹配模型(conditional flow matching model)&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;文本编码器(text encoder)用于对齐文本和语音token的语义空间;&lt;/li&gt;
-&lt;li&gt;语音标记器(speech tokenizer)用于提取语义token;&lt;/li&gt;
-&lt;li&gt;LLM(GLM)学习文本编码和语音标记的整个序列，将 TTS 重新表述为以文本作为提示的自回归序列生成问题;&lt;/li&gt;
-&lt;li&gt;利用条件流匹配模型(conditional flow matching model), 通过最优路径上的去噪处理,将语音标记转换为梅尔谱图(Mel spectrogram); 通过&lt;strong&gt;Classifier-Free Guidance&lt;/strong&gt;（Classifier-free diffusion guidance CFG）提高扩散概率模型的生成质量, 将CFG适应到条件流匹配模型中;&lt;/li&gt;
-&lt;li&gt;获得人类耳朵可感知的声音信号，声码器(vocoder)使用 Hifi-GAN Generator 用于将生成的梅尔频谱图作为输入来合成波形(waveform)。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;其中：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;conditional flow matching model (OT-CFM) 来自 &lt;a href=&#34;https://arxiv.org/abs/2309.03199&#34;&gt;2023.9 &lt;strong&gt;Matcha-TTS: A fast TTS architecture with conditional flow matching&lt;/strong&gt;&lt;/a&gt;(CFM的改进版本OT-CFM)&lt;/li&gt;
-&lt;li&gt;Classifier-free diffusion guidance (CFG) 来自 &lt;a href=&#34;https://arxiv.org/abs/2207.12598&#34;&gt;2022. &lt;strong&gt;Classifier-free diffusion guidance&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;vocoder 来自 &lt;a href=&#34;https://arxiv.org/abs/2010.05646&#34;&gt;2020. &lt;strong&gt;HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis&lt;/strong&gt;&lt;/a&gt; Generator。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;附：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;推理和训练操作笔记：https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;achatbot 接入 CosyVoice:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/21&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/21&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/23&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/23&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;</description>
-    </item>
-    
-    <item>
-      <title>论文解读： VALL-E 系列</title>
-      <link>https://weedge.github.io/post/multimoding/voices/vall-e-x/</link>
-      <pubDate>Mon, 13 Jan 2025 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/multimoding/voices/vall-e-x/</guid>
-      <description>&lt;p&gt;前文讲到VITS，采用的端到端的NAR模型，这篇文章记录下微软提出的VALL-E系列，从 AR+NAR 到 AR 模型的转变，以及后面MELLE引入的VAE和Mel-Spectorgram，将neural codec text speech LM (AR+NAR Transformer Decoder) 转变为  autoregressive  mel-spectrogram text speech LM  (AR Transformer Decoder) ；由于LM生成的是mel-spectrogram 需要通过vocoder 转换成 waveform； 生成的内容采样模块：从top-p random sampling 变成 Latent Sampling潜在采样模块（思想源自VAE, 从预测的高斯分布中采样潜在嵌入，然后将其投影回频谱图空间）&lt;/p&gt;
-&lt;h2 id=&#34;vall-e-系列&#34;&gt;VALL-E 系列&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.microsoft.com/en-us/research/project/vall-e-x/&#34;&gt;https://www.microsoft.com/en-us/research/project/vall-e-x/&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Vall-E: &lt;a href=&#34;https://ar5iv.labs.arxiv.org/html/2301.02111&#34;&gt;https://ar5iv.labs.arxiv.org/html/2301.02111&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;具体来说，我们使用从现成的神经音频编解码器模型派生的离散代码来训练&lt;em&gt;&lt;strong&gt;神经编解码器语言模型（neural codec language model）&lt;/strong&gt;&lt;/em&gt;（称为VALL-E ），并将 TTS 视为条件语言建模任务，而不是像之前的工作那样将 TTS 视为连续信号回归。 在预训练阶段，我们将 TTS 训练数据扩展到 60K 小时的英语语音，比现有系统大数百倍。 VALL-E具有情境学习功能，可用于合成高质量的个性化语音，只需对看不见的说话者进行 3 秒的注册录音作为声音提示。实验结果表明， VALL-E在语音自然度和说话人相似度方面显着优于最先进的零样本 TTS 系统。此外，我们发现VALL-E可以在合成时保留说话者的情感和声音提示的声学环境。&lt;/p&gt;
-&lt;p&gt;与之前的管道不同（例如，音素 → 梅尔谱图 → 波形）， VALL-E的管线是音素 → 离散码 → 波形。&lt;/p&gt;
-&lt;p&gt;VALL-E根据音素和声学代码提示生成与目标内容和说话者的声音相对应的离散音频编解码器代码。 VALL-E直接支持各种语音合成应用，例如零样本 TTS、语音编辑以及与 GPT-3 等其他生成式 AI 模型相结合的内容创建。&lt;/p&gt;
-&lt;p&gt;VALL-E系列：2023年的1月份开始 - 2024年的7月份&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;VALL-E 使用从现成的神经音频编解码器模型派生的离散代码来训练神经编解码器语言模型，并将 TTS 视为条件语言建模任务，而不是像之前的工作那样将 TTS 视为连续信号回归。 VALL-E 具有情境学习功能，可用于合成高质量的个性化语音，只需录制未见过的讲话者的 3 秒注册录音作为提示。在语音自然度和说话人相似度方面，VALL-E 显着优于最先进的零样本 TTS 系统。此外，VALL-E可以在合成时保留说话者的情绪和声音提示的声学环境。&lt;/li&gt;
-&lt;li&gt;VALL-E X 扩展其能力，适应多语言场景，促进跨语言零样本 TTS。&lt;/li&gt;
-&lt;li&gt;VALL-E R 引入了音素单调对齐策略，增强了语音生成的鲁棒性。&lt;/li&gt;
-&lt;li&gt;VALL-E 2 通过集成重复感知采样和分组代码建模技术， 实现了一个突破性的里程碑：在 LibriSpeech 和 VCTK 数据集上的零样本 TTS 性能与人类相当。这标志着此类成就的首次实例，为该领域树立了新标准。&lt;/li&gt;
-&lt;li&gt;MELLE 是一种新颖的基于连续值标记的语言建模方法，用于文本到语音合成 (TTS)。 MELLE 直接从文本条件自回归生成连续的梅尔频谱图帧，绕过了矢量量化的需要，矢量量化最初是为音频压缩而设计的，与梅尔频谱图相比，牺牲了保真度。&lt;/li&gt;
 &lt;/ul&gt;</description>
     </item>
     

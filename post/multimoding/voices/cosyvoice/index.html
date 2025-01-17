@@ -23,11 +23,13 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="CosyVoice  2024.7 FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs （主要介绍ASR SenseVoice 和 TTS CosyVoice,其中 SenseVoice 没有单独论文，相关CosyVoice 和单独论文是重复的, SenseVoice Large的工作可以用于 CosyVoice 在多语言上， Supervised speech tokenizer 模块的训练和推理） 2024.7 CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens 2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models （流式合成） paper code: 没有pre-trainning过程；公开推理和权重，以及微调。  创新点：
+  <meta name="description" content="CosyVoice  2024.7 FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs （主要介绍ASR SenseVoice 和 TTS CosyVoice,其中 SenseVoice 没有单独论文，相关CosyVoice 和单独论文是重复的, SenseVoice Large的工作可以用于 CosyVoice 在多语言上， Supervised speech tokenizer 模块的训练和推理） 2024.7 CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens 2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models （流式合成） paper code: 公开推理和权重，在openslr公开数据集英文数据集LibriSpeech 和中文数据集 MAGICDATA 对模型进行训练代码； 无supervised Speech Tokenizer (对SenseVoice ASR的改造微调) 和Speaker Embedding model(context-aware masking CAM&#43;&#43;) 的训练过程代码。  创新点：
  将监督语音token集成到TTS 模型，增强了零样本语音克隆中的内容一致性和说话者相似性。 一种可扩展的零样本 TTS 合成系统，它将用于文本到token生成的 LLM 与用于token到语音合成的条件流匹配模型(conditional flow matching model(CFM))相结合，不依赖于音素持续时间预测(Duration predictor)，不需要使用补充音素器(phonemizers)和强制对齐器aligners (比如：Glow-TTS中 Monotonic Alignment Search(MAS))。 为了进一步细化生成语音的质量，将 x-vector 合并到 LLM 中，将语音建模分为语义、说话者和韵律(semantic, speaker, and prosody)组件。 LLM 对语义(semantic)内容和韵律(prosody)进行建模，而条件流匹配模型(CFM)则捕获音色(timbre)和环境信息。我们使用Classifier-Free Guidance(2022. Classifier-free diffusion guidance)、余弦调度器(cosine scheduler)和屏蔽条件(masked conditions)等技术来优化流匹配过程。  CosyVoice由四个组件组成，即文本编码器(text encoder)、语音分词器(speech tokenizer)、大语言模型(large language model)和条件流匹配模型(conditional flow matching model)
  文本编码器(text encoder)用于对齐文本和语音token的语义空间; 语音标记器(speech tokenizer)用于提取语义token; LLM(GLM)学习文本编码和语音标记的整个序列，将 TTS 重新表述为以文本作为提示的自回归序列生成问题; 利用条件流匹配模型(conditional flow matching model), 通过最优路径上的去噪处理,将语音标记转换为梅尔谱图(Mel spectrogram); 通过Classifier-Free Guidance（Classifier-free diffusion guidance CFG）提高扩散概率模型的生成质量, 将CFG适应到条件流匹配模型中; 获得人类耳朵可感知的声音信号，声码器(vocoder)使用 Hifi-GAN Generator 用于将生成的梅尔频谱图作为输入来合成波形(waveform)。  其中：
  conditional flow matching model (OT-CFM) 来自 2023.9 Matcha-TTS: A fast TTS architecture with conditional flow matching(CFM的改进版本OT-CFM) Classifier-free diffusion guidance (CFG) 来自 2022. Classifier-free diffusion guidance vocoder 来自 2020. HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis Generator。  附：
- achatbot 接入 CosyVoice:  https://github.com/ai-bot-pro/achatbot/pull/21 https://github.com/ai-bot-pro/achatbot/pull/23   " />
+  推理和训练操作笔记：https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb
+  achatbot 接入 CosyVoice:
+ https://github.com/ai-bot-pro/achatbot/pull/21 https://github.com/ai-bot-pro/achatbot/pull/23   " />
 
   <meta name="keywords" content="工作, 技术, 生活" />
 
@@ -71,7 +73,7 @@
 2024.7 FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs （主要介绍ASR SenseVoice 和 TTS CosyVoice,其中 SenseVoice 没有单独论文，相关CosyVoice 和单独论文是重复的, SenseVoice Large的工作可以用于 CosyVoice 在多语言上， Supervised speech tokenizer 模块的训练和推理）
 2024.7 CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens
 2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models （流式合成）
-paper code: 没有pre-trainning过程；公开推理和权重，以及微调。
+paper code: 公开推理和权重，在openslr公开数据集英文数据集LibriSpeech 和中文数据集 MAGICDATA 对模型进行训练代码； 无supervised Speech Tokenizer (对SenseVoice ASR的改造微调) 和Speaker Embedding model(context-aware masking CAM&#43;&#43;) 的训练过程代码。
 
 创新点：
 
@@ -95,6 +97,10 @@ Classifier-free diffusion guidance (CFG) 来自 2022. Classifier-free diffusion 
 vocoder 来自 2020. HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis Generator。
 
 附：
+
+
+推理和训练操作笔记：https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb
+
 
 achatbot 接入 CosyVoice:
 
@@ -114,7 +120,7 @@ https://github.com/ai-bot-pro/achatbot/pull/23
 2024.7 FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs （主要介绍ASR SenseVoice 和 TTS CosyVoice,其中 SenseVoice 没有单独论文，相关CosyVoice 和单独论文是重复的, SenseVoice Large的工作可以用于 CosyVoice 在多语言上， Supervised speech tokenizer 模块的训练和推理）
 2024.7 CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens
 2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models （流式合成）
-paper code: 没有pre-trainning过程；公开推理和权重，以及微调。
+paper code: 公开推理和权重，在openslr公开数据集英文数据集LibriSpeech 和中文数据集 MAGICDATA 对模型进行训练代码； 无supervised Speech Tokenizer (对SenseVoice ASR的改造微调) 和Speaker Embedding model(context-aware masking CAM&#43;&#43;) 的训练过程代码。
 
 创新点：
 
@@ -138,6 +144,10 @@ Classifier-free diffusion guidance (CFG) 来自 2022. Classifier-free diffusion 
 vocoder 来自 2020. HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis Generator。
 
 附：
+
+
+推理和训练操作笔记：https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb
+
 
 achatbot 接入 CosyVoice:
 
@@ -147,7 +157,7 @@ https://github.com/ai-bot-pro/achatbot/pull/23
 
 "><meta itemprop="datePublished" content="2025-01-15T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2025-01-15T10:26:23+08:00" />
-<meta itemprop="wordCount" content="10090">
+<meta itemprop="wordCount" content="10243">
 <meta itemprop="keywords" content="Supervised Semantic Speech Tokenizer,BPE,AR&#34;,flow,CFG,mel-spectrogram," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="论文解读：CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens"/>
 <meta name="twitter:description" content="CosyVoice
@@ -155,7 +165,7 @@ https://github.com/ai-bot-pro/achatbot/pull/23
 2024.7 FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs （主要介绍ASR SenseVoice 和 TTS CosyVoice,其中 SenseVoice 没有单独论文，相关CosyVoice 和单独论文是重复的, SenseVoice Large的工作可以用于 CosyVoice 在多语言上， Supervised speech tokenizer 模块的训练和推理）
 2024.7 CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens
 2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models （流式合成）
-paper code: 没有pre-trainning过程；公开推理和权重，以及微调。
+paper code: 公开推理和权重，在openslr公开数据集英文数据集LibriSpeech 和中文数据集 MAGICDATA 对模型进行训练代码； 无supervised Speech Tokenizer (对SenseVoice ASR的改造微调) 和Speaker Embedding model(context-aware masking CAM&#43;&#43;) 的训练过程代码。
 
 创新点：
 
@@ -179,6 +189,10 @@ Classifier-free diffusion guidance (CFG) 来自 2022. Classifier-free diffusion 
 vocoder 来自 2020. HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis Generator。
 
 附：
+
+
+推理和训练操作笔记：https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb
+
 
 achatbot 接入 CosyVoice:
 
@@ -585,7 +599,7 @@ https://github.com/ai-bot-pro/achatbot/pull/23
 <li><a href="https://arxiv.org/abs/2407.04051">2024.7 FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs</a> （主要介绍ASR SenseVoice 和 TTS CosyVoice,其中 SenseVoice 没有单独论文，相关CosyVoice 和单独论文是重复的, SenseVoice Large的工作可以用于 CosyVoice 在多语言上， Supervised speech tokenizer 模块的训练和推理）</li>
 <li><a href="https://arxiv.org/abs/2407.05407">2024.7 <strong>CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens</strong></a></li>
 <li><a href="https://arxiv.org/abs/2412.10117">2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models</a> （流式合成）</li>
-<li><a href="https://github.com/FunAudioLLM/CosyVoice">paper code</a>: 没有pre-trainning过程；公开推理和权重，以及微调。</li>
+<li><a href="https://github.com/FunAudioLLM/CosyVoice">paper code</a>: 公开推理和权重，在openslr公开数据集英文数据集LibriSpeech 和中文数据集 MAGICDATA 对模型进行训练代码； 无supervised Speech Tokenizer (对SenseVoice ASR的改造微调) 和Speaker Embedding model(context-aware masking CAM++) 的训练过程代码。</li>
 </ul>
 <p>创新点：</p>
 <ul>
@@ -610,7 +624,11 @@ https://github.com/ai-bot-pro/achatbot/pull/23
 </ul>
 <p>附：</p>
 <ul>
-<li>achatbot 接入 CosyVoice:
+<li>
+<p>推理和训练操作笔记：https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb</p>
+</li>
+<li>
+<p>achatbot 接入 CosyVoice:</p>
 <ul>
 <li><a href="https://github.com/ai-bot-pro/achatbot/pull/21">https://github.com/ai-bot-pro/achatbot/pull/21</a></li>
 <li><a href="https://github.com/ai-bot-pro/achatbot/pull/23">https://github.com/ai-bot-pro/achatbot/pull/23</a></li>
@@ -853,6 +871,9 @@ ASR re-ranking（自动语音识别重排序）是一种技术，用于改进自
 <hr>
 <h2 id="附录">附录：</h2>
 <h3 id="vector-quantizer向量量化器">Vector Quantizer(向量量化器)</h3>
+<p><a href="https://github.com/lucidrains/vector-quantize-pytorch">https://github.com/lucidrains/vector-quantize-pytorch</a></p>
+<p><a href="https://github.com/ai-bot-pro/baby-llm/pull/1">https://github.com/ai-bot-pro/baby-llm/pull/1</a></p>
+<p><a href="https://github.com/ai-bot-pro/baby-llm/pull/13">https://github.com/ai-bot-pro/baby-llm/pull/13</a></p>
 <p>向量量化器（Vector Quantizer）是一种将连续或离散向量序列映射为适合在数字信道上通信或存储的数字序列的系统。其主要目标是数据压缩：在保持数据必要保真度的同时，通过减少比特数来表示数据。</p>
 <p>应用场景：</p>
 <ul>
@@ -1056,6 +1077,19 @@ $$</p>
       
       <nav class="post-nav">
         
+          <a class="prev" href="/post/multimoding/voices/cosyvoice2/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">论文解读：CosyVoice2: Scalable Streaming Speech Synthesis with Large Language Models</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
         
           <a class="next" href="/post/multimoding/voices/matcha-tts/">
             <span class="next-text nav-default">论文解读 Matcha-TTS: A fast TTS architecture with conditional flow matching</span>

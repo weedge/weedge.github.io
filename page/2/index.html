@@ -384,6 +384,46 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/paper/transformer/infini_attention/">解读论文：Leave No Context Behind: Efficient Infinite Context Transformers with Infini-attention</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2024-04-12" class="post-time">
+        2024-04-12
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E5%AD%A6%E6%9C%AF/"> 学术 </a>
+          <a href="https://weedge.github.io/categories/paper/"> paper </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <p><img src="https://aiptcomics.com/ezoimgfmt/i0.wp.com/aiptcomics.com/wp-content/uploads/2024/04/transformers-7.jpg?w=1500&amp;ssl=1&amp;ezimgfmt=ngcb4/notWebP" alt=""></p>
+<p>图片来源： <a href="https://aiptcomics.com/2024/04/10/transformers-7-2024-review/">https://aiptcomics.com/2024/04/10/transformers-7-2024-review/</a></p>
+<p><strong>摘要</strong>： 本文介绍了一种有效的方法，将基于Transformer的大型语言模型（LLMs）扩展到无限长的输入，同时受到内存和计算的限制。我们提出的方法的关键组成部分是一种新的注意力技术，称为Infini-attention。Infini-attention将一种压缩内存集成到了传统的注意力机制中，并在单个Transformer块中构建了掩码局部注意力和长期线性注意力机制。我们通过在长上下文语言建模基准、1M序列长度的口令(keypass)上下文块检索和500K长度的书籍摘要任务中使用1B和8B LLMs，展示了我们方法的有效性。我们的方法引入了最小的有界内存参数，并实现了LLMs的快速流式推理。</p>
+<p><strong>注</strong>：为解决大模型（LLMs）在处理超长输入序列时遇到的内存限制问题，本文作者提出了一种新型架构：Infini-Transformer，它可以在有限内存条件下，让基于Transformer的大语言模型（LLMs）高效处理无限长的输入序列。实验结果表明：Infini-Transformer在长上下文语言建模任务上超越了基线模型，内存最高可节约114倍。</p>
+<p>感觉有种外挂存储库(类似向量数据库)嵌入到模型结构中。比如： <a href="https://arxiv.org/abs/2203.08913">Memorizing Transformers</a> + <a href="https://github.com/lucidrains/memorizing-transformers-pytorch">code</a></p>
+<p>在论文《Memorizing Transformers》中，作者提出了一种新的注意力机制，称为kNN-augmented attention layer，它结合了局部上下文的密集自注意力和对外部记忆的近似k-最近邻（kNN）搜索。这个机制的关键部分之一是使用了一个门控机制（gating mechanism）来结合局部注意力和外部记忆的注意力。</p>
+    </div>
+    <div class="read-more">
+      <a href="/post/paper/transformer/infini_attention/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/nlp/translate_model_inference_and_finetune/">翻译模型 inference 和 微调</a>
     </h1>
     
@@ -614,64 +654,6 @@
     </div>
     <div class="read-more">
       <a href="/post/cpu/memory_profiling/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/book/performance-analysis-and-tuning-on-modern-cpu-cn/">Performance Analysis and Tuning on Modern CPU 中文翻译</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2024-03-01" class="post-time">
-        2024-03-01
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/ebook/"> ebook </a>
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h1 id="heading">📚</h1>
-<p>这是一本名为Performance Analysis and Tuning on Modern CPU书籍的<a href="https://github.com/dendibakh/perf-book">源文件存储库</a>的中文翻译，原版由 Denis Bakhvalov 等人编写。</p>
-<ul>
-<li>原版电子书：https://book.easyperf.net/perf_book</li>
-<li>中文翻译(第一版)：https://book.douban.com/subject/36243215/</li>
-</ul>
-<p><strong>原作者第二版正在进行中！</strong> 计划的更改在谷歌<a href="https://docs.google.com/document/d/1tr2qRDe72VSBYypIANYjJLM_zCdPB6S9m4LmXsQb0vQ/edit?usp=sharing">文档</a>中进行了概述。计划中的新目录在 <a href="https://github.com/dendibakh/perf-book/blob/main/new_toc.md">new_toc.md</a> 中。</p>
-<p><strong>目的</strong>：</p>
-<ul>
-<li>虽然已经有翻译的书籍;但是想follow更新,借助 『chatGPT』/『gemini/moonshot(kimi)』 翻译成中文，(加速学习节奏，掌握，并举一反三)</li>
-<li>英文源书是开源的，翻译成中文工作也持续更新，也是开源的，可以作为学习资料, 在线阅读可编辑，希望一起参与改进。</li>
-<li>对每章节的内容通过 『chatGPT』/『gemini/moonshot(kimi)』 进行归纳总结，结巩固知识点，并对课后练习进行回答,并验证答案。</li>
-<li>最后整体勘误，定搞。</li>
-</ul>
-<blockquote>
-<p>[!TIP]</p>
-<ul>
-<li>授之以鱼不如授之以渔, 使用AI赋能。</li>
-<li>性能优化分析数据可以借助『chatGPT』分析。</li>
-<li>『chatGPT』和『moonshot(kimi)』 翻译效果差不多(相同的prompt)，但是当问文中的规划练习和代码练习时，『moonshot(kimi)』不能理解问题，不过长文本上传根据章节翻译和归纳总结不错，毕竟不用翻墙就可以使用。</li>
-</ul>
-</blockquote>
-<p><strong>在线阅读地址</strong>: <a href="https://weedge.github.io/perf-book-cn/zh/">https://weedge.github.io/perf-book-cn/zh/</a></p>
-<p><strong>中文版PDF(推荐)</strong>: <a href="https://raw.githubusercontent.com/weedge/perf-book-cn/main/perf-book-cn.pdf">https://raw.githubusercontent.com/weedge/perf-book-cn/main/perf-book-cn.pdf</a></p>
-    </div>
-    <div class="read-more">
-      <a href="/post/book/performance-analysis-and-tuning-on-modern-cpu-cn/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
