@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>AR&#34; on 时间飘过</title>
+    <title>AR on 时间飘过</title>
     <link>https://weedge.github.io/tags/ar/</link>
-    <description>Recent content in AR&#34; on 时间飘过</description>
+    <description>Recent content in AR on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <lastBuildDate>Fri, 17 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/ar/index.xml" rel="self" type="application/rss+xml" />
@@ -13,7 +13,7 @@
       <pubDate>Fri, 17 Jan 2025 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/post/multimoding/voices/cosyvoice2/</guid>
-      <description>&lt;h2 id=&#34;cosyvoice2&#34;&gt;CosyVoice2&lt;/h2&gt;
+      <description>&lt;h2 id=&#34;cosyvoice2-论文&#34;&gt;CosyVoice2 论文&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2412.10117&#34;&gt;2024.12  &lt;strong&gt;CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models&lt;/strong&gt;&lt;/a&gt;（流式合成）&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/FunAudioLLM/CosyVoice&#34;&gt;paper code&lt;/a&gt;: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。&lt;/li&gt;

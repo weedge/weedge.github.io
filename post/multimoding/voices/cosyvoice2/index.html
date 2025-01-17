@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="CosyVoice2  2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models（流式合成） paper code: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。  zero-shot TTS models 零样本 TTS 模型 codec language models 编解码器语言模型   speech codec model to extract discrete speech representation:
+  <meta name="description" content="CosyVoice2 论文  2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models（流式合成） paper code: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。  zero-shot TTS models 零样本 TTS 模型 codec language models 编解码器语言模型   speech codec model to extract discrete speech representation:
  2021.7 SoundStream: An End-to-End Neural Audio Codec 2022.10 High Fidelity Neural Audio Compression | facebookresearch/encodec 2023.10 FunCodec: A Fundamental, Reproducible and Integrable Open-source Toolkit for Neural Speech Codec | modelscope/FunCodec    speech codec model &#43; autoregressive model to predict the speech tokens (acoustic tokens):
  2023.1 Neural Codec Language Models are Zero-Shot Text to Speech Synthesizers (Vall-E) | 以及后续 Vall-E 升级系列 (不包括MELLE): https://www.microsoft.com/en-us/research/project/vall-e-x/ 2023.2 Speak, Read and Prompt: High-Fidelity Text-to-Speech with Minimal Supervision    speech codec model (speech semantics Codec) &#43; non-autoregressive masked model to predict the speech tokens (acoustic tokens):
  2024.9 MaskGCT: Zero-Shot Text-to-Speech with Masked Generative Codec Transformer | paper code    codec model (speech acoustic Codec) or vocoder to synthesize waveforms from mel-spectrograms:
@@ -79,7 +79,7 @@
 
 
 <meta property="og:title" content="论文解读：CosyVoice2: Scalable Streaming Speech Synthesis with Large Language Models" />
-<meta property="og:description" content="CosyVoice2
+<meta property="og:description" content="CosyVoice2 论文
 
 2024.12  CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models（流式合成）
 paper code: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。
@@ -181,7 +181,7 @@ language model-based zero-shot TTS models  streaming synthesis
 <meta property="article:modified_time" content="2025-01-17T10:26:23+08:00" />
 
 <meta itemprop="name" content="论文解读：CosyVoice2: Scalable Streaming Speech Synthesis with Large Language Models">
-<meta itemprop="description" content="CosyVoice2
+<meta itemprop="description" content="CosyVoice2 论文
 
 2024.12  CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models（流式合成）
 paper code: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。
@@ -278,10 +278,10 @@ language model-based zero-shot TTS models  streaming synthesis
 2024.10 Zero-Shot Text-to-Speech from Continuous Text Streams
 "><meta itemprop="datePublished" content="2025-01-17T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2025-01-17T10:26:23+08:00" />
-<meta itemprop="wordCount" content="22251">
-<meta itemprop="keywords" content="Supervised Semantic Speech Tokenizer,BPE,AR&#34;,flow,CFG,mel-spectrogram,streaming," /><meta name="twitter:card" content="summary"/>
+<meta itemprop="wordCount" content="23446">
+<meta itemprop="keywords" content="Supervised Semantic Speech Tokenizer,BPE,AR,flow,CFG,mel-spectrogram,streaming," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="论文解读：CosyVoice2: Scalable Streaming Speech Synthesis with Large Language Models"/>
-<meta name="twitter:description" content="CosyVoice2
+<meta name="twitter:description" content="CosyVoice2 论文
 
 2024.12  CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models（流式合成）
 paper code: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。
@@ -732,7 +732,7 @@ language model-based zero-shot TTS models  streaming synthesis
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#cosyvoice2">CosyVoice2</a></li>
+    <li><a href="#cosyvoice2-论文">CosyVoice2 论文</a></li>
     <li><a href="#zero-shot-tts-models-零样本-tts-模型">zero-shot TTS models 零样本 TTS 模型</a>
       <ul>
         <li><a href="#codec-language-models-编解码器语言模型">codec language models 编解码器语言模型</a></li>
@@ -741,7 +741,7 @@ language model-based zero-shot TTS models  streaming synthesis
         <li><a href="#language-model-based-zero-shot-tts-models--streaming-synthesis">language model-based zero-shot TTS models  <strong>streaming</strong> synthesis</a></li>
       </ul>
     </li>
-    <li><a href="#cosyvoice2-结构">CosyVoice2 结构</a>
+    <li><a href="#cosyvoice2">CosyVoice2</a>
       <ul>
         <li><a href="#文本tokenizer">文本tokenizer</a></li>
         <li><a href="#受监督的语义speech-tokenizer">受监督的语义speech tokenizer</a></li>
@@ -783,6 +783,7 @@ language model-based zero-shot TTS models  streaming synthesis
         <li><a href="#硬测试hard-testing">硬测试（Hard Testing）</a></li>
         <li><a href="#cerss-和-wer">CER、SS 和 WER</a></li>
         <li><a href="#nmos-normalized-mean-opinion-score">NMOS （Normalized Mean Opinion Score）</a></li>
+        <li><a href="#mos-imean-opinion-score-for-instruction">MOS-I（Mean Opinion Score for Instruction）</a></li>
         <li><a href="#说话人spk-e">说话人（Spk E）</a></li>
       </ul>
     </li>
@@ -793,7 +794,7 @@ language model-based zero-shot TTS models  streaming synthesis
 
     
     <div class="post-content">
-      <h2 id="cosyvoice2">CosyVoice2</h2>
+      <h2 id="cosyvoice2-论文">CosyVoice2 论文</h2>
 <ul>
 <li><a href="https://arxiv.org/abs/2412.10117">2024.12  <strong>CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models</strong></a>（流式合成）</li>
 <li><a href="https://github.com/FunAudioLLM/CosyVoice">paper code</a>: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。</li>
@@ -889,7 +890,7 @@ language model-based zero-shot TTS models  streaming synthesis
 <li><a href="https://arxiv.org/abs/2309.11210">2024.9 Speak While You Think: Streaming Speech Synthesis During Text Generation</a></li>
 <li><a href="https://arxiv.org/abs/2410.00767">2024.10 Zero-Shot Text-to-Speech from Continuous Text Streams</a></li>
 </ul>
-<h2 id="cosyvoice2-结构">CosyVoice2 结构</h2>
+<h2 id="cosyvoice2">CosyVoice2</h2>
 <p>Cosyvoice2 对 Cosyvoice 进行了升级，主要包括如下四点：（模型精简消融，可替换同类型不同参数量的文本LLMs，提高码本利用率，无损流式合成，语义-声学解耦建模，指令和零样本能力模型整合）</p>
 <ul>
 <li>将流式和非流式合成统一在单一框架中，并提出统一的文本语音语言模型和块感知因果流匹配模型(<strong>chunk-aware causal flow matching model</strong>)，从而实现与离线模式相比的无损流式合成。</li>
@@ -1438,7 +1439,8 @@ $$</p>
 </table>
 <p>表 9：CosyVoice 2及其流式对应模型在日语test-ja和韩语test-ko测试集上的内容一致性（CER）、说话人相似性（SS）和语音质量（NMOS）。</p>
 <h3 id="指令式生成的结果">指令式生成的结果</h3>
-<p>为了评估指令式生成的性能，创建了一个包含290个样本的中文测试集。该测试集包括29种指令，如表1所示，每种指令有10个不同的输入文本。使用五名说话人的五个音频提示和说话人嵌入作为流匹配模型的条件。测试是在离线模式下进行的。客观地评估了内容一致性（CER）、说话人相似性（SS）和语音质量（NMOS）。主观上，使用指令的平均意见得分（MOS-I）评估指令的准确性和自然度，范围从1到5。每个样本由10名母语为中文的说话人评估，评分以0.5的增量给出。评估标准侧重于语音是否遵循所有指定的指令，如情感表达、语速调整、方言使用和角色扮演。细粒度控制，包括插入笑声、带笑说话、呼吸控制和强调，评估其自然度和准确性。如表10所示，CosyVoice 2在内容一致性（CER）、说话人相似性（SS）和指令控制的准确性和自然度（MOS-I）方面表现出色，同时保持了与CosyVoice-Instruct相当的语音质量。当从CosyVoice 2中移除输入指令时，MOS-I显著下降；然而，内容一致性（CER）、说话人相似性（SS）和语音质量（NMOS）有所提高。这表明指令可控性很难从内容文本中隐式地出现。</p>
+<p>为了评估指令式生成的性能，创建了一个包含290个样本的中文测试集。该测试集包括29种指令，如表1所示，每种指令有10个不同的输入文本。使用五名说话人的五个音频提示和说话人嵌入作为流匹配模型的条件。测试是在离线模式下进行的。客观地评估了内容一致性（CER）、说话人相似性（SS）和语音质量（NMOS）。<strong>主观上，使用指令的平均意见得分（MOS-I）评估指令的准确性和自然度，范围从1到5</strong>。每个样本由10名母语为中文的说话人评估，评分以0.5的增量给出。评估标准侧重于语音是否遵循所有指定的指令，如情感表达、语速调整、方言使用和角色扮演。细粒度控制，包括插入笑声、带笑说话、呼吸控制和强调，评估其自然度和准确性。</p>
+<p>如表10所示，CosyVoice 2在内容一致性（CER）、说话人相似性（SS）和指令控制的准确性和自然度（MOS-I）方面表现出色，同时保持了与CosyVoice-Instruct相当的语音质量。当从CosyVoice 2中移除输入指令时，MOS-I显著下降；然而，内容一致性（CER）、说话人相似性（SS）和语音质量（NMOS）有所提高。这表明指令可控性很难从内容文本中隐式地出现。</p>
 <table>
 <thead>
 <tr>
@@ -1474,13 +1476,14 @@ $$</p>
 </tbody>
 </table>
 <p>表 10：在内部中文测试集上对CosyVoice-Instruct、CosyVoice 2和没有指令输入的CosyVoice 2进行内容一致性（CER）、说话人相似性（SS）、语音质量（NMOS）和MOS-I（指令，评估指令的准确性和自然度）的评估结果。使用Paraformer模型作为ASR系统，计算CER时排除了标点符号。由于Paraformer模型无法识别中文方言语音，因此在计算CER时未包括方言数据。</p>
+<p>PS：这里的 &ldquo;w/o&rdquo; 是 &ldquo;without&rdquo; 的缩写，表示“没有”或“不使用”。</p>
 <h3 id="说话人微调模型的结果">说话人微调模型的结果</h3>
 <p>在微调阶段，对同一说话人的说话人嵌入进行无监督聚类，以确保说话人音色的稳定性。已经证明，目标说话人只要有400个音频记录就可以实现相当好的语音合成性能，不同说话人之间的客观指标变化很小，如图6所示。实验表明，大多数说话人都可以继承零样本TTS模型的强大上下文理解和感知能力，从而自然地表达各种情绪和情感，以响应输入文本。</p>
 <p><img src="https://github.com/user-attachments/assets/235f1711-2201-423d-8978-53fd5805b2f8" alt="image"></p>
 <p>图 6：CosyVoice 2 SFT模型在SEED评估设置下的结果。CER用于test-zh和test-hard，而WER用于test-en。</p>
 <h3 id="使用强化学习的lm微调">使用强化学习的LM微调</h3>
-<p>尽管SFT可以提高大多数说话人的性能，但Spk E的结果仍然比基础模型差，尤其是在英文方面。因为Spk E的语音更复杂，语速更快。此外，Spk E只有中文录音。因此，对Spk E应用了强化学习以进一步改进。对于DPO，通过SFT模型合成了10,000个样本对，通过ASR和SS奖励改变LM的偏好偏差。还使用可微分的ASR奖励来优化LM参数。经过RL后，在Spk E的测试集上评估了模型的内容一致性（WER）、说话人相似性（SS）和语音质量（NMOS），并进一步在SeedTTS测试集上评估了WER，以探索模型是否能够对域外或跨语言输入文本保持鲁棒性。结果如表11所示。</p>
-<p>与预训练的基础模型相比，SFT模型显示出更高的说话人相似性和语音质量，然而，WER可能比基础模型更差。发现，基础模型合成的音频总是比SFT和真实音频更慢，这对ASR系统更友好。对于目标说话人数据集，偏好偏差和可微分奖励都可以减少WER，对其他两个指标几乎没有有害影响。但对于SEED测试集，基于DPO的强化学习只对中文和英文子集有益，而硬样本会更差。原因可能是硬样本包含许多重复的单词或短语，它们可能在DPO训练中被视为被拒绝的样本。然而，可微分ASR奖励不会遇到这个问题，因为它可以直接通过ASR后验概率优化TTS系统。这意味着可微分ASR奖励在域外情况下具有更好的泛化能力。最后，可以将它们结合起来以进一步改进。</p>
+<p>尽管SFT可以提高大多数说话人的性能，但Spk E的结果仍然比基础模型差，尤其是在英文方面。因为Spk E的语音更复杂，语速更快。此外，Spk E只有中文录音。因此，对Spk E应用了强化学习以进一步改进。<strong>对于DPO，通过SFT模型合成了10,000个样本对，通过ASR和SS奖励改变LM的偏好偏差。还使用可微分的ASR奖励来优化LM参数</strong>。经过RL后，在Spk E的测试集上评估了模型的内容一致性（WER）、说话人相似性（SS）和语音质量（NMOS），并进一步在SeedTTS测试集上评估了WER，以探索模型是否能够对域外或跨语言输入文本保持鲁棒性。结果如表11所示。</p>
+<p>与预训练的基础模型相比，SFT模型显示出更高的说话人相似性和语音质量，然而，WER可能比基础模型更差。发现基础模型合成的音频总是比SFT和真实音频更慢，这对ASR系统更友好。对于目标说话人数据集，偏好偏差和可微分奖励都可以减少WER，对其他两个指标几乎没有有害影响。但对于SEED测试集，基于DPO的强化学习只对中文和英文子集有益，而硬样本会更差。原因可能是硬样本包含许多重复的单词或短语，它们可能在DPO训练中被视为被拒绝的样本。然而，可微分ASR奖励不会遇到这个问题，因为它可以直接通过ASR后验概率优化TTS系统。这意味着<strong>可微分ASR奖励在域外情况下具有更好的泛化能力</strong>。最后，可以将它们结合起来以进一步改进。</p>
 <table>
 <thead>
 <tr>
@@ -1562,7 +1565,7 @@ $$</p>
 <p>表 11： Spk E 上强化学习模型的内容一致性 (WER)、说话者相似度 (SS) 和语音质量 (NMOS) 比较。</p>
 <h2 id="结论">结论</h2>
 <p>在CosyVoice的基础上，本报告介绍了CosyVoice 2，这是一个改进的流式语音合成模型，利用大型语言模型（LLMs）。通过在一个框架内统一流式和非流式合成，CosyVoice 2实现了人类水平的自然度、最小的响应延迟，以及在流式模式下几乎无损的合成质量。关键创新包括<strong>有限标量量化（FSQ）以充分利用码本</strong>、<strong>简化文本-语音语言模型架构以整合预训练的文本LLMs</strong>，以及<strong>开发块感知因果流匹配模型以支持多样化的合成场景</strong>。此外，<strong>指令式TTS能力的提升允许灵活且生动的语音生成，能够精细控制情感、口音、角色风格和声音爆发</strong>。通过系统的修改和优化，CosyVoice 2不仅提供了卓越的合成质量，还放宽了部署要求，使其适用于流式和非流式应用。论文团队认为CosyVoice 2在可扩展、高质量和交互式文本到语音合成方面是一个重要的进步。</p>
-<p>PS: 论文中未提到实际部署情况，线上分布式推理服务(infer serve)的指标评估；提供实际生产服务的时候，部署服务和优化与模型结构密切相关，CosyVoice2中简化文本-语音语言模型架构以整合预训练的文本LLMs， 虽然输入的token和文本LLMs稍有不同，但是推理优化工作可以复用；而且还可以复用LLM的scaling工作来进行整合扩展。<strong>CosyVoice 2中的语义-声学解耦建模</strong></p>
+<p>PS: 论文中未提到实际部署情况，线上分布式推理服务(infer serve)的指标评估；提供实际生产服务的时候，部署服务和优化与模型结构密切相关，CosyVoice2中简化文本-语音语言模型架构以整合预训练的文本LLMs， 虽然输入的token和文本LLMs稍有不同，但是推理优化工作可以复用；而且还可以复用LLM的scaling工作来进行整合扩展。<strong>CosyVoice 2中的语义-声学解耦建模</strong>，两者分别支持流式和非流式输出。</p>
 <h2 id="限制">限制</h2>
 <p>CosyVoice 2存在一些需要解决的限制。首先，它只支持有限数量的语言。对于字符集重叠的语言，合成性能可能会下降，这为未来的研究提出了一个开放性挑战。其次，CosyVoice 2无法通过文本指令控制音色等声学特征，这可能是角色扮演应用中一个有趣的探索领域。此外，CosyVoice在执行唱歌任务时表现不佳。</p>
 <h2 id="附录">附录：</h2>
@@ -1930,6 +1933,95 @@ $$
 <h4 id="总结-4">总结</h4>
 <p>NMOS是一种重要的客观指标，用于评估语音质量。通过模拟人类的主观评价，NMOS可以快速、自动地提供语音质量的量化评估，帮助优化语音处理系统，提高用户满意度。在语音合成、语音识别和语音通信等应用中，NMOS广泛用于评估和优化语音信号的质量。</p>
 <hr>
+<h3 id="mos-imean-opinion-score-for-instruction">MOS-I（Mean Opinion Score for Instruction）</h3>
+<p>MOS-I（Mean Opinion Score for Instruction）是一个用于评估语音合成系统中指令式生成（Instruction-based Generation）的主观指标。它通过用户对生成语音的指令遵循程度、自然度和准确性的评分来衡量模型的性能。MOS-I特别适用于评估模型在生成带有特定情感、语速、口音或角色风格的语音时的表现。</p>
+<ol>
+<li>
+<p><strong>定义</strong>：</p>
+<ul>
+<li><strong>MOS-I</strong>：用于评估生成语音是否准确地遵循了给定的指令，如情感表达、语速调整、方言使用和角色扮演等。评分范围通常为1到5，其中5表示最佳表现，1表示最差表现。</li>
+</ul>
+</li>
+<li>
+<p><strong>评分标准</strong>：</p>
+<ul>
+<li><strong>1</strong>：生成的语音完全不符合指令，听起来不自然。</li>
+<li><strong>2</strong>：生成的语音部分符合指令，但整体表现不佳。</li>
+<li><strong>3</strong>：生成的语音基本符合指令，但仍有改进空间。</li>
+<li><strong>4</strong>：生成的语音很好地符合指令，表现自然。</li>
+<li><strong>5</strong>：生成的语音完全符合指令，表现非常自然。</li>
+</ul>
+</li>
+<li>
+<p><strong>计算方法</strong>：</p>
+<ul>
+<li>
+<p><strong>MOS-I</strong> 是通过收集多个听众对同一生成语音的评分，然后计算这些评分的平均值来得到的。每个听众根据生成语音对指令的遵循程度、自然度和准确性进行评分。</p>
+</li>
+<li>
+<p>例如，如果有10个听众对同一生成语音进行评分，评分分别为：4, 4, 5, 3, 4, 4, 5, 4, 3, 4，那么MOS-I值为：</p>
+<p>MOS-I=(4+4+5+3+4+4+5+4+3+4)/10=4.0</p>
+</li>
+</ul>
+</li>
+</ol>
+<h4 id="应用场景-1">应用场景</h4>
+<ol>
+<li><strong>情感表达</strong>：
+<ul>
+<li>评估生成语音是否准确地表达了指定的情感，如高兴、悲伤、惊讶等。</li>
+<li>例如，指令为“用高兴的情感说”，生成的语音是否听起来确实很高兴。</li>
+</ul>
+</li>
+<li><strong>语速调整</strong>：
+<ul>
+<li>评估生成语音是否按照指定的语速进行合成，如快速、慢速等。</li>
+<li>例如，指令为“语速加快”，生成的语音是否确实更快。</li>
+</ul>
+</li>
+<li><strong>方言使用</strong>：
+<ul>
+<li>评估生成语音是否准确地使用了指定的方言，如粤语、四川话等。</li>
+<li>例如，指令为“用粤语口音说”，生成的语音是否确实带有粤语口音。</li>
+</ul>
+</li>
+<li><strong>角色扮演</strong>：
+<ul>
+<li>评估生成语音是否准确地模仿了指定的角色，如机器人、小猪佩奇等。</li>
+<li>例如，指令为“以机器人的角色和我交流”，生成的语音是否确实听起来像机器人。</li>
+</ul>
+</li>
+</ol>
+<h4 id="评估流程">评估流程</h4>
+<ol>
+<li><strong>准备测试数据</strong>：
+<ul>
+<li>选择一组具有代表性的输入文本和对应的指令。</li>
+<li>例如，输入文本为“今天天气真好，适合出去玩。”，指令为“用高兴的情感说”。</li>
+</ul>
+</li>
+<li><strong>生成语音</strong>：
+<ul>
+<li>使用语音合成模型生成语音样本。</li>
+<li>例如，生成带有高兴情感的语音样本。</li>
+</ul>
+</li>
+<li><strong>收集评分</strong>：
+<ul>
+<li>邀请多个听众对生成的语音样本进行评分，评分标准为1到5。</li>
+<li>例如，邀请10名母语为中文的听众对生成的语音样本进行评分。</li>
+</ul>
+</li>
+<li><strong>计算MOS-I</strong>：
+<ul>
+<li>计算所有评分的平均值，得到MOS-I值。</li>
+<li>例如，计算10个评分的平均值，得到MOS-I值为4.0。</li>
+</ul>
+</li>
+</ol>
+<h4 id="总结-5">总结</h4>
+<p>MOS-I是一个重要的主观评估指标，用于评估语音合成系统在指令式生成任务中的表现。通过收集多个听众的评分，MOS-I可以全面评估生成语音对指令的遵循程度、自然度和准确性。这有助于优化模型，提高生成语音的质量和用户满意度。在实际应用中，MOS-I常用于评估模型在情感表达、语速调整、方言使用和角色扮演等任务中的表现。</p>
+<hr>
 <h3 id="说话人spk-e">说话人（Spk E）</h3>
 <p>在语音合成和语音处理的上下文中，&ldquo;Spk E&rdquo; 通常是指一个特定的说话人（Speaker E）。说话人（Spk）是语音数据中的一个标识符，用于区分不同的说话者。&ldquo;Spk E&rdquo; 可能是数据集中众多说话人中的一个，用于训练和评估语音合成模型或语音识别模型。</p>
 <ol>
@@ -1981,7 +2073,7 @@ $$
 
 <span class="c1"># 评估微调后的模型</span>
 <span class="n">evaluate_model</span><span class="p">(</span><span class="n">spk_e_data</span><span class="p">)</span>
-</code></pre></div><h4 id="总结-5">总结</h4>
+</code></pre></div><h4 id="总结-6">总结</h4>
 <p>&ldquo;Spk E&rdquo; 是数据集中的一个特定说话人标识符，用于训练、评估和微调语音合成模型。通过使用多个说话人的数据，模型可以学习和识别不同说话人的独特特征，从而提高生成语音的质量和自然度。说话人相似性（SS）和说话人微调（SFT）是评估和优化模型性能的重要手段。</p>
     </div>
 
@@ -2014,7 +2106,7 @@ $$
       <div class="post-tags">
           <a href="https://weedge.github.io/tags/supervised-semantic-speech-tokenizer/">Supervised Semantic Speech Tokenizer</a>
           <a href="https://weedge.github.io/tags/bpe/">BPE</a>
-          <a href="https://weedge.github.io/tags/ar/">AR&#34;</a>
+          <a href="https://weedge.github.io/tags/ar/">AR</a>
           <a href="https://weedge.github.io/tags/flow/">flow</a>
           <a href="https://weedge.github.io/tags/cfg/">CFG</a>
           <a href="https://weedge.github.io/tags/mel-spectrogram/">mel-spectrogram</a>

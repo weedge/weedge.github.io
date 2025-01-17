@@ -13,7 +13,7 @@
       <pubDate>Fri, 17 Jan 2025 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/post/multimoding/voices/cosyvoice2/</guid>
-      <description>&lt;h2 id=&#34;cosyvoice2&#34;&gt;CosyVoice2&lt;/h2&gt;
+      <description>&lt;h2 id=&#34;cosyvoice2-论文&#34;&gt;CosyVoice2 论文&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2412.10117&#34;&gt;2024.12  &lt;strong&gt;CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models&lt;/strong&gt;&lt;/a&gt;（流式合成）&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/FunAudioLLM/CosyVoice&#34;&gt;paper code&lt;/a&gt;: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。&lt;/li&gt;
