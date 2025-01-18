@@ -27,9 +27,7 @@
  将监督语音token集成到TTS 模型，增强了零样本语音克隆中的内容一致性和说话者相似性。 一种可扩展的零样本 TTS 合成系统，它将用于文本到token生成的 LLM 与用于token到语音合成的条件流匹配模型(conditional flow matching model(CFM))相结合，不依赖于音素持续时间预测(Duration predictor)，不需要使用补充音素器(phonemizers)和强制对齐器aligners (比如：Glow-TTS中 Monotonic Alignment Search(MAS))。 为了进一步细化生成语音的质量，将 x-vector 合并到 LLM 中，将语音建模分为语义、说话者和韵律(semantic, speaker, and prosody)组件。 LLM 对语义(semantic)内容和韵律(prosody)进行建模，而条件流匹配模型(CFM)则捕获音色(timbre)和环境信息。我们使用Classifier-Free Guidance(2022. Classifier-free diffusion guidance)、余弦调度器(cosine scheduler)和屏蔽条件(masked conditions)等技术来优化流匹配过程。  CosyVoice由四个组件组成，即文本编码器(text encoder)、语音分词器(speech tokenizer)、大语言模型(large language model)和条件流匹配模型(conditional flow matching model)
  文本编码器(text encoder)用于对齐文本和语音token的语义空间; 语音标记器(speech tokenizer)用于提取语义token; LLM(GLM)学习文本编码和语音标记的整个序列，将 TTS 重新表述为以文本作为提示的自回归序列生成问题; 利用条件流匹配模型(conditional flow matching model), 通过最优路径上的去噪处理,将语音标记转换为梅尔谱图(Mel spectrogram); 通过Classifier-Free Guidance（Classifier-free diffusion guidance CFG）提高扩散概率模型的生成质量, 将CFG适应到条件流匹配模型中; 获得人类耳朵可感知的声音信号，声码器(vocoder)使用 Hifi-GAN Generator 用于将生成的梅尔频谱图作为输入来合成波形(waveform)。  其中：
  conditional flow matching model (OT-CFM) 来自 2023.9 Matcha-TTS: A fast TTS architecture with conditional flow matching(CFM的改进版本OT-CFM) Classifier-free diffusion guidance (CFG) 来自 2022. Classifier-free diffusion guidance vocoder 来自 2020. HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis Generator。  附：
-  推理和训练操作笔记：https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb
-  achatbot 接入 CosyVoice:
- https://github.com/ai-bot-pro/achatbot/pull/21 https://github.com/ai-bot-pro/achatbot/pull/23   " />
+ 推理和训练操作笔记： https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb achatbot 接入 CosyVoice:  https://github.com/ai-bot-pro/achatbot/pull/21 https://github.com/ai-bot-pro/achatbot/pull/23 https://github.com/ai-bot-pro/achatbot/pull/107   " />
 
   <meta name="keywords" content="工作, 技术, 生活" />
 
@@ -98,14 +96,12 @@ vocoder 来自 2020. HiFi-GAN: Generative Adversarial Networks for Efficient and
 
 附：
 
-
-推理和训练操作笔记：https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb
-
-
+推理和训练操作笔记： https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb
 achatbot 接入 CosyVoice:
 
 https://github.com/ai-bot-pro/achatbot/pull/21
 https://github.com/ai-bot-pro/achatbot/pull/23
+https://github.com/ai-bot-pro/achatbot/pull/107
 
 
 " />
@@ -145,19 +141,17 @@ vocoder 来自 2020. HiFi-GAN: Generative Adversarial Networks for Efficient and
 
 附：
 
-
-推理和训练操作笔记：https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb
-
-
+推理和训练操作笔记： https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb
 achatbot 接入 CosyVoice:
 
 https://github.com/ai-bot-pro/achatbot/pull/21
 https://github.com/ai-bot-pro/achatbot/pull/23
+https://github.com/ai-bot-pro/achatbot/pull/107
 
 
 "><meta itemprop="datePublished" content="2025-01-15T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2025-01-15T10:26:23+08:00" />
-<meta itemprop="wordCount" content="10243">
+<meta itemprop="wordCount" content="10182">
 <meta itemprop="keywords" content="Supervised Semantic Speech Tokenizer,BPE,AR&#34;,flow,CFG,mel-spectrogram," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="论文解读：CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens"/>
 <meta name="twitter:description" content="CosyVoice
@@ -190,14 +184,12 @@ vocoder 来自 2020. HiFi-GAN: Generative Adversarial Networks for Efficient and
 
 附：
 
-
-推理和训练操作笔记：https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb
-
-
+推理和训练操作笔记： https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb
 achatbot 接入 CosyVoice:
 
 https://github.com/ai-bot-pro/achatbot/pull/21
 https://github.com/ai-bot-pro/achatbot/pull/23
+https://github.com/ai-bot-pro/achatbot/pull/107
 
 
 "/>
@@ -624,14 +616,12 @@ https://github.com/ai-bot-pro/achatbot/pull/23
 </ul>
 <p>附：</p>
 <ul>
-<li>
-<p>推理和训练操作笔记：https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb</p>
-</li>
-<li>
-<p>achatbot 接入 CosyVoice:</p>
+<li>推理和训练操作笔记： <a href="https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb">https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb</a></li>
+<li>achatbot 接入 CosyVoice:
 <ul>
 <li><a href="https://github.com/ai-bot-pro/achatbot/pull/21">https://github.com/ai-bot-pro/achatbot/pull/21</a></li>
 <li><a href="https://github.com/ai-bot-pro/achatbot/pull/23">https://github.com/ai-bot-pro/achatbot/pull/23</a></li>
+<li><a href="https://github.com/ai-bot-pro/achatbot/pull/107">https://github.com/ai-bot-pro/achatbot/pull/107</a></li>
 </ul>
 </li>
 </ul>

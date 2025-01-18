@@ -63,6 +63,9 @@
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2412.10117&#34;&gt;2024.12  &lt;strong&gt;CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models&lt;/strong&gt;&lt;/a&gt;（流式合成）&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/FunAudioLLM/CosyVoice&#34;&gt;paper code&lt;/a&gt;: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。&lt;/li&gt;
+&lt;li&gt;achatbot TTS 集成 CosyVoice2： &lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/107&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/107&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Colab achatbot_CosyVoice 操作笔记： &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Colab CosyVoice 操作笔记： &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;zero-shot-tts-models-零样本-tts-模型&#34;&gt;zero-shot TTS models 零样本 TTS 模型&lt;/h2&gt;
 &lt;h3 id=&#34;codec-language-models-编解码器语言模型&#34;&gt;codec language models 编解码器语言模型&lt;/h3&gt;
@@ -1380,14 +1383,12 @@ $$
 &lt;/ul&gt;
 &lt;p&gt;附：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;推理和训练操作笔记：https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;achatbot 接入 CosyVoice:&lt;/p&gt;
+&lt;li&gt;推理和训练操作笔记： &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;achatbot 接入 CosyVoice:
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/21&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/21&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/23&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/23&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/107&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/107&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;

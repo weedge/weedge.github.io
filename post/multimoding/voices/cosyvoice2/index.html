@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="CosyVoice2 论文  2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models（流式合成） paper code: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。  zero-shot TTS models 零样本 TTS 模型 codec language models 编解码器语言模型   speech codec model to extract discrete speech representation:
+  <meta name="description" content="CosyVoice2 论文  2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models（流式合成） paper code: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。 achatbot TTS 集成 CosyVoice2： https://github.com/ai-bot-pro/achatbot/pull/107 Colab achatbot_CosyVoice 操作笔记： https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb Colab CosyVoice 操作笔记： https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb  zero-shot TTS models 零样本 TTS 模型 codec language models 编解码器语言模型   speech codec model to extract discrete speech representation:
  2021.7 SoundStream: An End-to-End Neural Audio Codec 2022.10 High Fidelity Neural Audio Compression | facebookresearch/encodec 2023.10 FunCodec: A Fundamental, Reproducible and Integrable Open-source Toolkit for Neural Speech Codec | modelscope/FunCodec    speech codec model &#43; autoregressive model to predict the speech tokens (acoustic tokens):
  2023.1 Neural Codec Language Models are Zero-Shot Text to Speech Synthesizers (Vall-E) | 以及后续 Vall-E 升级系列 (不包括MELLE): https://www.microsoft.com/en-us/research/project/vall-e-x/ 2023.2 Speak, Read and Prompt: High-Fidelity Text-to-Speech with Minimal Supervision    speech codec model (speech semantics Codec) &#43; non-autoregressive masked model to predict the speech tokens (acoustic tokens):
  2024.9 MaskGCT: Zero-Shot Text-to-Speech with Masked Generative Codec Transformer | paper code    codec model (speech acoustic Codec) or vocoder to synthesize waveforms from mel-spectrograms:
@@ -83,6 +83,9 @@
 
 2024.12  CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models（流式合成）
 paper code: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。
+achatbot TTS 集成 CosyVoice2： https://github.com/ai-bot-pro/achatbot/pull/107
+Colab achatbot_CosyVoice 操作笔记： https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb
+Colab CosyVoice 操作笔记： https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb
 
 zero-shot TTS models 零样本 TTS 模型
 codec language models 编解码器语言模型
@@ -185,6 +188,9 @@ language model-based zero-shot TTS models  streaming synthesis
 
 2024.12  CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models（流式合成）
 paper code: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。
+achatbot TTS 集成 CosyVoice2： https://github.com/ai-bot-pro/achatbot/pull/107
+Colab achatbot_CosyVoice 操作笔记： https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb
+Colab CosyVoice 操作笔记： https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb
 
 zero-shot TTS models 零样本 TTS 模型
 codec language models 编解码器语言模型
@@ -278,13 +284,16 @@ language model-based zero-shot TTS models  streaming synthesis
 2024.10 Zero-Shot Text-to-Speech from Continuous Text Streams
 "><meta itemprop="datePublished" content="2025-01-17T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2025-01-17T10:26:23+08:00" />
-<meta itemprop="wordCount" content="23446">
+<meta itemprop="wordCount" content="23478">
 <meta itemprop="keywords" content="Supervised Semantic Speech Tokenizer,BPE,AR,flow,CFG,mel-spectrogram,streaming," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="论文解读：CosyVoice2: Scalable Streaming Speech Synthesis with Large Language Models"/>
 <meta name="twitter:description" content="CosyVoice2 论文
 
 2024.12  CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models（流式合成）
 paper code: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。
+achatbot TTS 集成 CosyVoice2： https://github.com/ai-bot-pro/achatbot/pull/107
+Colab achatbot_CosyVoice 操作笔记： https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb
+Colab CosyVoice 操作笔记： https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb
 
 zero-shot TTS models 零样本 TTS 模型
 codec language models 编解码器语言模型
@@ -798,6 +807,9 @@ language model-based zero-shot TTS models  streaming synthesis
 <ul>
 <li><a href="https://arxiv.org/abs/2412.10117">2024.12  <strong>CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models</strong></a>（流式合成）</li>
 <li><a href="https://github.com/FunAudioLLM/CosyVoice">paper code</a>: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。</li>
+<li>achatbot TTS 集成 CosyVoice2： <a href="https://github.com/ai-bot-pro/achatbot/pull/107">https://github.com/ai-bot-pro/achatbot/pull/107</a></li>
+<li>Colab achatbot_CosyVoice 操作笔记： <a href="https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb">https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb</a></li>
+<li>Colab CosyVoice 操作笔记： <a href="https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb">https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb</a></li>
 </ul>
 <h2 id="zero-shot-tts-models-零样本-tts-模型">zero-shot TTS models 零样本 TTS 模型</h2>
 <h3 id="codec-language-models-编解码器语言模型">codec language models 编解码器语言模型</h3>
