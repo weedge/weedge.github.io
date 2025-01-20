@@ -238,7 +238,7 @@ $$&lt;/p&gt;
 &lt;h4 id=&#34;dual-ar结构的优势&#34;&gt;Dual AR结构的优势&lt;/h4&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;增强的序列生成稳定性&lt;/strong&gt;：通过分层处理全局和局部信息，显著提高了GFSQ在序列生成任务中的稳定性。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;优化的码本处理&lt;/strong&gt;：快速变换器实现了一种高效的码本嵌入处理机制，在不增加显著计算开销的情况下提升了性能，特别是对于规模为7B或更大的模型。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;优化的码本处理&lt;/strong&gt;：Fast Transformer实现了一种高效的码本嵌入处理机制，在不增加显著计算开销的情况下提升了性能，特别是对于规模为7B或更大的模型。&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;高保真语音合成质量&lt;/strong&gt;：Slow和Fast Transformer之间的协同作用使得系统能够以高保真度合成语音，并能够处理复杂的语言现象。&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;多语言处理能力&lt;/strong&gt;：通过大语言模型（LLM）生成语言特征，消除了传统文字到音素转换的依赖，从而简化了合成流程并增强了多语言能力。通过混合文本数据，理解能力将进一步提升。&lt;/li&gt;
 &lt;/ul&gt;
@@ -482,13 +482,13 @@ $$
 &lt;h4 id=&#34;2-残差信息在语音合成中的应用&#34;&gt;&lt;strong&gt;2. 残差信息在语音合成中的应用&lt;/strong&gt;&lt;/h4&gt;
 &lt;p&gt;在语音合成（TTS）系统中，残差信息可以用于优化生成的语音质量和自然度。以下是残差信息在语音合成中的具体应用：&lt;/p&gt;
 &lt;h4 id=&#34;21-在双自回归架构中的作用&#34;&gt;&lt;strong&gt;2.1 在双自回归架构中的作用&lt;/strong&gt;&lt;/h4&gt;
-&lt;p&gt;在Fish-Speech框架中，双自回归架构（Dual-AR）通过慢速变换器（Slow Transformer）和快速变换器（Fast Transformer）协同工作，处理全局和局部信息。残差信息在这个过程中扮演了重要角色：&lt;/p&gt;
+&lt;p&gt;在Fish-Speech框架中，双自回归架构（Dual-AR）通过Slow Transformer 和 Fast Transformer 协同工作，处理全局和局部信息。残差信息在这个过程中扮演了重要角色：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;慢速变换器的输出&lt;/strong&gt;：慢速变换器生成的隐藏状态包含了全局语义信息，但可能未能完全捕捉到所有细节。这些未被完全处理的信息就是残差信息。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;快速变换器的细化&lt;/strong&gt;：快速变换器接收慢速变换器的输出，并进一步处理残差信息。通过处理这些残差信息，快速变换器能够补充细节，优化生成的语音质量。例如：
+&lt;li&gt;&lt;strong&gt;Slow Transformer的输出&lt;/strong&gt;：Slow Transformer生成的隐藏状态包含了全局语义信息，但可能未能完全捕捉到所有细节。这些未被完全处理的信息就是残差信息。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Fast Transformer的细化&lt;/strong&gt;：Fast Transformer接收Slow Transformer的输出，并进一步处理残差信息。通过处理这些残差信息，Fast Transformer能够补充细节，优化生成的语音质量。例如：
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;细节特征的补充&lt;/strong&gt;：快速变换器可以处理残差信息中的声学细节，如音调、语调、情感表达等。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;自然度的提升&lt;/strong&gt;：通过处理残差信息，快速变换器能够生成更自然、更流畅的语音。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;细节特征的补充&lt;/strong&gt;：Fast Transformer可以处理残差信息中的声学细节，如音调、语调、情感表达等。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;自然度的提升&lt;/strong&gt;：通过处理残差信息，Fast Transformer能够生成更自然、更流畅的语音。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
