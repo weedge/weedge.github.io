@@ -384,6 +384,59 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/multimoding/voices/fishspeech/">论文解读：Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2025-01-19" class="post-time">
+        2025-01-19
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          <a href="https://weedge.github.io/categories/tts/"> TTS </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <h2 id="相关论文">相关论文</h2>
+<p><strong>base</strong>: 基础普适研究</p>
+<ul>
+<li>hourglass transformers: <a href="https://arxiv.org/abs/2110.13711">2021. Hierarchical Transformers Are More Efficient Language Models</a> | <a href="https://github.com/lucidrains/simple-hierarchical-transformer">lucidrains/simple-hierarchical-transformer</a> vanilla layers and shortened layers use GPT  AR  GLM 🤞</li>
+<li><a href="https://arxiv.org/abs/2305.07185">2023.5 <strong>MEGABYTE: Predicting Million-byte Sequences with Multiscale Transformers</strong></a> (分别在文本，图片，语音建模)| <a href="https://github.com/lucidrains/MEGABYTE-pytorch">lucidrains/MEGABYTE-pytorch</a></li>
+</ul>
+<p>PS: 想法和自己整理的<a href="https://github.com/ai-bot-pro/baby-llm/tree/main/simpleLM">simple LM</a>相似~</p>
+<p>扩展阅读：<a href="https://arxiv.org/abs/2412.09871">2024.12 <strong>Byte Latent Transformer: Patches Scale Better Than Tokens</strong></a> | <a href="https://github.com/facebookresearch/blt">paper code</a></p>
+<hr>
+<p><strong>audio speech</strong>: 场景研究</p>
+<ul>
+<li>
+<p>⭐️<a href="https://arxiv.org/abs/2310.00704">2023.10 UniAudio: <strong>An Audio Foundation Model Toward Universal Audio Generation</strong></a> (灵感来自 MEGABYTE，将其应用于语音模型)| <a href="https://github.com/yangdongchao/UniAudio">paper code</a>  (代码可扩展任务进行训练, 已扩展了音乐数据)</p>
+<p><img src="https://github.com/user-attachments/assets/d0bc3097-3daa-47db-8bbb-f24f5aec800d" alt=""></p>
+</li>
+<li>
+<p>⭐️<a href="https://arxiv.org/abs/2411.01156">2024. <strong>Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis</strong></a> (论文中介绍的Daul-AR, GFSQ, Firefly-GAN(FF-GAN) 对EVA-GAN改版，细节需要结合代码理解) | <a href="https://github.com/fishaudio/fish-speech">paper code</a></p>
+</li>
+</ul>
+    </div>
+    <div class="read-more">
+      <a href="/post/multimoding/voices/fishspeech/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/multimoding/voices/cosyvoice2/">论文解读：CosyVoice2: Scalable Streaming Speech Synthesis with Large Language Models</a>
     </h1>
     
@@ -413,14 +466,16 @@
 <li>Colab achatbot_CosyVoice 操作笔记： <a href="https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb">https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb</a></li>
 <li>Colab CosyVoice 操作笔记： <a href="https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb">https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb</a></li>
 </ul>
-<h2 id="zero-shot-tts-models-零样本-tts-模型">zero-shot TTS models 零样本 TTS 模型</h2>
-<h3 id="codec-language-models-编解码器语言模型">codec language models 编解码器语言模型</h3>
+<h2 id="扩展阅读">扩展阅读</h2>
+<h3 id="zero-shot-tts-models-零样本-tts-模型">zero-shot TTS models 零样本 TTS 模型</h3>
+<h4 id="codec-language-models-编解码器语言模型">codec language models 编解码器语言模型</h4>
 <ul>
 <li>
 <p>speech <strong>codec model</strong>  to extract discrete speech representation:</p>
 <ul>
-<li><a href="https://arxiv.org/abs/2107.03312">2021.7 SoundStream: An End-to-End Neural Audio Codec</a></li>
+<li><a href="https://arxiv.org/abs/2107.03312">2021.7 SoundStream: An End-to-End Neural Audio Codec</a> | <a href="https://github.com/wesbz/SoundStream">code</a></li>
 <li><a href="https://arxiv.org/abs/2210.13438">2022.10 <strong>High Fidelity Neural Audio Compression</strong></a> | <a href="http://github.com/facebookresearch/encodec">facebookresearch/encodec</a></li>
+<li><a href="https://arxiv.org/abs/2305.02765">2023.5 HiFi-Codec: Group-residual Vector quantization for High Fidelity Audio Codec</a> | <a href="https://github.com/yangdongchao/AcademiCodec">paper code</a></li>
 <li><a href="https://arxiv.org/abs/2309.07405">2023.10 FunCodec: A Fundamental, Reproducible and Integrable Open-source Toolkit for Neural Speech Codec</a> | <a href="https://github.com/modelscope/FunCodec">modelscope/FunCodec</a></li>
 </ul>
 </li>
@@ -450,7 +505,7 @@
 </ul>
 </li>
 </ul>
-<h3 id="feature-diffusion-models-特征扩散模型">feature diffusion models 特征扩散模型</h3>
+<h4 id="feature-diffusion-models-特征扩散模型">feature diffusion models 特征扩散模型</h4>
 <p>DDPM + CFM + NAR(non-autoregressive) model, 没有 codec</p>
 <ul>
 <li>
@@ -489,7 +544,7 @@
 <p><a href="https://arxiv.org/abs/2410.06885">2024.10 <strong>F5-TTS: A fairytaler that fakes fluent and faithful speech with flow matching</strong></a> 保持了管道的简单性，无需音素对齐、持续时间预测器、文本编码器和语义注入编解码器模型，利用带有 <a href="https://arxiv.org/abs/2301.00808">ConvNeXt V2</a>|<a href="https://github.com/facebookresearch/ConvNeXt-V2">paper code</a> 的Diffusion Transformer(DiT)来更好地解决上下文学习期间的文本语音对齐问题。</p>
 </li>
 </ul>
-<h3 id="codec-language-and-feature-diffusion-hybrid-systems-混合系统">codec language and feature diffusion hybrid systems 混合系统</h3>
+<h4 id="codec-language-and-feature-diffusion-hybrid-systems-混合系统">codec language and feature diffusion hybrid systems 混合系统</h4>
 <p>text-to-codec language model  和 codec-to-feature diffusion model</p>
 <p>语言模型解决文本和语音之间的对齐以及话语持续时间预测，而编解码器到特征扩散模型则根据生成的编解码器和其他条件合成语音特征（梅尔谱）。通过利用两种生成模型的优势，混合系统实现了高度多样性、韵律一致性和语音质量。</p>
 <ul>
@@ -888,47 +943,6 @@
     </div>
     <div class="read-more">
       <a href="/post/multimoding/voices/open_voice_extra_se_and_convert/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/paper/transformer/delight/">论文解读 DeLighT: Very Deep and Light-weight Transformers</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2024-04-28" class="post-time">
-        2024-04-28
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E5%AD%A6%E6%9C%AF/"> 学术 </a>
-          <a href="https://weedge.github.io/categories/paper/"> paper </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p>在看apple 最近发布的OpenELM 模型，其论文中提到 block-wise scaling 模型结构优化方法，（论文见： <a href="https://machinelearning.apple.com/research/openelm"><strong>OpenELM: An Efficient Language Model Family with Open-source Training and Inference Framework</strong></a>），这里记录下DeLighT论文中的 block-wise scaling，翻译整理下以便对照代码实现，了解背景和原理。DeLighT论文中的实验任务主要是在两个标准的序列建模任务上评估了DeLighT的性能：机器翻译（machine translation）任务 encoder-decoder architecture 和 语言建模（ language modeling）decoder architecture，论文中机器翻译任务未对En-Zh(英文译中文)进行实验，可以作为一个复现练习，根据源码实操一下论文中的实验；而语言建模可以作为openELM的来源延伸~ 结合cornet进行复现(也有mxl示例，mxl针对Apple Silicon 硬件进行的优化深度学习框架)。</p>
-<p>论文主作者：<a href="https://sacmehta.github.io/">Sachin Mehta </a></p>
-<p>论文地址：https://arxiv.org/pdf/2008.00623</p>
-<p>论文代码： <a href="https://github.com/sacmehta/delight">https://github.com/sacmehta/delight</a> （基于当时facebook的 <a href="https://github.com/facebookresearch/fairseq">fairseq</a> seq2seq工具库开发）</p>
-<p>该论文研究是在作者以前的DeFINE: DEep Factorized INput Token Embeddings for Neural Sequence Modeling 进行改进，模型结构引入更多的GLTs，来学习更宽的权重，并且减少了参数数量。</p>
-<h2 id="摘要"><strong>摘要</strong></h2>
-<p>我们介绍了一种深度且轻量级的Transformer，名为DeLighT，它在参数数量显著减少的情况下，提供了与标准基于Transformer的模型相似或更好的性能。DeLighT更有效地在每个Transformer块内部（通过DeLighT变换）以及跨块（通过块级缩放）分配参数，允许输入端使用较浅较窄的DeLighT块，输出端使用较宽较深的DeLighT块。总体而言，DeLighT网络比标准Transformer模型深2.5到4倍，但参数和运算量更少。在基准机器翻译和语言建模任务上的实验表明，DeLighT在平均参数数量减少2到3倍的情况下，达到或提高了基线Transformer的性能。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/paper/transformer/delight/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>

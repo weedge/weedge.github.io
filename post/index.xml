@@ -6,7 +6,34 @@
     <description>Recent content in Posts on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 17 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 19 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>论文解读：Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis</title>
+      <link>https://weedge.github.io/post/multimoding/voices/fishspeech/</link>
+      <pubDate>Sun, 19 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/multimoding/voices/fishspeech/</guid>
+      <description>&lt;h2 id=&#34;相关论文&#34;&gt;相关论文&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;base&lt;/strong&gt;: 基础普适研究&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;hourglass transformers: &lt;a href=&#34;https://arxiv.org/abs/2110.13711&#34;&gt;2021. Hierarchical Transformers Are More Efficient Language Models&lt;/a&gt; | &lt;a href=&#34;https://github.com/lucidrains/simple-hierarchical-transformer&#34;&gt;lucidrains/simple-hierarchical-transformer&lt;/a&gt; vanilla layers and shortened layers use GPT  AR  GLM 🤞&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2305.07185&#34;&gt;2023.5 &lt;strong&gt;MEGABYTE: Predicting Million-byte Sequences with Multiscale Transformers&lt;/strong&gt;&lt;/a&gt; (分别在文本，图片，语音建模)| &lt;a href=&#34;https://github.com/lucidrains/MEGABYTE-pytorch&#34;&gt;lucidrains/MEGABYTE-pytorch&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;PS: 想法和自己整理的&lt;a href=&#34;https://github.com/ai-bot-pro/baby-llm/tree/main/simpleLM&#34;&gt;simple LM&lt;/a&gt;相似~&lt;/p&gt;
+&lt;p&gt;扩展阅读：&lt;a href=&#34;https://arxiv.org/abs/2412.09871&#34;&gt;2024.12 &lt;strong&gt;Byte Latent Transformer: Patches Scale Better Than Tokens&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://github.com/facebookresearch/blt&#34;&gt;paper code&lt;/a&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;strong&gt;audio speech&lt;/strong&gt;: 场景研究&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;⭐️&lt;a href=&#34;https://arxiv.org/abs/2310.00704&#34;&gt;2023.10 UniAudio: &lt;strong&gt;An Audio Foundation Model Toward Universal Audio Generation&lt;/strong&gt;&lt;/a&gt; (灵感来自 MEGABYTE，将其应用于语音模型)| &lt;a href=&#34;https://github.com/yangdongchao/UniAudio&#34;&gt;paper code&lt;/a&gt;  (代码可扩展任务进行训练, 已扩展了音乐数据)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/d0bc3097-3daa-47db-8bbb-f24f5aec800d&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;⭐️&lt;a href=&#34;https://arxiv.org/abs/2411.01156&#34;&gt;2024. &lt;strong&gt;Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis&lt;/strong&gt;&lt;/a&gt; (论文中介绍的Daul-AR, GFSQ, Firefly-GAN(FF-GAN) 对EVA-GAN改版，细节需要结合代码理解) | &lt;a href=&#34;https://github.com/fishaudio/fish-speech&#34;&gt;paper code&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
     <item>
       <title>论文解读：CosyVoice2: Scalable Streaming Speech Synthesis with Large Language Models</title>
       <link>https://weedge.github.io/post/multimoding/voices/cosyvoice2/</link>
@@ -21,14 +48,16 @@
 &lt;li&gt;Colab achatbot_CosyVoice 操作笔记： &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Colab CosyVoice 操作笔记： &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&#34;zero-shot-tts-models-零样本-tts-模型&#34;&gt;zero-shot TTS models 零样本 TTS 模型&lt;/h2&gt;
-&lt;h3 id=&#34;codec-language-models-编解码器语言模型&#34;&gt;codec language models 编解码器语言模型&lt;/h3&gt;
+&lt;h2 id=&#34;扩展阅读&#34;&gt;扩展阅读&lt;/h2&gt;
+&lt;h3 id=&#34;zero-shot-tts-models-零样本-tts-模型&#34;&gt;zero-shot TTS models 零样本 TTS 模型&lt;/h3&gt;
+&lt;h4 id=&#34;codec-language-models-编解码器语言模型&#34;&gt;codec language models 编解码器语言模型&lt;/h4&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;speech &lt;strong&gt;codec model&lt;/strong&gt;  to extract discrete speech representation:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2107.03312&#34;&gt;2021.7 SoundStream: An End-to-End Neural Audio Codec&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2107.03312&#34;&gt;2021.7 SoundStream: An End-to-End Neural Audio Codec&lt;/a&gt; | &lt;a href=&#34;https://github.com/wesbz/SoundStream&#34;&gt;code&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2210.13438&#34;&gt;2022.10 &lt;strong&gt;High Fidelity Neural Audio Compression&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;http://github.com/facebookresearch/encodec&#34;&gt;facebookresearch/encodec&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2305.02765&#34;&gt;2023.5 HiFi-Codec: Group-residual Vector quantization for High Fidelity Audio Codec&lt;/a&gt; | &lt;a href=&#34;https://github.com/yangdongchao/AcademiCodec&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2309.07405&#34;&gt;2023.10 FunCodec: A Fundamental, Reproducible and Integrable Open-source Toolkit for Neural Speech Codec&lt;/a&gt; | &lt;a href=&#34;https://github.com/modelscope/FunCodec&#34;&gt;modelscope/FunCodec&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
@@ -58,7 +87,7 @@
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&#34;feature-diffusion-models-特征扩散模型&#34;&gt;feature diffusion models 特征扩散模型&lt;/h3&gt;
+&lt;h4 id=&#34;feature-diffusion-models-特征扩散模型&#34;&gt;feature diffusion models 特征扩散模型&lt;/h4&gt;
 &lt;p&gt;DDPM + CFM + NAR(non-autoregressive) model, 没有 codec&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -97,7 +126,7 @@
 &lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/2410.06885&#34;&gt;2024.10 &lt;strong&gt;F5-TTS: A fairytaler that fakes fluent and faithful speech with flow matching&lt;/strong&gt;&lt;/a&gt; 保持了管道的简单性，无需音素对齐、持续时间预测器、文本编码器和语义注入编解码器模型，利用带有 &lt;a href=&#34;https://arxiv.org/abs/2301.00808&#34;&gt;ConvNeXt V2&lt;/a&gt;|&lt;a href=&#34;https://github.com/facebookresearch/ConvNeXt-V2&#34;&gt;paper code&lt;/a&gt; 的Diffusion Transformer(DiT)来更好地解决上下文学习期间的文本语音对齐问题。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&#34;codec-language-and-feature-diffusion-hybrid-systems-混合系统&#34;&gt;codec language and feature diffusion hybrid systems 混合系统&lt;/h3&gt;
+&lt;h4 id=&#34;codec-language-and-feature-diffusion-hybrid-systems-混合系统&#34;&gt;codec language and feature diffusion hybrid systems 混合系统&lt;/h4&gt;
 &lt;p&gt;text-to-codec language model  和 codec-to-feature diffusion model&lt;/p&gt;
 &lt;p&gt;语言模型解决文本和语音之间的对齐以及话语持续时间预测，而编解码器到特征扩散模型则根据生成的编解码器和其他条件合成语音特征（梅尔谱）。通过利用两种生成模型的优势，混合系统实现了高度多样性、韵律一致性和语音质量。&lt;/p&gt;
 &lt;ul&gt;
@@ -579,18 +608,6 @@
       <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/LLM.png&#34; alt=&#34;LLM知识点&#34;&gt;&lt;/p&gt;
 &lt;p&gt;上图给出了学习LLM所需要的知识点。&lt;/p&gt;
 &lt;p&gt;该文主要是梳理LLM基础结构知识点，模型结构大多相同，以llama2模型结构为切入点，梳理相关知识点，以便构建整体知识体系，可方便快速阅读其他论文的改进点；结合&lt;a href=&#34;https://weedge.github.io/post/llm/llm-knowledge-point-all-u-need/#%E5%8F%82%E8%80%83%E5%AD%A6%E4%B9%A0&#34;&gt;参考学习&lt;/a&gt;中给出的链接补充基础知识。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>译：掌握 LLM 技术：推理优化</title>
-      <link>https://weedge.github.io/post/llm/mastering-llm-techniques-inference-optimization/</link>
-      <pubDate>Sat, 30 Dec 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/llm/mastering-llm-techniques-inference-optimization/</guid>
-      <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/mastering-llm-techniques-inference-optimization/0.png&#34; alt=&#34;llm-optimize-deploy&#34;&gt;&lt;/p&gt;
-&lt;p&gt;将transformer层叠以创建大型模型会在各种语言任务中带来更高的准确性、少样本学习能力，甚至接近人类的新兴能力。这些基础模型在训练过程中成本高昂，而在推理过程中（一个经常发生的成本）可能需要大量内存和计算资源。如今最受欢迎的&lt;a href=&#34;https://www.nvidia.com/en-us/glossary/data-science/large-language-models/&#34;&gt;大型语言模型（LLMs）&lt;/a&gt;可以达到数百亿到数千亿个参数的规模，并且根据使用情况，可能需要处理长输入（或上下文），这也会增加成本。&lt;/p&gt;
-&lt;p&gt;本文讨论了LLM推理中最紧迫的挑战，以及一些实用的解决方案。读者应该对&lt;a href=&#34;https://arxiv.org/pdf/1706.03762.pdf&#34;&gt;transformer架构&lt;/a&gt;和注意力机制有基本的理解。理解LLM推理的复杂性至关重要，我们将在接下来的部分进行介绍。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;：上篇译文有对 transformer 有相关的介绍，以及相关编码笔记入门；或者深入学习&lt;a href=&#34;https://web.stanford.edu/class/cs25/prev_years/2023_winter/index.html&#34;&gt;CS25: Transformers United V2&lt;/a&gt; &lt;a href=&#34;https://www.youtube.com/playlist?list=PLoROMvodv4rNiJRchCzutFw5ItR_Z27CM&#34;&gt;video&lt;/a&gt;&lt;/p&gt;</description>
     </item>
     
   </channel>

@@ -23,8 +23,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="weedge" />
-  <meta name="description" content="CosyVoice2 论文  2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models（流式合成） paper code: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。 achatbot TTS 集成 CosyVoice2： https://github.com/ai-bot-pro/achatbot/pull/107 Colab achatbot_CosyVoice 操作笔记： https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb Colab CosyVoice 操作笔记： https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb  zero-shot TTS models 零样本 TTS 模型 codec language models 编解码器语言模型   speech codec model to extract discrete speech representation:
- 2021.7 SoundStream: An End-to-End Neural Audio Codec 2022.10 High Fidelity Neural Audio Compression | facebookresearch/encodec 2023.10 FunCodec: A Fundamental, Reproducible and Integrable Open-source Toolkit for Neural Speech Codec | modelscope/FunCodec    speech codec model &#43; autoregressive model to predict the speech tokens (acoustic tokens):
+  <meta name="description" content="CosyVoice2 论文  2024.12 CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models（流式合成） paper code: 公开推理和权重，训练过程需要在CosyVoice的基础上修改下。 achatbot TTS 集成 CosyVoice2： https://github.com/ai-bot-pro/achatbot/pull/107 Colab achatbot_CosyVoice 操作笔记： https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb Colab CosyVoice 操作笔记： https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb  扩展阅读 zero-shot TTS models 零样本 TTS 模型 codec language models 编解码器语言模型   speech codec model to extract discrete speech representation:
+ 2021.7 SoundStream: An End-to-End Neural Audio Codec | code 2022.10 High Fidelity Neural Audio Compression | facebookresearch/encodec 2023.5 HiFi-Codec: Group-residual Vector quantization for High Fidelity Audio Codec | paper code 2023.10 FunCodec: A Fundamental, Reproducible and Integrable Open-source Toolkit for Neural Speech Codec | modelscope/FunCodec    speech codec model &#43; autoregressive model to predict the speech tokens (acoustic tokens):
  2023.1 Neural Codec Language Models are Zero-Shot Text to Speech Synthesizers (Vall-E) | 以及后续 Vall-E 升级系列 (不包括MELLE): https://www.microsoft.com/en-us/research/project/vall-e-x/ 2023.2 Speak, Read and Prompt: High-Fidelity Text-to-Speech with Minimal Supervision    speech codec model (speech semantics Codec) &#43; non-autoregressive masked model to predict the speech tokens (acoustic tokens):
  2024.9 MaskGCT: Zero-Shot Text-to-Speech with Masked Generative Codec Transformer | paper code    codec model (speech acoustic Codec) or vocoder to synthesize waveforms from mel-spectrograms:
   2023.6 Vocos: Closing the gap between time-domain and Fourier-based neural vocoders for high-quality audio synthesis | paper code | 推理速度快：运行速度比 HiFi-GAN 快约 13 倍，比 BigVGAN 快近 70 倍。在没有 GPU 加速的情况下运行时，这种速度优势尤其明显。这主要是由于使用了短时傅里叶逆变换（ISTFT）算法而不是转置卷积。还评估了 Vocos 的一个变体，它利用 ResBlock 的扩张卷积而不是 ConvNeXt 块。在 GPU 上执行时，深度可分离卷积可提供额外的加速。
@@ -87,14 +87,16 @@ achatbot TTS 集成 CosyVoice2： https://github.com/ai-bot-pro/achatbot/pull/10
 Colab achatbot_CosyVoice 操作笔记： https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb
 Colab CosyVoice 操作笔记： https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb
 
+扩展阅读
 zero-shot TTS models 零样本 TTS 模型
 codec language models 编解码器语言模型
 
 
 speech codec model  to extract discrete speech representation:
 
-2021.7 SoundStream: An End-to-End Neural Audio Codec
+2021.7 SoundStream: An End-to-End Neural Audio Codec | code
 2022.10 High Fidelity Neural Audio Compression | facebookresearch/encodec
+2023.5 HiFi-Codec: Group-residual Vector quantization for High Fidelity Audio Codec | paper code
 2023.10 FunCodec: A Fundamental, Reproducible and Integrable Open-source Toolkit for Neural Speech Codec | modelscope/FunCodec
 
 
@@ -192,14 +194,16 @@ achatbot TTS 集成 CosyVoice2： https://github.com/ai-bot-pro/achatbot/pull/10
 Colab achatbot_CosyVoice 操作笔记： https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb
 Colab CosyVoice 操作笔记： https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb
 
+扩展阅读
 zero-shot TTS models 零样本 TTS 模型
 codec language models 编解码器语言模型
 
 
 speech codec model  to extract discrete speech representation:
 
-2021.7 SoundStream: An End-to-End Neural Audio Codec
+2021.7 SoundStream: An End-to-End Neural Audio Codec | code
 2022.10 High Fidelity Neural Audio Compression | facebookresearch/encodec
+2023.5 HiFi-Codec: Group-residual Vector quantization for High Fidelity Audio Codec | paper code
 2023.10 FunCodec: A Fundamental, Reproducible and Integrable Open-source Toolkit for Neural Speech Codec | modelscope/FunCodec
 
 
@@ -284,7 +288,7 @@ language model-based zero-shot TTS models  streaming synthesis
 2024.10 Zero-Shot Text-to-Speech from Continuous Text Streams
 "><meta itemprop="datePublished" content="2025-01-17T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2025-01-17T10:26:23+08:00" />
-<meta itemprop="wordCount" content="23478">
+<meta itemprop="wordCount" content="23497">
 <meta itemprop="keywords" content="Supervised Semantic Speech Tokenizer,BPE,AR,flow,CFG,mel-spectrogram,streaming," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="论文解读：CosyVoice2: Scalable Streaming Speech Synthesis with Large Language Models"/>
 <meta name="twitter:description" content="CosyVoice2 论文
@@ -295,14 +299,16 @@ achatbot TTS 集成 CosyVoice2： https://github.com/ai-bot-pro/achatbot/pull/10
 Colab achatbot_CosyVoice 操作笔记： https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb
 Colab CosyVoice 操作笔记： https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb
 
+扩展阅读
 zero-shot TTS models 零样本 TTS 模型
 codec language models 编解码器语言模型
 
 
 speech codec model  to extract discrete speech representation:
 
-2021.7 SoundStream: An End-to-End Neural Audio Codec
+2021.7 SoundStream: An End-to-End Neural Audio Codec | code
 2022.10 High Fidelity Neural Audio Compression | facebookresearch/encodec
+2023.5 HiFi-Codec: Group-residual Vector quantization for High Fidelity Audio Codec | paper code
 2023.10 FunCodec: A Fundamental, Reproducible and Integrable Open-source Toolkit for Neural Speech Codec | modelscope/FunCodec
 
 
@@ -742,11 +748,9 @@ language model-based zero-shot TTS models  streaming synthesis
     <nav id="TableOfContents">
   <ul>
     <li><a href="#cosyvoice2-论文">CosyVoice2 论文</a></li>
-    <li><a href="#zero-shot-tts-models-零样本-tts-模型">zero-shot TTS models 零样本 TTS 模型</a>
+    <li><a href="#扩展阅读">扩展阅读</a>
       <ul>
-        <li><a href="#codec-language-models-编解码器语言模型">codec language models 编解码器语言模型</a></li>
-        <li><a href="#feature-diffusion-models-特征扩散模型">feature diffusion models 特征扩散模型</a></li>
-        <li><a href="#codec-language-and-feature-diffusion-hybrid-systems-混合系统">codec language and feature diffusion hybrid systems 混合系统</a></li>
+        <li><a href="#zero-shot-tts-models-零样本-tts-模型">zero-shot TTS models 零样本 TTS 模型</a></li>
         <li><a href="#language-model-based-zero-shot-tts-models--streaming-synthesis">language model-based zero-shot TTS models  <strong>streaming</strong> synthesis</a></li>
       </ul>
     </li>
@@ -811,14 +815,16 @@ language model-based zero-shot TTS models  streaming synthesis
 <li>Colab achatbot_CosyVoice 操作笔记： <a href="https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb">https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb</a></li>
 <li>Colab CosyVoice 操作笔记： <a href="https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb">https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb</a></li>
 </ul>
-<h2 id="zero-shot-tts-models-零样本-tts-模型">zero-shot TTS models 零样本 TTS 模型</h2>
-<h3 id="codec-language-models-编解码器语言模型">codec language models 编解码器语言模型</h3>
+<h2 id="扩展阅读">扩展阅读</h2>
+<h3 id="zero-shot-tts-models-零样本-tts-模型">zero-shot TTS models 零样本 TTS 模型</h3>
+<h4 id="codec-language-models-编解码器语言模型">codec language models 编解码器语言模型</h4>
 <ul>
 <li>
 <p>speech <strong>codec model</strong>  to extract discrete speech representation:</p>
 <ul>
-<li><a href="https://arxiv.org/abs/2107.03312">2021.7 SoundStream: An End-to-End Neural Audio Codec</a></li>
+<li><a href="https://arxiv.org/abs/2107.03312">2021.7 SoundStream: An End-to-End Neural Audio Codec</a> | <a href="https://github.com/wesbz/SoundStream">code</a></li>
 <li><a href="https://arxiv.org/abs/2210.13438">2022.10 <strong>High Fidelity Neural Audio Compression</strong></a> | <a href="http://github.com/facebookresearch/encodec">facebookresearch/encodec</a></li>
+<li><a href="https://arxiv.org/abs/2305.02765">2023.5 HiFi-Codec: Group-residual Vector quantization for High Fidelity Audio Codec</a> | <a href="https://github.com/yangdongchao/AcademiCodec">paper code</a></li>
 <li><a href="https://arxiv.org/abs/2309.07405">2023.10 FunCodec: A Fundamental, Reproducible and Integrable Open-source Toolkit for Neural Speech Codec</a> | <a href="https://github.com/modelscope/FunCodec">modelscope/FunCodec</a></li>
 </ul>
 </li>
@@ -848,7 +854,7 @@ language model-based zero-shot TTS models  streaming synthesis
 </ul>
 </li>
 </ul>
-<h3 id="feature-diffusion-models-特征扩散模型">feature diffusion models 特征扩散模型</h3>
+<h4 id="feature-diffusion-models-特征扩散模型">feature diffusion models 特征扩散模型</h4>
 <p>DDPM + CFM + NAR(non-autoregressive) model, 没有 codec</p>
 <ul>
 <li>
@@ -887,7 +893,7 @@ language model-based zero-shot TTS models  streaming synthesis
 <p><a href="https://arxiv.org/abs/2410.06885">2024.10 <strong>F5-TTS: A fairytaler that fakes fluent and faithful speech with flow matching</strong></a> 保持了管道的简单性，无需音素对齐、持续时间预测器、文本编码器和语义注入编解码器模型，利用带有 <a href="https://arxiv.org/abs/2301.00808">ConvNeXt V2</a>|<a href="https://github.com/facebookresearch/ConvNeXt-V2">paper code</a> 的Diffusion Transformer(DiT)来更好地解决上下文学习期间的文本语音对齐问题。</p>
 </li>
 </ul>
-<h3 id="codec-language-and-feature-diffusion-hybrid-systems-混合系统">codec language and feature diffusion hybrid systems 混合系统</h3>
+<h4 id="codec-language-and-feature-diffusion-hybrid-systems-混合系统">codec language and feature diffusion hybrid systems 混合系统</h4>
 <p>text-to-codec language model  和 codec-to-feature diffusion model</p>
 <p>语言模型解决文本和语音之间的对齐以及话语持续时间预测，而编解码器到特征扩散模型则根据生成的编解码器和其他条件合成语音特征（梅尔谱）。通过利用两种生成模型的优势，混合系统实现了高度多样性、韵律一致性和语音质量。</p>
 <ul>
@@ -2129,6 +2135,19 @@ $$
       
       <nav class="post-nav">
         
+          <a class="prev" href="/post/multimoding/voices/fishspeech/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">论文解读：Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
         
           <a class="next" href="/post/multimoding/voices/cosyvoice/">
             <span class="next-text nav-default">论文解读：CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens</span>

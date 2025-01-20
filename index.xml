@@ -6,7 +6,7 @@
     <description>Recent content on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 17 Jan 2025 10:26:23 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 19 Jan 2025 10:26:23 +0800</lastBuildDate>
     
         <atom:link href="https://weedge.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -53,6 +53,470 @@
     </item>
     
     <item>
+      <title>论文解读：Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis</title>
+      <link>https://weedge.github.io/post/multimoding/voices/fishspeech/</link>
+      <pubDate>Sun, 19 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/multimoding/voices/fishspeech/</guid>
+      
+        <description>&lt;h2 id=&#34;相关论文&#34;&gt;相关论文&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;base&lt;/strong&gt;: 基础普适研究&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;hourglass transformers: &lt;a href=&#34;https://arxiv.org/abs/2110.13711&#34;&gt;2021. Hierarchical Transformers Are More Efficient Language Models&lt;/a&gt; | &lt;a href=&#34;https://github.com/lucidrains/simple-hierarchical-transformer&#34;&gt;lucidrains/simple-hierarchical-transformer&lt;/a&gt; vanilla layers and shortened layers use GPT  AR  GLM 🤞&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2305.07185&#34;&gt;2023.5 &lt;strong&gt;MEGABYTE: Predicting Million-byte Sequences with Multiscale Transformers&lt;/strong&gt;&lt;/a&gt; (分别在文本，图片，语音建模)| &lt;a href=&#34;https://github.com/lucidrains/MEGABYTE-pytorch&#34;&gt;lucidrains/MEGABYTE-pytorch&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;PS: 想法和自己整理的&lt;a href=&#34;https://github.com/ai-bot-pro/baby-llm/tree/main/simpleLM&#34;&gt;simple LM&lt;/a&gt;相似~&lt;/p&gt;
+&lt;p&gt;扩展阅读：&lt;a href=&#34;https://arxiv.org/abs/2412.09871&#34;&gt;2024.12 &lt;strong&gt;Byte Latent Transformer: Patches Scale Better Than Tokens&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://github.com/facebookresearch/blt&#34;&gt;paper code&lt;/a&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;strong&gt;audio speech&lt;/strong&gt;: 场景研究&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;⭐️&lt;a href=&#34;https://arxiv.org/abs/2310.00704&#34;&gt;2023.10 UniAudio: &lt;strong&gt;An Audio Foundation Model Toward Universal Audio Generation&lt;/strong&gt;&lt;/a&gt; (灵感来自 MEGABYTE，将其应用于语音模型)| &lt;a href=&#34;https://github.com/yangdongchao/UniAudio&#34;&gt;paper code&lt;/a&gt;  (代码可扩展任务进行训练, 已扩展了音乐数据)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/d0bc3097-3daa-47db-8bbb-f24f5aec800d&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;⭐️&lt;a href=&#34;https://arxiv.org/abs/2411.01156&#34;&gt;2024. &lt;strong&gt;Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis&lt;/strong&gt;&lt;/a&gt; (论文中介绍的Daul-AR, GFSQ, Firefly-GAN(FF-GAN) 对EVA-GAN改版，细节需要结合代码理解) | &lt;a href=&#34;https://github.com/fishaudio/fish-speech&#34;&gt;paper code&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;扩展阅读&#34;&gt;扩展阅读&lt;/h2&gt;
+&lt;h3 id=&#34;neural-vocoder&#34;&gt;&lt;strong&gt;Neural&lt;/strong&gt; Vocoder&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/1609.03499&#34;&gt;2016.9 &lt;strong&gt;WaveNet: A Generative Model for Raw Audio&lt;/strong&gt;&lt;/a&gt; (首次引入了用于音频生成的自回归模型(CNN+LSTM))| &lt;a href=&#34;https://github.com/vincentherrmann/pytorch-wavenet&#34;&gt;pytorch code&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;⭐️&lt;a href=&#34;https://arxiv.org/abs/2010.05646&#34;&gt;2020.10 &lt;strong&gt;HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis&lt;/strong&gt;&lt;/a&gt; (引入了对抗性训练，在音频质量和计算效率方面树立了新标准, multi-scale discriminator (MSD) +   multi-period discriminator (MPD)) | &lt;a href=&#34;https://github.com/jik876/hifi-gan&#34;&gt;paper code&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;HiFi-Gan Generator(Decoder)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/8b09b501-bfef-48eb-b823-ba8d78307c31&#34; alt=&#34;HiFi-Gan Generator&#34;&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;inference speed&lt;/strong&gt;&lt;/em&gt;：(模型参数小，适合实时在线场景下的研究，韩国和日本比较关注(专注)这个方面)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/2306.00814&#34;&gt;2023.6 &lt;strong&gt;Vocos: Closing the gap between time-domain and Fourier-based neural vocoders for high-quality audio synthesis&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://github.com/gemelo-ai/vocos&#34;&gt;paper code&lt;/a&gt; | 推理速度快：运行速度比 HiFi-GAN 快约 13 倍，比 BigVGAN 快近 70 倍。在没有 GPU 加速的情况下运行时，这种速度优势尤其明显。这主要是由于使用了短时傅里叶逆变换（ISTFT）算法而不是转置卷积。还评估了 Vocos 的一个变体，它利用 ResBlock 的扩张卷积而不是 ConvNeXt 块。在 GPU 上执行时，深度可分离卷积可提供额外的加速。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://ieeexplore.ieee.org/document/10389765&#34;&gt;2023.12 &lt;strong&gt;WaveNeXt: ConvNeXt-Based Fast Neural Vocoder Without ISTFT layer&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://ast-astrec.nict.go.jp/demo_samples/asru_2023_okamoto/index.html&#34;&gt;demo samples&lt;/a&gt; | paper code基于 &lt;a href=&#34;https://arxiv.org/abs/2110.07840&#34;&gt;ESPNet2-TTS&lt;/a&gt;  | 一种新型的基于ConvNeXt的快速神经声码器WaveNeXt，它通过替换Vocos中的逆短时傅里叶变换（iSTFT）层为可训练的线性层，直接预测语音波形样本，而不依赖于STFT频谱。这一改进不仅保持了Vocos的快速推理速度，还提高了语音合成的质量。文章还探讨了如何将WaveNeXt与基于JETS的端到端文本到语音（E2E TTS）框架集成，并研究了采样频率为48kHz的全带模型（Full-band Model：能够处理和生成覆盖整个音频频谱范围的模型，通常是指能够处理从最低频到最高频的完整音频信号的模型）。实验结果表明，WaveNeXt在分析-合成和E2E TTS条件下均优于Vocos，同时保持了快速推理的能力。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/4a1eeaff-528f-4706-b5fc-210caea2c13b&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Scaling&lt;/strong&gt;&lt;/em&gt;：（模型参数大，适合线上、离线场景下高质量音频生成的研究，国内和老美喜欢研究这个方向，探索模型边界，泛化能力）&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;NVIDIA &lt;a href=&#34;https://arxiv.org/abs/2206.04658&#34;&gt;2023. BigVGAN: A Universal Neural Vocoder with Large-Scale Training&lt;/a&gt; (scaling of datasets and models) 112M params and  LibriTTS dataset(low-fidelity 24kHz)，high-fidelity out-of-distribution (OOD) generation without fine-tuning | &lt;a href=&#34;https://github.com/NVIDIA/BigVGAN&#34;&gt;paper code&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;⭐️NVIDIA &lt;a href=&#34;https://arxiv.org/abs/2402.00892&#34;&gt;2024.1 &lt;strong&gt;EVA-GAN: Enhanced Various Audio Generation via Scalable Generative Adversarial Networks&lt;/strong&gt;&lt;/a&gt;  (BigVGAN more model and data scaling) ~200M params and 36,000-hour HiFi (44.1kHz) dataset &lt;strong&gt;for music and singing generation&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;EVA-GAN as an advancement over HiFi-GAN，characterized by a larger context window, an improved structure, increased capacity, and an expanded dataset.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Dataset Scaling: base (LJSpeech + LibriTTS + VCTK + M4Singer)   + &lt;a href=&#34;https://huggingface.co/datasets/fish-audio-private/hifi-16kh&#34;&gt;&lt;strong&gt;fish-audio-private/hifi-16kh&lt;/strong&gt;&lt;/a&gt; + &lt;a href=&#34;https://huggingface.co/datasets/fish-audio-private/playerfm-20000h&#34;&gt;&lt;strong&gt;fish-audio-private/playerfm-20000h&lt;/strong&gt;&lt;/a&gt; scaling 36,000 hour dataset&lt;/li&gt;
+&lt;li&gt;Model Scaling: 将 EVA-GAN base模型中Generator参数从 16.3 M参数扩大到 EVA-GAN-big 174.4 M, 提高了鲁棒性和整体性能.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/eded57e5-67a3-45c0-8660-e97500ef2b3c&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;vq-vector-quantize-矢量量化&#34;&gt;VQ vector-quantize 矢量量化&lt;/h2&gt;
+&lt;p&gt;VQ 让你脑洞大开~&lt;/p&gt;
+&lt;p&gt;常与 VAE, GAN 框架；Codec(tokenizer) 结合。以及Vector Compression storage and ANN search for Vector embeddings。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/lucidrains/vector-quantize-pytorch&#34;&gt;https://github.com/lucidrains/vector-quantize-pytorch&lt;/a&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id=&#34;vq-vaes&#34;&gt;VQ-VAEs&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;VQ-VAE 来自 &lt;a href=&#34;https://arxiv.org/abs/1711.00937&#34;&gt;2017.11 &lt;strong&gt;Neural Discrete Representation Learning&lt;/strong&gt; 值得细品&lt;/a&gt; | &lt;a href=&#34;https://github.com/google-deepmind/sonnet/blob/v1/sonnet/python/modules/nets/vqvae.py&#34;&gt;paper code&lt;/a&gt;  (将 VAE 与VQ相结合以获得离散的潜在表示(discrete latent representation/variables)，论文中将VQ-VAE应用于图像,音频,视频 无监督生成)&lt;/p&gt;
+&lt;p&gt;PS：语言本质上是离散的，类似地，语音通常表示为符号序列，图像通常可以用语言简洁地描述。此外，离散表示非常适合复杂的推理、规划和预测学习（例如，如果下雨，我会使用雨伞）。虽然在深度学习中使用离散潜在变量已被证明具有挑战性，但可以用强大的自回归模型来对离散变量的分布进行建模：&lt;a href=&#34;https://arxiv.org/abs/1609.03499&#34;&gt;2016.9 &lt;strong&gt;WaveNet: A Generative Model for Raw Audio&lt;/strong&gt;&lt;/a&gt; (首先引入了用于音频生成的自回归模型) （谷歌大法，法力无边~）; 后续进行了扩展研究 VQ-VAE2 来自 &lt;a href=&#34;https://arxiv.org/abs/1906.00446&#34;&gt;2019.6 Generating Diverse High-Fidelity Images with VQ-VAE-2&lt;/a&gt; (引入多尺度分层VQ-VAE来增强局部特征)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;RQ-VAE 来自 &lt;a href=&#34;https://arxiv.org/abs/2203.01941&#34;&gt;2022.5 &lt;strong&gt;Autoregressive Image Generation using Residual Quantization&lt;/strong&gt;&lt;/a&gt; (使用Residual-VQ 构造VAE)| &lt;a href=&#34;https://github.com/kakaobrain/rq-vae-transformer&#34;&gt;paper code&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Latent Quantization 来自 &lt;a href=&#34;https://arxiv.org/abs/2305.18378&#34;&gt;2023.5 Disentanglement via Latent Quantization&lt;/a&gt; | &lt;a href=&#34;https://github.com/kylehkhsu/latent_quantization/blob/main/scripts/train_ae.py&#34;&gt;paper code&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;⭐️FSQ: &lt;a href=&#34;https://arxiv.org/abs/2309.15505&#34;&gt;2023.9 &lt;strong&gt;Finite Scalar Quantization: VQ-VAE Made Simple&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://github.com/google-research/google-research/tree/master/fsq&#34;&gt;paper code&lt;/a&gt; |  &lt;a href=&#34;https://github.com/lucidrains/vector-quantize-pytorch?#finite-scalar-quantization&#34;&gt;lucidrains/vector-quantize-pytorch?#finite-scalar-quantization&lt;/a&gt; （在大大简化生成建模的矢量量化方式，消除承诺损失、码本 EMA 更新的需要，并解决码本崩溃或利用率不足的问题。将每个标量舍入为具有直通梯度的离散级别；code成为超立方体中的均匀点。）&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;VQ-VAE with Rotation Trick: &lt;a href=&#34;https://arxiv.org/abs/2410.06424&#34;&gt;2024.10 Restructuring Vector Quantization with the Rotation Trick&lt;/a&gt; (通过 VQ 层对梯度进行变换，以便输入向量和量化输出之间的相对角度和大小被编码到梯度中)| &lt;a href=&#34;https://github.com/cfifty/rotation_trick&#34;&gt;paper code&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h3 id=&#34;vq-gans&#34;&gt;VQ-GANs&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;VQ-GAN 来自 &lt;a href=&#34;https://arxiv.org/abs/2012.09841&#34;&gt;2021. &lt;strong&gt;Taming Transformers for High-Resolution Image Synthesis&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://github.com/CompVis/taming-transformers&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Improved VQ-GAN 来自 &lt;a href=&#34;https://arxiv.org/abs/2110.04627&#34;&gt;2022. &lt;strong&gt;Vector-quantized Image Modeling with Improved VQGAN&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Latent Quantization 来自 &lt;a href=&#34;https://arxiv.org/abs/2305.18378&#34;&gt;2023.5 Disentanglement via Latent Quantization&lt;/a&gt; | &lt;a href=&#34;https://github.com/kylehkhsu/latent_quantization/blob/main/scripts/train_gan.py&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;RVQ-GAN 来自 &lt;a href=&#34;https://arxiv.org/abs/2306.06546&#34;&gt;2023.6 High-Fidelity Audio Compression with Improved RVQGAN&lt;/a&gt; |&lt;a href=&#34;https://github.com/descriptinc/descript-audio-codec&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;SimVQ 来自 &lt;a href=&#34;https://arxiv.org/abs/2411.02038&#34;&gt;2024.11 &lt;strong&gt;Addressing Representation Collapse in Vector Quantized Models with One Linear Layer&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://github.com/youngsheen/SimVQ&#34;&gt;paper code&lt;/a&gt; |  &lt;a href=&#34;https://github.com/lucidrains/vector-quantize-pytorch?#sim-vq&#34;&gt;lucidrains/vector-quantize-pytorch?#sim-vq&lt;/a&gt; (作者发现结合Rotation Trick 并将线性投影扩展为小型单层 MLP 时，有更好的效果)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h3 id=&#34;audio-codec-with-vq&#34;&gt;Audio Codec with VQ&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Residual-VQ (RVQ) 来自 &lt;a href=&#34;https://arxiv.org/abs/2107.03312&#34;&gt;2021. &lt;strong&gt;SoundStream: An End-to-End Neural Audio Codec&lt;/strong&gt;&lt;/a&gt; (可在端侧单个 CPU 线程流式实时运行，加上端侧自研芯片(FPGA,ARM架构)运行情况呢？) | &lt;a href=&#34;https://github.com/lucidrains/audiolm-pytorch/blob/main/audiolm_pytorch/soundstream.py&#34;&gt;audiolm_pytorch/soundstream&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;GroupedResidualVQ 来自 &lt;a href=&#34;https://arxiv.org/abs/2305.02765&#34;&gt;2023. HiFi-Codec: Group-residual Vector quantization for High Fidelity Audio Codec&lt;/a&gt;（对特征维度组进行残差 VQ，显示出与 Meta 的 &lt;a href=&#34;https://arxiv.org/abs/2210.13438&#34;&gt;Encodec模型&lt;/a&gt;(使用RVQ) 等效的结果，同时使用更少的码本）| &lt;a href=&#34;https://github.com/yangdongchao/AcademiCodec&#34;&gt;paper code&lt;/a&gt;  (fishspeech 也使用了类似组的方法，运用在FSQ中)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;RVQ-GAN 来自 &lt;a href=&#34;https://arxiv.org/abs/2306.06546&#34;&gt;2023.6 High-Fidelity Audio Compression with Improved RVQGAN&lt;/a&gt; |&lt;a href=&#34;https://github.com/descriptinc/descript-audio-codec&#34;&gt;paper code&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;SimVQ 来自 &lt;a href=&#34;https://arxiv.org/abs/2411.02038&#34;&gt;2024.11.4 &lt;strong&gt;Addressing Representation Collapse in Vector Quantized Models with One Linear Layer&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://github.com/youngsheen/SimVQ&#34;&gt;paper code&lt;/a&gt; | &lt;a href=&#34;https://github.com/lucidrains/vector-quantize-pytorch?#sim-vq&#34;&gt;lucidrains/vector-quantize-pytorch?#sim-vq&lt;/a&gt; (作者发现结合Rotation Trick 并将线性投影扩展为小型单层 MLP 时，有更好的效果)&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;表示坍缩问题&lt;/strong&gt;：在VQ模型中，随着代码本（codebook）大小的增加，代码本的利用率降低，导致模型性能无法提升，这就是表示坍缩问题。这个问题限制了VQ模型在大规模训练中的可扩展性。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;现有的旨在减轻表示坍缩的方法通常会以牺牲模型容量为代价来降低潜在空间的维度，但这并不能完全解决核心问题，比如FSQ。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;在论文研究中，对 VQ 模型中的表示坍缩问题进行了理论分析，并将其主要原因确定为码本的不相交优化，其中只有一小部分码向量通过梯度下降进行更新。为了解决这个问题，提出了&lt;strong&gt;SimVQ&lt;/strong&gt; ，这是一种通过基于可学习潜在基础的线性变换层重新参数化代码向量的新颖方法。这种变换优化了码本跨越的&lt;em&gt;整个线性空间&lt;/em&gt;，而不是仅仅更新普通 VQ 模型中最近邻搜索所选择的&lt;em&gt;码向量&lt;/em&gt;。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;SimVQ的一个关键优势在于，&lt;strong&gt;它在代码本大小扩展时能够持续提升性能，而传统的VQ模型在这种情况下往往会遇到性能瓶颈&lt;/strong&gt;。这&lt;strong&gt;使得SimVQ能够更好地适应大规模训练的需求，例如在大型语言模型中作为多模态分词器&lt;/strong&gt;。(CosyVoice2中的speech tokenizer用的是FSQ, 应该可以替换成最新的SimVQ来按照论文中提到的语音数据LibriTTS-580h 测试验证下codebook size scaling)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/6f02f852-3ff1-4f50-b48d-25e7257e8872&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Residual FSQ from &lt;a href=&#34;https://arxiv.org/abs/2411.19842&#34;&gt;2024.11.29 Scaling Transformers for Low-Bitrate High-Quality Speech Coding&lt;/a&gt; | &lt;a href=&#34;https://github.com/Stability-AI/stable-codec&#34;&gt;paper code&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h3 id=&#34;visual-tokenizer-with-vq&#34;&gt;Visual Tokenizer with VQ&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;3D-VQ from MAGVIT ( VQ-VAE 框架):  &lt;a href=&#34;https://arxiv.org/abs/2212.05199&#34;&gt;2023. MAGVIT: Masked Generative Video Transformer&lt;/a&gt; |&lt;a href=&#34;https://github.com/google-research/magvit&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Lookup-Free Quantization (LFQ)&lt;/strong&gt; from MAGVIT2 ( VQ-VAE 框架): &lt;a href=&#34;https://arxiv.org/abs/2310.05737&#34;&gt;2024.3 &lt;strong&gt;Language Model Beats Diffusion - Tokenizer is Key to Visual Generation&lt;/strong&gt;&lt;/a&gt; (LM(discrete latent) vs DDM(continuous latent)  很好的一篇论文) | &lt;a href=&#34;https://github.com/lucidrains/magvit2-pytorch&#34;&gt;magvit2-pytorch code&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;一种新的视频分词器，在三个方面优于之前性能最佳的视频分词器：视觉生成、视频压缩和动作识别。&lt;/li&gt;
+&lt;li&gt;一种新颖的免查找量化方法，可以通过学习大量词汇来提高语言模型的视觉生成质量。&lt;/li&gt;
+&lt;li&gt;论文中的实验表明，当提供相同的训练数据、等效的模型大小和相似的训练预算时，语言模型可以优于 ImageNet 上的扩散模型。&lt;/li&gt;
+&lt;li&gt;根据用户研究，视频压缩器在相似的比特率下比 HEVC(High Efficiency Video Coding H.265) 和下一代video codec VVC (Versatile Video Coding H.266)具有更好的质量（人工评估）。专为视频生成而设计的视觉分词器的第一次成功尝试，以达到与标准编解码器相当的结果。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;BSQ (Binary Spherical Quantization) from &lt;a href=&#34;https://arxiv.org/abs/2406.07548&#34;&gt;2024.6 Image and Video Tokenization with Binary Spherical Quantization&lt;/a&gt; (BSQ vs  LFQ BSQ 在量化误差、训练效率、熵计算复杂度以及实验结果等方面均优于 LFQ，尤其是在高维度和高分辨率数据上表现更为突出)|&lt;a href=&#34;https://github.com/zhaoyue-zephyrus/bsq-vit&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2409.04410&#34;&gt;2024.9 Open-MAGVIT2: An Open-Source Project Toward Democratizing Auto-regressive Visual Generation&lt;/a&gt; (可以练练丹，看看效果)| &lt;a href=&#34;https://github.com/TencentARC/Open-MAGVIT2&#34;&gt;paper code&lt;/a&gt; Open-MAGVIT2(SEED-Voken 后面又引入 IBQ 后变成了 Visual Tokenizer) from magvit2-pytorch&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;IBQ&lt;/strong&gt; (Index Backpropagation Quantization) from &lt;a href=&#34;https://arxiv.org/abs/2412.02692&#34;&gt;2024.12 Taming Scalable Visual Tokenizer for Autoregressive Image Generation&lt;/a&gt; (解决了现有 VQ 方法在扩展性上的瓶颈问题，实现了高利用率的大规模视觉标记化，并在图像重建和生成任务中取得了优异的性能。通过全局更新策略，IBQ在整个训练过程中保持了较高的码本利用率（约96%）；IBQ首次成功训练了大规模码本（2¹⁸，即262,144个码本大小）和高维度（256维）的视觉分词器；ImageNet 上的实验表明，IBQ 能够实现高利用率、大规模的视觉分词器，并在重建(还原修复)（1.00 rFID）和生成(创新)（2.05 gFID）方面提高性能)| &lt;a href=&#34;https://github.com/TencentARC/SEED-Voken&#34;&gt;paper code&lt;/a&gt;  (scaling codebook size, code dimension and model size)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h3 id=&#34;vector-compressionstorage-and-searchann-with-vq-for-vector-embeddings&#34;&gt;Vector Compression(storage) and Search(ANN) with VQ for Vector embeddings&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;QINCo：&lt;a href=&#34;https://arxiv.org/abs/2401.14732&#34;&gt;2024. 5 Residual Quantization with Implicit Neural Codebooks&lt;/a&gt; | &lt;a href=&#34;https://github.com/facebookresearch/Qinco/tree/main/qinco_v1&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;QINCo2：&lt;a href=&#34;https://arxiv.org/abs/2501.03078&#34;&gt;2025.1 &lt;strong&gt;QINCo2: Vector Compression and Search with Improved Implicit Neural Codebooks&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://arxiv.org/abs/2501.03078&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;fishspeech&#34;&gt;FishSpeech&lt;/h2&gt;
+&lt;h3 id=&#34;主要贡献&#34;&gt;主要贡献&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;利用LLMs和双AR 结构来取代传统的G2P （文字到音素的转换(Grapheme-to-Phoneme)）转换，提供强大且可扩展的多语言语音合成;&lt;/li&gt;
+&lt;li&gt;FFGAN vocoder 集成了多种矢量量化技术（Grouped Finite Scalar Vector Quantization, GFSQ），以优化压缩比和码本利用率来实现高保真语音合成;&lt;/li&gt;
+&lt;li&gt;优化推理，在消费级 NVIDIA RTX 4060 移动平台上实现了约 1:5 的实时因子，在高性能 NVIDIA RTX 4090 配置上实现了 1:15 的实时因子。延迟为 150 毫秒，远低于其他使用 DiT 和 Flow 结构的 TTS 系统。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;fish-speech的双自回归dual-ar模型结构&#34;&gt;Fish-Speech的双自回归（Dual-AR）模型结构&lt;/h3&gt;
+&lt;p&gt;Dual-AR 模型结构 提高了序列生成过程中码本处理的稳定性和计算效率，特别是在使用分组有限标量矢量量化 (GFSQ) 时，由两个sequential AR transformer(GLM)组成: &lt;strong&gt;Slow Transformer&lt;/strong&gt; 和 &lt;strong&gt;Fast Transformer&lt;/strong&gt;  (分别对应UniAudio的Global GPT 和 local GPT) ；Transformer 采用 Llama模型结构。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/65172ed8-6e10-4c63-ac1c-0813b6493549&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h4 id=&#34;slow-transformer&#34;&gt;&lt;strong&gt;Slow Transformer&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;Slow Transformer 在更高的抽象级别上运行，&lt;strong&gt;处理输入文本嵌入(Text Embeddings 和 Codebook Embeddings)以编码全局语言结构和语义内容&lt;/strong&gt;。该模块&lt;strong&gt;负责生成中间隐藏状态并高精度预测语义token&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;假设输入的toen序列为$x = [x₁, x₂, &amp;hellip;, xₜ]$，Slow Transformer 生成隐藏状态 $h ∈ ℝ^(T×D)$ 和token对数 $z$，通过以下变换实现：
+$$
+h = SlowTransformer(x)
+$$&lt;/p&gt;
+&lt;p&gt;$$
+z = Wtok · Norm(h)
+$$&lt;/p&gt;
+&lt;p&gt;其中，$Norm(·)$表示层归一化，$W_{tok}$ 是标记预测层的可学习参数。&lt;/p&gt;
+&lt;h4 id=&#34;fast-transformer&#34;&gt;Fast Transformer&lt;/h4&gt;
+&lt;p&gt;Fast Transformer通过Codebook Embedding处理来细化Slow Transformer的输出，&lt;strong&gt;捕捉自然语音所需的详细声学特征(acoustic features)&lt;/strong&gt;。&lt;strong&gt;处理残差信息并优化Codebook的使用&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;Fast Transformer的输入是隐藏状态 $h$ 和codebook embedding $c$ 的拼接序列，具体如下：
+$$
+h̃ = [h; c]，(h^{fast})
+$$&lt;/p&gt;
+&lt;p&gt;$$
+h^{fast} = FastTransformer(ĥ, (h^{fast}))
+$$&lt;/p&gt;
+&lt;p&gt;$$
+y = W_{cbk} · Norm(h^{fast})
+$$&lt;/p&gt;
+&lt;p&gt;其中，$[h; c]$ 表示 $h$ 和 $c$ 的拼接操作，$W_{cbk}$ 是codebook预测层的可学习参数，$y$ 是最终的码本对数。&lt;/p&gt;
+&lt;h4 id=&#34;dual-ar结构的优势&#34;&gt;Dual AR结构的优势&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;增强的序列生成稳定性&lt;/strong&gt;：通过分层处理全局和局部信息，显著提高了GFSQ在序列生成任务中的稳定性。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;优化的码本处理&lt;/strong&gt;：快速变换器实现了一种高效的码本嵌入处理机制，在不增加显著计算开销的情况下提升了性能，特别是对于规模为7B或更大的模型。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;高保真语音合成质量&lt;/strong&gt;：Slow和Fast Transformer之间的协同作用使得系统能够以高保真度合成语音，并能够处理复杂的语言现象。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;多语言处理能力&lt;/strong&gt;：通过大语言模型（LLM）生成语言特征，消除了传统文字到音素转换的依赖，从而简化了合成流程并增强了多语言能力。通过混合文本数据，理解能力将进一步提升。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;firefly-gan&#34;&gt;Firefly-GAN&lt;/h3&gt;
+&lt;p&gt;Firefly-GAN（FF-GAN）是 &lt;a href=&#34;https://arxiv.org/abs/2402.00892&#34;&gt;2024.1 &lt;strong&gt;EVA-GAN: Enhanced Various Audio Generation via Scalable Generative Adversarial Networks&lt;/strong&gt;&lt;/a&gt;  的一个显著改进版本。它用更高效的设计替换了HiFi-GAN中的传统卷积组件，引入了并行块（ParallelBlock）以替代多感受野（Multi-Receptive Field, MRF）模块。通过引入分组有限标量矢量量化（Grouped Finite Scalar Vector Quantization GFSQ），&lt;strong&gt;FF-GAN在序列生成稳定性以及语言变化处理方面表现出色，尤其适用于多语言合成的AI应用&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/f5f8cd7f-2463-4c1e-a8cd-af77b48fe9fa&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h4 id=&#34;firefly-generator&#34;&gt;Firefly Generator&lt;/h4&gt;
+&lt;p&gt;FF-GAN采用了增强的卷积结构，包括&lt;strong&gt;深度可分离卷积(depth-wise separable convolution)&lt;/strong&gt; &lt;a href=&#34;https://arxiv.org/abs/1704.04861&#34;&gt;2017.4 Mobilenets: Efficient convolutional neural networks for mobile vision applications&lt;/a&gt; 和 &lt;strong&gt;扩张卷积(dilated convolution)&lt;/strong&gt; &lt;a href=&#34;https://arxiv.org/abs/1511.07122&#34;&gt;2015.11 Multi-Scale Context Aggregation by Dilated Convolutions&lt;/a&gt;，以替代传统的Conv1d层。这种架构改进&lt;strong&gt;增强了模型捕捉和合成复杂音频特征的能力&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;并行块&lt;/strong&gt;（ParallelBlock 来自 &lt;a href=&#34;https://arxiv.org/abs/2402.00892&#34;&gt;2024.1 EVA-GAN: Enhanced Various Audio Generation via Scalable Generative Adversarial Networks&lt;/a&gt; ）&lt;strong&gt;替代传统的多感受野（MRF）模块&lt;/strong&gt;，进行改进：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;优化了“typo-codebook(错误码本)”输入的处理效率。&lt;/li&gt;
+&lt;li&gt;实现了可配置的卷积核大小和扩张率，并采用 stack-and-average 机制处理来自三个残差块（ResBlocks）的输出，而不是直接进行加法操作。&lt;/li&gt;
+&lt;li&gt;提供了增强的感受野（Multi-Receptive Field, MRF）覆盖、优越的特征提取能力和更好的可配置性，从而提升了音频合成的质量。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;grouped-finite-scalar-vector-quantization-gfsq&#34;&gt;Grouped Finite Scalar Vector Quantization (GFSQ)&lt;/h4&gt;
+&lt;p&gt;为了适应“typo-codebook”任务，引入了分组有限标量矢量量化（ Grouped Finite Scalar Vector Quantization GFSQ）。&lt;/p&gt;
+&lt;p&gt;以下是GFSQ的详细开发过程：&lt;/p&gt;
+&lt;p&gt;假设输入张量为 $z ∈ ℝ^{B×C×L}$，整个过程包括以下步骤：&lt;/p&gt;
+&lt;h5 id=&#34;下采样downsampling&#34;&gt;下采样（Downsampling）&lt;/h5&gt;
+&lt;p&gt;使用下采样函数 $f_{down}$ 对输入张量 $z$ 进行下采样，得到下采样后的张量 $z_d ∈ ℝ^{B×C_d×L_d}$：
+$$
+z_d = f_{down}(z)
+$$&lt;/p&gt;
+&lt;h5 id=&#34;gfsq过程&#34;&gt;GFSQ过程&lt;/h5&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;特征分组(Feature Grouping)&lt;/strong&gt; 输入特征矩阵 $Z$ 被划分为$G$ 组：
+$$
+Z = [Z^{(1)}, Z^{(2)}, &amp;hellip;, Z^{(G)}]
+$$&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;标量量化(Scalar Quantization)&lt;/strong&gt; 对于每个标量 $z_{b,c,l}^{(g)}$：
+$$
+ẑ_{b,c,l}^{(g)} = Q(z_{b,c,l}^{(g)})
+$$&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;索引生成(Index Generation)&lt;/strong&gt; 每个标量映射到索引 $k_{b,c,l}^{(g)}$&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;解码(Decoding)&lt;/strong&gt;
+$$
+ẑ_{b,c,l}^{(g)} = Codebook^{(g)}[k_{b,c,l}^{(g)}]
+$$&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h5 id=&#34;重构量化下采样张量reconstruct-the-quantized-downsampled-tensor&#34;&gt;重构量化下采样张量（Reconstruct the Quantized Downsampled Tensor）&lt;/h5&gt;
+&lt;p&gt;将所有组的量化向量沿通道维度拼接，得到量化下采样张量 $z_{qd} ∈ ℝ^{(B×C_d×L_d)}$：
+$$
+z_{qd}(b, :, l) = [ẑ_{q_d}^{(1)}(b, :, l); ẑ_{q_d}^{(2)}(b, :, l); &amp;hellip;; ẑ_{q_d}^{(G)}(b, :, l)]
+$$&lt;/p&gt;
+&lt;h5 id=&#34;上采样upsampling&#34;&gt;上采样（Upsampling）&lt;/h5&gt;
+&lt;p&gt;使用上采样函数 $f_{up}$ 将量化下采样张量恢复到其原始大小，得到最终的量化张量 $z_q ∈ ℝ^{B×C×L}$：
+$$
+z_q = f_{up}(z_{q_d})
+$$
+目标是使 $z_q$ 尽可能接近原始输入 $z$：
+$$
+z_q ≈ z
+$$&lt;/p&gt;
+&lt;h4 id=&#34;结论&#34;&gt;结论&lt;/h4&gt;
+&lt;p&gt;GFSQ技术实现了接近100%的码本利用率，并在内部消融实验中，相比于其他量化技术（如RFSQ、RVQ和GRFSQ）获得了更好的客观和主观评分。FF-GAN显著增强了“typo-codebook”操作的稳定性，并确保在多情感和多语言任务中保留全面的中间变量信息。&lt;/p&gt;
+&lt;h3 id=&#34;训练与推理&#34;&gt;训练与推理&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/a3302fff-211f-467e-a53f-a0916984ae0c&#34; alt=&#34;image&#34;&gt;&lt;/p&gt;
+&lt;h4 id=&#34;training-训练&#34;&gt;&lt;strong&gt;Training&lt;/strong&gt; 训练&lt;/h4&gt;
+&lt;p&gt;Fish-Speech采用了一个三阶段的训练方法：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;首先使用&lt;strong&gt;大规模的标准数据进行预训练(PT)&lt;/strong&gt;，&lt;/li&gt;
+&lt;li&gt;然后通过&lt;strong&gt;小批量的高质量数据进行有监督微调（SFT）&lt;/strong&gt;，&lt;/li&gt;
+&lt;li&gt;最后&lt;strong&gt;使用手动标记的正负样本对 进行DPO（Discriminator Pessimistic Optimization）训练&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;训练基础设施分为两个部分（见上图）：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;自回归（AR）训练使用&lt;strong&gt;8块H100 GPU（80G显存）&lt;/strong&gt;，&lt;strong&gt;持续一周&lt;/strong&gt;。(Training Stage2)&lt;/li&gt;
+&lt;li&gt;声码器（vocoder）训练则使用&lt;strong&gt;8块RTX 4090 GPU&lt;/strong&gt;，再&lt;strong&gt;持续一周&lt;/strong&gt;。(Training Stage1)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;需要注意的是，这些训练时间不包括DPO阶段。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;inference-推理&#34;&gt;Inference 推理&lt;/h4&gt;
+&lt;p&gt;训练后推理过程见上图Inference。通过采用fish-tech技术（包括KV缓存⭐️&lt;a href=&#34;2211.05102&#34;&gt;2023. &lt;strong&gt;Efficiently Scaling Transformer Inference&lt;/strong&gt;&lt;/a&gt;、PyTorch编译等加速方法），系统在&lt;strong&gt;消费级NVIDIA RTX 4060移动平台上实现了大约1:5的实时因子（real-time factors RTF），在高性能NVIDIA RTX 4090配置上实现了1:15的实时因子&lt;/strong&gt;。这些架构优化显著降低了推理延迟，&lt;strong&gt;实现了150毫秒的首包延迟(first-packet latency)&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;此外，该系统可以&lt;strong&gt;流式处理信息&lt;/strong&gt;，便于与现代AI工具结合，并在不同场景中使用。&lt;/p&gt;
+&lt;h3 id=&#34;dataset-数据集&#34;&gt;Dataset 数据集&lt;/h3&gt;
+&lt;p&gt;训练数据包括来自公共数据源和 数据收集过程的大量语音样本。数据集包含约&lt;strong&gt;72万（720k）小时的多语言语音数据&lt;/strong&gt;，其中&lt;strong&gt;英语和普通话是主要组成部分，各占30万小时&lt;/strong&gt;。还包含了其他语系的语音数据，&lt;strong&gt;每种语系各占2万小时，包括德语（日耳曼语系）、法语和意大利语（罗曼语系）、日语和韩语（东亚语系）以及阿拉伯语（闪米特语系）&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;仔细平衡了不同语言的数据，以帮助模型同时学习多种语言。这种方法有助于模型在生成混合语言内容时表现良好。数据集的庞大规模和多样性显著提升了模型处理多语言的自然性。&lt;/p&gt;
+&lt;p&gt;PS: scaling 数据集 到 72万小时；而 后续 CosyVoice2公布的训练数据集时 20万训练speech tokenizer, 16.68万小时训练cosyvoice2 LM&lt;/p&gt;
+&lt;h3 id=&#34;experimental-evaluation-实验评估&#34;&gt;Experimental Evaluation 实验评估&lt;/h3&gt;
+&lt;p&gt;为了评估论文中的模型相对于基线模型的效果，进行了说话人克隆任务的实验。&lt;/p&gt;
+&lt;p&gt;为了实验验证，将分析限制在单语言语音克隆场景，不包括跨语言合成的任务。&lt;strong&gt;评估语料库由10个不同的说话者（包括不同的语言）身份组成，其中30个是综合的每个说话者的话语，产生300个样本的综合评估集&lt;/strong&gt;。应该指出的是，&lt;strong&gt;跨语言综合是不包括在本次评估中&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;评估方法包括客观和主观指标：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;词错误率（WER）用于评估语音的可理解性，&lt;strong&gt;使用OpenAI Whisper-medium ASR模型进行转录评价的结果&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;说话人嵌入相似度（speaker embedding similarity ）用于评估语音克隆的保真度，工具包：
+&lt;ul&gt;
+&lt;li&gt;Resemblyzer： &lt;a href=&#34;https://github.com/resemble-ai/Resemblyzer&#34;&gt;https://github.com/resemble-ai/Resemblyzer&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Speechbrain&lt;/strong&gt;： &lt;a href=&#34;https://github.com/speechbrain/speechbrain&#34;&gt;https://github.com/speechbrain/speechbrain&lt;/a&gt; | &lt;a href=&#34;https://arxiv.org/abs/2407.00463&#34;&gt;2024.6 Open-Source Conversational AI with SpeechBrain 1.0&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;以及平均意见得分（mean opinion score MOS）用于量化感知质量，&lt;strong&gt;人工评估&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这一评估框架旨在评估模型在保持说话人身份的同时，维持高保真语音合成的能力。&lt;/p&gt;
+&lt;h4 id=&#34;word-error-rate-analysis-词错误率分析&#34;&gt;Word Error Rate Analysis 词错误率分析&lt;/h4&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;模型名称&lt;/th&gt;
+&lt;th&gt;WER (%)&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;真实录音&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;9.22&lt;/strong&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Fish-Speech&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;6.89&lt;/strong&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Reecho1&lt;/td&gt;
+&lt;td&gt;11.92&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;F5-TTS&lt;/td&gt;
+&lt;td&gt;13.98&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CosyVoice&lt;/td&gt;
+&lt;td&gt;22.20&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;表1：语音克隆任务的词错误率（WER）结果&lt;/p&gt;
+&lt;p&gt;表1的分析显示，Fish-Speech 模型在语音克隆任务中实现了6.89%的词错误率，这不仅显著低于基线模型，甚至优于真实录音（9.22%）。这一性能为Fish-Speech模型在语音克隆场景中的能力提供了有力证据。该模型与其他竞争模型（WER范围从11.92%到22.20%）之间的差距突显了Fish-Speech模型方法在合成稳定性和内容保真度方面的改进。&lt;/p&gt;
+&lt;h4 id=&#34;speaker-similarity-analysis-说话人相似度分析&#34;&gt;Speaker Similarity Analysis 说话人相似度分析&lt;/h4&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;模型名称&lt;/th&gt;
+&lt;th&gt;Resemblyzer&lt;/th&gt;
+&lt;th&gt;SpeechBrain&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;真实录音&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;0.921&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;0.770&lt;/strong&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CosyVoice&lt;/td&gt;
+&lt;td&gt;0.936&lt;/td&gt;
+&lt;td&gt;0.813&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Fish-Speech&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;0.914&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;0.762&lt;/strong&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;F5-TTS&lt;/td&gt;
+&lt;td&gt;0.905&lt;/td&gt;
+&lt;td&gt;0.787&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Reecho&lt;/td&gt;
+&lt;td&gt;0.887&lt;/td&gt;
+&lt;td&gt;0.636&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;表2：不同模型的说话人相似度评分，包括真实录音&lt;/p&gt;
+&lt;p&gt;表2展示了“typo-codebook”策略对说话人相似度指标的影响。Fish-Speech模型在Resemblyzer和SpeechBrain上的相似度评分分别为0.914和0.762，与真实录音的表现（0.921和0.770）非常接近。在Resemblyzer评估中，与真实录音的差距仅为0.76%，在SpeechBrain评估中为1.04%。这表明&lt;strong&gt;Fish-Speech模型在捕捉自然语音特征方面具有卓越的能力&lt;/strong&gt;。结果强烈表明，“typo-codebook”架构&lt;strong&gt;能够更全面地捕捉声学状态，从而提高合成语音的音色保真度&lt;/strong&gt;。Fish-Speech模型方法显著优于基线模型，例如F5-TTS（0.905和0.787）和Reecho（0.887和0.636）。在&lt;strong&gt;两个评估框架中的一致表现证明了Fish-Speech模型方法在保留说话人特征方面的有效性&lt;/strong&gt;，这对于高质量的文本到语音合成和代理任务至关重要。&lt;/p&gt;
+&lt;h4 id=&#34;perceptual-quality-assessment感知质量评估&#34;&gt;&lt;strong&gt;Perceptual Quality Assessment&lt;/strong&gt;感知质量评估&lt;/h4&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;模型名称&lt;/th&gt;
+&lt;th&gt;MOS&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;真实录音&lt;/td&gt;
+&lt;td&gt;5.00&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Fish-Speech&lt;/td&gt;
+&lt;td&gt;4.05&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CosyVoice&lt;/td&gt;
+&lt;td&gt;3.80&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;F5-TTS&lt;/td&gt;
+&lt;td&gt;2.90&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Reecho&lt;/td&gt;
+&lt;td&gt;3.76&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;表3：克隆语音质量的五级平均意见得分（MOS）评分&lt;/p&gt;
+&lt;p&gt;为了评估合成音频的感知质量，进行了全面的平均意见得分（MOS）听测实验，参与者为没有音频处理经验的普通听众。&lt;strong&gt;评估遵循双盲、随机化方法&lt;/strong&gt;，以确保评估的公正性。结果显示，Fish-Speech在主观评分上显著高于其他基线模型（p &amp;lt; 0.05），在语音自然度和说话人相似度方面表现出色。这一人类感知指标的评估强烈表明，&lt;strong&gt;Fish-Speech能够更好地捕捉和再现人类语音的自然特征，尤其是在语音克隆任务的背景下&lt;/strong&gt;。&lt;/p&gt;
+&lt;h2 id=&#34;结论-1&#34;&gt;结论&lt;/h2&gt;
+&lt;p&gt;Fish-Speech论文研究在文本到语音（TTS）领域取得了显著进展，通过引入一种新型的多语言和多情感稳定化解决方案，为未来的人工智能应用提供了更自然、更高质量的语音合成技术。核心创新在于开发了一种结合了双自回归（Dual-AR）生成结构的“typo-codebook”声码器。这种结构组合在合成过程中表现出稳定性，同时保留了生成语音中的声学特征。&lt;/p&gt;
+&lt;p&gt;此外，Fish-Speech论文中采用了非文字到音素（non-G2P）结构，有效解决了传统基于音素系统固有的局限性，并为跨语言和情感多样化的TTS应用提供了坚实的基础，特别是在人工智能代理交互的背景下。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;附录&#34;&gt;附录&lt;/h2&gt;
+&lt;h3 id=&#34;fréchet-inception-distance-fid&#34;&gt;Fréchet Inception Distance (FID)&lt;/h3&gt;
+&lt;p&gt;FID 是 &lt;strong&gt;Fréchet Inception Distance&lt;/strong&gt; 的缩写，是一种用于评估生成模型（如 GAN 和扩散模型）生成图像质量的指标。它通过比较生成图像和真实图像在特征空间中的分布差异来量化两者的相似度。具体来说，FID 的计算过程如下：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;特征提取&lt;/strong&gt;：使用预训练的 Inception v3 网络提取真实图像和生成图像的特征向量。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;统计分布&lt;/strong&gt;：计算这些特征向量的均值和协方差矩阵。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;距离计算&lt;/strong&gt;：使用 Fréchet 距离公式计算两个分布之间的距离。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;FID 的公式为：
+$$
+FID=∥μ_r−μ_g∥^2+Tr(Σ_r+Σ_g−2(Σ_rΣ_g)^{1/2})
+$$
+其中，μr 和 μg 分别是真实图像和生成图像的特征均值，$Σr$ 和 $Σg$ 是它们的协方差矩阵。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;FID 的物理含义&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;FID 越小，表示生成图像与真实图像越相似。&lt;/li&gt;
+&lt;li&gt;它同时衡量了生成图像的质量和多样性。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;FID 是目前广泛使用的生成模型评估指标之一，因为它能够更准确地反映生成图像与真实图像之间的分布差异。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id=&#34;residual-information残差信息&#34;&gt;residual information（残差信息）&lt;/h3&gt;
+&lt;p&gt;在深度学习和语音合成的上下文中，**residual information（残差信息）**是一个非常重要的概念，尤其是在处理复杂的序列生成任务时。它通常用于描述模型中未被完全捕捉或处理的信息，这些信息可能包含重要的细节或未被充分利用的特征。以下是对残差信息的详细解释及其在语音合成中的应用。&lt;/p&gt;
+&lt;h4 id=&#34;1-残差信息的定义&#34;&gt;&lt;strong&gt;1. 残差信息的定义&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;在深度学习中，&lt;strong&gt;残差信息&lt;/strong&gt;通常指的是输入数据与模型当前输出之间的差异。这种差异可能包含以下内容：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;未被模型捕捉的细节&lt;/strong&gt;：模型可能未能完全理解输入数据中的某些复杂特征。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;噪声或误差&lt;/strong&gt;：输入数据中可能存在的噪声或模型预测中的误差。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;未充分利用的特征&lt;/strong&gt;：输入数据中某些特征可能未被模型充分利用，残差信息可以提供额外的线索来优化这些特征的处理。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;2-残差信息在语音合成中的应用&#34;&gt;&lt;strong&gt;2. 残差信息在语音合成中的应用&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;在语音合成（TTS）系统中，残差信息可以用于优化生成的语音质量和自然度。以下是残差信息在语音合成中的具体应用：&lt;/p&gt;
+&lt;h4 id=&#34;21-在双自回归架构中的作用&#34;&gt;&lt;strong&gt;2.1 在双自回归架构中的作用&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;在Fish-Speech框架中，双自回归架构（Dual-AR）通过慢速变换器（Slow Transformer）和快速变换器（Fast Transformer）协同工作，处理全局和局部信息。残差信息在这个过程中扮演了重要角色：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;慢速变换器的输出&lt;/strong&gt;：慢速变换器生成的隐藏状态包含了全局语义信息，但可能未能完全捕捉到所有细节。这些未被完全处理的信息就是残差信息。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;快速变换器的细化&lt;/strong&gt;：快速变换器接收慢速变换器的输出，并进一步处理残差信息。通过处理这些残差信息，快速变换器能够补充细节，优化生成的语音质量。例如：
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;细节特征的补充&lt;/strong&gt;：快速变换器可以处理残差信息中的声学细节，如音调、语调、情感表达等。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;自然度的提升&lt;/strong&gt;：通过处理残差信息，快速变换器能够生成更自然、更流畅的语音。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&#34;22-在矢量量化中的作用&#34;&gt;&lt;strong&gt;2.2 在矢量量化中的作用&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;在GFSQ（Grouped Finite Scalar Vector Quantization）中，残差信息也起到重要作用。具体来说：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;量化过程中的残差&lt;/strong&gt;：在量化过程中，输入特征被映射到码本中的最近邻向量。这个映射过程可能会丢失一些细节信息，这些未被完全映射的信息就是残差信息。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;优化码本利用&lt;/strong&gt;：通过处理这些残差信息，模型可以更好地调整码本的使用，从而提高合成语音的自然度和保真度。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;23-在神经声码器中的作用&#34;&gt;&lt;strong&gt;2.3 在神经声码器中的作用&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;在神经声码器（如FF-GAN）中，残差信息用于优化生成的音频信号。例如：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;频谱细节的补充&lt;/strong&gt;：神经声码器通过处理残差信息，补充频谱中的细节，从而生成更自然的音频。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;高频重建&lt;/strong&gt;：残差信息可以帮助神经声码器更好地重建高频成分，这对于语音的自然度和清晰度至关重要。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;3-残差信息的处理方法&#34;&gt;3. 残差信息的处理方法&lt;/h4&gt;
+&lt;p&gt;在实际应用中，残差信息可以通过以下几种方式处理：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;残差连接（Residual Connections）&lt;/strong&gt;：在深度学习模型中，残差连接允许模型直接传递输入信息到后续层，从而保留未被处理的细节。例如，在Transformer架构中，残差连接被广泛使用。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;注意力机制（Attention Mechanisms）&lt;/strong&gt;：通过注意力机制，模型可以动态地关注输入数据中的重要部分，从而更好地处理残差信息。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;多尺度特征提取&lt;/strong&gt;：通过多尺度特征提取，模型可以同时处理全局和局部信息，从而更好地利用残差信息。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&#34;4-总结&#34;&gt;&lt;strong&gt;4. 总结&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;残差信息在语音合成中扮演着重要角色，它包含了未被模型完全处理的细节和特征。通过合理处理残差信息，模型可以显著提升生成语音的质量和自然度。在Fish-Speech框架中，残差信息通过双自回归架构和GFSQ技术被充分利用，从而实现了高效、高质量的语音合成。&lt;/p&gt;</description>
+      
+    </item>
+    
+    <item>
       <title>论文解读：CosyVoice2: Scalable Streaming Speech Synthesis with Large Language Models</title>
       <link>https://weedge.github.io/post/multimoding/voices/cosyvoice2/</link>
       <pubDate>Fri, 17 Jan 2025 10:26:23 +0800</pubDate>
@@ -67,14 +531,16 @@
 &lt;li&gt;Colab achatbot_CosyVoice 操作笔记： &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Colab CosyVoice 操作笔记： &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&#34;zero-shot-tts-models-零样本-tts-模型&#34;&gt;zero-shot TTS models 零样本 TTS 模型&lt;/h2&gt;
-&lt;h3 id=&#34;codec-language-models-编解码器语言模型&#34;&gt;codec language models 编解码器语言模型&lt;/h3&gt;
+&lt;h2 id=&#34;扩展阅读&#34;&gt;扩展阅读&lt;/h2&gt;
+&lt;h3 id=&#34;zero-shot-tts-models-零样本-tts-模型&#34;&gt;zero-shot TTS models 零样本 TTS 模型&lt;/h3&gt;
+&lt;h4 id=&#34;codec-language-models-编解码器语言模型&#34;&gt;codec language models 编解码器语言模型&lt;/h4&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;speech &lt;strong&gt;codec model&lt;/strong&gt;  to extract discrete speech representation:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2107.03312&#34;&gt;2021.7 SoundStream: An End-to-End Neural Audio Codec&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2107.03312&#34;&gt;2021.7 SoundStream: An End-to-End Neural Audio Codec&lt;/a&gt; | &lt;a href=&#34;https://github.com/wesbz/SoundStream&#34;&gt;code&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2210.13438&#34;&gt;2022.10 &lt;strong&gt;High Fidelity Neural Audio Compression&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;http://github.com/facebookresearch/encodec&#34;&gt;facebookresearch/encodec&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2305.02765&#34;&gt;2023.5 HiFi-Codec: Group-residual Vector quantization for High Fidelity Audio Codec&lt;/a&gt; | &lt;a href=&#34;https://github.com/yangdongchao/AcademiCodec&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2309.07405&#34;&gt;2023.10 FunCodec: A Fundamental, Reproducible and Integrable Open-source Toolkit for Neural Speech Codec&lt;/a&gt; | &lt;a href=&#34;https://github.com/modelscope/FunCodec&#34;&gt;modelscope/FunCodec&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
@@ -104,7 +570,7 @@
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&#34;feature-diffusion-models-特征扩散模型&#34;&gt;feature diffusion models 特征扩散模型&lt;/h3&gt;
+&lt;h4 id=&#34;feature-diffusion-models-特征扩散模型&#34;&gt;feature diffusion models 特征扩散模型&lt;/h4&gt;
 &lt;p&gt;DDPM + CFM + NAR(non-autoregressive) model, 没有 codec&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -143,7 +609,7 @@
 &lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/2410.06885&#34;&gt;2024.10 &lt;strong&gt;F5-TTS: A fairytaler that fakes fluent and faithful speech with flow matching&lt;/strong&gt;&lt;/a&gt; 保持了管道的简单性，无需音素对齐、持续时间预测器、文本编码器和语义注入编解码器模型，利用带有 &lt;a href=&#34;https://arxiv.org/abs/2301.00808&#34;&gt;ConvNeXt V2&lt;/a&gt;|&lt;a href=&#34;https://github.com/facebookresearch/ConvNeXt-V2&#34;&gt;paper code&lt;/a&gt; 的Diffusion Transformer(DiT)来更好地解决上下文学习期间的文本语音对齐问题。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&#34;codec-language-and-feature-diffusion-hybrid-systems-混合系统&#34;&gt;codec language and feature diffusion hybrid systems 混合系统&lt;/h3&gt;
+&lt;h4 id=&#34;codec-language-and-feature-diffusion-hybrid-systems-混合系统&#34;&gt;codec language and feature diffusion hybrid systems 混合系统&lt;/h4&gt;
 &lt;p&gt;text-to-codec language model  和 codec-to-feature diffusion model&lt;/p&gt;
 &lt;p&gt;语言模型解决文本和语音之间的对齐以及话语持续时间预测，而编解码器到特征扩散模型则根据生成的编解码器和其他条件合成语音特征（梅尔谱）。通过利用两种生成模型的优势，混合系统实现了高度多样性、韵律一致性和语音质量。&lt;/p&gt;
 &lt;ul&gt;
@@ -15852,185 +16318,6 @@ db &amp;gt; .exit
 &lt;/span&gt;&lt;span class=&#34;gi&#34;&gt;+    ])
 &lt;/span&gt;&lt;span class=&#34;gi&#34;&gt;+  end
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;完整源码：  &lt;a href=&#34;https://github.com/cstack/db_tutorial&#34;&gt;https://github.com/cstack/db_tutorial&lt;/a&gt;&lt;/p&gt;</description>
-      
-    </item>
-    
-    <item>
-      <title>LLM 知识点 All u need</title>
-      <link>https://weedge.github.io/post/llm/llm-knowledge-point-all-u-need/</link>
-      <pubDate>Mon, 01 Jan 2024 20:26:12 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/llm/llm-knowledge-point-all-u-need/</guid>
-      
-        <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/LLM.png&#34; alt=&#34;LLM知识点&#34;&gt;&lt;/p&gt;
-&lt;p&gt;上图给出了学习LLM所需要的知识点。&lt;/p&gt;
-&lt;p&gt;该文主要是梳理LLM基础结构知识点，模型结构大多相同，以llama2模型结构为切入点，梳理相关知识点，以便构建整体知识体系，可方便快速阅读其他论文的改进点；结合&lt;a href=&#34;https://weedge.github.io/post/llm/llm-knowledge-point-all-u-need/#%E5%8F%82%E8%80%83%E5%AD%A6%E4%B9%A0&#34;&gt;参考学习&lt;/a&gt;中给出的链接补充基础知识。&lt;/p&gt;
-&lt;h2 id=&#34;训练推理llm结构知识点-the-llm-architecture&#34;&gt;训练推理LLM结构知识点 The LLM architecture&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/1808.06226&#34;&gt;SentencePiece: A simple and language independent subword tokenizer and detokenizer for Neural Text Processing&lt;/a&gt; tokenizer 使用 BPE 算法，将一个大的词汇表分成多个小的词汇表，然后将每个词汇表中的词汇进行编码，最后将编码后的词汇进行拼接，形成一个新的词汇表。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/google/sentencepiece&#34;&gt;https://github.com/google/sentencepiece&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;训练的分词模型 用于 模型的训练和推断&lt;/li&gt;
-&lt;li&gt;训练的词汇表 用于 词汇表的构建&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;BPE&lt;/strong&gt; [&lt;a href=&#34;https://www.aclweb.org/anthology/P16-1162&#34;&gt;Sennrich et al.&lt;/a&gt;] llama2 使用BPE算法&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;unigram language model&lt;/strong&gt; [&lt;a href=&#34;https://arxiv.org/abs/1804.10959&#34;&gt;Kudo.&lt;/a&gt;]&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;定义一个神经网络Embedding嵌入权重层：torch.nn.Embedding(params.vocab_size, params.dim)&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;embedding 把数据集合映射到向量空间，进而把数据进行向量化的过程&lt;/li&gt;
-&lt;li&gt;将稀疏向量转化为稠密向量，便于上层神经网络的处理&lt;/li&gt;
-&lt;li&gt;在训练的过程中 找到一组合适的向量，来刻画现有的数据集合&lt;/li&gt;
-&lt;li&gt;将客观世界中的物体不失真的映射到高维特征空间中，进而可以使用这些embedding向量 实现分类、回归和预测等操作&lt;/li&gt;
-&lt;li&gt;详细介绍：&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://mp.weixin.qq.com/s/FsqCNPtDPMdH0WGI0niELw&#34;&gt;https://mp.weixin.qq.com/s/FsqCNPtDPMdH0WGI0niELw&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://vickiboykis.com/what_are_embeddings/&#34;&gt;https://vickiboykis.com/what_are_embeddings/&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;定义一个全连接神经网络线性权重层：torch.nn.Linear 特征维度转化，
-$$y = xA^T + b$$&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;训练权重和偏置bias&lt;/li&gt;
-&lt;li&gt;可将输出维度变大，参数变多了，模型的拟合能力也变强&lt;/li&gt;
-&lt;li&gt;多层组合为多层感知机 (Multilayer Perceptron, MLP)，后面接一个激活函数,&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://openreview.net/pdf?id=SygkZ3MTJE&#34;&gt;Root Mean Square Layer Normalization&lt;/a&gt; RMSNorm 归一化权重层.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/bzhangGo/rmsnorm&#34;&gt;https://github.com/bzhangGo/rmsnorm&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;RMSNorm 根据均方根 (RMS) 对一层神经元的输入求和进行正则化，从而赋予模型重新缩放不变性和隐式学习率自适应能力。&lt;/li&gt;
-&lt;li&gt;RMSNorm 计算更简单，因此比 &lt;a href=&#34;https://arxiv.org/abs/1607.06450&#34;&gt;LayerNorm&lt;/a&gt; 更高效。&lt;/li&gt;
-&lt;li&gt;计算公式：&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;$$ \begin{align} \begin{split} &amp;amp; \bar{a}i = \frac{a_i}{\text{RMS}(\mathbf{a})} g_i, \quad \text{where}~~ \text{RMS}(\mathbf{a}) = \sqrt{\frac{1}{n} \sum{i=1}^{n} a_i^2}. \end{split}\nonumber \end{align} $$&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://arxiv.org/pdf/1706.03762.pdf&#34;&gt;attention is all u need&lt;/a&gt;, transformer 注意力机制&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;MHA: multihead attention -&amp;gt; MQA: Multi-Query Attention -&amp;gt; GQA: Grouped-Query Attention(llama2-34B/70B)&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/1911.02150&#34;&gt;Fast Transformer Decoding: One Write-Head is All You Need&lt;/a&gt; MQA: Multi-Query Attention&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2305.13245&#34;&gt;GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints&lt;/a&gt; 较大模型kv缓存成为瓶颈, 训练质量和MHA差不多, 但是速度快很多,与MQA相当.&lt;/li&gt;
-&lt;li&gt;MHA简单来说就是通过多次线性投影linear projection得到原始输入的多个子空间，然后再每个子空间分别进行SDPA(Scaled Dot-Product Attention), 再把SDPA的结果进行聚合Concatenation,最后再做一个linear projection。&lt;/li&gt;
-&lt;li&gt;SDPA的全称为Scaled Dot-Product Attention, 属于点积注意力机制， 简单一句话来说就是，根据Query (Q)与Key之间的匹配度来对Value进行加权，而事实上不管是Query, Key还是Value都来自于输入，因此所谓的SDPA本质上是对输入信息信息进行重组。&lt;/li&gt;
-&lt;li&gt;通过计算Query和各个Key的相似性或者相关性，得到每个Key对应Value的权重系数，然后对Value进行加权求和，即得到了最终的Attention数值。所以本质上Attention机制是对Source中元素的Value值进行加权求和，而Query和Key用来计算对应Value的权重系数。&lt;/li&gt;
-&lt;li&gt;self-attention 自注意力机制用于计算序列中当前token关注与其他token的联系，就是一个序列内的token，互相看其他token对自己的影响力有多大&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/2104.09864&#34;&gt;Enhanced Transformer with Rotary Position Embedding&lt;/a&gt; RoPE relative positional embeddings&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/ZhuiyiTechnology/roformer&#34;&gt;https://github.com/ZhuiyiTechnology/roformer&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Residual_neural_network&#34;&gt;residual connection&lt;/a&gt; 残差连接（residual connection）是深度神经网络中的一种常见技术，它的作用是解决梯度消失和梯度爆炸问题，同时也可以帮助模型更快地收敛。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;在传统的神经网络中，每个层的输出都是通过对前一层输出的非线性变换得到的。但是，当网络的深度增加时，前一层的输出可能会被过度压缩或拉伸，导致信息丢失或重复。这种情况下，网络的性能可能会受到影响，同时也会出现梯度消失或梯度爆炸的问题。&lt;/li&gt;
-&lt;li&gt;残差连接通过在每个层的输出与输入之间添加一个跨层连接来解决这个问题。更具体地说，残差连接将前一层的输出直接添加到当前层的输出中，从而提供了一种绕过非线性变换的路径。这样，网络就可以学习到在信息压缩或拉伸后保留重要信息的方法，同时也减轻了梯度消失或梯度爆炸的问题。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/1207.0580&#34;&gt;Improving neural networks by preventing co-adaptation of feature detectors&lt;/a&gt; dropout 解决过拟合&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;训练神经网络的时候经常会遇到过拟合的问题，过拟合具体表现在：模型在训练数据上损失函数较小，预测准确率较高；但是在测试数据上损失函数比较大，预测准确率较低&lt;/li&gt;
-&lt;li&gt;Dropout说的简单一点就是：我们在前向传播的时候，让某个神经元的激活值以一定的概率p停止工作，这样可以使模型泛化性更强，因为它不会太依赖某些局部的特征，&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://arxiv.org/pdf/2002.05202.pdf&#34;&gt;GLU Variants Improve Transformer&lt;/a&gt; FFN 中激活函数SwiGLU/SiLU&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Transformers库中支持的激活函数: &lt;a href=&#34;https://github.com/huggingface/transformers/blob/v4.36.2/src/transformers/activations.py#L200-L221&#34;&gt;https://github.com/huggingface/transformers/blob/v4.36.2/src/transformers/activations.py#L200-L221&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/1512.00567&#34;&gt;Rethinking the Inception Architecture for Computer Vision&lt;/a&gt; 交叉熵 cross_entropy 损失函数的计算公式：
-$$L = -\frac{1}{N}\sum_{i=1}^{N}t_i\log(y_i)$$&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;$t_i$ 表示真实值&lt;/li&gt;
-&lt;li&gt;$y_i$ 表示预测值&lt;/li&gt;
-&lt;li&gt;目的是获取输出概率（$y$）并测量与真值的误差&lt;/li&gt;
-&lt;li&gt;一般 $t$ 为one-hot编码, 交叉熵误差值是由正确解标签所对应的输出结果决定&lt;/li&gt;
-&lt;li&gt;使用softmax函数(多类问题)或者sigmoid函数(二类问题)将网络的输出转换为概率&lt;/li&gt;
-&lt;li&gt;PyTorch中它自带的命令torch.nn.functional.cross_entropy已经将转换概率值的操作整合了进去，所以不需要额外进行转换概率值的操作&lt;/li&gt;
-&lt;li&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/llm-knowledge-point-all-u-need/1.png&#34; alt=&#34;image-20240102223236939&#34;&gt;&lt;/li&gt;
-&lt;li&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/llm-knowledge-point-all-u-need/2.png&#34; alt=&#34;image-20240102223210431&#34;&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Backpropagation&#34;&gt;backpropagation&lt;/a&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;http://neuralnetworksanddeeplearning.com/chap2.html&#34;&gt;How the backpropagation algorithm works&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=Ilg3gGewQ5U&#34;&gt;3blue1brown-nn-bp-video&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/1711.05101&#34;&gt;Decoupled Weight Decay Regularization&lt;/a&gt; 优化器 AdamW: Adam + Weight Decay（权重衰减,抑制权重变大）;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;learning rate (学习率)和weight decay (权重衰减) 参数调整，固定一个调整另一个&lt;/li&gt;
-&lt;li&gt;在训练llama2模型中，
-&lt;ul&gt;
-&lt;li&gt;$β_1 = 0.9, β_2 = 0.95, eps = 10^{-5}$&lt;/li&gt;
-&lt;li&gt;权重衰减(weight_decay)：0.1；梯度裁剪(gradient_clipping)：1.0&lt;/li&gt;
-&lt;li&gt;learning rate: 3e-4(7B/13B), 1.5e-4(34B/70B)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;学习率调度器：
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/1608.03983&#34;&gt;SGDR: Stochastic Gradient Descent with Warm Restarts&lt;/a&gt; 余弦调度器。不想在一开始就太大地降低学习率，而且可能希望最终能用非常小的学习率来“改进”解决方案 ；&lt;/li&gt;
-&lt;li&gt;使用预热期，在此期间学习率将增加至初始最大值，然后冷却直到优化过程结束(类似tcp中流量控制机制想法)；预热可以应用于任何调度器；&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://zh-v2.d2l.ai/chapter_optimization/lr-scheduler.html#id8&#34;&gt;https://zh-v2.d2l.ai/chapter_optimization/lr-scheduler.html#id8&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://arxiv.org/pdf/2204.02311.pdf&#34;&gt;PaLM: Scaling Language Modeling with Pathways&lt;/a&gt; 模型训练效率的评估工作 比如 MFU&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://arxiv.org/pdf/2001.08361.pdf&#34;&gt;Scaling Laws for Neural Language Models&lt;/a&gt; | &lt;a href=&#34;https://arxiv.org/pdf/2203.15556.pdf&#34;&gt;Training Compute-Optimal Large Language Models&lt;/a&gt; 一些缩放定律结果指南，帮助确定计算最优模型。还包含用于计算浮点运算数（FLOPs）和参数数量的相关实用工具。&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;预训练基础模型简单概括-pre-training-models&#34;&gt;预训练基础模型简单概括 Pre-training models&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;训练一个神经网络(transformer结构)，数据通过tokenizer分词，输入token数据embedding, 首先要跑一遍前向Forward的过程，计算wx+b线性层权重，激活函数，之后计算Loss function,利用损失函数进行Backward对参数求导得到梯度Grad，拿到Grad后扔给优化器Optimizer更新模型权重，反复迭代，直到损失函数收敛。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;推理&#34;&gt;推理&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;Inference Sampling params (top-k, top-p, temperature)
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://huggingface.co/blog/how-to-generate&#34;&gt;https://huggingface.co/blog/how-to-generate&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://docs.cohere.com/docs/controlling-generation-with-top-k-top-p&#34;&gt;https://docs.cohere.com/docs/controlling-generation-with-top-k-top-p&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://peterchng.com/blog/2023/05/02/token-selection-strategies-top-k-top-p-and-temperature/&#34;&gt;https://peterchng.com/blog/2023/05/02/token-selection-strategies-top-k-top-p-and-temperature/&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;参考学习&#34;&gt;参考学习&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/weedge/learn/blob/main/llm/%E3%80%8A%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E5%85%A5%E9%97%A8%EF%BC%9A%E5%9F%BA%E4%BA%8EPython%E7%9A%84%E7%90%86%E8%AE%BA%E4%B8%8E%E5%AE%9E%E7%8E%B0%E3%80%8B%E9%AB%98%E6%B8%85%E4%B8%AD%E6%96%87%E7%89%88.pdf&#34;&gt;《深度学习入门基于Python的理论与实现》&lt;/a&gt;(前2-6章相关基础知识解释,通俗易懂)&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://vickiboykis.com/what_are_embeddings/&#34;&gt;https://vickiboykis.com/what_are_embeddings/&lt;/a&gt; | &lt;a href=&#34;https://github.com/weedge/what_are_embeddings/blob/main/embeddings-cn.pdf&#34;&gt;自己翻译的中文版&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://neuralnetworksanddeeplearning.com/&#34;&gt;http://neuralnetworksanddeeplearning.com/&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.3blue1brown.com/topics/neural-networks&#34;&gt;https://www.3blue1brown.com/topics/neural-networks&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://karpathy.ai/zero-to-hero.html&#34;&gt;https://karpathy.ai/zero-to-hero.html&lt;/a&gt; (&lt;a href=&#34;https://github.com/karpathy/nanoGPT&#34;&gt;nanoGPT&lt;/a&gt;,&lt;a href=&#34;https://github.com/karpathy/llama2.c&#34;&gt;llama2.c&lt;/a&gt;)| &lt;a href=&#34;https://karpathy.github.io/neuralnets/&#34;&gt;Andrej Karpathy’s blog “Hacker’s guide to Neural Networks”&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://courses.d2l.ai/zh-v2/&#34;&gt;https://courses.d2l.ai/zh-v2/&lt;/a&gt; (看沐神视频学+代码运行)&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/mlabonne/llm-course&#34;&gt;https://github.com/mlabonne/llm-course&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id=&#34;llms&#34;&gt;LLMs&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://openai.com/research/language-unsupervised&#34;&gt;GPT1: Improving Language Understanding by Generative Pre-Training&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://openai.com/research/better-language-models&#34;&gt;GPT2: Language Models are Unsupervised Multitask Learners&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2005.14165&#34;&gt;GPT-3: Language Models are Few-Shot Learners&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://openai.com/research/instruction-following&#34;&gt;InstructGPT: Aligning language models to follow instructions&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://openai.com/blog/chatgpt&#34;&gt;ChatGPT&lt;/a&gt; | &lt;a href=&#34;https://openai.com/research/openai-baselines-ppo&#34;&gt;Proximal Policy Optimization Algorithms&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://openai.com/research/gpt-4&#34;&gt;GPT-4 Technical Report&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://ai.meta.com/research/publications/llama-open-and-efficient-foundation-language-models/&#34;&gt;LLaMA: Open and Efficient Foundation Language Models&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://ai.meta.com/research/publications/llama-2-open-foundation-and-fine-tuned-chat-models/&#34;&gt;&lt;strong&gt;LLaMA 2: Open Foundation and Fine-Tuned Chat Models&lt;/strong&gt;&lt;/a&gt; (GQA, GAtt for chat 长序列上下文tokens 有用，保多轮对话一致)&lt;/li&gt;
-&lt;/ul&gt;</description>
       
     </item>
     

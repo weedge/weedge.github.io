@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>dual-AR on 时间飘过</title>
+    <link>https://weedge.github.io/tags/dual-ar/</link>
+    <description>Recent content in dual-AR on 时间飘过</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sun, 19 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/dual-ar/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>论文解读：Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis</title>
+      <link>https://weedge.github.io/post/multimoding/voices/fishspeech/</link>
+      <pubDate>Sun, 19 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/multimoding/voices/fishspeech/</guid>
+      <description>&lt;h2 id=&#34;相关论文&#34;&gt;相关论文&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;base&lt;/strong&gt;: 基础普适研究&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;hourglass transformers: &lt;a href=&#34;https://arxiv.org/abs/2110.13711&#34;&gt;2021. Hierarchical Transformers Are More Efficient Language Models&lt;/a&gt; | &lt;a href=&#34;https://github.com/lucidrains/simple-hierarchical-transformer&#34;&gt;lucidrains/simple-hierarchical-transformer&lt;/a&gt; vanilla layers and shortened layers use GPT  AR  GLM 🤞&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2305.07185&#34;&gt;2023.5 &lt;strong&gt;MEGABYTE: Predicting Million-byte Sequences with Multiscale Transformers&lt;/strong&gt;&lt;/a&gt; (分别在文本，图片，语音建模)| &lt;a href=&#34;https://github.com/lucidrains/MEGABYTE-pytorch&#34;&gt;lucidrains/MEGABYTE-pytorch&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;PS: 想法和自己整理的&lt;a href=&#34;https://github.com/ai-bot-pro/baby-llm/tree/main/simpleLM&#34;&gt;simple LM&lt;/a&gt;相似~&lt;/p&gt;
+&lt;p&gt;扩展阅读：&lt;a href=&#34;https://arxiv.org/abs/2412.09871&#34;&gt;2024.12 &lt;strong&gt;Byte Latent Transformer: Patches Scale Better Than Tokens&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://github.com/facebookresearch/blt&#34;&gt;paper code&lt;/a&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;strong&gt;audio speech&lt;/strong&gt;: 场景研究&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;⭐️&lt;a href=&#34;https://arxiv.org/abs/2310.00704&#34;&gt;2023.10 UniAudio: &lt;strong&gt;An Audio Foundation Model Toward Universal Audio Generation&lt;/strong&gt;&lt;/a&gt; (灵感来自 MEGABYTE，将其应用于语音模型)| &lt;a href=&#34;https://github.com/yangdongchao/UniAudio&#34;&gt;paper code&lt;/a&gt;  (代码可扩展任务进行训练, 已扩展了音乐数据)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/d0bc3097-3daa-47db-8bbb-f24f5aec800d&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;⭐️&lt;a href=&#34;https://arxiv.org/abs/2411.01156&#34;&gt;2024. &lt;strong&gt;Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis&lt;/strong&gt;&lt;/a&gt; (论文中介绍的Daul-AR, GFSQ, Firefly-GAN(FF-GAN) 对EVA-GAN改版，细节需要结合代码理解) | &lt;a href=&#34;https://github.com/fishaudio/fish-speech&#34;&gt;paper code&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

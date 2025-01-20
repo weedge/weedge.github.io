@@ -6,11 +6,11 @@
     <description>Recent content in Tags on 时间飘过</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 17 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 19 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>AR</title>
       <link>https://weedge.github.io/tags/ar/</link>
-      <pubDate>Fri, 17 Jan 2025 10:26:23 +0800</pubDate>
+      <pubDate>Sun, 19 Jan 2025 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/ar/</guid>
       <description></description>
@@ -19,9 +19,90 @@
     <item>
       <title>BPE</title>
       <link>https://weedge.github.io/tags/bpe/</link>
-      <pubDate>Fri, 17 Jan 2025 10:26:23 +0800</pubDate>
+      <pubDate>Sun, 19 Jan 2025 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/bpe/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>dual-AR</title>
+      <link>https://weedge.github.io/tags/dual-ar/</link>
+      <pubDate>Sun, 19 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/dual-ar/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Firefly-GAN</title>
+      <link>https://weedge.github.io/tags/firefly-gan/</link>
+      <pubDate>Sun, 19 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/firefly-gan/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>FSQ</title>
+      <link>https://weedge.github.io/tags/fsq/</link>
+      <pubDate>Sun, 19 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/fsq/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>GFSQ</title>
+      <link>https://weedge.github.io/tags/gfsq/</link>
+      <pubDate>Sun, 19 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/gfsq/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>llama</title>
+      <link>https://weedge.github.io/tags/llama/</link>
+      <pubDate>Sun, 19 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/llama/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>mel-spectrogram</title>
+      <link>https://weedge.github.io/tags/mel-spectrogram/</link>
+      <pubDate>Sun, 19 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/mel-spectrogram/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>non-G2P</title>
+      <link>https://weedge.github.io/tags/non-g2p/</link>
+      <pubDate>Sun, 19 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/non-g2p/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>streaming</title>
+      <link>https://weedge.github.io/tags/streaming/</link>
+      <pubDate>Sun, 19 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/streaming/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>VQ-GAN</title>
+      <link>https://weedge.github.io/tags/vq-gan/</link>
+      <pubDate>Sun, 19 Jan 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/vq-gan/</guid>
       <description></description>
     </item>
     
@@ -40,24 +121,6 @@
       <pubDate>Fri, 17 Jan 2025 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/flow/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>mel-spectrogram</title>
-      <link>https://weedge.github.io/tags/mel-spectrogram/</link>
-      <pubDate>Fri, 17 Jan 2025 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/mel-spectrogram/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>streaming</title>
-      <link>https://weedge.github.io/tags/streaming/</link>
-      <pubDate>Fri, 17 Jan 2025 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/streaming/</guid>
       <description></description>
     </item>
     
@@ -121,69 +184,6 @@
       <pubDate>Sat, 11 May 2024 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/multimoding/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>openvoice</title>
-      <link>https://weedge.github.io/tags/openvoice/</link>
-      <pubDate>Sat, 11 May 2024 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/openvoice/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>voice</title>
-      <link>https://weedge.github.io/tags/voice/</link>
-      <pubDate>Sat, 11 May 2024 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/voice/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>block-wise scaling</title>
-      <link>https://weedge.github.io/tags/block-wise-scaling/</link>
-      <pubDate>Sun, 28 Apr 2024 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/block-wise-scaling/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>LLM</title>
-      <link>https://weedge.github.io/tags/llm/</link>
-      <pubDate>Sun, 28 Apr 2024 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/llm/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>model</title>
-      <link>https://weedge.github.io/tags/model/</link>
-      <pubDate>Sun, 28 Apr 2024 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/model/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>transformers</title>
-      <link>https://weedge.github.io/tags/transformers/</link>
-      <pubDate>Sun, 28 Apr 2024 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/transformers/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>ML</title>
-      <link>https://weedge.github.io/tags/ml/</link>
-      <pubDate>Thu, 28 Mar 2024 21:51:52 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/ml/</guid>
       <description></description>
     </item>
     

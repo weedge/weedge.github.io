@@ -21,14 +21,16 @@
 &lt;li&gt;Colab achatbot_CosyVoice 操作笔记： &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/achatbot_CosyVoice.ipynb&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Colab CosyVoice 操作笔记： &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/CosyVoice.ipynb&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&#34;zero-shot-tts-models-零样本-tts-模型&#34;&gt;zero-shot TTS models 零样本 TTS 模型&lt;/h2&gt;
-&lt;h3 id=&#34;codec-language-models-编解码器语言模型&#34;&gt;codec language models 编解码器语言模型&lt;/h3&gt;
+&lt;h2 id=&#34;扩展阅读&#34;&gt;扩展阅读&lt;/h2&gt;
+&lt;h3 id=&#34;zero-shot-tts-models-零样本-tts-模型&#34;&gt;zero-shot TTS models 零样本 TTS 模型&lt;/h3&gt;
+&lt;h4 id=&#34;codec-language-models-编解码器语言模型&#34;&gt;codec language models 编解码器语言模型&lt;/h4&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;speech &lt;strong&gt;codec model&lt;/strong&gt;  to extract discrete speech representation:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2107.03312&#34;&gt;2021.7 SoundStream: An End-to-End Neural Audio Codec&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2107.03312&#34;&gt;2021.7 SoundStream: An End-to-End Neural Audio Codec&lt;/a&gt; | &lt;a href=&#34;https://github.com/wesbz/SoundStream&#34;&gt;code&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2210.13438&#34;&gt;2022.10 &lt;strong&gt;High Fidelity Neural Audio Compression&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;http://github.com/facebookresearch/encodec&#34;&gt;facebookresearch/encodec&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2305.02765&#34;&gt;2023.5 HiFi-Codec: Group-residual Vector quantization for High Fidelity Audio Codec&lt;/a&gt; | &lt;a href=&#34;https://github.com/yangdongchao/AcademiCodec&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://arxiv.org/abs/2309.07405&#34;&gt;2023.10 FunCodec: A Fundamental, Reproducible and Integrable Open-source Toolkit for Neural Speech Codec&lt;/a&gt; | &lt;a href=&#34;https://github.com/modelscope/FunCodec&#34;&gt;modelscope/FunCodec&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
@@ -58,7 +60,7 @@
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&#34;feature-diffusion-models-特征扩散模型&#34;&gt;feature diffusion models 特征扩散模型&lt;/h3&gt;
+&lt;h4 id=&#34;feature-diffusion-models-特征扩散模型&#34;&gt;feature diffusion models 特征扩散模型&lt;/h4&gt;
 &lt;p&gt;DDPM + CFM + NAR(non-autoregressive) model, 没有 codec&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -97,7 +99,7 @@
 &lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/2410.06885&#34;&gt;2024.10 &lt;strong&gt;F5-TTS: A fairytaler that fakes fluent and faithful speech with flow matching&lt;/strong&gt;&lt;/a&gt; 保持了管道的简单性，无需音素对齐、持续时间预测器、文本编码器和语义注入编解码器模型，利用带有 &lt;a href=&#34;https://arxiv.org/abs/2301.00808&#34;&gt;ConvNeXt V2&lt;/a&gt;|&lt;a href=&#34;https://github.com/facebookresearch/ConvNeXt-V2&#34;&gt;paper code&lt;/a&gt; 的Diffusion Transformer(DiT)来更好地解决上下文学习期间的文本语音对齐问题。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&#34;codec-language-and-feature-diffusion-hybrid-systems-混合系统&#34;&gt;codec language and feature diffusion hybrid systems 混合系统&lt;/h3&gt;
+&lt;h4 id=&#34;codec-language-and-feature-diffusion-hybrid-systems-混合系统&#34;&gt;codec language and feature diffusion hybrid systems 混合系统&lt;/h4&gt;
 &lt;p&gt;text-to-codec language model  和 codec-to-feature diffusion model&lt;/p&gt;
 &lt;p&gt;语言模型解决文本和语音之间的对齐以及话语持续时间预测，而编解码器到特征扩散模型则根据生成的编解码器和其他条件合成语音特征（梅尔谱）。通过利用两种生成模型的优势，混合系统实现了高度多样性、韵律一致性和语音质量。&lt;/p&gt;
 &lt;ul&gt;
