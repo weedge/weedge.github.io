@@ -37,7 +37,7 @@
 &lt;p&gt;&lt;strong&gt;附&lt;/strong&gt;：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;p&gt;使用LJ Speech数据集训练202 epochs, 在1xGPU 上训练了 79,372 step 的ckpt(论文中是2x3080GPU 50K step)：&lt;/p&gt;
+&lt;p&gt;使用LJ Speech数据集训练202 epochs, 在1xGPU 上训练了 79,372 step 的ckpt(论文中是2x3080GPU 500K step)：&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://huggingface.co/weege007/matchaTTS/tree/main&#34;&gt;https://huggingface.co/weege007/matchaTTS/tree/main&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;

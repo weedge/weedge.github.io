@@ -471,7 +471,7 @@ $$
 &lt;p&gt;FID 是目前广泛使用的生成模型评估指标之一，因为它能够更准确地反映生成图像与真实图像之间的分布差异。&lt;/p&gt;
 &lt;hr&gt;
 &lt;h3 id=&#34;residual-information残差信息&#34;&gt;residual information（残差信息）&lt;/h3&gt;
-&lt;p&gt;在深度学习和语音合成的上下文中，**residual information（残差信息）**是一个非常重要的概念，尤其是在处理复杂的序列生成任务时。它通常用于描述模型中未被完全捕捉或处理的信息，这些信息可能包含重要的细节或未被充分利用的特征。以下是对残差信息的详细解释及其在语音合成中的应用。&lt;/p&gt;
+&lt;p&gt;在深度学习和语音合成的上下文中，&lt;strong&gt;residual information(残差信息)&lt;/strong&gt; 是一个非常重要的概念，尤其是在处理复杂的序列生成任务时。它通常用于描述模型中未被完全捕捉或处理的信息，这些信息可能包含重要的细节或未被充分利用的特征。以下是对残差信息的详细解释及其在语音合成中的应用。&lt;/p&gt;
 &lt;h4 id=&#34;1-残差信息的定义&#34;&gt;&lt;strong&gt;1. 残差信息的定义&lt;/strong&gt;&lt;/h4&gt;
 &lt;p&gt;在深度学习中，&lt;strong&gt;残差信息&lt;/strong&gt;通常指的是输入数据与模型当前输出之间的差异。这种差异可能包含以下内容：&lt;/p&gt;
 &lt;ul&gt;
@@ -2293,7 +2293,7 @@ $$&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;附&lt;/strong&gt;：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;p&gt;使用LJ Speech数据集训练202 epochs, 在1xGPU 上训练了 79,372 step 的ckpt(论文中是2x3080GPU 50K step)：&lt;/p&gt;
+&lt;p&gt;使用LJ Speech数据集训练202 epochs, 在1xGPU 上训练了 79,372 step 的ckpt(论文中是2x3080GPU 500K step)：&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://huggingface.co/weege007/matchaTTS/tree/main&#34;&gt;https://huggingface.co/weege007/matchaTTS/tree/main&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
