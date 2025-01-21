@@ -113,7 +113,7 @@ audio speech: 场景研究
 
 "><meta itemprop="datePublished" content="2025-01-19T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2025-01-19T10:26:23+08:00" />
-<meta itemprop="wordCount" content="12740">
+<meta itemprop="wordCount" content="13169">
 <meta itemprop="keywords" content="non-G2P,BPE,llama,AR,dual-AR,VQ-GAN,Firefly-GAN,FSQ,GFSQ,mel-spectrogram,streaming," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="论文解读：Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis"/>
 <meta name="twitter:description" content="相关论文
@@ -717,6 +717,12 @@ $$</p>
 <p><img src="https://github.com/user-attachments/assets/f5f8cd7f-2463-4c1e-a8cd-af77b48fe9fa" alt="image"></p>
 <h4 id="firefly-generator">Firefly Generator</h4>
 <p>FF-GAN采用了增强的卷积结构，包括<strong>深度可分离卷积(depth-wise separable convolution)</strong> <a href="https://arxiv.org/abs/1704.04861">2017.4 Mobilenets: Efficient convolutional neural networks for mobile vision applications</a> 和 <strong>扩张卷积(dilated convolution)</strong> <a href="https://arxiv.org/abs/1511.07122">2015.11 Multi-Scale Context Aggregation by Dilated Convolutions</a>，以替代传统的Conv1d层。这种架构改进<strong>增强了模型捕捉和合成复杂音频特征的能力</strong>。</p>
+<p>对于ConvNext  论文中未提到，这里补充上， 很重要的， 在f5-tts 等结合diffusion的模型结构经常用到：</p>
+<ul>
+<li>⭐️ <a href="https://arxiv.org/abs/2201.03545">2022. <strong>A ConvNet for the 2020s</strong></a> | <a href="https://github.com/facebookresearch/ConvNeXt">paper code</a> (对ResNet-200进行改进，按照ViT(encoder)变体 Swin Transformer设计，替换MSA(multiheaded self-attention)-&gt; 7x7 conv2d; MLP(linear-&gt;1x1 kernel conv2d,active function ReLU-&gt;GeLU), BN-&gt;LN, 纯 ConvNet 模型结构, 性能和Swin transformer相当， 但是模型结构轻巧，推理更快； 但是ConvNeXt 可能更适合某些任务，比如： 图像分类、对象检测、实例和语义分割任务； 而 Transformers 对于其他任务可能更灵活，泛化能力强，当用于需要离散、稀疏或结构化输出的任务时，Transformer 可能会更加灵活。所以架构选择应该满足手头任务的需求，同时力求简单。)</li>
+<li>⭐️ <a href="https://arxiv.org/abs/2301.00808">2023. <strong>ConvNeXt V2: Co-designing and Scaling ConvNets with Masked Autoencoders</strong></a> (ConvNeXt V2) | <a href="https://github.com/facebookresearch/ConvNeXt-V2">paper code</a></li>
+</ul>
+<p>PS: 代码中的实现来自：https://github.com/fishaudio/fish-diffusion/blob/main/fish_diffusion/modules/convnext.py</p>
 <p><strong>并行块</strong>（ParallelBlock 来自 <a href="https://arxiv.org/abs/2402.00892">2024.1 EVA-GAN: Enhanced Various Audio Generation via Scalable Generative Adversarial Networks</a> ）<strong>替代传统的多感受野（MRF）模块</strong>，进行改进：</p>
 <ul>
 <li>优化了“typo-codebook(错误码本)”输入的处理效率。</li>
@@ -1028,6 +1034,7 @@ $$
 <span class="mf">637.92128</span> <span class="n">M</span> <span class="n">parameters</span>
 
 </code></pre></div><hr>
+<p><a href="https://github.com/fishaudio/fish-speech/blob/main/fish_speech/configs/firefly_gan_vq.yaml">https://github.com/fishaudio/fish-speech/blob/main/fish_speech/configs/firefly_gan_vq.yaml</a></p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">FireflyArchitecture</span><span class="p">(</span>
   <span class="p">(</span><span class="n">backbone</span><span class="p">):</span> <span class="n">ConvNeXtEncoder</span><span class="p">(</span>
     <span class="p">(</span><span class="n">downsample_layers</span><span class="p">):</span> <span class="n">ModuleList</span><span class="p">(</span>
