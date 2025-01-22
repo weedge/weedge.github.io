@@ -113,7 +113,7 @@ audio speech: 场景研究
 
 "><meta itemprop="datePublished" content="2025-01-19T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2025-01-19T10:26:23+08:00" />
-<meta itemprop="wordCount" content="13169">
+<meta itemprop="wordCount" content="13368">
 <meta itemprop="keywords" content="non-G2P,BPE,llama,AR,dual-AR,VQ-GAN,Firefly-GAN,FSQ,GFSQ,mel-spectrogram,streaming," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="论文解读：Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis"/>
 <meta name="twitter:description" content="相关论文
@@ -722,7 +722,7 @@ $$</p>
 <li>⭐️ <a href="https://arxiv.org/abs/2201.03545">2022. <strong>A ConvNet for the 2020s</strong></a> | <a href="https://github.com/facebookresearch/ConvNeXt">paper code</a> (对ResNet-200进行改进，按照ViT(encoder)变体 Swin Transformer设计，替换MSA(multiheaded self-attention)-&gt; 7x7 conv2d; MLP(linear-&gt;1x1 kernel conv2d,active function ReLU-&gt;GeLU), BN-&gt;LN, 纯 ConvNet 模型结构, 性能和Swin transformer相当， 但是模型结构轻巧，推理更快； 但是ConvNeXt 可能更适合某些任务，比如： 图像分类、对象检测、实例和语义分割任务； 而 Transformers 对于其他任务可能更灵活，泛化能力强，当用于需要离散、稀疏或结构化输出的任务时，Transformer 可能会更加灵活。所以架构选择应该满足手头任务的需求，同时力求简单。)</li>
 <li>⭐️ <a href="https://arxiv.org/abs/2301.00808">2023. <strong>ConvNeXt V2: Co-designing and Scaling ConvNets with Masked Autoencoders</strong></a> (ConvNeXt V2) | <a href="https://github.com/facebookresearch/ConvNeXt-V2">paper code</a></li>
 </ul>
-<p>PS: 代码中的实现来自：https://github.com/fishaudio/fish-diffusion/blob/main/fish_diffusion/modules/convnext.py</p>
+<p>PS: 代码中的实现来自： <a href="https://github.com/fishaudio/fish-diffusion/blob/main/fish_diffusion/modules/convnext.py">https://github.com/fishaudio/fish-diffusion/blob/main/fish_diffusion/modules/convnext.py</a></p>
 <p><strong>并行块</strong>（ParallelBlock 来自 <a href="https://arxiv.org/abs/2402.00892">2024.1 EVA-GAN: Enhanced Various Audio Generation via Scalable Generative Adversarial Networks</a> ）<strong>替代传统的多感受野（MRF）模块</strong>，进行改进：</p>
 <ul>
 <li>优化了“typo-codebook(错误码本)”输入的处理效率。</li>
@@ -776,6 +776,12 @@ $$
 $$
 z_q ≈ z
 $$</p>
+<blockquote>
+<p>💡</p>
+<p>具体实现见配置对应的类和参数：</p>
+<p><a href="https://github.com/fishaudio/fish-speech/blob/main/fish_speech/configs/firefly_gan_vq.yaml">https://github.com/fishaudio/fish-speech/blob/main/fish_speech/configs/firefly_gan_vq.yaml</a></p>
+<p>在配置文件中定义了dim和input_dim， 感觉不好理解，而且会产生歧义，<strong>dim定义成output_channels （特征数目）更好理解， 通过卷积层下采样将单个特征的尺寸(长度或者维度)缩小； 反之通过反卷积层将单个特征的尺寸(长度或者维度)放大；同理 input_dim定义成input_channels</strong>。</p>
+</blockquote>
 <h4 id="结论">结论</h4>
 <p>GFSQ技术实现了接近100%的码本利用率，并在内部消融实验中，相比于其他量化技术（如RFSQ、RVQ和GRFSQ）获得了更好的客观和主观评分。FF-GAN显著增强了“typo-codebook”操作的稳定性，并确保在多情感和多语言任务中保留全面的中间变量信息。</p>
 <h3 id="训练与推理">训练与推理</h3>
@@ -789,11 +795,12 @@ $$</p>
 </ul>
 <p>训练基础设施分为两个部分（见上图）：</p>
 <ul>
-<li>自回归（AR）训练使用<strong>8块H100 GPU（80G显存）</strong>，<strong>持续一周</strong>。(Training Stage2)</li>
-<li>声码器（vocoder）训练则使用<strong>8块RTX 4090 GPU</strong>，再<strong>持续一周</strong>。(Training Stage1)</li>
+<li>声码器（Firefly-GAN vocoder）训练则使用<strong>8块RTX 4090 GPU</strong>，<strong>持续一周</strong>。(Training Stage1)</li>
+<li>自回归（Dual AR）训练使用<strong>8块H100 GPU（80G显存）</strong>，再<strong>持续一周</strong>。(Training Stage2)</li>
 </ul>
 <blockquote>
 <p>需要注意的是，这些训练时间不包括DPO阶段。</p>
+<p>PS：论文中没有对tokenizer这块介绍，使用 tiktoken BPE，见词表(扩展了codebook_size 1024个semantic 对应的 voice(waveform -&gt; mel spectrogram) code <strong>indices</strong> (来自Firefly Encoder模块生成))： <a href="https://huggingface.co/fishaudio/fish-speech-1.5/raw/main/tokenizer.tiktoken">https://huggingface.co/fishaudio/fish-speech-1.5/raw/main/tokenizer.tiktoken</a> | <a href="https://huggingface.co/fishaudio/fish-speech-1.5/blob/main/special_tokens.json">https://huggingface.co/fishaudio/fish-speech-1.5/blob/main/special_tokens.json</a> -&gt; embedding</p>
 </blockquote>
 <h4 id="inference-推理">Inference 推理</h4>
 <p>训练后推理过程见上图Inference。通过采用fish-tech技术（包括KV缓存⭐️<a href="2211.05102">2023. <strong>Efficiently Scaling Transformer Inference</strong></a>、PyTorch编译等加速方法），系统在<strong>消费级NVIDIA RTX 4060移动平台上实现了大约1:5的实时因子（real-time factors RTF），在高性能NVIDIA RTX 4090配置上实现了1:15的实时因子</strong>。这些架构优化显著降低了推理延迟，<strong>实现了150毫秒的首包延迟(first-packet latency)</strong>。</p>

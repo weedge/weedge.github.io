@@ -252,7 +252,7 @@ $$&lt;/p&gt;
 &lt;li&gt;⭐️ &lt;a href=&#34;https://arxiv.org/abs/2201.03545&#34;&gt;2022. &lt;strong&gt;A ConvNet for the 2020s&lt;/strong&gt;&lt;/a&gt; | &lt;a href=&#34;https://github.com/facebookresearch/ConvNeXt&#34;&gt;paper code&lt;/a&gt; (对ResNet-200进行改进，按照ViT(encoder)变体 Swin Transformer设计，替换MSA(multiheaded self-attention)-&amp;gt; 7x7 conv2d; MLP(linear-&amp;gt;1x1 kernel conv2d,active function ReLU-&amp;gt;GeLU), BN-&amp;gt;LN, 纯 ConvNet 模型结构, 性能和Swin transformer相当， 但是模型结构轻巧，推理更快； 但是ConvNeXt 可能更适合某些任务，比如： 图像分类、对象检测、实例和语义分割任务； 而 Transformers 对于其他任务可能更灵活，泛化能力强，当用于需要离散、稀疏或结构化输出的任务时，Transformer 可能会更加灵活。所以架构选择应该满足手头任务的需求，同时力求简单。)&lt;/li&gt;
 &lt;li&gt;⭐️ &lt;a href=&#34;https://arxiv.org/abs/2301.00808&#34;&gt;2023. &lt;strong&gt;ConvNeXt V2: Co-designing and Scaling ConvNets with Masked Autoencoders&lt;/strong&gt;&lt;/a&gt; (ConvNeXt V2) | &lt;a href=&#34;https://github.com/facebookresearch/ConvNeXt-V2&#34;&gt;paper code&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;PS: 代码中的实现来自：https://github.com/fishaudio/fish-diffusion/blob/main/fish_diffusion/modules/convnext.py&lt;/p&gt;
+&lt;p&gt;PS: 代码中的实现来自： &lt;a href=&#34;https://github.com/fishaudio/fish-diffusion/blob/main/fish_diffusion/modules/convnext.py&#34;&gt;https://github.com/fishaudio/fish-diffusion/blob/main/fish_diffusion/modules/convnext.py&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;并行块&lt;/strong&gt;（ParallelBlock 来自 &lt;a href=&#34;https://arxiv.org/abs/2402.00892&#34;&gt;2024.1 EVA-GAN: Enhanced Various Audio Generation via Scalable Generative Adversarial Networks&lt;/a&gt; ）&lt;strong&gt;替代传统的多感受野（MRF）模块&lt;/strong&gt;，进行改进：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;优化了“typo-codebook(错误码本)”输入的处理效率。&lt;/li&gt;
@@ -306,6 +306,12 @@ $$
 $$
 z_q ≈ z
 $$&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;💡&lt;/p&gt;
+&lt;p&gt;具体实现见配置对应的类和参数：&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/fishaudio/fish-speech/blob/main/fish_speech/configs/firefly_gan_vq.yaml&#34;&gt;https://github.com/fishaudio/fish-speech/blob/main/fish_speech/configs/firefly_gan_vq.yaml&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;在配置文件中定义了dim和input_dim， 感觉不好理解，而且会产生歧义，&lt;strong&gt;dim定义成output_channels （特征数目）更好理解， 通过卷积层下采样将单个特征的尺寸(长度或者维度)缩小； 反之通过反卷积层将单个特征的尺寸(长度或者维度)放大；同理 input_dim定义成input_channels&lt;/strong&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h4 id=&#34;结论&#34;&gt;结论&lt;/h4&gt;
 &lt;p&gt;GFSQ技术实现了接近100%的码本利用率，并在内部消融实验中，相比于其他量化技术（如RFSQ、RVQ和GRFSQ）获得了更好的客观和主观评分。FF-GAN显著增强了“typo-codebook”操作的稳定性，并确保在多情感和多语言任务中保留全面的中间变量信息。&lt;/p&gt;
 &lt;h3 id=&#34;训练与推理&#34;&gt;训练与推理&lt;/h3&gt;
@@ -319,11 +325,12 @@ $$&lt;/p&gt;
 &lt;/ul&gt;
 &lt;p&gt;训练基础设施分为两个部分（见上图）：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;自回归（AR）训练使用&lt;strong&gt;8块H100 GPU（80G显存）&lt;/strong&gt;，&lt;strong&gt;持续一周&lt;/strong&gt;。(Training Stage2)&lt;/li&gt;
-&lt;li&gt;声码器（vocoder）训练则使用&lt;strong&gt;8块RTX 4090 GPU&lt;/strong&gt;，再&lt;strong&gt;持续一周&lt;/strong&gt;。(Training Stage1)&lt;/li&gt;
+&lt;li&gt;声码器（Firefly-GAN vocoder）训练则使用&lt;strong&gt;8块RTX 4090 GPU&lt;/strong&gt;，&lt;strong&gt;持续一周&lt;/strong&gt;。(Training Stage1)&lt;/li&gt;
+&lt;li&gt;自回归（Dual AR）训练使用&lt;strong&gt;8块H100 GPU（80G显存）&lt;/strong&gt;，再&lt;strong&gt;持续一周&lt;/strong&gt;。(Training Stage2)&lt;/li&gt;
 &lt;/ul&gt;
 &lt;blockquote&gt;
 &lt;p&gt;需要注意的是，这些训练时间不包括DPO阶段。&lt;/p&gt;
+&lt;p&gt;PS：论文中没有对tokenizer这块介绍，使用 tiktoken BPE，见词表(扩展了codebook_size 1024个semantic 对应的 voice(waveform -&amp;gt; mel spectrogram) code &lt;strong&gt;indices&lt;/strong&gt; (来自Firefly Encoder模块生成))： &lt;a href=&#34;https://huggingface.co/fishaudio/fish-speech-1.5/raw/main/tokenizer.tiktoken&#34;&gt;https://huggingface.co/fishaudio/fish-speech-1.5/raw/main/tokenizer.tiktoken&lt;/a&gt; | &lt;a href=&#34;https://huggingface.co/fishaudio/fish-speech-1.5/blob/main/special_tokens.json&#34;&gt;https://huggingface.co/fishaudio/fish-speech-1.5/blob/main/special_tokens.json&lt;/a&gt; -&amp;gt; embedding&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;h4 id=&#34;inference-推理&#34;&gt;Inference 推理&lt;/h4&gt;
 &lt;p&gt;训练后推理过程见上图Inference。通过采用fish-tech技术（包括KV缓存⭐️&lt;a href=&#34;2211.05102&#34;&gt;2023. &lt;strong&gt;Efficiently Scaling Transformer Inference&lt;/strong&gt;&lt;/a&gt;、PyTorch编译等加速方法），系统在&lt;strong&gt;消费级NVIDIA RTX 4060移动平台上实现了大约1:5的实时因子（real-time factors RTF），在高性能NVIDIA RTX 4090配置上实现了1:15的实时因子&lt;/strong&gt;。这些架构优化显著降低了推理延迟，&lt;strong&gt;实现了150毫秒的首包延迟(first-packet latency)&lt;/strong&gt;。&lt;/p&gt;
