@@ -29,7 +29,8 @@
  audio speech: 场景研究
   ⭐️2023.10 UniAudio: An Audio Foundation Model Toward Universal Audio Generation (灵感来自 MEGABYTE，将其应用于语音模型)| paper code (代码可扩展任务进行训练, 已扩展了音乐数据)
   ⭐️2024. Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis (论文中介绍的Daul-AR, GFSQ, Firefly-GAN(FF-GAN) 对EVA-GAN改版，细节需要结合代码理解) | paper code
- " />
+  附：
+ achatbot 接入fishspeech tts colab 笔记： https://github.com/weedge/doraemon-nb/blob/main/achatbot_fishspeech_tts.ipynb 操作笔记： https://github.com/weedge/doraemon-nb/blob/main/fish_speech_tts.ipynb " />
 
   <meta name="keywords" content="工作, 技术, 生活" />
 
@@ -86,6 +87,11 @@ audio speech: 场景研究
 
 ⭐️2024. Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis (论文中介绍的Daul-AR, GFSQ, Firefly-GAN(FF-GAN) 对EVA-GAN改版，细节需要结合代码理解) | paper code
 
+
+附：
+
+achatbot 接入fishspeech tts colab 笔记： https://github.com/weedge/doraemon-nb/blob/main/achatbot_fishspeech_tts.ipynb
+操作笔记： https://github.com/weedge/doraemon-nb/blob/main/fish_speech_tts.ipynb
 " />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://weedge.github.io/post/multimoding/voices/fishspeech/" /><meta property="article:section" content="post" />
@@ -111,9 +117,14 @@ audio speech: 场景研究
 
 ⭐️2024. Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis (论文中介绍的Daul-AR, GFSQ, Firefly-GAN(FF-GAN) 对EVA-GAN改版，细节需要结合代码理解) | paper code
 
+
+附：
+
+achatbot 接入fishspeech tts colab 笔记： https://github.com/weedge/doraemon-nb/blob/main/achatbot_fishspeech_tts.ipynb
+操作笔记： https://github.com/weedge/doraemon-nb/blob/main/fish_speech_tts.ipynb
 "><meta itemprop="datePublished" content="2025-01-19T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2025-01-19T10:26:23+08:00" />
-<meta itemprop="wordCount" content="13368">
+<meta itemprop="wordCount" content="13401">
 <meta itemprop="keywords" content="non-G2P,BPE,llama,AR,dual-AR,VQ-GAN,Firefly-GAN,FSQ,GFSQ,mel-spectrogram,streaming," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="论文解读：Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis"/>
 <meta name="twitter:description" content="相关论文
@@ -134,6 +145,11 @@ audio speech: 场景研究
 
 ⭐️2024. Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis (论文中介绍的Daul-AR, GFSQ, Firefly-GAN(FF-GAN) 对EVA-GAN改版，细节需要结合代码理解) | paper code
 
+
+附：
+
+achatbot 接入fishspeech tts colab 笔记： https://github.com/weedge/doraemon-nb/blob/main/achatbot_fishspeech_tts.ipynb
+操作笔记： https://github.com/weedge/doraemon-nb/blob/main/fish_speech_tts.ipynb
 "/>
 
 <!--[if lte IE 9]>
@@ -548,6 +564,11 @@ audio speech: 场景研究
 <p>⭐️<a href="https://arxiv.org/abs/2411.01156">2024. <strong>Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis</strong></a> (论文中介绍的Daul-AR, GFSQ, Firefly-GAN(FF-GAN) 对EVA-GAN改版，细节需要结合代码理解) | <a href="https://github.com/fishaudio/fish-speech">paper code</a></p>
 </li>
 </ul>
+<p><strong>附</strong>：</p>
+<ul>
+<li>achatbot 接入fishspeech tts colab 笔记： <a href="https://github.com/weedge/doraemon-nb/blob/main/achatbot_fishspeech_tts.ipynb">https://github.com/weedge/doraemon-nb/blob/main/achatbot_fishspeech_tts.ipynb</a></li>
+<li>操作笔记： <a href="https://github.com/weedge/doraemon-nb/blob/main/fish_speech_tts.ipynb">https://github.com/weedge/doraemon-nb/blob/main/fish_speech_tts.ipynb</a></li>
+</ul>
 <h2 id="扩展阅读">扩展阅读</h2>
 <h3 id="neural-vocoder"><strong>Neural</strong> Vocoder</h3>
 <ul>
@@ -945,7 +966,7 @@ $$</p>
 $$
 FID=∥μ_r−μ_g∥^2+Tr(Σ_r+Σ_g−2(Σ_rΣ_g)^{1/2})
 $$
-其中，μr 和 μg 分别是真实图像和生成图像的特征均值，$Σr$ 和 $Σg$ 是它们的协方差矩阵。</p>
+其中，$μ_r$ 和 $μ_g$ 分别是真实图像和生成图像的特征均值，$Σr$ 和 $Σg$ 是它们的协方差矩阵。</p>
 <p><strong>FID 的物理含义</strong>：</p>
 <ul>
 <li>FID 越小，表示生成图像与真实图像越相似。</li>

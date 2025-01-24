@@ -78,6 +78,11 @@
 &lt;p&gt;⭐️&lt;a href=&#34;https://arxiv.org/abs/2411.01156&#34;&gt;2024. &lt;strong&gt;Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis&lt;/strong&gt;&lt;/a&gt; (论文中介绍的Daul-AR, GFSQ, Firefly-GAN(FF-GAN) 对EVA-GAN改版，细节需要结合代码理解) | &lt;a href=&#34;https://github.com/fishaudio/fish-speech&#34;&gt;paper code&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;附&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;achatbot 接入fishspeech tts colab 笔记： &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/achatbot_fishspeech_tts.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/achatbot_fishspeech_tts.ipynb&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;操作笔记： &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/fish_speech_tts.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/fish_speech_tts.ipynb&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 &lt;h2 id=&#34;扩展阅读&#34;&gt;扩展阅读&lt;/h2&gt;
 &lt;h3 id=&#34;neural-vocoder&#34;&gt;&lt;strong&gt;Neural&lt;/strong&gt; Vocoder&lt;/h3&gt;
 &lt;ul&gt;
@@ -475,7 +480,7 @@ $$&lt;/p&gt;
 $$
 FID=∥μ_r−μ_g∥^2+Tr(Σ_r+Σ_g−2(Σ_rΣ_g)^{1/2})
 $$
-其中，μr 和 μg 分别是真实图像和生成图像的特征均值，$Σr$ 和 $Σg$ 是它们的协方差矩阵。&lt;/p&gt;
+其中，$μ_r$ 和 $μ_g$ 分别是真实图像和生成图像的特征均值，$Σr$ 和 $Σg$ 是它们的协方差矩阵。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;FID 的物理含义&lt;/strong&gt;：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;FID 越小，表示生成图像与真实图像越相似。&lt;/li&gt;
