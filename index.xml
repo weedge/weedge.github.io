@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>时间飘过</title>
+    <title></title>
     <link>https://weedge.github.io/</link>
-    <description>Recent content on 时间飘过</description>
+    <description>Recent content on </description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <lastBuildDate>Sun, 19 Jan 2025 10:26:23 +0800</lastBuildDate>
@@ -12,7 +12,7 @@
     
     
     <item>
-      <title>About</title>
+      <title>时间飘过</title>
       <link>https://weedge.github.io/about/</link>
       <pubDate>Tue, 01 Jan 2013 21:38:52 +0800</pubDate>
       
