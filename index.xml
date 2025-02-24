@@ -80,6 +80,7 @@
 &lt;/ul&gt;
 &lt;p&gt;&lt;strong&gt;附&lt;/strong&gt;：&lt;/p&gt;
 &lt;ul&gt;
+&lt;li&gt;achatbot 接入fishspeech tts: &lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/108&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/108&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;achatbot 接入fishspeech tts colab 笔记： &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/achatbot_fishspeech_tts.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/achatbot_fishspeech_tts.ipynb&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;操作笔记： &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/fish_speech_tts.ipynb&#34;&gt;https://github.com/weedge/doraemon-nb/blob/main/fish_speech_tts.ipynb&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
