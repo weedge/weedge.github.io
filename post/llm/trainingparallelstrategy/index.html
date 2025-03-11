@@ -188,7 +188,7 @@ DP和MP都保存了整个训练过程中需要的所有模型状态，但并不�
 相关的分布式训练推理并行策略，以及对应的代码运行操作demo，可以查看这个PR:
 https://github.com/ai-bot-pro/achatbot/pull/127  (如有不对，欢迎指出~)"><meta itemprop="datePublished" content="2025-03-07T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2025-03-07T10:26:23+08:00" />
-<meta itemprop="wordCount" content="12231">
+<meta itemprop="wordCount" content="12375">
 <meta itemprop="keywords" content="LLM,training,parallelism,NN,MP,DP," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="模型系统工程：模型分布式训练并行策略"/>
 <meta name="twitter:description" content="
@@ -655,7 +655,9 @@ https://github.com/ai-bot-pro/achatbot/pull/127  (如有不对，欢迎指出~)"
       </ul>
     </li>
     <li><a href="#reference">reference</a></li>
-    <li><a href="#附录">附录</a>
+    <li><a href="#附录">附录</a></li>
+    <li><a href="#激活内存">激活内存</a></li>
+    <li><a href="#通信原语">通信原语</a>
       <ul>
         <li><a href="#1-all-gather">1. <strong>All-Gather</strong></a></li>
         <li><a href="#2-reduce-scatter">2. <strong>Reduce-Scatter</strong></a></li>
@@ -1098,7 +1100,20 @@ https://github.com/ai-bot-pro/achatbot/pull/127  (如有不对，欢迎指出~)"
 </ul>
 <hr>
 <h2 id="附录">附录</h2>
-<p>在分布式计算和并行计算领域（特别是深度学习和MPI编程中），<strong>all-gather</strong>、<strong>reduce-scatter</strong> 、 <strong>all-reduce</strong> 和 <strong>all-to-all</strong> 是三种常见的集体通信操作，用于在多个进程或节点之间同步和交换数据。它们在功能和使用场景上有所不同，下面解释它们的含义：</p>
+<h2 id="激活内存">激活内存</h2>
+<p><img src="https://github.com/user-attachments/assets/2c83afa8-de5d-41e6-a34b-a037da735070" alt="">
+可以按照这个图来计算总共训练时, 所需要的 GPU HBM(内存) 是多少， 具体前向的激活参数所占内存的计算可以见论文:</p>
+<ul>
+<li><a href="https://arxiv.org/abs/2205.05198">Reducing Activation Recomputation in Large Transformer Models</a></li>
+</ul>
+<p>计算每层激活所占内存 计算公式：(基线， 使用TP)</p>
+<p><img src="https://github.com/user-attachments/assets/a7e9a549-1429-424b-8365-6ba2a1ea1626" alt=""></p>
+<p>加入SP 和 激活ckpt 重计算</p>
+<p><img src="https://github.com/user-attachments/assets/55474be2-9f4a-4cd1-933f-8caf6729ce9a" alt=""></p>
+<p>TP + 不同技术使用的激活内存占保持所有激活在张量并行等级之间分裂所需内存的百分比</p>
+<p><img src="https://github.com/user-attachments/assets/faa97c97-7df2-4485-a928-9da49038ea72" alt=""></p>
+<h2 id="通信原语">通信原语</h2>
+<p>在分布式计算和并行计算领域（特别是深度学习和MPI编程中），<strong>all-gather</strong>、<strong>reduce-scatter</strong> 、 <strong>all-reduce</strong> 和 <strong>all-to-all</strong> 是常见的集体通信操作，用于在多个进程或节点之间同步和交换数据。它们在功能和使用场景上有所不同，下面解释它们的含义：</p>
 <h3 id="1-all-gather">1. <strong>All-Gather</strong></h3>
 <ul>
 <li><strong>含义</strong>：所有进程（或节点）将各自的数据“收集”（gather）起来，并分发给所有进程，使得每个进程最终都拥有所有进程的数据集合。</li>
