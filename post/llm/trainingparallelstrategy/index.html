@@ -188,7 +188,7 @@ DP和MP都保存了整个训练过程中需要的所有模型状态，但并不�
 相关的分布式训练推理并行策略，以及对应的代码运行操作demo，可以查看这个PR:
 https://github.com/ai-bot-pro/achatbot/pull/127  (如有不对，欢迎指出~)"><meta itemprop="datePublished" content="2025-03-07T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2025-03-07T10:26:23+08:00" />
-<meta itemprop="wordCount" content="12375">
+<meta itemprop="wordCount" content="12439">
 <meta itemprop="keywords" content="LLM,training,parallelism,NN,MP,DP," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="模型系统工程：模型分布式训练并行策略"/>
 <meta name="twitter:description" content="
@@ -655,7 +655,11 @@ https://github.com/ai-bot-pro/achatbot/pull/127  (如有不对，欢迎指出~)"
       </ul>
     </li>
     <li><a href="#reference">reference</a></li>
-    <li><a href="#附录">附录</a></li>
+    <li><a href="#总结">总结：</a></li>
+    <li><a href="#a-little-thinking-">a little thinking 🤔</a></li>
+  </ul>
+
+  <ul>
     <li><a href="#激活内存">激活内存</a></li>
     <li><a href="#通信原语">通信原语</a>
       <ul>
@@ -1090,16 +1094,25 @@ https://github.com/ai-bot-pro/achatbot/pull/127  (如有不对，欢迎指出~)"
 </li>
 </ul>
 <hr>
-<p>总结：</p>
+<h2 id="总结">总结：</h2>
 <ul>
 <li>google系统工程大部分是针对自家的TPU集群优化的场景，不过一些设计思路可以套用的GPU上，比如GPipe提出的PP以及Activation 训练时大量中间计算的激活值的内存占用优化。</li>
 <li>英伟达和微软则是针对GPU机器在DNN模型训练上做了大量的优化，而且开源了LLM训练框架和细节上的实现。</li>
-<li>Meta 则是在已有基础上进行了工程上的系统组合封装，便于方便开发。在pytorch 的基础上组合多维度切分并行，易于组合训练DNN模型。</li>
+<li>Meta 则是在已有基础上进行了工程上的系统组合封装，便于开发，升级和使用。在pytorch 的基础上组合多维度切分并行，易于组合训练DNN模型。</li>
+</ul>
+<h2 id="a-little-thinking-">a little thinking 🤔</h2>
+<ul>
 <li>数据和模型scaling，推动训练系统工程需要结合硬件进行优化， 现在开源的训练方案可以支持万亿级别的模型参数训练。但是需要投入大量的计算，网络存储资源，以及时间成本；算力，存储和网络的性能提高(计算快，吞吐大，延迟低)，在更快的时间内训练模型，节约时间成本，但是成本高；如何减低成本，又能比较快的训练出推理质量好的模型，如果持续迭代模型的话，系统工程优化迭代可能会一直持续进行。</li>
-<li>理解了原理，大部分的操作主要在通信原语上的操作，比如EP中的all to all(dist.all_to_all), TP中的all reduce</li>
+<li>理解了原理，大部分的操作主要在通信原语上的操作:
+<ul>
+<li>EP中的All_to_All(dist.all_to_all);</li>
+<li>DDP,TP中的All_Reduce;</li>
+<li>FSDP,SP,CP中的All_Gather, Reducer-Scatter</li>
+</ul>
+</li>
 </ul>
 <hr>
-<h2 id="附录">附录</h2>
+<h1 id="附录">附录</h1>
 <h2 id="激活内存">激活内存</h2>
 <p><img src="https://github.com/user-attachments/assets/2c83afa8-de5d-41e6-a34b-a037da735070" alt="">
 可以按照这个图来计算总共训练时, 所需要的 GPU HBM(内存) 是多少， 具体前向的激活参数所占内存的计算可以见论文:</p>
