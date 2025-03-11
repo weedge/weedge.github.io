@@ -476,7 +476,7 @@
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
-&lt;h2 id=&#34;总结&#34;&gt;总结：&lt;/h2&gt;
+&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;google系统工程大部分是针对自家的TPU集群优化的场景，不过一些设计思路可以套用的GPU上，比如GPipe提出的PP以及Activation 训练时大量中间计算的激活值的内存占用优化。&lt;/li&gt;
 &lt;li&gt;英伟达和微软则是针对GPU机器在DNN模型训练上做了大量的优化，而且开源了LLM训练框架和细节上的实现。&lt;/li&gt;
@@ -492,6 +492,7 @@
 &lt;li&gt;FSDP,SP,CP中的All_Gather, Reducer-Scatter&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
+&lt;li&gt;训练过程其实包括了推理，就是前向的过程，所以，在推理优化时，可以复用训练时前向推理的并行策略，以及通信原语，来提高吞吐；但是推理优化，还需要考虑推理接口的延迟，减少计算，引入了KVCache, 动态批次(In-flight) 等优化技术， 具体见： &lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/126#issuecomment-2700184937&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/126#issuecomment-2700184937&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;h1 id=&#34;附录&#34;&gt;附录&lt;/h1&gt;

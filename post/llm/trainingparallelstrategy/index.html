@@ -188,7 +188,7 @@ DP和MP都保存了整个训练过程中需要的所有模型状态，但并不�
 相关的分布式训练推理并行策略，以及对应的代码运行操作demo，可以查看这个PR:
 https://github.com/ai-bot-pro/achatbot/pull/127  (如有不对，欢迎指出~)"><meta itemprop="datePublished" content="2025-03-07T10:26:23+08:00" />
 <meta itemprop="dateModified" content="2025-03-07T10:26:23+08:00" />
-<meta itemprop="wordCount" content="12439">
+<meta itemprop="wordCount" content="12560">
 <meta itemprop="keywords" content="LLM,training,parallelism,NN,MP,DP," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="模型系统工程：模型分布式训练并行策略"/>
 <meta name="twitter:description" content="
@@ -655,7 +655,7 @@ https://github.com/ai-bot-pro/achatbot/pull/127  (如有不对，欢迎指出~)"
       </ul>
     </li>
     <li><a href="#reference">reference</a></li>
-    <li><a href="#总结">总结：</a></li>
+    <li><a href="#总结">总结</a></li>
     <li><a href="#a-little-thinking-">a little thinking 🤔</a></li>
   </ul>
 
@@ -1094,7 +1094,7 @@ https://github.com/ai-bot-pro/achatbot/pull/127  (如有不对，欢迎指出~)"
 </li>
 </ul>
 <hr>
-<h2 id="总结">总结：</h2>
+<h2 id="总结">总结</h2>
 <ul>
 <li>google系统工程大部分是针对自家的TPU集群优化的场景，不过一些设计思路可以套用的GPU上，比如GPipe提出的PP以及Activation 训练时大量中间计算的激活值的内存占用优化。</li>
 <li>英伟达和微软则是针对GPU机器在DNN模型训练上做了大量的优化，而且开源了LLM训练框架和细节上的实现。</li>
@@ -1110,6 +1110,7 @@ https://github.com/ai-bot-pro/achatbot/pull/127  (如有不对，欢迎指出~)"
 <li>FSDP,SP,CP中的All_Gather, Reducer-Scatter</li>
 </ul>
 </li>
+<li>训练过程其实包括了推理，就是前向的过程，所以，在推理优化时，可以复用训练时前向推理的并行策略，以及通信原语，来提高吞吐；但是推理优化，还需要考虑推理接口的延迟，减少计算，引入了KVCache, 动态批次(In-flight) 等优化技术， 具体见： <a href="https://github.com/ai-bot-pro/achatbot/pull/126#issuecomment-2700184937">https://github.com/ai-bot-pro/achatbot/pull/126#issuecomment-2700184937</a></li>
 </ul>
 <hr>
 <h1 id="附录">附录</h1>
