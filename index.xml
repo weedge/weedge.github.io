@@ -294,7 +294,10 @@
 &lt;hr&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;p&gt;跟李沐老师读分布式训练系统工程论文： &lt;a href=&#34;https://github.com/mli/paper-reading/?#%E7%B3%BB%E7%BB%9F&#34;&gt;https://github.com/mli/paper-reading/?#%E7%B3%BB%E7%BB%9F&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;⭐️ &lt;a href=&#34;https://lilianweng.github.io/posts/2021-09-25-train-large/&#34;&gt;https://lilianweng.github.io/posts/2021-09-25-train-large/&lt;/a&gt; | &lt;a href=&#34;https://openai.com/index/techniques-for-training-large-neural-networks/&#34;&gt;https://openai.com/index/techniques-for-training-large-neural-networks/&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;跟李沐读分布式训练系统工程论文： &lt;a href=&#34;https://github.com/mli/paper-reading/?#%E7%B3%BB%E7%BB%9F&#34;&gt;https://github.com/mli/paper-reading/?#%E7%B3%BB%E7%BB%9F&lt;/a&gt;&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;Parameter Server: 李沐老师在百度实习时的成名作&lt;/p&gt;
