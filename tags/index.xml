@@ -6,7 +6,61 @@
     <description>Recent content in Tags on </description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sun, 19 Jan 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 07 Mar 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>DP</title>
+      <link>https://weedge.github.io/tags/dp/</link>
+      <pubDate>Fri, 07 Mar 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/dp/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>LLM</title>
+      <link>https://weedge.github.io/tags/llm/</link>
+      <pubDate>Fri, 07 Mar 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/llm/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>MP</title>
+      <link>https://weedge.github.io/tags/mp/</link>
+      <pubDate>Fri, 07 Mar 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/mp/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>NN</title>
+      <link>https://weedge.github.io/tags/nn/</link>
+      <pubDate>Fri, 07 Mar 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/nn/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>parallelism</title>
+      <link>https://weedge.github.io/tags/parallelism/</link>
+      <pubDate>Fri, 07 Mar 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/parallelism/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>training</title>
+      <link>https://weedge.github.io/tags/training/</link>
+      <pubDate>Fri, 07 Mar 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/tags/training/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>AR</title>
       <link>https://weedge.github.io/tags/ar/</link>
@@ -130,60 +184,6 @@
       <pubDate>Fri, 17 Jan 2025 10:26:23 +0800</pubDate>
       
       <guid>https://weedge.github.io/tags/supervised-semantic-speech-tokenizer/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>diffusion</title>
-      <link>https://weedge.github.io/tags/diffusion/</link>
-      <pubDate>Tue, 14 Jan 2025 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/diffusion/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>NAR</title>
-      <link>https://weedge.github.io/tags/nar/</link>
-      <pubDate>Tue, 14 Jan 2025 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/nar/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>encodec</title>
-      <link>https://weedge.github.io/tags/encodec/</link>
-      <pubDate>Mon, 13 Jan 2025 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/encodec/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>VALL-E</title>
-      <link>https://weedge.github.io/tags/vall-e/</link>
-      <pubDate>Mon, 13 Jan 2025 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/vall-e/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>VITS</title>
-      <link>https://weedge.github.io/tags/vits/</link>
-      <pubDate>Sat, 11 Jan 2025 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/vits/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>multimoding</title>
-      <link>https://weedge.github.io/tags/multimoding/</link>
-      <pubDate>Sat, 11 May 2024 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/tags/multimoding/</guid>
       <description></description>
     </item>
     

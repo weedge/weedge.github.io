@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>NN on </title>
+    <link>https://weedge.github.io/tags/nn/</link>
+    <description>Recent content in NN on </description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Fri, 07 Mar 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/tags/nn/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>模型系统工程：分布式并行策略</title>
+      <link>https://weedge.github.io/post/llm/trainingparallelstrategy/</link>
+      <pubDate>Fri, 07 Mar 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/llm/trainingparallelstrategy/</guid>
+      <description>&lt;iframe frameborder=&#34;no&#34; border=&#34;0&#34; marginwidth=&#34;0&#34; marginheight=&#34;0&#34; width=330 height=86 src=&#34;//music.163.com/outchain/player?type=2&amp;id=28692286&amp;auto=1&amp;height=66&#34;&gt;&lt;/iframe&gt;
+
+
+
+&lt;h2 id=&#34;引言&#34;&gt;引言&lt;/h2&gt;
+&lt;p&gt;以前在训练模型的时候大部分使用的是单机单卡进行训练测试，真正使用单机多卡和多机多卡的时候，很少去实操到分布式的训练推理，本身这块对应硬件的成本高，对于个人是很少可以去把玩上的，更何况现在训练大模型大部分使用的PT好的模型，进行微调和蒸馏，或者量化部署，随着deepseek系列模型的开源，对模型的训练微调和部署的需求增多，里面涉及到的分布式训练策略，怎样对模型和数据进行拆分进行多卡sm并行处理, 这里简单介绍下相关的分布式训练推理并行策略，以及对应的代码，代码主要使用pytorch进行实现,采用单节点的2个gpu。(如果你有钱的话，可以复现下ZeRO或者Megatron中的实现）&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;💡使用 PyTorch 进行模型训练的过程：&lt;/p&gt;
+&lt;p&gt;PyTorch 将值组织成Tensor ， Tensor是具有丰富数据操作操作的通用 n 维数组。Module 定义从输入值到输出值的转换，其在正向传递期间的行为由其forward成员函数指定。Module 可以包含Tensor作为参数。例如，线性模块包含权重参数和偏差参数，其正向函数通过将输入与权重相乘并添加偏差来生成输出。应用程序通过在自定义正向函数中将本机Module （&lt;em&gt;例如&lt;/em&gt;线性、卷积等）和Function （例如relu、pool 等）拼接在一起来组成自己的Module 。典型的训练迭代包含使用输入和标签生成损失的前向传递、用于计算参数梯度的后向传递以及使用梯度更新参数的优化器步骤。更具体地说，在正向传递期间，PyTorch 会构建一个自动求导图来记录执行的操作。然后，在反向传播中，它使用自动梯度图进行反向传播以生成梯度。最后，优化器应用梯度来更新参数。训练过程重复这三个步骤，直到模型收敛。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;并行策略主要分为以下几种：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/user-attachments/assets/9616a34d-c9f3-4db9-b2a1-a79342a95856&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Data Parallelism (DP) 包括：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Distributed Data Parallelism（DDP）&lt;/li&gt;
+&lt;li&gt;Fully-Shared Data Parallelism (FSDP)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Model Parallelism（MP）包括：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Tensor Parallelism（TP, 有些论文中将TP描述成MP,比如Megatron-LM, ZeRO）&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Pipeline Parallelism (PP)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Expert Parallelism (EP)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Activation Partitioning 包括：(SP和CP两者通常和TP一起使用)&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Sequence Parallelism (SP)： 针对序列切分，在模块的输入和输出侧对序列进行切分，常使用在LayerNorm,Dropout（通过all_gather,reduce-scatter 通信计算，减少训练时激活值 gpu内存占用，以前是每个卡上单独的副本LayerNorm,Dropout，冗余gpu内存）&lt;/li&gt;
+&lt;li&gt;Context Parallelism (CP): 主要针对Transformer模型长序列的训练。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;DP和MP的比较：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;DP 的扩展效率比 MP 更好，因为 MP 降低了计算的粒度，同时也增加了通信开销。超过某个点后，较低的计算粒度会降低每个 GPU 的效率，而增加的通信开销会阻碍跨 GPU 的可扩展性，尤其是跨越节点边界时。相反，DP 既具有更高的计算粒度，又具有更低的通信量，从而可以实现更高的效率。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;DP 内存(GPU HBM)效率低，因为模型状态在所有数据并行进程中冗余存储。相反，MP 对模型状态进行分区，以提高内存效率。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;DP和MP都保存了整个训练过程中需要的所有模型状态，但并不是所有状态都是一直需要的，比如每一层对应的参数只在该层的前向传播和后向传播时才需要。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;模型训练的并行策略同样适用于推理测的并行策略，但是调度和执行的方式稍有不同。这里主要是结合pytorch 实现简单的多卡模型并行策略训练。&lt;/p&gt;
+&lt;p&gt;相关的分布式训练推理并行策略，以及对应的代码运行操作demo，可以查看这个PR:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/ai-bot-pro/achatbot/pull/127&#34;&gt;https://github.com/ai-bot-pro/achatbot/pull/127&lt;/a&gt;  (如有不对，欢迎指出~)&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

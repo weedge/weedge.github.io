@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="zh-cn" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>模型系统工程：分布式并行策略 - </title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="weedge" />
+  <meta name="description" content=" 引言 以前在训练模型的时候大部分使用的是单机单卡进行训练测试，真正使用单机多卡和多机多卡的时候，很少去实操到分布式的训练推理，本身这块对应硬件的成本高，对于个人是很少可以去把玩上的，更何况现在训练大模型大部分使用的PT好的模型，进行微调和蒸馏，或者量化部署，随着deepseek系列模型的开源，对模型的训练微调和部署的需求增多，里面涉及到的分布式训练策略，怎样对模型和数据进行拆分进行多卡sm并行处理, 这里简单介绍下相关的分布式训练推理并行策略，以及对应的代码，代码主要使用pytorch进行实现,采用单节点的2个gpu。(如果你有钱的话，可以复现下ZeRO或者Megatron中的实现）
+ 💡使用 PyTorch 进行模型训练的过程：
+PyTorch 将值组织成Tensor ， Tensor是具有丰富数据操作操作的通用 n 维数组。Module 定义从输入值到输出值的转换，其在正向传递期间的行为由其forward成员函数指定。Module 可以包含Tensor作为参数。例如，线性模块包含权重参数和偏差参数，其正向函数通过将输入与权重相乘并添加偏差来生成输出。应用程序通过在自定义正向函数中将本机Module （例如线性、卷积等）和Function （例如relu、pool 等）拼接在一起来组成自己的Module 。典型的训练迭代包含使用输入和标签生成损失的前向传递、用于计算参数梯度的后向传递以及使用梯度更新参数的优化器步骤。更具体地说，在正向传递期间，PyTorch 会构建一个自动求导图来记录执行的操作。然后，在反向传播中，它使用自动梯度图进行反向传播以生成梯度。最后，优化器应用梯度来更新参数。训练过程重复这三个步骤，直到模型收敛。
+ 并行策略主要分为以下几种：
+Data Parallelism (DP) 包括：
+ Distributed Data Parallelism（DDP） Fully-Shared Data Parallelism (FSDP)  Model Parallelism（MP）包括：
+  Tensor Parallelism（TP, 有些论文中将TP描述成MP,比如Megatron-LM, ZeRO）
+  Pipeline Parallelism (PP)
+  Expert Parallelism (EP)
+  Activation Partitioning 包括：(SP和CP两者通常和TP一起使用)
+ Sequence Parallelism (SP)： 针对序列切分，在模块的输入和输出侧对序列进行切分，常使用在LayerNorm,Dropout（通过all_gather,reduce-scatter 通信计算，减少训练时激活值 gpu内存占用，以前是每个卡上单独的副本LayerNorm,Dropout，冗余gpu内存） Context Parallelism (CP): 主要针对Transformer模型长序列的训练。    DP和MP的比较：
+  DP 的扩展效率比 MP 更好，因为 MP 降低了计算的粒度，同时也增加了通信开销。超过某个点后，较低的计算粒度会降低每个 GPU 的效率，而增加的通信开销会阻碍跨 GPU 的可扩展性，尤其是跨越节点边界时。相反，DP 既具有更高的计算粒度，又具有更低的通信量，从而可以实现更高的效率。
+  DP 内存(GPU HBM)效率低，因为模型状态在所有数据并行进程中冗余存储。相反，MP 对模型状态进行分区，以提高内存效率。
+  DP和MP都保存了整个训练过程中需要的所有模型状态，但并不是所有状态都是一直需要的，比如每一层对应的参数只在该层的前向传播和后向传播时才需要。
+  模型训练的并行策略同样适用于推理测的并行策略，但是调度和执行的方式稍有不同。这里主要是结合pytorch 实现简单的多卡模型并行策略训练。
+相关的分布式训练推理并行策略，以及对应的代码运行操作demo，可以查看这个PR:
+https://github.com/ai-bot-pro/achatbot/pull/127 (如有不对，欢迎指出~)
+" />
+
+  <meta name="keywords" content="工作, 技术, 生活" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.91.0" />
+
+
+<link rel="canonical" href="https://weedge.github.io/post/llm/trainingparallelstrategy/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.fa4b2b9f31b5c6d0b683db81157a9226e17b06e61911791ab547242a4a0556f2.css" integrity="sha256-&#43;ksrnzG1xtC2g9uBFXqSJuF7BuYZEXkatUckKkoFVvI=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/copy-to-clipboard.css">
+
+
+<meta property="og:title" content="模型系统工程：分布式并行策略" />
+<meta property="og:description" content="
+
+
+
+引言
+以前在训练模型的时候大部分使用的是单机单卡进行训练测试，真正使用单机多卡和多机多卡的时候，很少去实操到分布式的训练推理，本身这块对应硬件的成本高，对于个人是很少可以去把玩上的，更何况现在训练大模型大部分使用的PT好的模型，进行微调和蒸馏，或者量化部署，随着deepseek系列模型的开源，对模型的训练微调和部署的需求增多，里面涉及到的分布式训练策略，怎样对模型和数据进行拆分进行多卡sm并行处理, 这里简单介绍下相关的分布式训练推理并行策略，以及对应的代码，代码主要使用pytorch进行实现,采用单节点的2个gpu。(如果你有钱的话，可以复现下ZeRO或者Megatron中的实现）
+
+💡使用 PyTorch 进行模型训练的过程：
+PyTorch 将值组织成Tensor ， Tensor是具有丰富数据操作操作的通用 n 维数组。Module 定义从输入值到输出值的转换，其在正向传递期间的行为由其forward成员函数指定。Module 可以包含Tensor作为参数。例如，线性模块包含权重参数和偏差参数，其正向函数通过将输入与权重相乘并添加偏差来生成输出。应用程序通过在自定义正向函数中将本机Module （例如线性、卷积等）和Function （例如relu、pool 等）拼接在一起来组成自己的Module 。典型的训练迭代包含使用输入和标签生成损失的前向传递、用于计算参数梯度的后向传递以及使用梯度更新参数的优化器步骤。更具体地说，在正向传递期间，PyTorch 会构建一个自动求导图来记录执行的操作。然后，在反向传播中，它使用自动梯度图进行反向传播以生成梯度。最后，优化器应用梯度来更新参数。训练过程重复这三个步骤，直到模型收敛。
+
+并行策略主要分为以下几种：
+
+Data Parallelism (DP) 包括：
+
+Distributed Data Parallelism（DDP）
+Fully-Shared Data Parallelism (FSDP)
+
+Model Parallelism（MP）包括：
+
+
+Tensor Parallelism（TP, 有些论文中将TP描述成MP,比如Megatron-LM, ZeRO）
+
+
+Pipeline Parallelism (PP)
+
+
+Expert Parallelism (EP)
+
+
+Activation Partitioning 包括：(SP和CP两者通常和TP一起使用)
+
+Sequence Parallelism (SP)： 针对序列切分，在模块的输入和输出侧对序列进行切分，常使用在LayerNorm,Dropout（通过all_gather,reduce-scatter 通信计算，减少训练时激活值 gpu内存占用，以前是每个卡上单独的副本LayerNorm,Dropout，冗余gpu内存）
+Context Parallelism (CP): 主要针对Transformer模型长序列的训练。
+
+
+
+DP和MP的比较：
+
+
+DP 的扩展效率比 MP 更好，因为 MP 降低了计算的粒度，同时也增加了通信开销。超过某个点后，较低的计算粒度会降低每个 GPU 的效率，而增加的通信开销会阻碍跨 GPU 的可扩展性，尤其是跨越节点边界时。相反，DP 既具有更高的计算粒度，又具有更低的通信量，从而可以实现更高的效率。
+
+
+DP 内存(GPU HBM)效率低，因为模型状态在所有数据并行进程中冗余存储。相反，MP 对模型状态进行分区，以提高内存效率。
+
+
+DP和MP都保存了整个训练过程中需要的所有模型状态，但并不是所有状态都是一直需要的，比如每一层对应的参数只在该层的前向传播和后向传播时才需要。
+
+
+模型训练的并行策略同样适用于推理测的并行策略，但是调度和执行的方式稍有不同。这里主要是结合pytorch 实现简单的多卡模型并行策略训练。
+相关的分布式训练推理并行策略，以及对应的代码运行操作demo，可以查看这个PR:
+https://github.com/ai-bot-pro/achatbot/pull/127  (如有不对，欢迎指出~)" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://weedge.github.io/post/llm/trainingparallelstrategy/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2025-03-07T10:26:23+08:00" />
+<meta property="article:modified_time" content="2025-03-07T10:26:23+08:00" />
+
+<meta itemprop="name" content="模型系统工程：分布式并行策略">
+<meta itemprop="description" content="
+
+
+
+引言
+以前在训练模型的时候大部分使用的是单机单卡进行训练测试，真正使用单机多卡和多机多卡的时候，很少去实操到分布式的训练推理，本身这块对应硬件的成本高，对于个人是很少可以去把玩上的，更何况现在训练大模型大部分使用的PT好的模型，进行微调和蒸馏，或者量化部署，随着deepseek系列模型的开源，对模型的训练微调和部署的需求增多，里面涉及到的分布式训练策略，怎样对模型和数据进行拆分进行多卡sm并行处理, 这里简单介绍下相关的分布式训练推理并行策略，以及对应的代码，代码主要使用pytorch进行实现,采用单节点的2个gpu。(如果你有钱的话，可以复现下ZeRO或者Megatron中的实现）
+
+💡使用 PyTorch 进行模型训练的过程：
+PyTorch 将值组织成Tensor ， Tensor是具有丰富数据操作操作的通用 n 维数组。Module 定义从输入值到输出值的转换，其在正向传递期间的行为由其forward成员函数指定。Module 可以包含Tensor作为参数。例如，线性模块包含权重参数和偏差参数，其正向函数通过将输入与权重相乘并添加偏差来生成输出。应用程序通过在自定义正向函数中将本机Module （例如线性、卷积等）和Function （例如relu、pool 等）拼接在一起来组成自己的Module 。典型的训练迭代包含使用输入和标签生成损失的前向传递、用于计算参数梯度的后向传递以及使用梯度更新参数的优化器步骤。更具体地说，在正向传递期间，PyTorch 会构建一个自动求导图来记录执行的操作。然后，在反向传播中，它使用自动梯度图进行反向传播以生成梯度。最后，优化器应用梯度来更新参数。训练过程重复这三个步骤，直到模型收敛。
+
+并行策略主要分为以下几种：
+
+Data Parallelism (DP) 包括：
+
+Distributed Data Parallelism（DDP）
+Fully-Shared Data Parallelism (FSDP)
+
+Model Parallelism（MP）包括：
+
+
+Tensor Parallelism（TP, 有些论文中将TP描述成MP,比如Megatron-LM, ZeRO）
+
+
+Pipeline Parallelism (PP)
+
+
+Expert Parallelism (EP)
+
+
+Activation Partitioning 包括：(SP和CP两者通常和TP一起使用)
+
+Sequence Parallelism (SP)： 针对序列切分，在模块的输入和输出侧对序列进行切分，常使用在LayerNorm,Dropout（通过all_gather,reduce-scatter 通信计算，减少训练时激活值 gpu内存占用，以前是每个卡上单独的副本LayerNorm,Dropout，冗余gpu内存）
+Context Parallelism (CP): 主要针对Transformer模型长序列的训练。
+
+
+
+DP和MP的比较：
+
+
+DP 的扩展效率比 MP 更好，因为 MP 降低了计算的粒度，同时也增加了通信开销。超过某个点后，较低的计算粒度会降低每个 GPU 的效率，而增加的通信开销会阻碍跨 GPU 的可扩展性，尤其是跨越节点边界时。相反，DP 既具有更高的计算粒度，又具有更低的通信量，从而可以实现更高的效率。
+
+
+DP 内存(GPU HBM)效率低，因为模型状态在所有数据并行进程中冗余存储。相反，MP 对模型状态进行分区，以提高内存效率。
+
+
+DP和MP都保存了整个训练过程中需要的所有模型状态，但并不是所有状态都是一直需要的，比如每一层对应的参数只在该层的前向传播和后向传播时才需要。
+
+
+模型训练的并行策略同样适用于推理测的并行策略，但是调度和执行的方式稍有不同。这里主要是结合pytorch 实现简单的多卡模型并行策略训练。
+相关的分布式训练推理并行策略，以及对应的代码运行操作demo，可以查看这个PR:
+https://github.com/ai-bot-pro/achatbot/pull/127  (如有不对，欢迎指出~)"><meta itemprop="datePublished" content="2025-03-07T10:26:23+08:00" />
+<meta itemprop="dateModified" content="2025-03-07T10:26:23+08:00" />
+<meta itemprop="wordCount" content="12231">
+<meta itemprop="keywords" content="LLM,training,parallelism,NN,MP,DP," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="模型系统工程：分布式并行策略"/>
+<meta name="twitter:description" content="
+
+
+
+引言
+以前在训练模型的时候大部分使用的是单机单卡进行训练测试，真正使用单机多卡和多机多卡的时候，很少去实操到分布式的训练推理，本身这块对应硬件的成本高，对于个人是很少可以去把玩上的，更何况现在训练大模型大部分使用的PT好的模型，进行微调和蒸馏，或者量化部署，随着deepseek系列模型的开源，对模型的训练微调和部署的需求增多，里面涉及到的分布式训练策略，怎样对模型和数据进行拆分进行多卡sm并行处理, 这里简单介绍下相关的分布式训练推理并行策略，以及对应的代码，代码主要使用pytorch进行实现,采用单节点的2个gpu。(如果你有钱的话，可以复现下ZeRO或者Megatron中的实现）
+
+💡使用 PyTorch 进行模型训练的过程：
+PyTorch 将值组织成Tensor ， Tensor是具有丰富数据操作操作的通用 n 维数组。Module 定义从输入值到输出值的转换，其在正向传递期间的行为由其forward成员函数指定。Module 可以包含Tensor作为参数。例如，线性模块包含权重参数和偏差参数，其正向函数通过将输入与权重相乘并添加偏差来生成输出。应用程序通过在自定义正向函数中将本机Module （例如线性、卷积等）和Function （例如relu、pool 等）拼接在一起来组成自己的Module 。典型的训练迭代包含使用输入和标签生成损失的前向传递、用于计算参数梯度的后向传递以及使用梯度更新参数的优化器步骤。更具体地说，在正向传递期间，PyTorch 会构建一个自动求导图来记录执行的操作。然后，在反向传播中，它使用自动梯度图进行反向传播以生成梯度。最后，优化器应用梯度来更新参数。训练过程重复这三个步骤，直到模型收敛。
+
+并行策略主要分为以下几种：
+
+Data Parallelism (DP) 包括：
+
+Distributed Data Parallelism（DDP）
+Fully-Shared Data Parallelism (FSDP)
+
+Model Parallelism（MP）包括：
+
+
+Tensor Parallelism（TP, 有些论文中将TP描述成MP,比如Megatron-LM, ZeRO）
+
+
+Pipeline Parallelism (PP)
+
+
+Expert Parallelism (EP)
+
+
+Activation Partitioning 包括：(SP和CP两者通常和TP一起使用)
+
+Sequence Parallelism (SP)： 针对序列切分，在模块的输入和输出侧对序列进行切分，常使用在LayerNorm,Dropout（通过all_gather,reduce-scatter 通信计算，减少训练时激活值 gpu内存占用，以前是每个卡上单独的副本LayerNorm,Dropout，冗余gpu内存）
+Context Parallelism (CP): 主要针对Transformer模型长序列的训练。
+
+
+
+DP和MP的比较：
+
+
+DP 的扩展效率比 MP 更好，因为 MP 降低了计算的粒度，同时也增加了通信开销。超过某个点后，较低的计算粒度会降低每个 GPU 的效率，而增加的通信开销会阻碍跨 GPU 的可扩展性，尤其是跨越节点边界时。相反，DP 既具有更高的计算粒度，又具有更低的通信量，从而可以实现更高的效率。
+
+
+DP 内存(GPU HBM)效率低，因为模型状态在所有数据并行进程中冗余存储。相反，MP 对模型状态进行分区，以提高内存效率。
+
+
+DP和MP都保存了整个训练过程中需要的所有模型状态，但并不是所有状态都是一直需要的，比如每一层对应的参数只在该层的前向传播和后向传播时才需要。
+
+
+模型训练的并行策略同样适用于推理测的并行策略，但是调度和执行的方式稍有不同。这里主要是结合pytorch 实现简单的多卡模型并行策略训练。
+相关的分布式训练推理并行策略，以及对应的代码运行操作demo，可以查看这个PR:
+https://github.com/ai-bot-pro/achatbot/pull/127  (如有不对，欢迎指出~)"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [["$", "$"]],
+    },
+    displayMath: [
+      ["$$", "$$"],
+      ["\[\[", "\]\]"],
+    ],
+    svg: {
+      fontCache: "global",
+    },
+  };
+</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script
+  id="MathJax-script"
+  async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+></script>
+
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo"></a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">时间飘过</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/perf-book-cn/zh/" rel="noopener" target="_blank">
+              《现代CPU性能分析与优化》
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://podcast-997.pages.dev/" rel="noopener" target="_blank">
+              Podcast AI
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://github.com/weedge/what_are_embeddings/blob/main/embeddings-cn.pdf" rel="noopener" target="_blank">
+              What are Embeddings
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/about/">时间飘过</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/">主页</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/post/">归档</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/tags/">标签</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/categories/">分类</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://weedge.github.io/perf-book-cn/zh/" rel="noopener" target="_blank">
+              《现代CPU性能分析与优化》
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://podcast-997.pages.dev/" rel="noopener" target="_blank">
+              Podcast AI
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://github.com/weedge/what_are_embeddings/blob/main/embeddings-cn.pdf" rel="noopener" target="_blank">
+              What are Embeddings
+              
+              <i class="iconfont">
+                <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M623.36 272.96 473.216 423.04C467.2 429.056 467.072 438.656 472.896 444.416c0 0-6.72-6.656 1.6 1.6C496.064 467.648 528.64 500.224 528.64 500.224 534.464 506.048 544 505.856 550.016 499.904l150.08-150.144 67.328 66.432c9.024 8.96 27.456 4.544 30.4-8.96 19.968-92.608 46.656-227.52 46.656-227.52 6.848-34.496-16.192-56.704-49.92-49.92 0 0-134.656 26.816-227.328 46.784C560.32 178.048 556.352 182.272 554.752 187.136c-3.2 6.208-3.008 14.208 3.776 20.992L623.36 272.96z"></path>
+  <path d="M841.152 457.152c-30.528 0-54.784 24.512-54.784 54.656l0 274.752L237.696 786.56 237.696 237.696l206.016 0c6.656 0 10.752 0 13.248 0C487.68 237.696 512 213.184 512 182.848 512 152.32 487.36 128 456.96 128L183.04 128C153.216 128 128 152.576 128 182.848c0 3.136 0.256 6.272 0.768 9.28C128.256 195.136 128 198.272 128 201.408l0 639.488c0 0.064 0 0.192 0 0.256 0 0.128 0 0.192 0 0.32 0 30.528 24.512 54.784 54.784 54.784l646.976 0c6.592 0 9.728 0 11.712 0 28.736 0 52.928-22.976 54.464-51.968C896 843.264 896 842.304 896 841.344l0-20.352L896 561.408 896 512.128C896 481.792 871.424 457.152 841.152 457.152z"></path>
+</svg>
+
+              </i>
+            </a>
+          
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">模型系统工程：分布式并行策略</h1>
+      
+      <div class="post-meta">
+        <time datetime="2025-03-07" class="post-time">
+          2025-03-07
+        </time>
+        <div class="post-category">
+            <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#引言">引言</a></li>
+    <li><a href="#data-parallelism-dp-数据并行">Data Parallelism (DP) 数据并行</a>
+      <ul>
+        <li><a href="#distributed-data-parallelismddp">Distributed Data Parallelism（DDP）</a></li>
+        <li><a href="#fully-shared-data-parallelism-fsdp">Fully-Shared Data Parallelism (FSDP)</a></li>
+      </ul>
+    </li>
+    <li><a href="#model-parallelismmp模型并行">Model Parallelism（MP）模型并行</a>
+      <ul>
+        <li><a href="#tensor-parallelismtp">Tensor Parallelism（TP）</a></li>
+        <li><a href="#pipeline-parallelism-pp">Pipeline Parallelism (PP)</a></li>
+        <li><a href="#expert-parallelism-ep">Expert Parallelism (EP)</a></li>
+        <li><a href="#sequence-parallelism-sp">Sequence Parallelism (SP)</a></li>
+        <li><a href="#context-parallelism-cp">Context Parallelism (CP)</a></li>
+      </ul>
+    </li>
+    <li><a href="#reference">reference</a></li>
+    <li><a href="#附录">附录</a>
+      <ul>
+        <li><a href="#1-all-gather">1. <strong>All-Gather</strong></a></li>
+        <li><a href="#2-reduce-scatter">2. <strong>Reduce-Scatter</strong></a></li>
+        <li><a href="#3-all-reduce">3. <strong>All-Reduce</strong></a></li>
+        <li><a href="#4-all-to-all">4. <strong>All-to-All</strong></a></li>
+        <li><a href="#对比">对比</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=28692286&auto=1&height=66"></iframe>
+
+
+
+<h2 id="引言">引言</h2>
+<p>以前在训练模型的时候大部分使用的是单机单卡进行训练测试，真正使用单机多卡和多机多卡的时候，很少去实操到分布式的训练推理，本身这块对应硬件的成本高，对于个人是很少可以去把玩上的，更何况现在训练大模型大部分使用的PT好的模型，进行微调和蒸馏，或者量化部署，随着deepseek系列模型的开源，对模型的训练微调和部署的需求增多，里面涉及到的分布式训练策略，怎样对模型和数据进行拆分进行多卡sm并行处理, 这里简单介绍下相关的分布式训练推理并行策略，以及对应的代码，代码主要使用pytorch进行实现,采用单节点的2个gpu。(如果你有钱的话，可以复现下ZeRO或者Megatron中的实现）</p>
+<blockquote>
+<p>💡使用 PyTorch 进行模型训练的过程：</p>
+<p>PyTorch 将值组织成Tensor ， Tensor是具有丰富数据操作操作的通用 n 维数组。Module 定义从输入值到输出值的转换，其在正向传递期间的行为由其forward成员函数指定。Module 可以包含Tensor作为参数。例如，线性模块包含权重参数和偏差参数，其正向函数通过将输入与权重相乘并添加偏差来生成输出。应用程序通过在自定义正向函数中将本机Module （<em>例如</em>线性、卷积等）和Function （例如relu、pool 等）拼接在一起来组成自己的Module 。典型的训练迭代包含使用输入和标签生成损失的前向传递、用于计算参数梯度的后向传递以及使用梯度更新参数的优化器步骤。更具体地说，在正向传递期间，PyTorch 会构建一个自动求导图来记录执行的操作。然后，在反向传播中，它使用自动梯度图进行反向传播以生成梯度。最后，优化器应用梯度来更新参数。训练过程重复这三个步骤，直到模型收敛。</p>
+</blockquote>
+<p>并行策略主要分为以下几种：</p>
+<p><img src="https://github.com/user-attachments/assets/9616a34d-c9f3-4db9-b2a1-a79342a95856" alt=""></p>
+<p>Data Parallelism (DP) 包括：</p>
+<ul>
+<li>Distributed Data Parallelism（DDP）</li>
+<li>Fully-Shared Data Parallelism (FSDP)</li>
+</ul>
+<p>Model Parallelism（MP）包括：</p>
+<ul>
+<li>
+<p>Tensor Parallelism（TP, 有些论文中将TP描述成MP,比如Megatron-LM, ZeRO）</p>
+</li>
+<li>
+<p>Pipeline Parallelism (PP)</p>
+</li>
+<li>
+<p>Expert Parallelism (EP)</p>
+</li>
+<li>
+<p>Activation Partitioning 包括：(SP和CP两者通常和TP一起使用)</p>
+<ul>
+<li>Sequence Parallelism (SP)： 针对序列切分，在模块的输入和输出侧对序列进行切分，常使用在LayerNorm,Dropout（通过all_gather,reduce-scatter 通信计算，减少训练时激活值 gpu内存占用，以前是每个卡上单独的副本LayerNorm,Dropout，冗余gpu内存）</li>
+<li>Context Parallelism (CP): 主要针对Transformer模型长序列的训练。</li>
+</ul>
+</li>
+</ul>
+<p>DP和MP的比较：</p>
+<ul>
+<li>
+<p>DP 的扩展效率比 MP 更好，因为 MP 降低了计算的粒度，同时也增加了通信开销。超过某个点后，较低的计算粒度会降低每个 GPU 的效率，而增加的通信开销会阻碍跨 GPU 的可扩展性，尤其是跨越节点边界时。相反，DP 既具有更高的计算粒度，又具有更低的通信量，从而可以实现更高的效率。</p>
+</li>
+<li>
+<p>DP 内存(GPU HBM)效率低，因为模型状态在所有数据并行进程中冗余存储。相反，MP 对模型状态进行分区，以提高内存效率。</p>
+</li>
+<li>
+<p>DP和MP都保存了整个训练过程中需要的所有模型状态，但并不是所有状态都是一直需要的，比如每一层对应的参数只在该层的前向传播和后向传播时才需要。</p>
+</li>
+</ul>
+<p>模型训练的并行策略同样适用于推理测的并行策略，但是调度和执行的方式稍有不同。这里主要是结合pytorch 实现简单的多卡模型并行策略训练。</p>
+<p>相关的分布式训练推理并行策略，以及对应的代码运行操作demo，可以查看这个PR:</p>
+<p><a href="https://github.com/ai-bot-pro/achatbot/pull/127">https://github.com/ai-bot-pro/achatbot/pull/127</a>  (如有不对，欢迎指出~)</p>
+<h2 id="data-parallelism-dp-数据并行">Data Parallelism (DP) 数据并行</h2>
+<p>并行化是大规模训练大型模型的关键策略。对于适合在设备内存中进行训练的模型，数据并行 (DP) 用于将训练扩展到多个设备。在 DP 中，模型参数在每个设备上复制。在每个步骤中，一个小批量被均匀地划分到所有数据并行进程中，这样每个进程都会在不同的数据样本子集上执行前向和后向传播，并使用跨进程的平均梯度在本地更新模型。</p>
+<h3 id="distributed-data-parallelismddp">Distributed Data Parallelism（DDP）</h3>
+<p>在同一台机器上使用多个 GPU 进行单进程多线程数据并行训练的DataParallel 、用于跨 GPU 和机器进行多进程数据并行训练的DistributedDataParallel以及用于通用分布式模型并行训练。</p>
+<p><a href="https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html">Distributed Data-Parallel (DDP)</a>：适用于多 GPU 或多节点环境。每个进程拥有完整的模型副本，处理不同的数据子集，计算完成后通过 All-Reduce 操作同步梯度。</p>
+<p>从 v1.5 开始，PyTorch 本身提供了几种加速分布式数据并行的技术，包括存储梯度、将计算与通信重叠以及跳过梯度同步。具体内容参考这篇论文：<a href="https://arxiv.org/abs/2006.15704">2020.6 PyTorch Distributed: Experiences on Accelerating Data Parallel Training </a></p>
+<p>具体操作见：</p>
+<ul>
+<li><a href="https://pytorch.org/tutorials/intermediate/ddp_tutorial.html">https://pytorch.org/tutorials/intermediate/ddp_tutorial.html</a></li>
+<li>⭐️ <a href="https://pytorch.org/docs/main/notes/ddp.html">https://pytorch.org/docs/main/notes/ddp.html</a></li>
+<li>API: <a href="https://pytorch.org/docs/main/generated/torch.nn.parallel.DistributedDataParallel.html">https://pytorch.org/docs/main/generated/torch.nn.parallel.DistributedDataParallel.html</a></li>
+</ul>
+<p><a href="https://pytorch.org/docs/stable/nn.html#module-torch.nn.parallel">分布式数据并行</a> （DDP）是 PyTorch 中的一个强大模块，可让你在 多台机器，使其非常适合大规模深度学习应用。 要使用 DDP，您需要生成多个进程并为每个进程创建一个 DDP 实例。</p>
+<p>但它是如何工作的？DDP 使用来自 <a href="https://pytorch.org/tutorials/intermediate/dist_tuto.html">torch.分布式</a> 包来同步所有进程的梯度和缓冲区。这意味着每个进程将有 它有自己的模型副本，但它们都会协同工作来训练模型，就像在一台机器上一样。</p>
+<p>为了实现这一点，DDP 为模型中的每个参数注册了一个 autograd 钩子。当运行反向传递时，此钩子会触发并触发所有进程之间的梯度同步。这可确保每个进程具有相同的梯度，然后使用这些梯度来更新模型。</p>
+<ul>
+<li>rank 为 0 的进程广播到组中的所有其他进程，以确保所有模型副本都从完全相同的状态开始</li>
+<li>每个 DDP 进程创建一个本地<code>Reducer</code> ，负责反向传播期间的梯度同步</li>
+<li>为了提高通信效率， <code>Reducer</code>将参数梯度组织成 bucket，并一次减少一个 bucket，bucket_cap_mb参数来配置 bucket 大小</li>
+<li>前向激活参数，后向计算梯度，优化器同步更新每轮迭代学习到的参数，每个处理进程需要同步平均梯度(allreduce)</li>
+</ul>
+<p>from:</p>
+<ul>
+<li><a href="https://pytorch.org/docs/main/notes/ddp.html">https://pytorch.org/docs/main/notes/ddp.html</a></li>
+</ul>
+<p><img src="https://github.com/user-attachments/assets/c309e411-acce-47bc-b134-b2224d6d3ea2" alt=""></p>
+<h3 id="fully-shared-data-parallelism-fsdp">Fully-Shared Data Parallelism (FSDP)</h3>
+<p><a href="https://pytorch.org/docs/stable/fsdp.html">Fully Sharded Data-Parallel Training (FSDP)：</a>参考了来自TF中的XLA 实现(来自<a href="https://arxiv.org/abs/2004.13336">2020.4 Automatic Cross-Replica Sharding of Weight Update in Data-Parallel Training</a>)， 以及DeepSpeed ZeRO-3(分片模型参数、梯度和优化器状态到多个设备)中的实现。特别适合训练超大规模模型。</p>
+<p>FSDP 是一种数据并行训练，但与传统的数据并行不同，传统的数据并行维护模型参数、梯度和优化器状态的每个 GPU 副本，它将所有这些状态分片到数据并行工作器上，并可以选择将分片后的模型参数卸载到 CPU。</p>
+<p>from:</p>
+<ul>
+<li><a href="https://arxiv.org/abs/2004.13336">2020.4 Automatic Cross-Replica Sharding of Weight Update in Data-Parallel Training</a></li>
+<li><a href="https://arxiv.org/abs/1910.02054">2019.10 <strong>ZeRO: Memory Optimizations Toward Training Trillion Parameter Models</strong></a> (ZeRO Stage 3: 优化器+梯度+参数分区)</li>
+<li><a href="https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/">https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/</a></li>
+</ul>
+<p>下图展示了 FSDP 如何针对两个数据并行进程工作：</p>
+<p><img src="https://github.com/user-attachments/assets/5839a498-80fc-41c4-b319-63202879a5c4" alt=""></p>
+<p>通常，模型层以嵌套方式包裹在 FSDP 中，因此在前向或后向计算期间，只有单个 FSDP 实例中的层需要将完整参数收集到单个设备中。收集的完整参数将在计算后立即释放，释放的内存可用于下一层计算。通过这种方式，可以节省峰值 GPU 内存，从而可以扩展训练以使用更大的模型大小或更大的批处理大小。为了进一步最大限度地提高内存效率，当实例在计算中不活跃时，FSDP 可以将参数、梯度和优化器状态卸载到 CPU。</p>
+<h2 id="model-parallelismmp模型并行">Model Parallelism（MP）模型并行</h2>
+<p>当模型无法装入设备内存时，模型并行 (TP) 和流水线并行 (PP) 分别以垂直和水平方式将模型拆分到进程之间。</p>
+<h3 id="tensor-parallelismtp">Tensor Parallelism（TP）</h3>
+<p><strong>张量并行（Tensor Parallelism）</strong> 是一种分布式深度学习训练策略，旨在通过将神经网络中的张量（例如权重矩阵或激活值）分割到多个计算设备（如 GPU 或 TPU）上并行计算，从而加速训练并支持更大的模型。它特别适用于单设备内存不足以容纳整个模型或输入数据的情况。张量并行通常与数据并行（Data Parallelism）、流水线并行（Pipeline Parallelism）等策略结合使用，以实现高效的大规模训练。</p>
+<blockquote>
+<p>📢</p>
+<ul>
+<li>使用pytorch 封装好的DeviceMesh来管理切分权重的维度，不会对模型的结构进行并行化的修改；如果直接使用对模型结构进行并行化修改，加入通信原语进行权重梯度同步，粒度更细，但是带来处理的复杂度，可维护性会差些。
+<ul>
+<li>具体可以看下pytorch DeviceMesh 2D TP+FSDP <a href="https://www.youtube.com/watch?v=LcDjYLJblEY">Composable Distributed PT2(D)</a> | <a href="https://static.sched.com/hosted_files/pytorch2023/d1/%5BPTC%2023%5D%20Composable%20PyTorch%20Distributed%20with%20PT2.pdf">ppt</a></li>
+</ul>
+</li>
+<li>对于训练上亿，万亿参数的模型，TP常结合FSDP 一起操作。</li>
+<li>使用封装好的DeviceMesh 需要特别注意定义模块的模型结构，并确认好切分维度。</li>
+</ul>
+</blockquote>
+<p>from:</p>
+<ul>
+<li><a href="https://arxiv.org/pdf/1909.08053">2019.9 <strong>Megatron-LM: Training Multi-Billion Parameter Language Models Using Model Parallelism</strong></a> (TP+DP)</li>
+<li><a href="https://arxiv.org/abs/2205.05198">2022.5 <strong>Reducing Activation Recomputation in Large Transformer Models</strong></a> (PP+TP+SP+DP)</li>
+</ul>
+<p><img src="https://github.com/user-attachments/assets/ed4edbfc-43df-4e59-bdf0-afbc095d82cb" alt=""></p>
+<h3 id="pipeline-parallelism-pp">Pipeline Parallelism (PP)</h3>
+<p><strong>流水线并行</strong>是深度学习的<strong>基本</strong>并行之一。它允许对模型的<strong>执行</strong>进行分区，以便多个 <strong>微批次</strong>可以同时执行模型代码的不同部分。管道并行性可以成为一种有效的技术，用于：</p>
+<ul>
+<li>大规模训练</li>
+<li>带宽受限集群</li>
+<li>大型模型推理</li>
+</ul>
+<p>上述场景有一个共同点，就是每个设备的计算不能隐藏常规并行的通信，例如FSDP的权重 all-gather。</p>
+<p>在pytorch中可以使用torch.distributed.pipelining 这个库，它是从<a href="https://github.com/pytorch/PiPPy">PiPPy</a>项目迁移而来的。</p>
+<p>From:</p>
+<ul>
+<li><a href="https://arxiv.org/pdf/1811.06965">2018.11 <strong>GPipe: Easy Scaling with Micro-Batch Pipeline Parallelism</strong></a> (GPipe PP, Activation Checkpoints) | pytorch实现 <a href="https://github.com/kakaobrain/torchgpipe">torchgpipe</a></li>
+<li><a href="https://arxiv.org/pdf/2104.04473">2021.4 <strong>Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM</strong></a> (PP+TP+DP)</li>
+<li><a href="https://github.com/pytorch/PiPPy">https://github.com/pytorch/PiPPy</a></li>
+</ul>
+<p><img src="https://github.com/user-attachments/assets/877b1db6-5588-47bf-ba2d-1fc075ef6260" alt=""></p>
+<h3 id="expert-parallelism-ep">Expert Parallelism (EP)</h3>
+<p><strong>专家并行（Expert Parallelism）</strong> 是一种分布式深度学习训练策略，通常用于 <strong>混合专家模型（Mixture of Experts, MoE）</strong>，通过将多个专家（Experts，通常是神经网络子模块）分配到不同的计算设备（如 GPU 或 TPU）上并行计算，从而提升训练效率并支持大规模模型。</p>
+<blockquote>
+<p>📢</p>
+<ul>
+<li>如果使用send/recv通信原语操作，很容易产生相互等待（死锁）的情况；解决方法：
+<ul>
+<li>使用broadcast</li>
+<li>使用 all to all的通信原语</li>
+<li>调试时，把[batch_size, seq_len, hidden_size] 这些维度降低，以便打印调试</li>
+</ul>
+</li>
+<li>pytorch GPU之间的通信，后端采用NCCL库
+<ul>
+<li>节点内GPU通过nvlink来通信，也可以通过CPU卸载到共享内存来通信。前者更快，不需要cpu干预</li>
+<li>节点间GPU通过IB的GDR(RDMA)来通信(异步，zero copy)，也可以通过TCP通信。前者更快，后者需要cpu干预</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<p>from:</p>
+<ul>
+<li><a href="https://arxiv.org/abs/2006.16668v1">2020.6 <strong>GShard: Scaling Giant Models with Conditional Computation and Automatic Sharding</strong></a> (MoE， GShard with SPDM)</li>
+<li><a href="https://arxiv.org/abs/2101.03961">2021.6 <strong>Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity</strong></a></li>
+<li><a href="https://arxiv.org/abs/2211.15841">2022.11 <strong>MegaBlocks: Efficient Sparse Training with Mixture-of-Experts</strong></a> | <a href="https://github.com/databricks/megablocks">paper code</a></li>
+<li><a href="https://pytorch.org/blog/training-moes/">https://pytorch.org/blog/training-moes/</a>  (主要采用Databricks MegaBlocks MoE库)</li>
+</ul>
+<p><img src="https://github.com/user-attachments/assets/f1ad8662-53f5-4fe5-a264-67ae8715d4de" alt=""></p>
+<h3 id="sequence-parallelism-sp">Sequence Parallelism (SP)</h3>
+<p>针对序列切分，在模块的输入和输出侧对序列进行切分，常使用在LayerNorm,Dropout（通过all_gather,reduce-scatter 通信计算，减少训练时激活值 gpu内存占用，以前是每个卡上单独的副本LayerNorm,Dropout，冗余gpu内存）</p>
+<p>from:</p>
+<ul>
+<li><a href="https://arxiv.org/abs/2205.05198">2022.5 <strong>Reducing Activation Recomputation in Large Transformer Models</strong></a> (PP+TP+SP+DP)</li>
+</ul>
+<p><img src="https://github.com/user-attachments/assets/e2cc924d-aaef-47e0-8670-5278122fb763" alt=""></p>
+<h3 id="context-parallelism-cp">Context Parallelism (CP)</h3>
+<p>上下文并行（CP）是一种在序列长度维度上的并行化方案。与之前的 SP（序列并行）不同，后者仅分割 Dropout 和 LayerNorm 激活序列，<strong>CP 沿序列维度划分网络输入和所有激活</strong>。使用 CP，除注意力之外的所有模块（例如 Linear、LayerNorm 等）都可以照常工作而无需任何更改，因为它们没有 token 间操作。对于注意力，每个 token 的 Q（查询）需要使用同一序列中所有 token 的 KV（键和值）进行计算。因此，CP 需要跨 GPU 进行额外的全收集以收集完整的 KV 序列。相应地，在反向传播中，应将减少散射应用于 KV 的激活梯度。为了减少激活内存占用，每个 GPU 仅在正向存储序列块的 KV，并在反向再次收集 KV。KV 通信发生在 GPU 与其他 TP 组中的对应 GPU 之间。all-gather和reduce-scatter在底层转换为环形拓扑中的点对点通信。交换 KV 还可以利用 MQA/GQA 来减少通信量，因为它们只有一个或几个 KV 注意力头。</p>
+<p>CP所要解决问题：</p>
+<p>LLM 遇到长上下文（即长序列长度）的 OOM（内存不足）问题，因为激活的内存占用量呈线性增加。反向重新计算激活可以避免 OOM，但也会带来大量开销（完全重新计算约为 30%）。扩大 TP（张量模型并行性）也可以解决 OOM 问题，但它可能会使计算（例如线性）太短而无法重叠通信延迟。需要明确的是，无论是否发生 OOM，扩展到具有更大 TP 的更多 GPU 都可能遇到重叠问题。</p>
+<p>CP 可以更好地解决这些问题。使用 CP，每个 GPU 仅计算序列的一部分，从而将计算和通信都减少了 CP 倍。因此，不必担心它们之间的重叠。每个 GPU 的激活内存占用也小了 CP 倍，因此不再存在 OOM 问题。如下图 所示，TP 和 CP 的组合可以通过消除重新计算开销并在计算和通信之间做出最佳权衡来实现最佳性能。</p>
+<p>from:</p>
+<ul>
+<li><a href="https://arxiv.org/abs/2305.19370">2023.5 <strong>Blockwise Parallel Transformer for Large Context Models</strong></a></li>
+<li><a href="https://arxiv.org/abs/2310.01889">2023.10 <strong>Ring Attention with Blockwise Transformers for Near-Infinite Context</strong></a> | <a href="https://github.com/haoliuhl/ringattention">paper code</a></li>
+<li><a href="https://huggingface.co/blog/huseinzol05/context-parallelism">https://huggingface.co/blog/huseinzol05/context-parallelism</a></li>
+<li><a href="https://docs.nvidia.com/megatron-core/developer-guide/latest/api-guide/context_parallel.html">https://docs.nvidia.com/megatron-core/developer-guide/latest/api-guide/context_parallel.html</a></li>
+<li><a href="https://discuss.pytorch.org/t/distributed-w-torchtitan-breaking-barriers-training-long-context-llms-with-1m-sequence-length-in-pytorch-using-context-parallel/215082">https://discuss.pytorch.org/t/distributed-w-torchtitan-breaking-barriers-training-long-context-llms-with-1m-sequence-length-in-pytorch-using-context-parallel/215082</a></li>
+</ul>
+<p><img src="https://github.com/user-attachments/assets/074e5efc-1f58-4de6-81da-19fa25f19f75" alt=""></p>
+<h2 id="reference">reference</h2>
+<ul>
+<li>
+<p>pytorch 分布式训练文档：https://pytorch.org/tutorials/beginner/dist_overview.html</p>
+<ul>
+<li>
+<p>Parallelism APIs (并行 API):</p>
+<ul>
+<li><a href="https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html">Distributed Data-Parallel (DDP)</a>：适用于多 GPU 或多节点环境。每个进程拥有完整的模型副本，处理不同的数据子集，计算完成后通过 All-Reduce 操作同步梯度。</li>
+<li><a href="https://pytorch.org/docs/stable/fsdp.html">Fully Sharded Data-Parallel Training (FSDP)：</a>参考了来自TF中的XLA 实现(来自<a href="https://arxiv.org/abs/2004.13336">2020.4 Automatic Cross-Replica Sharding of Weight Update in Data-Parallel Training</a>)， 以及DeepSpeed ZeRO-3(分片模型参数、梯度和优化器状态到多个设备)中的实现。特别适合训练超大规模模型。</li>
+<li><a href="https://pytorch.org/docs/stable/distributed.tensor.parallel.html">Tensor Parallel (TP)</a>：对模型进行垂直切分，张量并行 (TP) 建立在 PyTorch 分布式张量 (<a href="https://github.com/pytorch/pytorch/blob/main/torch/distributed/tensor/README.md"><strong>DTensor</strong></a>) 之上，并提供不同的并行样式：Colwise、Rowwise 和 Sequence Parallelism。(Note: 张量并行 API 尚处于实验阶段，可能会发生变化。)  可以参考Megatron-LM第3篇论文：<a href="https://arxiv.org/abs/2205.05198">2022.5 Reducing Activation Recomputation in Large Transformer Models</a> 4.4.2节介绍TP+SP。</li>
+<li><a href="https://pytorch.org/docs/main/distributed.pipelining.html">Pipeline Parallel(PP)</a>：来自<a href="https://github.com/pytorch/PiPPy">PiPPy</a> | <a href="https://github.com/pytorch/PiPPy/tree/main/examples/huggingface">示例</a>，现在处于alpha 版本状态，对模型的<strong>执行</strong>进行分区，以便多个<strong>微批次</strong>可以同时并行执行模型代码的不同部分，对模型进行水平切分。 详细见：https://www.deepspeed.ai/tutorials/pipeline/</li>
+</ul>
+</li>
+<li>
+<p>Sharding primitives (分片原语): <code>DTensor</code>和<code>DeviceMesh</code>是用于在 N 维进程组上根据分片或复制张量构建并行性的原语。</p>
+<ul>
+<li>
+<p><a href="https://github.com/pytorch/pytorch/blob/main/torch/distributed/tensor/README.md">DTensor</a>表示分片和/或复制的张量，并根据操作的需要自动通信以重新分片张量。</p>
+</li>
+<li>
+<p><a href="https://pytorch.org/docs/stable/distributed.html#devicemesh">DeviceMesh</a>将加速器设备通信器抽象为多维数组，该数组管理底层<code>ProcessGroup</code>实例，以在多维并行中进行集体通信。更多信息见：<a href="https://pytorch.org/tutorials/recipes/distributed_device_mesh.html">Device Mesh Recipe</a></p>
+</li>
+</ul>
+</li>
+<li>
+<p>Communications APIs (通信 API): <a href="https://pytorch.org/docs/stable/distributed.html">PyTorch 分布式通信层 (C10D)</a>提供了集体通信 API（例如<a href="https://pytorch.org/docs/stable/distributed.html#torch.distributed.all_reduce">all_reduce</a>  和<a href="https://pytorch.org/docs/stable/distributed.html#torch.distributed.all_gather">all_gather</a> ) 以及 P2P 通信 API（例如: <a href="https://pytorch.org/docs/stable/distributed.html#torch.distributed.send">send</a> 和<a href="https://pytorch.org/docs/stable/distributed.html#torch.distributed.isend">isend</a> ） 它们在所有的并行实现中都被底层使用。</p>
+<ul>
+<li>Backends(通信后端)使用的通信库：gloo(meta写通通信库，主要支持cpu)，mpi（openMPI），nccl (GPU)；gloo 和 mpi主要支持cpu的通信api, 其中gloo不支持reduce_scatter，all_to_all ；mpi 不支持reduce_scatter； GPU cuda nccl的通信api都支持。</li>
+</ul>
+</li>
+<li>
+<p>Launcher  启动器： <a href="https://pytorch.org/docs/stable/elastic/run.html">torchrun</a>是一个广泛使用的启动脚本，它在本地和远程机器上生成进程以运行分布式 PyTorch 程序。</p>
+<ul>
+<li><a href="https://pytorch.org/docs/stable/distributed.html#launch-utility">https://pytorch.org/docs/stable/distributed.html#launch-utility</a></li>
+</ul>
+</li>
+<li>
+<p><strong>pytorch 分布式训练示例</strong>： <a href="https://pytorch.org/tutorials/intermediate/dist_tuto.html">https://pytorch.org/tutorials/intermediate/dist_tuto.html</a></p>
+</li>
+</ul>
+<p><strong>并行策略选择建议</strong>：</p>
+<ul>
+<li>数据并行是一种被广泛采用的单程序多数据训练范式，其中模型在每个流程上复制，每个模型副本为不同的输入数据样本集计算局部梯度，在每个优化步骤之前在数据并行通信器组内对梯度进行平均。</li>
+<li>当模型不能加载到单个GPU 训练推理时，需要使用模型并行技术（或分片数据并行），并且可以组合在一起形成多维（N-D）并行技术。</li>
+<li>如果您的模型适合单个 GPU，但您想使用多个 GPU 轻松扩展训练，请使用<a href="https://pytorch.org/docs/stable/notes/ddp.html">DistributedDataParallel (DDP)</a> 。
+<ul>
+<li>如果您使用多个节点，请使用<a href="https://pytorch.org/docs/stable/elastic/run.html">torchrun</a>启动多个 pytorch 进程。</li>
+<li>另请参阅：<a href="https://pytorch.org/tutorials/intermediate/ddp_tutorial.html">分布式数据并行入门</a> 。</li>
+</ul>
+</li>
+<li>当您的模型无法安装在一个 GPU 上时，请使用<a href="https://pytorch.org/docs/stable/fsdp.html">FullyShardedDataParallel (FSDP)</a> 。请参阅： <a href="https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html">FSDP 入门</a> 。</li>
+<li>如果达到 FSDP 的扩展限制，请使用<a href="https://pytorch.org/docs/stable/distributed.tensor.parallel.html">张量并行 (TP)</a>和/或<a href="https://pytorch.org/docs/main/distributed.pipelining.html">管道并行 (PP)</a> 。查看<a href="https://pytorch.org/tutorials/intermediate/TP_tutorial.html">张量并行教程</a>，参阅：<a href="https://github.com/pytorch/torchtitan">TorchTitan 3D 并行端到端示例</a> 。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<ul>
+<li>
+<p>跟李沐老师读分布式训练系统工程论文： <a href="https://github.com/mli/paper-reading/?#%E7%B3%BB%E7%BB%9F">https://github.com/mli/paper-reading/?#%E7%B3%BB%E7%BB%9F</a></p>
+<ul>
+<li>
+<p>Parameter Server: 李沐老师在百度实习时的成名作</p>
+</li>
+<li>
+<p>GPipe: PP 并行, 针对TPU v2/v3的训练DNN模型(CNN,Transformer)的场景(GPU也适用)； 以及Activation Memory的优化（Activation Checkpoints， 计算换内存），后面ZeRO使用了这种方式进行优化(进行了切分，带宽-&gt; 计算 换 内存)</p>
+</li>
+<li>
+<p>Megatron-LM: MP(TP) Transformer Decoder(GPT-2) 3个模块 embedding(按token词表大小切成小词表，数据块中的token里有对应的词就算，没有就位0，算完进行allreduce),  MHA(按头切), MLP(up project 按列切，down project按行切) 训练学习的权重是怎么切的,而且对通信要求高，ps: 讲解MLP怎么切时候，可以看下<a href="https://github.com/ai-bot-pro/achatbot/pull/126#issuecomment-2700184937">vllm TP这个图</a></p>
+</li>
+<li>
+<p>ZeRO: 所要解决的内存冗余问题：</p>
+<ul>
+<li>混合精度的训练时内存冗余的问题（fp16/fp32） fp16用于前向，后向传播时输入输出的数据，以及模型训练参数的计算(xw+b)，而梯度优化的时候，模型更新的权重使用fp32（主要是防止使用fp16的精度不足的情况，比如大数相加超出精度范围，非常小的数相加可能还是0，所以为了在后向传播结束时有效计算和应用更新，混合精度优化器会保留参数的 fp32 副本以及所有其他优化器状态的 fp32 副本），更新完之后再转成fp16进行下一次的前向和后向的计算; 假如1B的模型参数需要训练学习，使用fp16进行前向后向计算，总共需要 2B+2B的内存，假如使用ADAM作为优化器来更新权重，权重类型使用fp32,  总共需要4B+4B+4B, 所以混合精度总共需要4B+12B=16B的内存；这会导致在做前向 或者 后向梯度更新传播 的时候只会用的 2B, 其他 14B是冗余的，不参与计算。</li>
+<li>中间激活(神经网络中每一层经过激活函数（如 ReLU 或 GELU）后输出的值，这些激活值需要在训练时存储以进行反向传播)的计算，会产生大量的内存用于存储激活值。 比如 使用 1K 序列长度和 32 批次大小训练的 1.5B 参数的GPT2模型(模型结构配置见<a href="https://huggingface.co/openai-community/gpt2-xl/blob/main/config.json">openai-community/gpt2-xl</a>)，总共需要计算存储的激活值： 12 <em>×</em> <em>hidden dim</em> <em>×</em> <em>batch</em> <em>×</em> <em>seq length</em> <em>×</em> <em>transformer layers</em> = 12*1600*32*1024*48 ，激活值的数据类型是fp16，总共2 x 12*1600*32*1024*48 = 62,914,560,000 大概需要 60GB 的内存，其中 12 是一个经验系数，代表每个 Transformer 层中激活值的“平均倍数”，用来快速估计总激活值，实际计算低于这个值（<strong>12 是一个粗略的上界估计</strong>，它可能高估了某些部分（例如未精确区分 FFN 中间层和输出层的贡献））。激活检查点（或激活重新计算）是一种常用方法（<strong>不存储所有中间激活，而是仅保存部分关键层的激活（称为检查点，Activation Checkpoints），并在反向传播时通过重新计算（Recompute）来恢复其他层的激活</strong>。这种方法通过增加少量的计算开销（重新计算前向传播），大幅减少内存占用），可将激活内存减少大约总激活的平方根，但代价是 33% 重新计算开销。这将使该模型的激活内存消耗减少到大约 8 GB。如果训练一个万亿参数级别的模型，存放激活值是一个可以优化内存的点。</li>
+<li>在做allreduce时，进行网络IO发送接收数据的时候，产生的临时buffer。</li>
+<li>使用pytorch向GPU中申请和回收内存操作时，由于没有虚拟内存的概念，会产生内存碎片的问题。(可以维护一个对象内存池)</li>
+</ul>
+<p>解决方案：（主要思想是：利用 <strong>通信带宽</strong> 访问分区存放内存，然后 重新计算  来换 空间，如果要节约训练时间，需要通信带宽好的网络，现在常用的是节点内用NVLink, 节点外用IB, 结合RDMA技术(GDR)）</p>
+<ul>
+<li>ZeRO-DP 结合了MP的特点，内存利用率（不需要冗余存储模型权重）；对于模型计算的权重状态这些冗余内存，可以存放一份内存拷贝在一台GPU上，和Parameter Server 类似；ZeRO- <em>DP</em>对模型状态<em>进行分区</em>而不是复制它们，并使用动态通信计划，利用模型状态的内在时间特性，同时最小化通信量。通过这样做， <em>ZeRO</em> -DP 随着 DP 度数的增加<em>线性</em>减少模型的每个设备内存占用，同时保持通信量接近默认 DP，从而保持效率。</li>
+<li>ZeRO-R :
+<ul>
+<li>Reducing Activation Memory(减少激活值存储):  <em>ZeRO</em>通过在 GPU 上<em>划分</em>激活检查点来消除 MP 中的内存冗余，并使用 allgather 按需重建它们。激活内存占用量会随着 MP 度数的增加而减少。对于非常大的模型， <em>ZeRO</em>甚至可以选择将激活分区移至 CPU 内存，同时由于这些模型中的算术强度较大，仍能实现良好的效率。</li>
+<li>Managing Temporary buffers(管理临时buffers)：ZeRO -R 使用恒定大小的缓冲区来避免临时缓冲区随着模型尺寸的增加而爆炸，同时使其足够大以保持高效。</li>
+<li>Managing fragmented Memory(管理碎片内存): 内存碎片是短期和长期内存对象交错的结果。在正向传播过程中，激活检查点是长期的，但重新计算的激活是短期的。同样，在反向计算中，激活梯度是短期的，而参数梯度是长期的。基于这一洞察， <em>ZeRO</em>通过将激活检查点和梯度移动到预先分配的连续内存缓冲区来执行即时内存碎片整理。这不仅增加了内存可用性，而且还通过减少内存分配器查找可用连续内存所需的时间来提高效率。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Pathways: 针对google内部TPU上的data flow的设计，支持大规模TPU集群的训练任务调度，用户使用的前端编程工具是Jax, 然后编译DAG计算图，由调度control 分发到TPU上执行（相对于SPMD , MPMD，在分布式调度执行上复杂一些, 需要优化成异步叠加并行执行，减少通信等待）。（尽管这些设计实现未开源，但是设计思路可以学习,类似Ray）</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<p>ML:</p>
+<ul>
+<li>
+<p>⭐️ <a href="https://www.usenix.org/system/files/conference/osdi14/osdi14-paper-li_mu.pdf">2014. Scaling Distributed Machine Learning with the Parameter Server</a></p>
+</li>
+<li>
+<p><a href="https://arxiv.org/abs/1312.7651">2015. Petuum: A New Platform for Distributed Machine Learning on Big Data</a> (M/R DP)</p>
+</li>
+<li>
+<p>⭐️ <a href="https://arxiv.org/abs/1712.05889">2017.12 Ray: A Distributed Framework for Emerging AI Applications</a></p>
+<ul>
+<li>系列资料：https://github.com/ray-project/ray?#more-information</li>
+</ul>
+</li>
+</ul>
+<p>DNN:</p>
+<ul>
+<li><a href="https://arxiv.org/abs/1807.05358">2018.7 Beyond Data and Model Parallelism for Deep Neural Networks</a></li>
+<li>⭐️ <a href="https://arxiv.org/abs/1806.03377">2018.7 PipeDream: Fast and Efficient Pipeline Parallel DNN Training</a> (PipeDream PP)</li>
+<li>⭐️⭐️  <a href="https://arxiv.org/pdf/1811.06965">2018.11 <strong>GPipe: Easy Scaling with Micro-Batch Pipeline Parallelism</strong></a> (GPipe PP, Activation Checkpoints) | pytorch实现 <a href="https://github.com/kakaobrain/torchgpipe">torchgpipe</a></li>
+<li><a href="https://arxiv.org/abs/1811.02084">2018.11 Mesh-TensorFlow: Deep Learning for Supercomputers</a> (MP)</li>
+<li>⭐️ <a href="https://arxiv.org/abs/1910.05124">2019.10 PipeMare: Asynchronous Pipeline Parallel DNN Training</a> (PipeMare PP)</li>
+<li><a href="https://arxiv.org/abs/2004.13336">2020.4 Automatic Cross-Replica Sharding of Weight Update in Data-Parallel Training</a> (FSDP)</li>
+<li><a href="https://arxiv.org/abs/2006.16423">2020.6 Efficient Algorithms for Device Placement of DNN Graph Operators</a></li>
+<li>⭐️ <a href="https://arxiv.org/abs/2006.09503">2020.6 Memory-Efficient Pipeline-Parallel DNN Training</a> (PipeDream- 2BW PP)</li>
+<li>⭐️ <a href="https://arxiv.org/abs/2006.15704">2020.6 <strong>PyTorch Distributed: Experiences on Accelerating Data Parallel Training</strong></a> (DDP)</li>
+<li>⭐️ <a href="https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/">https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/</a> (FSDP) | 来自训练llama2的<a href="https://github.com/facebookresearch/fairscale">fairscale</a>, 已集成在pytorch中</li>
+<li><a href="https://arxiv.org/abs/2110.15032">2021.10 OneFlow: Redesign the Distributed Deep Learning Framework from Scratch</a>(SBP (split, broadcast and partial-value))</li>
+</ul>
+<p>Transformers for LLM:</p>
+<ul>
+<li>
+<p>⭐️ <a href="https://github.com/NVIDIA/Megatron-LM">Megatron-LM</a> （大部分训练框架并行策略来源于此）</p>
+<ul>
+<li><a href="https://docs.nvidia.com/megatron-core/developer-guide/latest/index.html">https://docs.nvidia.com/megatron-core/developer-guide/latest/index.html</a></li>
+<li><a href="https://github.com/NVIDIA/Megatron-LM#distributed-pretraining">https://github.com/NVIDIA/Megatron-LM#distributed-pretraining</a></li>
+<li>⭐️ <a href="https://arxiv.org/pdf/1909.08053">2019.9 <strong>Megatron-LM: Training Multi-Billion Parameter Language Models Using Model Parallelism</strong></a> (TP+DP)
+<ul>
+<li>第3节介绍TP: <code>--tensor-model-parallel-size</code> 指定要在其中拆分模型的 GPU 数量</li>
+</ul>
+</li>
+<li>⭐️ <a href="https://arxiv.org/pdf/2104.04473">2021.4 <strong>Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM</strong></a> (PP+TP+DP)
+<ul>
+<li>2.2节介绍PP: 将transformer模块分成几个阶段，每个阶段具有相同数量的transformer模块，然后通过将批次分成更小的微批次来实现流水线执行, <code>--pipeline-model-parallel-size</code> 指定要将模型分成的阶段数（例如，将具有 24 个transformer层的模型分成 4 个阶段意味着每个阶段各获得 6 个transformer层）。</li>
+</ul>
+</li>
+<li>⭐️ <a href="https://arxiv.org/abs/2205.05198">2022.5 <strong>Reducing Activation Recomputation in Large Transformer Models</strong></a> (PP+TP+SP+DP)
+<ul>
+<li>4.4.2节介绍TP+SP: <code>--sequence-parallel</code> 指定序列并行数目, 主要针对输入的hide state的layerNorm计算和输出的hide state的Dropout计算，沿序列维度进行分区可减少激活所需的内存</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>⭐️ <a href="https://github.com/deepspeedai/DeepSpeed">DeepSpeed</a> ZeRO(Zero Redundancy Optimizer <strong>ZeRO</strong>消除了数据(DP)和模型并行(MP)训练中的内存冗余，同时保持了较低的通信量和较高的计算粒度，能够根据设备数量按比例扩展模型大小，并保持持续的高效率):</p>
+<ul>
+<li>
+<p><a href="https://www.deepspeed.ai/tutorials/zero/">https://www.deepspeed.ai/tutorials/zero/</a></p>
+</li>
+<li>
+<p>⭐️⭐️ <a href="https://arxiv.org/abs/1910.02054">2019.10 <strong>ZeRO: Memory Optimizations Toward Training Trillion Parameter Models</strong></a> (<strong>ZeRO-DP 优化模型状态GPU内存</strong> （包括：优化器状态，梯度，参数）和 <strong>ZeRO-R优化残留状态GPU内存</strong> (包括：激活、临时缓冲区和不可用的内存片段 ))</p>
+<p>ZeRO和 MP ：由于ZeRO消除了 DP 中的内存效率低下问题，很自然地会问：还需要 MP 吗？什么时候需要？ <em>ZeRO</em>如何与 MP 配合使用？有了<em>ZeRO</em> ，如果仅用于拟合大型模型，MP 就不再是一种有吸引力的选择。ZeRO-DP 在减少每个设备的内存占用方面至少与 MP 一样有效，或者有时在 MP 无法均匀划分模型时更有效*。*它还具有相当或更好的扩展效率。此外，数据并行性非常易于使用，可广泛应用于不同的工作负载，而当今的 MP 方法通常需要模型开发人员修改模型、系统开发人员制定分布式运算符，而现有的工作（如 Megatron-LM 2019版）仅支持有限的运算符和模型。</p>
+<p>但在某些情况下仍然希望利用 MP：</p>
+<ul>
+<li>与<em>ZeRO</em> -R 一起使用时，MP 可以减少非常大的模型的激活内存占用。</li>
+<li>对于激活内存不是问题的较小模型，当单独使用 DP 的聚合批次大小太大而无法实现良好的收敛时，MP 也可以带来好处。</li>
+</ul>
+<p>在这些情况下，可以将<em>ZeRO</em>与 MP 结合起来，以可接受的聚合批次大小来拟合模型。</p>
+<p>ZeRO 利用数据并行的聚合计算和内存资源来减少用于模型训练的每个设备 (GPU) 的内存和计算要求。ZeRO 通过在分布式训练硬件中的可用设备 (GPU 和 CPU) 上划分各种模型训练状态 (权重、梯度和优化器状态) 来减少每个 GPU 的内存消耗。具体来说，ZeRO 被实现为优化的增量阶段，其中早期阶段的优化可在后期阶段使用。(ZeRO-DP)</p>
+<ul>
+<li><strong>Stage 1: optimizer state partitioning（优化器状态分区）</strong> 优化器状态（例如，对于<a href="https://arxiv.org/abs/1412.6980">Adam 优化器</a>，32 位权重以及一阶和二阶矩估计）在各个进程之间进行分区，以便每个进程只更新其分区。</li>
+<li><strong>Stage 2: optimizer+gradient state partitioning（优化器+梯度状态分区）</strong> 用于更新模型权重的减少的 16 位梯度也被分割，使得每个过程仅保留与其优化器状态部分相对应的梯度。</li>
+<li><strong>Stage 3: optimizer+gradient+parameter partitioning（优化器+梯度+参数分区）</strong> 16 位模型参数在各个过程中进行划分。ZeRO-3 将在前向和后向传递过程中自动收集和划分它们。</li>
+</ul>
+<p>此外，ZeRO-3 还包含<em>infinity offload engine</em> (无限卸载引擎)，形成 ZeRO-Infinity，它可以卸载到 CPU 和 NVMe 内存，从而节省大量内存。(像deepseek最近开源的3FS，可以对接上)</p>
+</li>
+<li>
+<p><a href="https://arxiv.org/abs/2104.07857">2021.4 ZeRO-Infinity: Breaking the GPU Memory Wall for Extreme Scale Deep Learning</a></p>
+</li>
+</ul>
+</li>
+<li>
+<p>Pathways:</p>
+<ul>
+<li>⭐️ <a href="https://arxiv.org/abs/2204.02311">2022.4 PaLM: Scaling Language Modeling with Pathways</a></li>
+<li>⭐️ <a href="https://arxiv.org/abs/2203.12533">2022.5 Pathways: Asynchronous Distributed Dataflow for ML</a></li>
+<li><a href="https://blog.google/technology/ai/introducing-pathways-next-generation-ai-architecture/">https://blog.google/technology/ai/introducing-pathways-next-generation-ai-architecture/</a></li>
+</ul>
+</li>
+<li>
+<p>pytorch &amp;&amp; TorchTitan(PT) &amp;&amp; TorchTune(FT)</p>
+<ul>
+<li>⭐️⭐️ <a href="http://arxiv.org/abs/2410.06511">2024.10 TorchTitan: One-stop PyTorch native solution for production ready LLM pre-training</a> | <a href="https://github.com/pytorch/torchtitan">paper code</a></li>
+<li><strong>TorchTitan 多维组合并行</strong>：
+<ul>
+<li><a href="https://github.com/weedge/torchtitan/blob/main/docs/fsdp.md">FSDP2</a> with per-parameter sharding 具有按参数分片的<a href="https://github.com/weedge/torchtitan/blob/main/docs/fsdp.md">FSDP2</a></li>
+<li><a href="https://pytorch.org/docs/stable/distributed.tensor.parallel.html">Tensor Parallel</a> (including <a href="https://discuss.pytorch.org/t/distributed-w-torchtitan-introducing-async-tensor-parallelism-in-pytorch/209487">async TP</a>) <a href="https://pytorch.org/docs/stable/distributed.tensor.parallel.html">张量并行</a>（包括<a href="https://discuss.pytorch.org/t/distributed-w-torchtitan-introducing-async-tensor-parallelism-in-pytorch/209487">异步 TP</a> ）</li>
+<li><a href="https://discuss.pytorch.org/t/distributed-w-torchtitan-training-with-zero-bubble-pipeline-parallelism/214420">Pipeline Parallel 流水线并行</a></li>
+<li><a href="https://discuss.pytorch.org/t/distributed-w-torchtitan-breaking-barriers-training-long-context-llms-with-1m-sequence-length-in-pytorch-using-context-parallel/215082">Context Parallel 上下文并行</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>MoE Transformers for LLM:</p>
+<ul>
+<li>
+<p><a href="https://pytorch.org/blog/training-moes/">https://pytorch.org/blog/training-moes/</a></p>
+</li>
+<li>
+<p><a href="https://huggingface.co/blog/zh/moe">https://huggingface.co/blog/zh/moe</a></p>
+</li>
+<li>
+<p>⭐️ <a href="https://arxiv.org/abs/2006.16668v1">2020.6 <strong>GShard: Scaling Giant Models with Conditional Computation and Automatic Sharding</strong></a> (MoE， GShard with SPDM)</p>
+</li>
+<li>
+<p>⭐️⭐️⭐️ <a href="https://arxiv.org/abs/2101.03961">2021.6 <strong>Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity</strong></a></p>
+<ul>
+<li>第5节介绍了 结合 DP, MP, EP的设计思路</li>
+</ul>
+</li>
+<li>
+<p>⭐️ <a href="https://arxiv.org/abs/2103.13262">2021.5 FastMoE: A Fast Mixture-of-Expert Training System</a> | [paper code][https://github.com/laekov/fastmoe] (集成了fasterMoE的代码)</p>
+</li>
+<li>
+<p>⭐️⭐️ <a href="https://dl.acm.org/doi/pdf/10.1145/3503221.3508418">2022.4 FasterMoE: Modeling and Optimizing Training of Large-Scale Dynamic Pre-Trained Models</a></p>
+</li>
+<li>
+<p>⭐️⭐️ <a href="https://arxiv.org/abs/2211.15841">2022.11 <strong>MegaBlocks: Efficient Sparse Training with Mixture-of-Experts</strong></a> | <a href="https://github.com/databricks/megablocks">paper code</a></p>
+</li>
+<li>
+<p>⭐️⭐️⭐️ Megatron Core MoE: <a href="https://github.com/NVIDIA/Megatron-LM/blob/main/megatron/core/transformer/moe/README.md">https://github.com/NVIDIA/Megatron-LM/blob/main/megatron/core/transformer/moe/README.md</a> (已经支持DeepEP，【<a href="https://github.com/NVIDIA/Megatron-LM/blob/main/megatron/core/transformer/moe/README.md#performance-best-practice"><strong>最佳实践</strong></a>】值得关注(训练的试错成太高))</p>
+<ul>
+<li><a href="https://docs.nvidia.com/megatron-core/developer-guide/latest/index.html">https://docs.nvidia.com/megatron-core/developer-guide/latest/index.html</a></li>
+</ul>
+</li>
+<li>
+<p>⭐️⭐️ <a href="https://arxiv.org/abs/2201.05596">2022.7 DeepSpeed-MoE: Advancing Mixture-of-Experts Inference and Training to Power Next-Generation AI Scale</a> （Pyramid Residual MoE）</p>
+</li>
+<li>
+<p>DeepSpeed MoE: <a href="https://www.deepspeed.ai/tutorials/mixture-of-experts/">https://www.deepspeed.ai/tutorials/mixture-of-experts/</a></p>
+</li>
+</ul>
+<hr>
+<p>总结：</p>
+<ul>
+<li>google系统工程大部分是针对自家的TPU集群优化的场景，不过一些设计思路可以套用的GPU上，比如GPipe提出的PP以及Activation 训练时大量中间计算的激活值的内存占用优化。</li>
+<li>英伟达和微软则是针对GPU机器在DNN模型训练上做了大量的优化，而且开源了LLM训练框架和细节上的实现。</li>
+<li>Meta 则是在已有基础上进行了工程上的系统组合封装，便于方便开发。在pytorch 的基础上组合多维度切分并行，易于组合训练DNN模型。</li>
+<li>数据和模型scaling，推动训练系统工程需要结合硬件进行优化， 现在开源的训练方案可以支持万亿级别的模型参数训练。但是需要投入大量的计算，网络存储资源，以及时间成本；算力，存储和网络的性能提高(计算快，吞吐大，延迟低)，在更快的时间内训练模型，节约时间成本，但是成本高；如何减低成本，又能比较快的训练出推理质量好的模型，如果持续迭代模型的话，系统工程优化迭代可能会一直持续进行。</li>
+<li>理解了原理，大部分的操作主要在通信原语上的操作，比如EP中的all to all(dist.all_to_all), TP中的all reduce</li>
+</ul>
+<hr>
+<h2 id="附录">附录</h2>
+<p>在分布式计算和并行计算领域（特别是深度学习和MPI编程中），<strong>all-gather</strong>、<strong>reduce-scatter</strong> 、 <strong>all-reduce</strong> 和 <strong>all-to-all</strong> 是三种常见的集体通信操作，用于在多个进程或节点之间同步和交换数据。它们在功能和使用场景上有所不同，下面解释它们的含义：</p>
+<h3 id="1-all-gather">1. <strong>All-Gather</strong></h3>
+<ul>
+<li><strong>含义</strong>：所有进程（或节点）将各自的数据“收集”（gather）起来，并分发给所有进程，使得每个进程最终都拥有所有进程的数据集合。</li>
+<li><strong>过程</strong>：
+<ul>
+<li>每个进程提供一个数据块（通常是一个向量或数组）。</li>
+<li>操作完成后，每个进程都会收到所有进程提供的数据块的完整副本。</li>
+</ul>
+</li>
+<li><strong>输出</strong>：所有进程的输出是相同的，包含所有输入数据的拼接。</li>
+<li><strong>示例场景</strong>：假设有3个进程，每个进程有一个数字（分别是1、2、3），All-Gather后，每个进程都会得到完整的数组 [1, 2, 3]。</li>
+<li><strong>用途</strong>：常用于需要全局信息的情况，比如收集所有节点的计算结果。</li>
+</ul>
+<h3 id="2-reduce-scatter">2. <strong>Reduce-Scatter</strong></h3>
+<ul>
+<li><strong>含义</strong>：先对所有进程的数据进行“归约”（reduce，例如求和、求最大值等），然后将归约后的结果“分散”（scatter）到各个进程上，每个进程只接收一部分结果。</li>
+<li><strong>过程</strong>：
+<ul>
+<li>每个进程提供一个数据块。</li>
+<li>对所有数据块按某种归约操作（如求和）进行计算，得到一个总结果。</li>
+<li>将总结果分割成若干部分，分别分发给各个进程。</li>
+</ul>
+</li>
+<li><strong>输出</strong>：每个进程收到归约结果的一部分，部分之间互不重叠。</li>
+<li>示例场景：假设有3个进程，数据分别为 [1, 4, 7]、 [2, 5, 8]、 [3, 6, 9]，Reduce-Scatter（求和）后：
+<ul>
+<li>总和为 [6, 15, 24]。</li>
+<li>进程0得到6，进程1得到15，进程2得到24。</li>
+</ul>
+</li>
+<li><strong>用途</strong>：适用于需要分布式存储归约结果的场景，比如梯度计算中的分散存储。</li>
+</ul>
+<h3 id="3-all-reduce">3. <strong>All-Reduce</strong></h3>
+<ul>
+<li><strong>含义</strong>：对所有进程的数据进行“归约”（reduce），然后将归约后的结果广播给所有进程，使得每个进程都拥有完整的归约结果。</li>
+<li><strong>过程</strong>：
+<ul>
+<li>每个进程提供一个数据块。</li>
+<li>对所有数据块执行归约操作（如求和、求平均等）。</li>
+<li>将归约后的结果分发给所有进程。</li>
+</ul>
+</li>
+<li><strong>输出</strong>：所有进程的输出是相同的，包含完整的归约结果。</li>
+<li><strong>示例场景</strong>：假设有3个进程，数据分别为1、2、3，All-Reduce（求和）后，每个进程都会得到结果6。</li>
+<li><strong>用途</strong>：广泛用于分布式机器学习中，比如同步梯度（如深度学习中的参数更新）。</li>
+</ul>
+<h3 id="4-all-to-all">4. <strong>All-to-All</strong></h3>
+<ul>
+<li><strong>含义</strong>：每个进程（或节点）向所有其他进程（包括自己）发送独特的数据，同时从所有其他进程接收数据。也就是说，每个进程都有一个输入数据块，针对每个目标进程会有特定的数据片段。</li>
+<li><strong>过程</strong>：
+<ul>
+<li>每个进程准备一个数据数组，数组的长度通常等于进程数，每个位置对应一个目标进程的数据。</li>
+<li>操作完成后，每个进程收到一个新的数据数组，数组中的每个元素是从对应发送进程接收到的数据。</li>
+</ul>
+</li>
+<li><strong>输出</strong>：每个进程获得一个完整的数据数组，数组中的数据来自所有进程的特定部分。</li>
+<li><strong>示例场景</strong>：
+<ul>
+<li>假设有3个进程：
+<ul>
+<li>进程0的输入是 [A0, B0, C0]（分别发给进程0、1、2）。</li>
+<li>进程1的输入是 [A1, B1, C1]。</li>
+<li>进程2的输入是 [A2, B2, C2]。</li>
+</ul>
+</li>
+<li>All-to-All 操作后：
+<ul>
+<li>进程0收到 [A0, A1, A2]。</li>
+<li>进程1收到 [B0, B1, B2]。</li>
+<li>进程2收到 [C0, C1, C2]。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>用途</strong>：常用于需要全局数据交换的场景，比如矩阵转置、傅里叶变换（FFT）或某些分布式算法中的数据重排。</li>
+<li><strong>All-to-All 的特点</strong>：
+<ul>
+<li>与 All-Gather 不同，All-to-All 允许每个进程发送不同的数据给不同的目标进程，而不是简单地广播或收集相同数据。</li>
+<li>通信量：通信复杂度较高，通常是 O(N²)，其中 N 是进程数，因为每个进程都要与所有其他进程交换数据。</li>
+<li>对称性：输入和输出的数据量通常是对称的，每个进程发送和接收的数据量相等。</li>
+</ul>
+</li>
+</ul>
+<h3 id="对比">对比</h3>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>输入</th>
+<th>输出</th>
+<th>通信目标</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>All-Gather</strong></td>
+<td>每个进程提供部分数据</td>
+<td>每个进程获得所有数据的副本</td>
+<td>收集全局数据</td>
+</tr>
+<tr>
+<td><strong>Reduce-Scatter</strong></td>
+<td>每个进程提供部分数据</td>
+<td>每个进程获得归约结果的一部分</td>
+<td>归约后分散</td>
+</tr>
+<tr>
+<td><strong>All-Reduce</strong></td>
+<td>每个进程提供部分数据</td>
+<td>每个进程获得完整的归约结果</td>
+<td>归约后广播</td>
+</tr>
+<tr>
+<td><strong>All-to-All</strong></td>
+<td>每个进程提供针对每个目标的独特数据</td>
+<td>每个进程获得来自所有进程的独特数据</td>
+<td>全局个性化数据交换</td>
+</tr>
+</tbody>
+</table>
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">weedge</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2025-03-07
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://weedge.github.io/tags/llm/">LLM</a>
+          <a href="https://weedge.github.io/tags/training/">training</a>
+          <a href="https://weedge.github.io/tags/parallelism/">parallelism</a>
+          <a href="https://weedge.github.io/tags/nn/">NN</a>
+          <a href="https://weedge.github.io/tags/mp/">MP</a>
+          <a href="https://weedge.github.io/tags/dp/">DP</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/multimoding/voices/fishspeech/">
+            <span class="next-text nav-default">论文解读：Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    显示 Disqus 评论
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://weedge.github.io/post/llm/trainingparallelstrategy/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'weedge';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:weege007@gmail.com" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/weedge" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://weibo.com/weedge" rel="me noopener" class="iconfont"
+      title="weibo"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M385.714286 733.714286q12-19.428571 6.285714-39.428571t-25.714286-28.571429q-19.428571-8-41.714286-0.571429t-34.285714 26.285714q-12.571429 19.428571-7.428571 39.142857t24.571429 28.857143 42.571429 1.428571 35.714286-27.142857zm53.714286-69.142857q4.571429-7.428571 2-15.142857t-10-10.571429q-8-2.857143-16.285714 2.857143t-12.285714 10.571429q-9.714286 17.714286 7.428571 25.714286 8 2.857143 16.571429 2.857143t12.571429-10.571429zm99.428571 61.142857q-25.714286 58.285714-90.285714 85.714286t-128 6.857143q-61.142857-19.428571-84.285714-72.285714t3.714286-107.142857q26.857143-53.142857 86.571429-79.428571t120.285714-10.857143q63.428571 16.571429 90.571429 68.285714t1.428571 108.857143zm178.285714-91.428571q-5.142857-54.857143-50.857143-97.142857t-119.142857-62.285714-156.857143-12q-127.428571 13.142857-211.142857 80.857143t-75.714286 151.142857q5.142857 54.857143 50.857143 97.142857t119.142857 62.285714 156.857143 12q127.428571-13.142857 211.142857-80.857143t75.714286-151.142857zm176 2.285714q0 38.857143-21.142857 79.714286t-62.285714 78.285714-96.285714 67.142857-129.142857 47.428571-154.571429 17.714286-157.142857-19.142857-137.428571-53.142857-98-86.285714-37.142857-114q0-65.714286 39.714286-140t112.857143-147.428571q96.571429-96.571429 195.142857-134.857143t140.857143 4q37.142857 36.571429 11.428571 119.428571-2.285714 8-0.571429 11.428571t5.714286 4 8.285714 2.857143 7.714286-2l3.428571-1.142857q79.428571-33.714286 140.571429-33.714286t87.428571 34.857143q25.714286 36 0 101.714286-1.142857 7.428571-2.571429 11.428571t2.571429 7.142857 6.857143 4.285714 9.714286 3.428571q32.571429 10.285714 58.857143 26.857143t45.714286 46.571429 19.428571 66.571429zm-42.285714-356.571429q24 26.857143 31.142857 62t-3.714286 67.142857q-4.571429 13.142857-16.857143 19.428571t-25.428571 2.285714q-13.142857-4.571429-19.428571-16.857143t-2.285714-25.428571q11.428571-36-13.714286-63.428571t-61.142857-20q-13.714286 2.857143-25.714286-4.571429t-14.285714-21.142857q-2.857143-13.714286 4.571429-25.428571t21.142857-14.571429q34.285714-7.428571 68 3.142857t57.714286 37.428571zm103.428571-93.142857q49.714286 54.857143 64.285714 127.142857t-7.714286 138q-5.142857 15.428571-19.428571 22.857143t-29.714286 2.285714-22.857143-19.428571-2.857143-29.714286q16-46.857143 5.714286-98.285714t-45.714286-90.285714q-35.428571-39.428571-84.571429-54.571429t-98.857143-4.857143q-16 3.428571-29.714286-5.428571t-17.142857-24.857143 5.428571-29.428571 24.857143-16.857143q70.285714-14.857143 139.428571 6.571429t118.857143 76.857143z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://weedge.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2013 -
+    2025
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        weedge
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//weedge.disqus.com/count.js" async></script>
+
+
+
+
+
+
+  <script src="/js/copy-to-clipboard.js"></script>
+
+
+</body>
+</html>

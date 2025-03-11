@@ -426,6 +426,90 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/llm/trainingparallelstrategy/">模型系统工程：分布式并行策略</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2025-03-07" class="post-time">
+        2025-03-07
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=28692286&auto=1&height=66"></iframe>
+
+
+
+<h2 id="引言">引言</h2>
+<p>以前在训练模型的时候大部分使用的是单机单卡进行训练测试，真正使用单机多卡和多机多卡的时候，很少去实操到分布式的训练推理，本身这块对应硬件的成本高，对于个人是很少可以去把玩上的，更何况现在训练大模型大部分使用的PT好的模型，进行微调和蒸馏，或者量化部署，随着deepseek系列模型的开源，对模型的训练微调和部署的需求增多，里面涉及到的分布式训练策略，怎样对模型和数据进行拆分进行多卡sm并行处理, 这里简单介绍下相关的分布式训练推理并行策略，以及对应的代码，代码主要使用pytorch进行实现,采用单节点的2个gpu。(如果你有钱的话，可以复现下ZeRO或者Megatron中的实现）</p>
+<blockquote>
+<p>💡使用 PyTorch 进行模型训练的过程：</p>
+<p>PyTorch 将值组织成Tensor ， Tensor是具有丰富数据操作操作的通用 n 维数组。Module 定义从输入值到输出值的转换，其在正向传递期间的行为由其forward成员函数指定。Module 可以包含Tensor作为参数。例如，线性模块包含权重参数和偏差参数，其正向函数通过将输入与权重相乘并添加偏差来生成输出。应用程序通过在自定义正向函数中将本机Module （<em>例如</em>线性、卷积等）和Function （例如relu、pool 等）拼接在一起来组成自己的Module 。典型的训练迭代包含使用输入和标签生成损失的前向传递、用于计算参数梯度的后向传递以及使用梯度更新参数的优化器步骤。更具体地说，在正向传递期间，PyTorch 会构建一个自动求导图来记录执行的操作。然后，在反向传播中，它使用自动梯度图进行反向传播以生成梯度。最后，优化器应用梯度来更新参数。训练过程重复这三个步骤，直到模型收敛。</p>
+</blockquote>
+<p>并行策略主要分为以下几种：</p>
+<p><img src="https://github.com/user-attachments/assets/9616a34d-c9f3-4db9-b2a1-a79342a95856" alt=""></p>
+<p>Data Parallelism (DP) 包括：</p>
+<ul>
+<li>Distributed Data Parallelism（DDP）</li>
+<li>Fully-Shared Data Parallelism (FSDP)</li>
+</ul>
+<p>Model Parallelism（MP）包括：</p>
+<ul>
+<li>
+<p>Tensor Parallelism（TP, 有些论文中将TP描述成MP,比如Megatron-LM, ZeRO）</p>
+</li>
+<li>
+<p>Pipeline Parallelism (PP)</p>
+</li>
+<li>
+<p>Expert Parallelism (EP)</p>
+</li>
+<li>
+<p>Activation Partitioning 包括：(SP和CP两者通常和TP一起使用)</p>
+<ul>
+<li>Sequence Parallelism (SP)： 针对序列切分，在模块的输入和输出侧对序列进行切分，常使用在LayerNorm,Dropout（通过all_gather,reduce-scatter 通信计算，减少训练时激活值 gpu内存占用，以前是每个卡上单独的副本LayerNorm,Dropout，冗余gpu内存）</li>
+<li>Context Parallelism (CP): 主要针对Transformer模型长序列的训练。</li>
+</ul>
+</li>
+</ul>
+<p>DP和MP的比较：</p>
+<ul>
+<li>
+<p>DP 的扩展效率比 MP 更好，因为 MP 降低了计算的粒度，同时也增加了通信开销。超过某个点后，较低的计算粒度会降低每个 GPU 的效率，而增加的通信开销会阻碍跨 GPU 的可扩展性，尤其是跨越节点边界时。相反，DP 既具有更高的计算粒度，又具有更低的通信量，从而可以实现更高的效率。</p>
+</li>
+<li>
+<p>DP 内存(GPU HBM)效率低，因为模型状态在所有数据并行进程中冗余存储。相反，MP 对模型状态进行分区，以提高内存效率。</p>
+</li>
+<li>
+<p>DP和MP都保存了整个训练过程中需要的所有模型状态，但并不是所有状态都是一直需要的，比如每一层对应的参数只在该层的前向传播和后向传播时才需要。</p>
+</li>
+</ul>
+<p>模型训练的并行策略同样适用于推理测的并行策略，但是调度和执行的方式稍有不同。这里主要是结合pytorch 实现简单的多卡模型并行策略训练。</p>
+<p>相关的分布式训练推理并行策略，以及对应的代码运行操作demo，可以查看这个PR:</p>
+<p><a href="https://github.com/ai-bot-pro/achatbot/pull/127">https://github.com/ai-bot-pro/achatbot/pull/127</a>  (如有不对，欢迎指出~)</p>
+    </div>
+    <div class="read-more">
+      <a href="/post/llm/trainingparallelstrategy/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/multimoding/voices/fishspeech/">论文解读：Fish-Speech: Leveraging Large Language Models for Advanced Multilingual Text-to-Speech Synthesis</a>
     </h1>
     
@@ -914,83 +998,6 @@
     </div>
     <div class="read-more">
       <a href="/post/multimoding/voices/vits/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/multimoding/voices/open_voice_extra_se_and_convert/">论文解读 OpenVoice: Versatile Instant Voice Cloning</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2024-05-11" class="post-time">
-        2024-05-11
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          <a href="https://weedge.github.io/categories/tts/"> TTS </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <p>使用meloTTS 本文生成的音频</p>
-
-
-
-<figure >
-  <audio controls class="player" preload="">
-    <source src="https://media.githubusercontent.com/media/weedge/paper-speaker/main/multimoding/voices/open_voice_inference/zh-tts.wav" type="audio/mpeg">
-  </audio>
-  
-  
-</figure>
-
-<p>使用openVoice clone 自己的声音 阅读本文内容 
-
-
-<figure >
-  <audio controls class="player" preload="">
-    <source src="https://media.githubusercontent.com/media/weedge/paper-speaker/main/multimoding/voices/open_voice_inference/clone-me-zh-tts.wav" type="audio/mpeg">
-  </audio>
-  
-  
-</figure>
-</p>
-<blockquote>
-<p>文件直接上传在github中, 暂未走cdn, 缓存比较慢，可下载播放， 下载地址： <a href="http://github.com/weedge/paper-speaker/tree/main/multimoding/voices/open_voice_inference">http://github.com/weedge/paper-speaker/tree/main/multimoding/voices/open_voice_inference</a></p>
-</blockquote>
-<hr>
-<p>openVoiceV2 tone color clone: base TTS + extra tone color + convert</p>
-<p>Base TTS: use meloTTS , 支持TTS模型训练，以及load Pre-Trained ckpt 进行TTS,  在 <a href="https://github.com/jaywalnut310/vits">VITS</a>基础上支持多种语言；</p>
-<p>论文地址：<a href="https://arxiv.org/abs/2312.01479">OpenVoice: Versatile Instant Voice Cloning</a></p>
-<p>论文主作者：Zengyi Qin (同时是JetMoE的作者，站在巨人的肩膀上创新)</p>
-<p>公开的权重：</p>
-<ul>
-<li>OpenVoice: <a href="https://huggingface.co/myshell-ai/OpenVoice">https://huggingface.co/myshell-ai/OpenVoice</a></li>
-<li>OpenVoiceV2: <a href="https://huggingface.co/myshell-ai/OpenVoiceV2">https://huggingface.co/myshell-ai/OpenVoiceV2</a></li>
-</ul>
-<p>源码：</p>
-<ul>
-<li><a href="https://github.com/myshell-ai/OpenVoice">https://github.com/myshell-ai/OpenVoice</a></li>
-<li><a href="https://github.com/myshell-ai/MeloTTS">https://github.com/myshell-ai/MeloTTS</a></li>
-</ul>
-<p>训练： MSML dataset 和 训练过程 未公开</p>
-<p><strong>附操作笔记</strong>： <a href="https://github.com/weedge/doraemon-nb/blob/main/myshell_ai_OpenVoiceV2.ipynb">https://github.com/weedge/doraemon-nb/blob/main/myshell_ai_OpenVoiceV2.ipynb</a></p>
-    </div>
-    <div class="read-more">
-      <a href="/post/multimoding/voices/open_voice_extra_se_and_convert/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
