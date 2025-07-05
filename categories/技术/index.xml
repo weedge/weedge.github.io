@@ -6,7 +6,16 @@
     <description>Recent content in 技术 on </description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 07 Mar 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 04 Jul 2025 10:26:23 +0800</lastBuildDate><atom:link href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>实时聊天3d数字人</title>
+      <link>https://weedge.github.io/post/avatar/realtime-chatbot/</link>
+      <pubDate>Fri, 04 Jul 2025 10:26:23 +0800</pubDate>
+      
+      <guid>https://weedge.github.io/post/avatar/realtime-chatbot/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>模型系统工程：模型分布式训练并行策略</title>
       <link>https://weedge.github.io/post/llm/trainingparallelstrategy/</link>
@@ -636,21 +645,6 @@
 &lt;p&gt;将transformer层叠以创建大型模型会在各种语言任务中带来更高的准确性、少样本学习能力，甚至接近人类的新兴能力。这些基础模型在训练过程中成本高昂，而在推理过程中（一个经常发生的成本）可能需要大量内存和计算资源。如今最受欢迎的&lt;a href=&#34;https://www.nvidia.com/en-us/glossary/data-science/large-language-models/&#34;&gt;大型语言模型（LLMs）&lt;/a&gt;可以达到数百亿到数千亿个参数的规模，并且根据使用情况，可能需要处理长输入（或上下文），这也会增加成本。&lt;/p&gt;
 &lt;p&gt;本文讨论了LLM推理中最紧迫的挑战，以及一些实用的解决方案。读者应该对&lt;a href=&#34;https://arxiv.org/pdf/1706.03762.pdf&#34;&gt;transformer架构&lt;/a&gt;和注意力机制有基本的理解。理解LLM推理的复杂性至关重要，我们将在接下来的部分进行介绍。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;：上篇译文有对 transformer 有相关的介绍，以及相关编码笔记入门；或者深入学习&lt;a href=&#34;https://web.stanford.edu/class/cs25/prev_years/2023_winter/index.html&#34;&gt;CS25: Transformers United V2&lt;/a&gt; &lt;a href=&#34;https://www.youtube.com/playlist?list=PLoROMvodv4rNiJRchCzutFw5ItR_Z27CM&#34;&gt;video&lt;/a&gt;&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>译：大型语言模型入门介绍</title>
-      <link>https://weedge.github.io/post/llm/a-very-gentle-introduction-to-large-language-models-without-the-hype/</link>
-      <pubDate>Mon, 04 Dec 2023 10:26:23 +0800</pubDate>
-      
-      <guid>https://weedge.github.io/post/llm/a-very-gentle-introduction-to-large-language-models-without-the-hype/</guid>
-      <description>&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/weedge/mypic/master/llm/a-very-gentle-introduction-to-large-language-models-without-the-hype/transformers.svg&#34; alt=&#34;原始的 Transformer 模型结构&#34;&gt;&lt;/p&gt;
-&lt;h2 id=&#34;简介&#34;&gt;简介&lt;/h2&gt;
-&lt;p&gt;本文旨在让没有计算机科学背景的人深入了解 ChatGPT 和类似的 AI 系统（GPT-3、GPT-4、Bing Chat、Bard 等）的工作原理。ChatGPT 是一个聊天机器人——一种构建的对话式人工智能——但建立在&lt;em&gt;大型语言模型&lt;/em&gt;之上。我们将把它们全部分解。在此过程中，我们将讨论它们背后的核心概念。本文不需要任何技术或数学背景。我们将大量使用隐喻来说明这些概念。我们将讨论为什么核心概念以它们的方式工作，以及我们可以期望或不期望像 ChatGPT 这样的大型语言模型做什么。&lt;/p&gt;
-&lt;p&gt;这就是我们要做的事情。我们将温和地介绍一些与大型语言模型和 ChatGPT 相关的术语，不使用任何行话。如果我必须使用行话，我会不使用行话来分解它。我们将从“什么是人工智能”开始，然后逐步提高。我会尽可能地使用一些反复出现的隐喻。我将讨论这些技术的影响，即我们应该期望它们做什么或不应该期望它们做什么。let&amp;rsquo;s go~!&lt;/p&gt;
-&lt;p&gt;注：主要是结合论文「&lt;a href=&#34;https://arxiv.org/pdf/1706.03762.pdf&#34;&gt;Attention Is All You Need&lt;/a&gt;」理解Transformer。&lt;a href=&#34;https://www.youtube.com/watch?v=nzqlFIcCSWQ&#34;&gt;Transformer论文逐段精读&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;附：&lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/transformer.ipynb&#34;&gt;Transformer学习笔记&lt;/a&gt; | &lt;a href=&#34;https://github.com/weedge/doraemon-nb/blob/main/AnnotatedTransformer.ipynb&#34;&gt;Annotated Transformer&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=zjkBMFhNj_g&#34;&gt;&lt;strong&gt;Intro to Large Language Models&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;</description>
     </item>
     
   </channel>

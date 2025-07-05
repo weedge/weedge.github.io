@@ -426,6 +426,42 @@
   <header class="post-header">
     <h1 class="post-title">
       
+      <a class="post-link" href="/post/let-ml-go/">让ML跑起来</a>
+    </h1>
+    
+    <div class="post-meta">
+      <time datetime="2022-11-08" class="post-time">
+        2022-11-08
+      </time>
+      <div class="post-category">
+          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+          
+        </div>
+      
+      
+      
+    </div>
+  </header>
+  
+  <div class="post-content">
+    
+    <div class="post-summary">
+      <h3 id="介绍">介绍</h3>
+<p>上文提到通过用户的行为数据存放在S3中，这些数据包括结构化和非结构化数据，怎么让这些数据变得有价值呢？一种是人为进行数据挖掘，对相关指标转化率进行评估；还有一种是通过这些数据来训练模型，然后将预测模型用于生产环境中进行A/B测试，选出适合的模型，这个模型需要不断更新迭代，并且自动化半自动化运行起来；</p>
+<p><img src="https://docs.aws.amazon.com/zh_cn/sagemaker/latest/dg/images/ml-concepts-10.png" alt="img"></p>
+    </div>
+    <div class="read-more">
+      <a href="/post/let-ml-go/" class="read-more-link">阅读全文</a>
+    </div>
+    
+  </div>
+</article>
+
+  
+    <article class="post bg-white">
+  <header class="post-header">
+    <h1 class="post-title">
+      
       <a class="post-link" href="/post/user-behavior-analytics-solution/">用户行为分析方案设计</a>
     </h1>
     
@@ -645,44 +681,6 @@
     </div>
     <div class="read-more">
       <a href="/post/conf/" class="read-more-link">阅读全文</a>
-    </div>
-    
-  </div>
-</article>
-
-  
-    <article class="post bg-white">
-  <header class="post-header">
-    <h1 class="post-title">
-      
-      <a class="post-link" href="/post/ping/">工具盒子-ping/traceroute</a>
-    </h1>
-    
-    <div class="post-meta">
-      <time datetime="2021-11-15" class="post-time">
-        2021-11-15
-      </time>
-      <div class="post-category">
-          <a href="https://weedge.github.io/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
-          
-        </div>
-      
-      
-      
-    </div>
-  </header>
-  
-  <div class="post-content">
-    
-    <div class="post-summary">
-      <h2 id="序言">序言</h2>
-<p>在访问网络是否ok, 通常喜欢用ping 命令来访问<code>ping www.baidu.com</code> 看是否出现超时；ping在不同的操作系统平台实现方式差不多，底层都是用ICMP协议，每次发ICMP ECHO_REQUEST packet (IP地址/Host, ttl，icmp_seq序列号，<a href="https://en.wikipedia.org/wiki/Round-trip_delay">RTD/RTT</a>(往返延时)记录 ),  运行结束后统计每个RTT, 最大RTT, 最小RTT, 平均RTT, <a href="https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford">标准偏差</a>RTT, 发送/接受packets总数，丢包率 等数据，ping工具在PING(8)中的定义如下：</p>
-<blockquote>
-<p>The ping utility uses the ICMP protocol&rsquo;s mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway.  ECHO_REQUEST datagrams  (&ldquo;pings'') have an IP and ICMP header, followed by a &ldquo;struct timeval'' and then an arbitrary number of &ldquo;pad&rdquo; bytes used to fill out the packet.</p>
-</blockquote>
-    </div>
-    <div class="read-more">
-      <a href="/post/ping/" class="read-more-link">阅读全文</a>
     </div>
     
   </div>
